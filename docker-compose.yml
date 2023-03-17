@@ -1,0 +1,16 @@
+services:
+  unbgeology.lib.unb.ca:
+    build:
+      context: .
+    restart: unless-stopped
+    container_name: unbgeology.lib.unb.ca
+    expose:
+      - 80
+    networks:
+      - unbgeology.lib.unb.ca
+    ports:
+      - 3118:80
+
+networks:
+  unbgeology.lib.unb.ca:
+    name: unbgeology.lib.unb.ca
