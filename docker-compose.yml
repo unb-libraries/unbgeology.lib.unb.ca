@@ -12,6 +12,7 @@ services:
       - unbgeology.lib.unb.ca
     ports:
       - 3118:80
+      - 31180:31180
 
 networks:
   unbgeology.lib.unb.ca:
