@@ -8,9 +8,10 @@ ENV NUXT_SITE_UUID a6686492-dc6a-436b-8d6f-5f8a92f28e9a
 ENV NUXT_PORT 80
 
 # Build application.
-COPY . $APP_ROOT
-RUN ${RSYNC_MOVE} $APP_ROOT/build/ /build/ && \
-    ${RSYNC_MOVE} /build/scripts/ /scripts/
+COPY ./build /build
+COPY ./app $APP_ROOT
+
+RUN ${RSYNC_MOVE} /build/scripts/ /scripts/
 
 # Container metadata.
 LABEL ca.unb.lib.generator="nuxt3" \
