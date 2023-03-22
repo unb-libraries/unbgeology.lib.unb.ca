@@ -8,6 +8,8 @@ services:
       - 80
     volumes:
       - ./app:/app
+    env_file:
+      - ./env/nuxt.env
     networks:
       - unbgeology.lib.unb.ca
     ports:
