@@ -1,6 +1,6 @@
 FROM ghcr.io/unb-libraries/node:18.x
 
-ENV APP_STARTUP_CMD /scripts/deploy.sh
+ENV APP_STARTUP_CMD "node .output/server/index.mjs"
 ENV NUXT_SITE_ID unbgeology
 ENV NUXT_SITE_URI unbgeology.lib.unb.ca
 ENV NUXT_SITE_UUID a6686492-dc6a-436b-8d6f-5f8a92f28e9a
