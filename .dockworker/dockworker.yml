@@ -1,0 +1,46 @@
+dockworker:
+  version: '6'
+  application:
+    name: UNB Earth Sciences Collection
+    uri: https://unbgeology.lib.unb.ca
+    description: Coming soon
+    topics:
+      - geology
+      - history
+      - research
+    identifiers:
+      id: unbgeology.lib.unb.ca
+      slug: unbgeology-lib-unb-ca
+      short_slug: unbgeology
+      uuid: 3118
+    framework:
+      name: Nuxt
+      version: 3
+      startup_finished_marker: '99_zz_notify_user_URI'
+    license:
+      license: MIT
+      holder: University of New Brunswick Libraries
+    shell:
+      shell: /bin/sh
+    workflows:
+      vcs:
+        type: github
+        owner: unb-libraries
+        name: unbgeology.lib.unb.ca
+      jira:
+        project_keys:
+          - ROCKS
+      image:
+        parent: ghcr.io/unb-libraries/node:18.x
+        repositories:
+          - name: GitHub
+            push_branches:
+              - dev
+              - prod
+            image_name: ghcr.io/unb-libraries/unbgeology.lib.unb.ca
+      local:
+        deployments:
+          - name: unbgeology.lib.unb.ca
+        additional_hostnames:
+          - unbgeology.lib.unb.ca
+          - unbgeology.lib.unb.ca.local
