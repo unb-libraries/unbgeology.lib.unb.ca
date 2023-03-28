@@ -9,6 +9,7 @@
     "test": "vitest"
   },
   "devDependencies": {
+    "cypress": "^12.9.0",
     "nuxt": "^3.3.1",
     "nuxt-vitest": "0.6.9"
   },
