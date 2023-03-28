@@ -14,5 +14,5 @@ jobs:
       k8s-deployment-name: 'unbgeology-lib-unb-ca'
       push-branches: '["dev"]'
     secrets:
-      KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+      KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_DATA }}
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
