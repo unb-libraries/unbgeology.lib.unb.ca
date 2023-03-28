@@ -8,7 +8,8 @@
     "postinstall": "nuxt prepare"
   },
   "devDependencies": {
-    "nuxt": "^3.3.1"
+    "nuxt": "^3.3.1",
+    "nuxt-vitest": "0.6.9"
   },
   "dependencies": {
     "lightship": "^7.1.1"
