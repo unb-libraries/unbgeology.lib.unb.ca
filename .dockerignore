@@ -2,9 +2,12 @@
 ./**/node_modules
 .dockerignore
 ./**/npmrc
+cypress.config.*
 Dockerfile
 docker-compose.yml
 LICENSE
 README.md
+tests
 vendor
+vitest.config.mjs
 composer.*
