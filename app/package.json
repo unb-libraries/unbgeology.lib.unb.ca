@@ -6,12 +6,15 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "test": "vitest"
+    "test:unit": "vitest",
+    "test:e2e": "cypress run",
+    "test:cypress": "cypress open"
   },
   "devDependencies": {
     "cypress": "^12.9.0",
     "nuxt": "^3.3.1",
-    "nuxt-vitest": "0.6.9"
+    "nuxt-vitest": "0.6.9",
+    "typescript": "^5.0.2"
   },
   "dependencies": {
     "lightship": "^7.1.1"
