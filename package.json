@@ -1,0 +1,14 @@
+{
+  "private": true,
+  "scripts": {
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "vitest run -c ./tests/unit/vitest.config.ts",
+    "test:e2e": "cypress run -C ./tests/e2e/cypress.config.ts",
+    "test:cypress": "cypress open"
+  },
+  "devDependencies": {
+    "cypress": "^12.9.0",
+    "typescript": "^5.0.2",
+    "vitest": "^0.29.8"
+  }
+}
