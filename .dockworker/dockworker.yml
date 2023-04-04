@@ -17,6 +17,10 @@ dockworker:
       name: Nuxt
       version: 3
       startup_finished_marker: '99_zz_notify_user_URI'
+      endpoint:
+        name: http
+        port: 80
+        readiness_timeout: 15
     license:
       license: MIT
       holder: University of New Brunswick Libraries

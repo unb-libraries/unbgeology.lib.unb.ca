@@ -5,7 +5,7 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "require-dev": {
-    "unb-libraries/dockworker-daemon": "^6"
+    "unb-libraries/dockworker-node": "6.x"
   },
   "config": {
     "allow-plugins": {
