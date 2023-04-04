@@ -4177,12 +4177,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/unb-libraries/dockworker.git",
-                "reference": "1c00ec33b9cbd2cdb130883b78b506242a0f5052"
+                "reference": "65f21a719aa347de48d848fb8cdad4ccb53fe63b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/unb-libraries/dockworker/zipball/1c00ec33b9cbd2cdb130883b78b506242a0f5052",
-                "reference": "1c00ec33b9cbd2cdb130883b78b506242a0f5052",
+                "url": "https://api.github.com/repos/unb-libraries/dockworker/zipball/65f21a719aa347de48d848fb8cdad4ccb53fe63b",
+                "reference": "65f21a719aa347de48d848fb8cdad4ccb53fe63b",
                 "shasum": ""
             },
             "require": {
@@ -4228,7 +4228,7 @@
                 "issues": "https://github.com/unb-libraries/dockworker/issues",
                 "source": "https://github.com/unb-libraries/dockworker/tree/6.x"
             },
-            "time": "2023-03-31T13:39:32+00:00"
+            "time": "2023-04-04T18:34:40+00:00"
         },
         {
             "name": "unb-libraries/dockworker-daemon",
@@ -4277,12 +4277,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/unb-libraries/dockworker-node.git",
-                "reference": "78e0666dd87ac009080259ab9173733111743f0d"
+                "reference": "aad7a5202d8038c8498c5f084dd45cb0094d8f5e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/unb-libraries/dockworker-node/zipball/78e0666dd87ac009080259ab9173733111743f0d",
-                "reference": "78e0666dd87ac009080259ab9173733111743f0d",
+                "url": "https://api.github.com/repos/unb-libraries/dockworker-node/zipball/aad7a5202d8038c8498c5f084dd45cb0094d8f5e",
+                "reference": "aad7a5202d8038c8498c5f084dd45cb0094d8f5e",
                 "shasum": ""
             },
             "require": {
@@ -4310,7 +4310,7 @@
                 "issues": "https://github.com/unb-libraries/dockworker-node/issues",
                 "source": "https://github.com/unb-libraries/dockworker-node/tree/6.x"
             },
-            "time": "2023-04-04T13:29:17+00:00"
+            "time": "2023-04-04T18:36:17+00:00"
         }
     ],
     "aliases": [],
