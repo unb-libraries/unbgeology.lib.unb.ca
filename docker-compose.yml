@@ -9,7 +9,7 @@ services:
     volumes:
       - ./app/public:/app/public
       - ./app/server:/app/server
-      - ./app/app.vue:/app/app.vue
+      - ./app/pages:/app/pages
     env_file:
       - ./env/nuxt.env
     networks:
