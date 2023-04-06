@@ -12,10 +12,10 @@ ENV CYPRESS_CACHE_FOLDER /app/node_modules/.cache/cypress
 
 # Build application.
 COPY ./build /build
-COPY ./app $APP_ROOT
+COPY ./app .
 
 RUN ${RSYNC_MOVE} /build/scripts/ /scripts/ && \
-    ${RSYNC_MOVE} /build/config/* $APP_ROOT
+    ${RSYNC_MOVE} /build/package*.json .
 
 # Container metadata.
 LABEL ca.unb.lib.generator="nuxt3" \

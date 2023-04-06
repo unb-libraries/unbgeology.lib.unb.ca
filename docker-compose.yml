@@ -7,9 +7,13 @@ services:
     expose:
       - 80
     volumes:
-      - ./app/public:/app/public
-      - ./app/server:/app/server
-      - ./app/pages:/app/pages
+      - ./app/node_modules:/app/html/node_modules
+      - ./app/.build:/app/html/.build
+      - ./app/nuxt.config.ts:/app/html/nuxt.config.ts
+      - ./app/config:/app/html/config
+      - ./app/pages:/app/html/pages
+      - ./app/public:/app/html/public
+      - ./app/server:/app/html/server
     env_file:
       - ./env/nuxt.env
     networks:
