@@ -8,7 +8,6 @@ ENV NUXT_SITE_UUID a6686492-dc6a-436b-8d6f-5f8a92f28e9a
 ENV NUXT_PORT 80
 ENV NITRO_PORT 80
 ENV LIGHTSHIP_PORT 9118
-ENV CYPRESS_CACHE_FOLDER /app/node_modules/.cache/cypress
 
 # Build application.
 COPY ./build /build
