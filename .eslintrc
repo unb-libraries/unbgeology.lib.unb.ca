@@ -12,7 +12,9 @@
       "named": "never",
       "asyncArrow": "always"
     }],
-    "@typescript-eslint/no-unused-vars": "warn",
+    "@typescript-eslint/no-unused-vars": ["warn", {
+      "args": "none"
+    }],
     "vue/no-multiple-template-root": "warn"
   },
   "overrides": [

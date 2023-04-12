@@ -1,3 +1,3 @@
 export default {
-  buildDir: '/app/html/.build/.nuxt',
+  buildDir: `/app/html/.build/.nuxt`,
 }
