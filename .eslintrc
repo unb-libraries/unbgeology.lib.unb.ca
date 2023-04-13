@@ -19,13 +19,13 @@
   },
   "overrides": [
     {
-      "files": ["components/*/**/*.vue"],
+      "files": ["app/components/*/**/*.vue"],
       "rules": {
         "vue/multi-word-component-names": "off"
       }
     },
     {
-      "files": ["pages/**/*.vue"],
+      "files": ["app/pages/**/*.vue"],
       "rules": {
         "vue/no-multiple-template-root": "off"
       }
