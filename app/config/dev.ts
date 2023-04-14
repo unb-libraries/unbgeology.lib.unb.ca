@@ -1,9 +1,8 @@
 import prodConfig from './prod'
+import _ from "lodash"
 
-export default {
-  ...prodConfig,
+export default _.merge(prodConfig, {
   modules: [
     `@nuxt/devtools`,
-    `@sidebase/nuxt-session`,
   ],
-}
+})

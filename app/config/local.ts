@@ -1,6 +1,7 @@
 import devConfig from './dev'
+import _ from 'lodash'
 
-export default defineNuxtConfig({
+export default _.merge({
   ...devConfig,
   vite: {
     server: {
