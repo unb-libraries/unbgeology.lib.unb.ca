@@ -22,6 +22,21 @@ services:
       - 3118:80
       - 31180:31180
 
+  idp-saml-unbgeology-lib-unb-ca:
+    image: kristophjunge/test-saml-idp
+    container_name: idp.unbgeology.lib.unb.ca
+    restart: unless-stopped
+    expose:
+      - 8080
+      - 8443
+    env_file:
+      - ./env/saml.env
+    networks:
+      - unbgeology.lib.unb.ca
+    ports:
+      - 6118:8080
+      - 61180:8443
+
 networks:
   unbgeology.lib.unb.ca:
     name: unbgeology.lib.unb.ca
