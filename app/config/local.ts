@@ -1,7 +1,6 @@
 import devConfig from './dev'
-import _ from 'lodash'
 
-export default _.merge({
+export default {
   ...devConfig,
   vite: {
     server: {
@@ -10,4 +9,4 @@ export default _.merge({
       },
     },
   },
-})
+}
