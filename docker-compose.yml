@@ -12,7 +12,9 @@ services:
       - ./app/nuxt.config.ts:/app/html/nuxt.config.ts
       - ./app/config:/app/html/config
       - ./app/pages:/app/html/pages
+      - ./app/plugins:/app/html/plugins
       - ./app/public:/app/html/public
+      - ./app/middleware:/app/html/middleware
       - ./app/server:/app/html/server
     env_file:
       - ./env/nuxt.env
