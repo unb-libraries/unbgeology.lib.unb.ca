@@ -9,17 +9,25 @@ export default defineNuxtRouteMiddleware(async (from: RouteLocationNormalized, t
   const { method } = event.node.req
   const { $saml } = useNuxtApp()
 
-  if (method === `GET`) {
-    const redirectTo = await $saml.getAuthorizeUrlAsync(``, host, {})
-    return navigateTo(redirectTo, { external: true, redirectCode: 302 })
+  if (from.path === `/login` && method === `GET`) {
+    const redirect = from.query.redirect as string
+    const params = redirect
+      ? {
+          additionalParams: {
+            RelayState: redirect,
+          },
+        }
+      : {}
+    const samlUrl = await $saml.getAuthorizeUrlAsync(``, host, params)
+    return navigateTo(samlUrl, { external: true, redirectCode: 302 })
   }
 
-  if (method === `POST`) {
-    const { SAMLResponse } = await readBody(event)
+  if (from.path === `/login/saml` && method === `POST`) {
+    const { SAMLResponse, RelayState } = await readBody(event)
     const { profile } = await $saml.validatePostResponseAsync({ SAMLResponse })
     if (profile?.uid) {
       event.context.session.uid = profile.uid
     }
-    return navigateTo({ path: `/` })
+    return navigateTo({ path: RelayState || `/` })
   }
 })

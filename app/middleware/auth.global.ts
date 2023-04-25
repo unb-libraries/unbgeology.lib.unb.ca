@@ -23,7 +23,8 @@ export default defineNuxtRouteMiddleware((from: RouteLocationNormalized, to: Rou
   if (!auth.public && !event.context.session.uid) {
     // Use instead of navigateTo to avoid ERR_HTTP_HEADERS_SENT error
     if (auth.redirect) {
-      return sendRedirect(event, `/login`, 302)
+      const redirectTo = to.path
+      return sendRedirect(event, `/login?redirect=${redirectTo}`, 302)
     }
     return abortNavigation({ statusCode: 403, message: `Unauthorized` })
   }
