@@ -3,4 +3,14 @@ export default {
   modules: [
     `@sidebase/nuxt-session`,
   ],
+  runtimeConfig: {
+    public: {
+      saml: {
+        entrypoint: ``,
+        assertionConsumerServiceUrl: ``,
+        issuer: ``,
+        idpCert: ``,
+      },
+    },
+  },
 }

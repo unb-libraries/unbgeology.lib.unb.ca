@@ -3,17 +3,17 @@ import { SAML } from "@node-saml/node-saml"
 
 export default defineNuxtPlugin(() => {
   const {
-    SAML_ENTRYPOINT,
-    SAML_ASSERTION_CONSUMER_SERVICE_URL,
-    SAML_ISSUER,
-    SAML_IDP_CERT,
-  } = process.env as Record<string, string>
+    entrypoint: entryPoint,
+    assertionConsumerServiceUrl: callbackUrl,
+    issuer,
+    idpCert: cert,
+  } = useRuntimeConfig().public.saml
 
   const saml = new SAML({
-    entryPoint: SAML_ENTRYPOINT,
-    callbackUrl: SAML_ASSERTION_CONSUMER_SERVICE_URL,
-    issuer: SAML_ISSUER,
-    cert: SAML_IDP_CERT,
+    entryPoint,
+    callbackUrl,
+    issuer,
+    cert,
     validateInResponseTo: ValidateInResponseTo.never,
     disableRequestedAuthnContext: true,
   })
