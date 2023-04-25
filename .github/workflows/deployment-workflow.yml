@@ -11,7 +11,7 @@ jobs:
     with:
       branch-env-map: '{"dev":"dev"}'
       deploy-branches: '["dev"]'
-      image-name: unb-libraries/unbgeology.lib.unb.ca
+      image-name: ghcr.io/unb-libraries/unbgeology.lib.unb.ca
       k8s-deployment-name: 'unbgeology-lib-unb-ca'
       push-branches: '["dev"]'
     secrets:
