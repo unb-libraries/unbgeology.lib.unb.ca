@@ -1,6 +1,6 @@
 <template>
   <div class="flex h-full flex-col">
-    <page-header class="bg-gray-200" />
+    <page-header class="bg-gray-300" />
     <main class="grow">
       <slot />
     </main>
