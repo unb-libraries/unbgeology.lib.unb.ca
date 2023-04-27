@@ -1,3 +1,5 @@
+import type { NuxtConfig } from "nuxt/config"
+
 export default {
   buildDir: `/app/html/.build/.nuxt`,
   css: [`~/assets/css/main.css`],
@@ -20,4 +22,4 @@ export default {
       },
     },
   },
-}
+} as NuxtConfig

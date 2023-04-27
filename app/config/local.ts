@@ -1,4 +1,5 @@
 import devConfig from './dev'
+import type { NuxtConfig } from "nuxt/config"
 
 export default {
   ...devConfig,
@@ -14,4 +15,4 @@ export default {
       },
     },
   },
-}
+} as NuxtConfig
