@@ -6,6 +6,8 @@ services:
     container_name: unbgeology.lib.unb.ca
     expose:
       - 80
+      - 9229
+      - 31180
     volumes:
       - ./app/node_modules:/app/html/node_modules
       - ./app/.build:/app/html/.build
@@ -13,6 +15,7 @@ services:
       - ./app/config:/app/html/config
       - ./app/components:/app/html/components
       - ./app/layouts:/app/html/layouts
+      - ./app/modules:/app/html/modules
       - ./app/pages:/app/html/pages
       - ./app/plugins:/app/html/plugins
       - ./app/public:/app/html/public
@@ -25,6 +28,7 @@ services:
     ports:
       - 3118:80
       - 31180:31180
+      # - 9229:9229
 
   idp-saml-unbgeology-lib-unb-ca:
     image: kristophjunge/test-saml-idp
