@@ -5,6 +5,7 @@ export default {
   css: [`~/assets/css/main.css`],
   modules: [
     `@sidebase/nuxt-session`,
+    `~/modules/auth/index.ts`,
     `~/modules/saml/index.ts`,
   ],
   postcss: {

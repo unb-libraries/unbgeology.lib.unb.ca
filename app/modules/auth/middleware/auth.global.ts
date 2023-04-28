@@ -10,7 +10,7 @@ interface RouteAuthMeta extends RouteMeta {
   auth?: AuthMeta
 }
 
-export default defineNuxtRouteMiddleware((from: RouteLocationNormalized, to: RouteLocationNormalized) => {
+export default (from: RouteLocationNormalized, to: RouteLocationNormalized) => {
   if (process.client) { return }
 
   const event = useRequestEvent()
@@ -28,4 +28,4 @@ export default defineNuxtRouteMiddleware((from: RouteLocationNormalized, to: Rou
     }
     return abortNavigation({ statusCode: 403, message: `Unauthorized` })
   }
-})
+}
