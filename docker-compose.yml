@@ -21,6 +21,7 @@ services:
       - ./app/public:/app/html/public
       - ./app/middleware:/app/html/middleware
       - ./app/server:/app/html/server
+      - h3-data:/app/data/db
     env_file:
       - ./env/nuxt.env
     networks:
@@ -48,3 +49,6 @@ services:
 networks:
   unbgeology.lib.unb.ca:
     name: unbgeology.lib.unb.ca
+
+volumes:
+  h3-data:

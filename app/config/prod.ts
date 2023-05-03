@@ -8,6 +8,14 @@ export default {
     `~/modules/auth/index.ts`,
     `~/modules/saml/index.ts`,
   ],
+  nitro: {
+    storage: {
+      db: {
+        driver: `fs`,
+        base: `/app/data/db`,
+      },
+    },
+  },
   postcss: {
     plugins: {
       tailwindcss: {},
