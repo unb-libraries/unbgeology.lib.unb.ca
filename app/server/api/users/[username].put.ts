@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
   const user = users[username]
   const userProps: Partial<User> = await readBody(event)
   Object.entries(userProps).forEach(([key, value]) => {
-    if (user[key]) {
+    if (user[key] !== undefined) {
       user[key] = value
     }
   })

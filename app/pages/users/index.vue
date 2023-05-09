@@ -11,6 +11,19 @@
     <PvTable v-if="users && users.length" :value="users">
       <PvColumn field="username" header="Username" />
       <PvColumn field="email" header="Email" />
+      <PvColumn field="active" header="Status">
+        <template #body="slotProps">
+          <span v-if="slotProps.data.active" class="text-green-600">Active</span>
+          <span v-else class="text-red-600">Inactive</span>
+        </template>
+      </PvColumn>
+      <PvColumn>
+        <template #body="slotProps">
+          <button class="bg-black p-2 text-sm text-white" @click="toggleStatus(slotProps.data.username, slotProps.data.active)">
+            {{ slotProps.data.active ? 'Deactivate' : 'Activate' }}
+          </button>
+        </template>
+      </PvColumn>
     </PvTable>
     <p v-else>
       No users have been added yet.
@@ -26,7 +39,20 @@ definePageMeta({
   },
 })
 
-const { data: users } = await useFetch<User[]>(`/api/users`, {
+const toggleStatus = async function (username: string, active: boolean) {
+  const { error } = await useFetch(`/api/users/${username}`, {
+    method: `PUT`,
+    body: {
+      active: !active,
+    },
+  })
+
+  if (!error.value) {
+    refresh()
+  }
+}
+
+const { data: users, refresh } = await useFetch<User[]>(`/api/users`, {
   transform: function (users) {
     return Object.values(users)
   },
