@@ -1,8 +1,11 @@
 <template>
-  <section class="container mx-auto my-4">
+  <section class="container mx-auto my-4 flex flex-row justify-between">
     <h1 class="text-4xl">
       Users
     </h1>
+    <button class="bg-black p-3 text-white">
+      <a href="/users/register">New user</a>
+    </button>
   </section>
   <section class="container mx-auto">
     <SyTable v-if="users && users.length" :header="header" :rows="users" />
