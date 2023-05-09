@@ -20,6 +20,7 @@
     "@sidebase/nuxt-session": "^0.2.7",
     "lightship": "^7.1.1",
     "lodash": "^4.17.21",
-    "primevue": "^3.28.0"
+    "primevue": "^3.28.0",
+    "vee-validate": "^4.9.1"
   }
 }
