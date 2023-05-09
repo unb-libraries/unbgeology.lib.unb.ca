@@ -11,11 +11,11 @@
     <form @submit.prevent="submit">
       <p class="my-4 flex flex-col space-y-2">
         <label for="username">Username</label>
-        <input v-model="username" class="max-w-md border" type="text" name="username">
+        <PvInputText v-model="username" placeholder="someone" class="max-w-md" />
       </p>
       <p class="my-4 flex flex-col space-y-2">
         <label for="email">Email</label>
-        <input v-model="email" class="max-w-md border" type="email" name="email">
+        <PvInputText id="email" v-model="email" placeholder="someone@unb.ca" class="max-w-md" />
       </p>
       <button class="bg-black p-3 text-white" type="submit">
         Submit
