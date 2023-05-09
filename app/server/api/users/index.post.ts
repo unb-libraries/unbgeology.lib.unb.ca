@@ -7,6 +7,10 @@ export default defineEventHandler(async (event) => {
     ...await readBody(event),
   }
 
+  if (users[user.username]) {
+    throw createError({ statusCode: 409, statusMessage: `User already exists.` })
+  }
+
   users[user.username] = user
   storage.setItem(`users`, users)
 

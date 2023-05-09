@@ -5,6 +5,9 @@
     </h1>
   </section>
   <section class="container mx-auto my-4">
+    <div v-if="errorMessage" class="border-l-4 border-l-red-600 bg-red-200 p-3 text-red-800">
+      {{ errorMessage }}
+    </div>
     <form @submit.prevent="submit">
       <p class="my-4 flex flex-col space-y-2">
         <label for="username">Username</label>
@@ -31,6 +34,7 @@ definePageMeta({
 
 const username = ref(``)
 const email = ref(``)
+const errorMessage = ref(``)
 
 const submit = async function () {
   const { error } = await useFetch(`/api/users`, {
@@ -44,7 +48,7 @@ const submit = async function () {
   if (!error.value) {
     navigateTo(`/users`)
   } else {
-    console.error(error.value)
+    errorMessage.value = error.value.statusMessage as string
   }
 }
 </script>
