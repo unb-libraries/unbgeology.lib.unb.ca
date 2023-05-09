@@ -8,7 +8,10 @@
     </button>
   </section>
   <section class="container mx-auto">
-    <SyTable v-if="users && users.length" :header="header" :rows="users" />
+    <PvTable v-if="users && users.length" :value="users">
+      <PvColumn field="username" header="Username" />
+      <PvColumn field="email" header="Email" />
+    </PvTable>
     <p v-else>
       No users have been added yet.
     </p>
@@ -22,11 +25,6 @@ definePageMeta({
     redirect: true,
   },
 })
-
-const header = {
-  username: `Name`,
-  email: `Email`,
-}
 
 const { data: users } = await useFetch<User[]>(`/api/users`, {
   transform: function (users) {
