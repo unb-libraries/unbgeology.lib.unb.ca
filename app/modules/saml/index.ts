@@ -1,7 +1,10 @@
 import { join } from "path"
+import { writeFileSync } from "fs"
+
 import { defineNuxtModule, createResolver, addPlugin, extendPages } from "nuxt/kit"
 
 import { ValidateInResponseTo } from "@node-saml/node-saml/lib/types"
+import { SAML } from "@node-saml/node-saml"
 
 const {
   SAML_ENTRYPOINT: entryPoint,
@@ -45,8 +48,19 @@ export default defineNuxtModule({
   hooks: {},
   setup(moduleOptions, nuxt) {
     const { resolve } = createResolver(import.meta.url)
+
     addPlugin(resolve(`./runtime/plugins/saml.server`))
     extendPages((pages) => { pages.push(...samlPages) })
+
+    nuxt.hook(`nitro:config`, (nitroConfig) => {
+      const saml = new SAML(moduleOptions)
+      writeFileSync(resolve(`./runtime/public/saml/metadata.xml`), saml.generateServiceProviderMetadata(null))
+
+      nitroConfig.publicAssets ||= []
+      nitroConfig.publicAssets.push({
+        dir: resolve(`./runtime/public`),
+      })
+    })
 
     nuxt.options.runtimeConfig.public.saml = moduleOptions
   },
