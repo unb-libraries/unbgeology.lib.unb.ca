@@ -11,12 +11,12 @@ definePageMeta({
 
       const { method } = event.node.req
       if (method !== `POST`) {
-        return createError({ status: 405, statusText: `HTTP Method not allowed.` })
+        throw createError({ status: 405, statusText: `HTTP Method not allowed.` })
       }
 
       const { SAMLResponse, RelayState } = await readBody(event)
       if (!SAMLResponse) {
-        return createError({ status: 400, statusText: `SAMLResponse is required` })
+        throw createError({ status: 400, statusText: `SAMLResponse is required` })
       }
 
       const { profile } = await $saml.validatePostResponseAsync({ SAMLResponse })
