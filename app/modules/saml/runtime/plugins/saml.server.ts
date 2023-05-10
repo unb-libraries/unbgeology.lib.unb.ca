@@ -1,26 +1,15 @@
-import { ValidateInResponseTo } from "@node-saml/node-saml/lib/types"
 import { SAML } from "@node-saml/node-saml"
+import { ValidateInResponseTo } from "@node-saml/node-saml/lib/types"
 
 export default defineNuxtPlugin(() => {
-  const {
-    entrypoint: entryPoint,
-    assertionConsumerServiceUrl: callbackUrl,
-    issuer,
-    idpCert: cert,
-  } = useRuntimeConfig().public.saml
-
-  const saml = new SAML({
-    entryPoint,
-    callbackUrl,
-    issuer,
-    cert,
+  const samlConfig = {
+    ...useRuntimeConfig().public.saml,
     validateInResponseTo: ValidateInResponseTo.never,
-    disableRequestedAuthnContext: true,
-  })
+  }
 
   return {
     provide: {
-      saml,
+      saml: new SAML(samlConfig),
     },
   }
 })

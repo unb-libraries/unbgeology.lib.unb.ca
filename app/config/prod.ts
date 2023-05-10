@@ -32,14 +32,4 @@ export default {
       autoprefixer: {},
     },
   },
-  runtimeConfig: {
-    public: {
-      saml: {
-        entrypoint: ``,
-        assertionConsumerServiceUrl: ``,
-        issuer: ``,
-        idpCert: ``,
-      },
-    },
-  },
 } as NuxtConfig

@@ -1,6 +1,15 @@
 import { join } from "path"
 import { defineNuxtModule, createResolver, addPlugin, extendPages } from "nuxt/kit"
 
+import { ValidateInResponseTo } from "@node-saml/node-saml/lib/types"
+
+const {
+  SAML_ENTRYPOINT: entryPoint,
+  SAML_ASSERTION_CONSUMER_SERVICE_URL: callbackUrl,
+  SAML_ISSUER: issuer,
+  SAML_IDP_CERT: idpCert,
+} = process.env
+
 const samlPages = [
   {
     name: `login`,
@@ -25,11 +34,20 @@ export default defineNuxtModule({
       nuxt: `^3.0.0`,
     },
   },
-  defaults: {},
+  defaults: {
+    entryPoint: entryPoint || ``,
+    callbackUrl: callbackUrl || ``,
+    issuer: issuer || ``,
+    cert: idpCert || ``,
+    validateInResponseTo: ValidateInResponseTo.never,
+    disableRequestedAuthnContext: true,
+  },
   hooks: {},
   setup(moduleOptions, nuxt) {
     const { resolve } = createResolver(import.meta.url)
     addPlugin(resolve(`./runtime/plugins/saml.server`))
     extendPages((pages) => { pages.push(...samlPages) })
+
+    nuxt.options.runtimeConfig.public.saml = moduleOptions
   },
 })
