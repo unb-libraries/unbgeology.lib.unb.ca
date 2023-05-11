@@ -1,5 +1,5 @@
 import { join } from "path"
-import { writeFileSync } from "fs"
+import { writeFileSync, mkdirSync, existsSync } from "fs"
 
 import { defineNuxtModule, createResolver, addPlugin, extendPages } from "nuxt/kit"
 
@@ -54,6 +54,10 @@ export default defineNuxtModule({
 
     nuxt.hook(`nitro:config`, (nitroConfig) => {
       const saml = new SAML(moduleOptions)
+
+      if (!existsSync(resolve(`./runtime/public/saml`))) {
+        mkdirSync(resolve(`./runtime/public/saml`), { recursive: true })
+      }
       writeFileSync(resolve(`./runtime/public/saml/metadata.xml`), saml.generateServiceProviderMetadata(null))
 
       nitroConfig.publicAssets ||= []
