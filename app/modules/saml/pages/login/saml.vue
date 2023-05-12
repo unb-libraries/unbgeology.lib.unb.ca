@@ -19,11 +19,16 @@ definePageMeta({
         throw createError({ status: 400, statusText: `SAMLResponse is required` })
       }
 
-      const { profile } = await $saml.validatePostResponseAsync({ SAMLResponse })
-      if (profile?.uid) {
+      const response = await $saml.validatePostResponseAsync({ SAMLResponse })
+      const profile = response.profile?.attributes as SAMLProfile
+
+      try {
+        await $fetch(`/api/users/${profile.uid}`)
         event.context.session.uid = profile.uid
+        return sendRedirect(event, RelayState || `/`, 302)
+      } catch (error) {
+        throw createError({ statusCode: 403, statusMessage: `You are not authorized.` })
       }
-      return sendRedirect(event, RelayState || `/`, 302)
     },
   ],
 })
