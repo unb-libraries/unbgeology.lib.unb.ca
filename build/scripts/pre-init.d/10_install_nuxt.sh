@@ -1,2 +1,6 @@
 #!/usr/bin/env sh
-npm ci && npm cache clean --force
+if [[ -f ./package-lock.json ]]; then
+  npm ci && npm cache clean --force
+else
+  npm install
+fi
