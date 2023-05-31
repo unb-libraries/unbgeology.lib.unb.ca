@@ -22,8 +22,8 @@
         <nav class="flex flex-col md:flex md:flex-row md:items-center md:space-x-6" :class="collapsed ? 'hidden' : ''">
           <!-- Menu items here -->
           <button class="bg-black p-3 text-white">
-            <a v-if="!authenticated" class="ml-2 py-2 md:ml-0 md:py-0" href="/login">Login</a>
-            <a v-else class="ml-2 py-2 md:ml-0 md:py-0" href="/logout">Logout</a>
+            <a v-if="!currentUser" class="ml-2 py-2 md:ml-0 md:py-0" href="/login">Login</a>
+            <a v-else class="ml-2 py-2 md:ml-0 md:py-0" href="/logout">Logout {{ currentUser }}</a>
           </button>
         </nav>
       </div>
@@ -33,6 +33,5 @@
 
 <script setup lang="ts">
 const collapsed = ref(true)
-const { session } = await useSession()
-const authenticated = computed(() => session.value?.uid !== undefined)
+const currentUser = await useCurrentUser()
 </script>

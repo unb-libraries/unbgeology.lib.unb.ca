@@ -11,13 +11,8 @@
         <PvInputText v-model="username" placeholder="someone" class="max-w-md" :class="{ 'p-invalid': usernameError }" />
         <small class="text-red-600">{{ usernameError || '&nbsp;' }}</small>
       </p>
-      <p class="my-4 flex flex-col space-y-2">
-        <label for="email">Email</label>
-        <PvInputText id="email" v-model="email" placeholder="someone@unb.ca" class="max-w-md" :class="{ 'p-invalid': emailError }" />
-        <small class="text-red-600">{{ emailError || '&nbsp;' }}</small>
-      </p>
       <p class="space-x-2">
-        <button class="border-2 border-black bg-black p-3 text-white disabled:cursor-not-allowed disabled:border-gray-400 disabled:bg-gray-400" type="submit" :disabled="!(!usernameError && !emailError)">
+        <button class="border-2 border-black bg-black p-3 text-white disabled:cursor-not-allowed disabled:border-gray-400 disabled:bg-gray-400" type="submit" :disabled="usernameError !== undefined">
           Submit
         </button>
         <button class="border-2 border-black p-3">
@@ -49,20 +44,12 @@ const { value: username, errorMessage: usernameError } = useField(`username`, as
   return true
 })
 
-const { value: email, errorMessage: emailError } = useField(`email`, function (email: string) {
-  if (email && !email.match(/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i)) {
-    return `Invalid email address`
-  }
-  return true
-})
-
 const submit = async function () {
-  if (!usernameError.value && !emailError.value) {
+  if (!usernameError.value) {
     const { error } = await useFetch(`/api/users`, {
       method: `POST`,
       body: {
         username: username.value,
-        email: email.value,
       },
     })
 
