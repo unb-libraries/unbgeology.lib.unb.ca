@@ -1,6 +1,4 @@
-import type { NuxtConfig } from "nuxt/config"
-
-export default {
+export default defineNuxtConfig({
   build: {
     transpile: [
       `primevue`,
@@ -13,11 +11,11 @@ export default {
     `primevue/resources/themes/lara-light-blue/theme.css`,
     `primevue/resources/primevue.css`,
   ],
-  modules: [
-    `@sidebase/nuxt-session`,
-    `~/modules/auth/index.ts`,
-    `~/modules/saml/index.ts`,
-  ],
+  // modules: [
+  // `@sidebase/nuxt-session`,
+  // `~/modules/auth/index.ts`,
+  // `~/modules/saml/index.ts`,
+  // ],
   nitro: {
     storage: {
       db: {
@@ -32,4 +30,4 @@ export default {
       autoprefixer: {},
     },
   },
-} as NuxtConfig
+})
