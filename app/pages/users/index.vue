@@ -9,21 +9,21 @@
   </section>
   <section class="container mx-auto">
     <PvTable v-if="users && users.length" :value="users">
-      <PvColumn field="username" header="Username" />
-      <PvColumn field="email" header="Email" />
-      <PvColumn field="active" header="Status">
+      <PvTableColumn field="username" header="Username" />
+      <PvTableColumn field="email" header="Email" />
+      <PvTableColumn field="active" header="Status">
         <template #body="slotProps">
           <span v-if="slotProps.data.active" class="text-green-600">Active</span>
           <span v-else class="text-red-600">Inactive</span>
         </template>
-      </PvColumn>
-      <PvColumn>
+      </PvTableColumn>
+      <PvTableColumn>
         <template #body="slotProps">
           <button class="bg-black p-2 text-sm text-white" @click="toggleStatus(slotProps.data.username, slotProps.data.active)">
             {{ slotProps.data.active ? 'Deactivate' : 'Activate' }}
           </button>
         </template>
-      </PvColumn>
+      </PvTableColumn>
     </PvTable>
     <p v-else>
       No users have been added yet.

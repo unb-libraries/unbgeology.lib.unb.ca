@@ -3,6 +3,7 @@
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev --no-clear",
+    "dev:debug": "node --inspect ./node_modules/nuxt/bin/nuxt.mjs dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
@@ -17,8 +18,9 @@
   },
   "dependencies": {
     "@unb-libraries/nuxt-layer-base": "0.1",
-    "lodash": "^4.17.21",
-    "primevue": "^3.28.0",
-    "vee-validate": "^4.9.1"
-  }
+    "lodash": "^4.17.21"
+  },
+  "workspaces": [
+    "./layers/primevue"
+  ]
 }

@@ -8,7 +8,7 @@
     <form @submit.prevent="submit">
       <p class="my-4 flex flex-col space-y-2">
         <label for="username">Username</label>
-        <PvInputText v-model="username" placeholder="someone" class="max-w-md" :class="{ 'p-invalid': usernameError }" />
+        <PvTextInput v-model="username" placeholder="someone" class="max-w-md" :class="{ 'p-invalid': usernameError }" />
         <small class="text-red-600">{{ usernameError || '&nbsp;' }}</small>
       </p>
       <p class="space-x-2">

@@ -1,15 +1,7 @@
 export default defineNuxtConfig({
-  build: {
-    transpile: [
-      `primevue`,
-    ],
-  },
   buildDir: `/app/html/.build/.nuxt`,
   css: [
     `~/assets/css/main.css`,
-    // TODO: Replace this with our own theme
-    `primevue/resources/themes/lara-light-blue/theme.css`,
-    `primevue/resources/primevue.css`,
   ],
   // modules: [
   // `@sidebase/nuxt-session`,

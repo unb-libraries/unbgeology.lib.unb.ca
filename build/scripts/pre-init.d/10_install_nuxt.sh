@@ -2,5 +2,5 @@
 if [[ -f ./package-lock.json ]]; then
   npm ci && npm cache clean --force
 else
-  npm install
+  npm install --worksapces
 fi

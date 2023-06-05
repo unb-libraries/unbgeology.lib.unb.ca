@@ -9,6 +9,6 @@ export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.vueApp.use(PrimeVue)
 
   nuxtApp.vueApp.component(`PvTable`, DataTable)
-  nuxtApp.vueApp.component(`PvColumn`, Column)
-  nuxtApp.vueApp.component(`PvInputText`, InputText)
+  nuxtApp.vueApp.component(`PvTableColumn`, Column)
+  nuxtApp.vueApp.component(`PvTextInput`, InputText)
 })

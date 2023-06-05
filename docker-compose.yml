@@ -21,7 +21,7 @@ services:
       - ./app/public:/app/html/public
       - ./app/middleware:/app/html/middleware
       - ./app/server:/app/html/server
-      - h3-data:/app/data/db
+      - ./app/layers:/app/html/layers
     env_file:
       - ./env/nuxt.env
     networks:
