@@ -1,9 +1,4 @@
 export default defineNuxtConfig({
-  // session: {
-  //   session: {
-  //     cookieSecure: false,
-  //   },
-  // },
   extends: [
     `../dev`,
   ],

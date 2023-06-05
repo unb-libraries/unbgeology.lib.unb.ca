@@ -32,6 +32,8 @@
 </template>
 
 <script setup lang="ts">
+import { type User } from "~~/types/user"
+
 definePageMeta({
   auth: {
     public: false,

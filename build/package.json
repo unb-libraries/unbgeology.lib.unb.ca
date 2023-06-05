@@ -17,10 +17,10 @@
     "tailwindcss": "^3.3.1"
   },
   "dependencies": {
-    "@unb-libraries/nuxt-layer-base": "0.1",
     "lodash": "^4.17.21"
   },
   "workspaces": [
+    "./layers/base",
     "./layers/primevue"
   ]
 }

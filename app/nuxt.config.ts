@@ -5,6 +5,6 @@ export default defineNuxtConfig({
   extends: [
     `./config/${DEPLOY_ENV}`,
     `./layers/primevue`,
-    `@unb-libraries/nuxt-layer-base`,
+    `./layers/base`,
   ],
 })
