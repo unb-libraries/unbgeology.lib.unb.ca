@@ -4,6 +4,8 @@ interface User {
   phone: string
   lastName: string
   firstName: string
+  created: Date
+  lastLogin: Date
 }
 type UserCollection = {[username: keyof User.username]: User}
 
