@@ -8,3 +8,73 @@ servers:
   - url: https://unbgeology.lib.unb.ca/api
 
 paths:
+components:
+  schemas:
+    Specimen:
+      type: object
+      required:
+        - "name"
+      properties:
+        name:
+          type: string
+          example: Ampyxina sp.
+        description:
+          type: string
+          format: md
+          maxLength: 1000
+        id:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum:
+                  - unb
+                  - minid
+                  - ext
+              id:
+                type: string
+            example:
+              type: unb
+              id: 69-F69
+        dimension:
+          type: object
+          properties:
+            width:
+              type: number
+              title: Width in millimetre.
+              minimum: 0
+            length:
+              type: number
+              title: Length in millimetre.
+              minimum: 0
+        date:
+          type: string
+          format: date
+        age:
+          type: string
+          example: Middle Ordovician
+        pieces:
+          type: number
+          minimum: 1
+        partial:
+          type: boolean
+        composition:
+          type: string
+          example: Calcareous Shale
+        status:
+          type: string
+          enum:
+            - draft
+            - review
+            - published
+          readOnly: true
+          default: draft
+        created:
+          type: number
+          readOnly: true
+        modified:
+          type: number
+          readOnly: true
+
