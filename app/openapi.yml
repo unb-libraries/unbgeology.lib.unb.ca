@@ -1,0 +1,10 @@
+openapi: 3.0.2
+info:
+  title: UNB Earth Sciences Collection API
+  description: The UNB Eartch Science Collection provides access to specimen metadata curated by the UNB Eartch Science Centre.
+  version: '0.1'
+
+servers:
+  - url: https://unbgeology.lib.unb.ca/api
+
+paths:
