@@ -8,6 +8,43 @@ servers:
   - url: https://unbgeology.lib.unb.ca/api
 
 paths:
+  /specimens:
+    get:
+      parameters:
+        - name: start
+          in: query
+          schema:
+            type: number
+            minimum: 1
+            default: 1
+        - name: count
+          in: query
+          schema:
+            type: number
+            minimum: 1
+            maximum: 500
+            default: 50
+      responses:
+        200:
+          description: Successfully retrieved specimen objects.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Specimen"
+        406:
+          description: Requested format not supported.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errorDetails:
+                    type: string
+        500:
+          description: Server error.
+
 components:
   schemas:
     Specimen:
