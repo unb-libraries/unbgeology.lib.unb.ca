@@ -102,6 +102,29 @@ paths:
           description: Permission required to retrieve specimen object.
         500:
           description: Server error.
+    
+    put:
+      responses:
+        200:
+          description: Successfully updated specimen object.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Specimen"
+        400:
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        404:
+          description: Specimen object not found.
+        401:
+          description: Authentication required to update specimen object.
+        403:
+          description: Permission required to update specimen object.
+        500:
+          description: Server error.
                   
 components:
   schemas:
