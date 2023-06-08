@@ -11,6 +11,11 @@ paths:
   /specimens:
     get:
       parameters:
+        - name: sessionId
+          in: cookie
+          required: true
+          schema:
+            type: string
         - name: start
           in: query
           schema:
@@ -43,6 +48,12 @@ paths:
           description: Server error.
 
     post:
+      parameters:
+        - name: sessionId
+          in: cookie
+          required: true
+          schema:
+            type: string
       requestBody:
         required: true
         content:
@@ -74,6 +85,10 @@ paths:
   /specimens/{id}:
     get:
       parameters:
+        - name: sessionId
+          in: cookie
+          schema:
+            type: string
         - name: only
           in: query
           schema:
@@ -104,6 +119,12 @@ paths:
           description: Server error.
     
     put:
+      parameters:
+        - name: sessionId
+          in: cookie
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: Successfully updated specimen object.
