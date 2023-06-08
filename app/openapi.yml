@@ -70,7 +70,38 @@ paths:
           description: Permission required to create specimen object.
         500:
           description: Server error.
-              
+
+  /specimens/{id}:
+    get:
+      parameters:
+        - name: only
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          example: name,description
+      responses:
+        200:
+          description: Successfully retrieved specimen object.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Specimen"
+        400:
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        404:
+          description: Specimen object not found.
+        401:
+          description: Authentication required to retrieve specimen object.
+        403:
+          description: Permission required to retrieve specimen object.
+        500:
+          description: Server error.
                   
 components:
   schemas:
@@ -79,13 +110,6 @@ components:
       required:
         - "name"
       properties:
-        name:
-          type: string
-          example: Ampyxina sp.
-        description:
-          type: string
-          format: md
-          maxLength: 1000
         id:
           type: array
           items:
@@ -102,6 +126,13 @@ components:
             example:
               type: unb
               id: 69-F69
+        name:
+          type: string
+          example: Ampyxina sp.
+        description:
+          type: string
+          format: md
+          maxLength: 1000
         dimension:
           type: object
           properties:
