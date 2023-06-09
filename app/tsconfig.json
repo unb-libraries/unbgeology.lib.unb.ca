@@ -4,10 +4,12 @@
   "compilerOptions": {
     "paths": {
       "~~/types": [
+        "./types",
         "./layers/base/types",
         "./layers/primevue/types",
       ],
       "~~/types/*": [
+        "./types/*",
         "./layers/base/types/*",
         "./layers/primevue/types/*",
       ]
