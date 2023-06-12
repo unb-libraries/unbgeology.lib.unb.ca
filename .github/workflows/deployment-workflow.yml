@@ -14,6 +14,7 @@ jobs:
       image-name: ghcr.io/unb-libraries/unbgeology.lib.unb.ca
       k8s-deployment-name: 'unbgeology-lib-unb-ca'
       push-branches: '["dev", "prod"]'
+      postman-test-url: "http://local-unbgeology.lib.unb.ca:3118/api"
     secrets:
       KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_DATA }}
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
