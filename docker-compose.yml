@@ -1,4 +1,17 @@
 services:
+  mongodb-unbgeology-lib-unb-ca:
+    image: mongo:6.0
+    container_name: mongo.unbgeology.lib.unb.ca
+    restart: unless-stopped
+    expose:
+      - 27017
+    volumes:
+      - ./.data/db:/data/db
+    env_file:
+      - ./env/mongo.env
+    networks:
+      - unbgeology.lib.unb.ca
+  
   unbgeology-lib-unb-ca:
     build:
       context: .
