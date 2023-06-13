@@ -25,26 +25,37 @@ dockworker:
       license: MIT
       holder: University of New Brunswick Libraries
     shell:
-      shell: /bin/sh
-    workflows:
-      vcs:
-        type: github
-        owner: unb-libraries
-        name: unbgeology.lib.unb.ca
-      jira:
-        project_keys:
-          - ROCKS
-      image:
-        parent: ghcr.io/unb-libraries/node:18.x
-        repositories:
-          - name: GitHub
-            push_branches:
-              - dev
-              - prod
-            image_name: ghcr.io/unb-libraries/unbgeology.lib.unb.ca
-      local:
-        deployments:
-          - name: unbgeology.lib.unb.ca
-        additional_hostnames:
-          - unbgeology.lib.unb.ca
-          - unbgeology.lib.unb.ca.local
+      path: /bin/sh
+  endpoints:
+    env:
+      - dev
+      - prod
+    deployments:
+      unbgeology-lib-unb-ca:
+        default: true
+        managed: true
+        name: unbgeology-lib-unb-ca
+  workflows:
+    vcs:
+      type: github
+      owner: unb-libraries
+      name: unbgeology.lib.unb.ca
+    jira:
+      project_keys:
+        - ROCKS
+    ci:
+      actions:
+        - source: dockworker-drupal
+          type: deployment-workflow
+    image:
+      parent: ghcr.io/unb-libraries/node:18.x
+      repositories:
+        - name: GitHub
+          push_branches:
+            - dev
+            - prod
+          image_name: ghcr.io/unb-libraries/unbgeology.lib.unb.ca
+    local:
+      additional_hostnames:
+        - unbgeology.lib.unb.ca
+        - unbgeology.lib.unb.ca.local

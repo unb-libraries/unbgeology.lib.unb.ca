@@ -1,5 +1,5 @@
 services:
-  unbgeology.lib.unb.ca:
+  unbgeology-lib-unb-ca:
     build:
       context: .
     restart: unless-stopped
