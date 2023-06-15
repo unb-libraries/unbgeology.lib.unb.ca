@@ -1,21 +1,27 @@
+import { type Entity } from "./entity"
+
+enum SpecimenStatus {
+  DRAFT = `draft`,
+  REVIEW = `review`,
+  PUBLISHED = `published`,
+}
+
 interface Dimension {
   width: number
   height: number
 }
 
-interface Specimen {
-  id: string
+interface Specimen extends Entity {
+  objectId: string
   name: string
-  description: string
-  dimension: Dimension
+  description?: string
+  dimensions?: Dimension
   date?: Date
-  age: string
-  pieces: number
-  partial: boolean
-  composition: string
-  status: `draft` | `review` | `published`
-  created: number
-  modified: number
+  age?: string
+  pieces?: number
+  partial?: boolean
+  composition?: string
+  status: SpecimenStatus
 }
 
-export { Specimen, Dimension }
+export { Specimen, Dimension, SpecimenStatus }
