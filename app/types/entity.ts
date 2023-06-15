@@ -4,8 +4,8 @@ const Types = Schema.Types
 
 interface Entity {
   readonly _id: string
-  readonly created: number
-  readonly modified: number
+  readonly created: Date
+  readonly updated: Date
 }
 
 type EntitySchema<E extends Entity> = {
