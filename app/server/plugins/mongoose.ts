@@ -1,3 +1,4 @@
+import Specimen from "entity-types/Specimen"
 import { type NitroApp } from "nitropack"
 import mongoose from "mongoose"
 
@@ -15,4 +16,7 @@ export default defineNitroPlugin(async (nitroApp: NitroApp) => {
     authSource: MONGODB_AUTH_DB,
   })
   console.info(`Connected to MongoDB.`)
+
+  await Specimen.init()
+  console.info(`Initialized Specimen collection.`)
 })
