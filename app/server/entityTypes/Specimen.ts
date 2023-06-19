@@ -1,5 +1,29 @@
-import { EntityFieldTypes } from "types/entity"
-import { Specimen, SpecimenStatus } from "types/specimen"
+import { Entity, EntityFieldTypes } from "types/entity"
+import { defineEntityType } from "~/server/utils/mongoose"
+
+export enum Status {
+  DRAFT = `draft`,
+  REVIEW = `review`,
+  PUBLISHED = `published`,
+}
+
+export interface Dimension {
+  width: number
+  height: number
+}
+
+export interface Specimen extends Entity {
+  objectId: string
+  name: string
+  description?: string
+  dimensions?: Dimension
+  date?: Date
+  age?: string
+  pieces?: number
+  partial?: boolean
+  composition?: string
+  status: Status
+}
 
 export default defineEntityType<Specimen>(`Specimen`, {
   objectId: {
@@ -15,7 +39,7 @@ export default defineEntityType<Specimen>(`Specimen`, {
     type: EntityFieldTypes.String,
     required: false,
   },
-  dimension: {
+  dimensions: {
     width: {
       type: EntityFieldTypes.Number,
       required: false,
@@ -48,7 +72,7 @@ export default defineEntityType<Specimen>(`Specimen`, {
   status: {
     type: EntityFieldTypes.String,
     required: true,
-    enum: SpecimenStatus,
-    default: SpecimenStatus.DRAFT,
+    enum: Status,
+    default: Status.DRAFT,
   },
 })

@@ -1,4 +1,4 @@
-import { type SchemaTypeOptions, Schema, type Types } from "mongoose"
+import { Schema, type Types } from "mongoose"
 
 const EntityFieldTypes = Schema.Types
 
@@ -8,8 +8,4 @@ interface Entity {
   readonly updated: Date
 }
 
-type EntitySchema<E extends Entity> = {
-  [Property in keyof E as Exclude<Property, keyof Entity>]: SchemaTypeOptions<Property>
-}
-
-export { Entity, EntitySchema, EntityFieldTypes }
+export { Entity, EntityFieldTypes }
