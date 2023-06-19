@@ -1,5 +1,5 @@
-import { EntityFieldTypes } from "~~/types/entity"
-import { SpecimenStatus, type Specimen } from "~~/types/specimen"
+import { EntityFieldTypes } from "types/entity"
+import { Specimen, SpecimenStatus } from "types/specimen"
 
 export default defineEntityType<Specimen>(`Specimen`, {
   objectId: {
