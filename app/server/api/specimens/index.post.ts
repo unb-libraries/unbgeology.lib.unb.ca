@@ -1,44 +1,34 @@
-import { type Specimen } from "~~/types/specimen"
+import type { Specimen as ISpecimen } from "entity-types/Specimen"
+import Specimen from "entity-types/Specimen"
 
 export default defineEventHandler(async (event) => {
-  const storage = useStorage(`db`)
+  const body: ISpecimen = await readBody(event)
+  const { objectId } = body
 
-  const {
-    name,
-    id,
-    description,
-    age,
-    composition,
-    dimension,
-    partial,
-    pieces,
-  } = await readBody(event)
+  try {
+    await Specimen.create(body)
+    setResponseStatus(event, 201, `Created specimen object.`)
+    return await Specimen
+      .findOne({ objectId })
+      .select({ __v: false, _id: false })
+      .exec()
+  } catch (err: any) {
+    // Duplicate key
+    if (err.code && err.code === 11000) {
+      const [field, value] = Object.entries(err.keyValue)[0]
+      throw createError({ statusCode: 400, statusMessage: `Specimen object with ${field} "${value}" already exists.` })
+    }
 
-  if (!id) {
-    throw createError({ statusCode: 400, statusMessage: `Missing parameter "id" is required.` })
-  } else if (!name) {
-    throw createError({ statusCode: 400, statusMessage: `Missing parameter "name" is required.` })
+    // Missing parameters
+    if (err.errors) {
+      type ValidationError = {kind: string, path: string}
+      const fields = Object
+        .values<ValidationError>(err.errors)
+        .reduce((fields: string[], e) => e.kind === `required` ? [...fields, e.path] : fields, [])
+      throw createError({ statusCode: 400, statusMessage: `Missing fields ${fields.join(`, `)} are required.` })
+    }
+
+    console.error(err)
+    throw createError({ statusCode: 500, statusMessage: `Unexpected server error.` })
   }
-
-  const now = new Date().valueOf()
-  const specimen: Specimen = {
-    name,
-    id,
-    description,
-    age,
-    composition,
-    dimension,
-    partial,
-    pieces,
-    status: `draft`,
-    created: now,
-    modified: now,
-  }
-
-  const specimens = await storage.getItem(`specimens`) || []
-  specimens.push(specimen)
-  await storage.setItem(`specimens`, specimens)
-
-  setResponseStatus(event, 201)
-  return specimen
 })

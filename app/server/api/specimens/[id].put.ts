@@ -1,18 +1,17 @@
-import { type Specimen } from "~~/types/specimen"
+import Specimen from "entity-types/Specimen"
 
 export default defineEventHandler(async (event) => {
-  const storage = useStorage(`db`)
-  const id = event.context.params!.id
+  const update = await readBody(event)
+  const objectId = event.context.params!.id
 
-  const specimens = (await storage.getItem(`specimens`) || []) as Specimen[]
-  const index = specimens.findIndex(s => s.id === id)
-  const specimen = specimens[index]
-
-  if (specimen) {
-    const properties: { [prop: string]: any} = await readBody(event)
-    specimens[index] = { ...specimen, ...properties }
-    await storage.setItem(`specimens`, specimens)
+  try {
+    const specimen = await Specimen.findOneAndUpdate({ objectId }, update, {
+      returnDocument: `after`,
+      runValidators: true,
+    }).select({ __v: false, _id: false })
+    return specimen
+  } catch (err) {
+    console.log(err)
+    throw createError({ statusCode: 500, statusMessage: `An unexpected error occurred.` })
   }
-
-  return specimen
 })

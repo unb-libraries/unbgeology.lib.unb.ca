@@ -1,13 +1,15 @@
-import { type Specimen } from "~~/types/specimen"
+import Specimen from "entity-types/Specimen"
 
 export default defineEventHandler(async (event) => {
-  const storage = useStorage(`db`)
-  const id = event.context.params!.id
-
-  const specimens = (await storage.getItem(`specimens`) || []) as Specimen[]
-  const specimen = specimens.find(s => s.id === id)
+  const objectId = event.context.params!.id
+  const specimen = await Specimen
+    .findOne({ objectId })
+    .select({ __v: false, _id: false })
+    .exec()
 
   if (specimen) {
     return specimen
   }
+
+  throw createError({ statusCode: 404, statusMessage: `Specimen object "${objectId}" not found.` })
 })
