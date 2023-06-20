@@ -1,5 +1,5 @@
 import { Entity, EntityFieldTypes } from "types/entity"
-import { defineEntityType } from "~/server/utils/mongoose"
+import { defineEntityType, defineEmbeddedEntityType } from "~/server/utils/mongoose"
 
 export enum Status {
   DRAFT = `draft`,
@@ -9,7 +9,7 @@ export enum Status {
 
 export interface Dimension {
   width: number
-  height: number
+  length: number
 }
 
 export interface Place {
@@ -49,14 +49,17 @@ export default defineEntityType<Specimen>(`Specimen`, {
     required: false,
   },
   dimensions: {
-    width: {
-      type: EntityFieldTypes.Number,
-      required: false,
-    },
-    length: {
-      type: EntityFieldTypes.Number,
-      required: false,
-    },
+    type: defineEmbeddedEntityType<Dimension>({
+      width: {
+        type: EntityFieldTypes.Number,
+        required: true,
+      },
+      length: {
+        type: EntityFieldTypes.Number,
+        required: true,
+      },
+    }),
+    required: false,
   },
   date: {
     type: EntityFieldTypes.Date,
@@ -67,14 +70,17 @@ export default defineEntityType<Specimen>(`Specimen`, {
     required: false,
   },
   origin: {
-    latitude: {
-      type: EntityFieldTypes.Number,
-      required: false,
-    },
-    longitude: {
-      type: EntityFieldTypes.Number,
-      required: false,
-    },
+    type: defineEmbeddedEntityType<Place>({
+      latitude: {
+        type: EntityFieldTypes.Number,
+        required: true,
+      },
+      longitude: {
+        type: EntityFieldTypes.Number,
+        required: true,
+      },
+    }),
+    required: false,
   },
   pieces: {
     type: EntityFieldTypes.Number,
