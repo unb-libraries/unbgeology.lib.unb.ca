@@ -12,6 +12,14 @@ export interface Dimension {
   height: number
 }
 
+export interface Place {
+  latitude: number
+  longitude: number
+  accuracy: number
+  name?: string
+  description?: string
+}
+
 export interface Specimen extends Entity {
   objectId: string
   name: string
@@ -19,6 +27,7 @@ export interface Specimen extends Entity {
   dimensions?: Dimension
   date?: Date
   age?: string
+  origin?: Place
   pieces?: number
   partial?: boolean
   composition?: string
@@ -56,6 +65,16 @@ export default defineEntityType<Specimen>(`Specimen`, {
   age: {
     type: EntityFieldTypes.String,
     required: false,
+  },
+  origin: {
+    latitude: {
+      type: EntityFieldTypes.Number,
+      required: false,
+    },
+    longitude: {
+      type: EntityFieldTypes.Number,
+      required: false,
+    },
   },
   pieces: {
     type: EntityFieldTypes.Number,
