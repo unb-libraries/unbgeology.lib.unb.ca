@@ -13,3 +13,9 @@ export const defineEntityType = function<E extends Entity> (name: string, defini
 
   return defineModel<E>(name, schema)
 }
+
+export const defineEmbeddedEntityType = function<E extends object> (definition: SchemaDefinition<E>) {
+  return new Schema<E>(definition, {
+    _id: false,
+  })
+}
