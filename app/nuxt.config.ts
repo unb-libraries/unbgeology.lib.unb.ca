@@ -7,6 +7,7 @@ export default defineNuxtConfig({
   extends: [
     `./config/${DEPLOY_ENV}`,
     `./layers/primevue`,
+    `./layers/mongo`,
     `./layers/base`,
   ],
   alias: {

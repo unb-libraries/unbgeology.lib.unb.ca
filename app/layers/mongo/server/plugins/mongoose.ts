@@ -1,19 +1,16 @@
 import Specimen from "entity-types/Specimen"
-import { type NitroApp } from "nitropack"
 import mongoose from "mongoose"
-
-const {
-  MONGODB_URI,
-  MONGODB_AUTH_DB,
-} = process.env
+import { type NitroApp } from "nitropack"
 
 export default defineNitroPlugin(async (nitroApp: NitroApp) => {
-  if (!MONGODB_URI) {
+  const { uri, authDb } = useRuntimeConfig().mongodb
+
+  if (!uri) {
     throw new Error(`No MongoDB connection string provided.`)
   }
 
-  await mongoose.connect(MONGODB_URI, {
-    authSource: MONGODB_AUTH_DB,
+  await mongoose.connect(uri, {
+    authSource: authDb,
   })
   console.info(`Connected to MongoDB.`)
 

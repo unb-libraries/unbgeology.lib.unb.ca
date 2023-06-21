@@ -1,5 +1,5 @@
+import { defineEmbeddedEntityType, defineEntityType } from "layers/mongo/server/utils/mongoose"
 import { Entity, EntityFieldTypes } from "types/entity"
-import { defineEntityType, defineEmbeddedEntityType } from "~/server/utils/mongoose"
 
 export enum Status {
   DRAFT = `draft`,
