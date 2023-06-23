@@ -18,6 +18,12 @@
       <li v-if="specimen.dimensions">
         <span>Dimensions:</span><span>{{ specimen.dimensions.width }}mm x {{ specimen.dimensions.length }}mm</span>
       </li>
+      <li v-if="specimen.origin">
+        <LeafletMap
+          class="h-80"
+          :center="[specimen.origin.latitude, specimen.origin.longitude]"
+        />
+      </li>
     </ul>
   </section>
 </template>
