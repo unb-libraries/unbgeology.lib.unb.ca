@@ -22,6 +22,7 @@
         <LeafletMap
           class="h-80"
           :center="[specimen.origin.latitude, specimen.origin.longitude]"
+          :markers="[{ center: [specimen.origin.latitude, specimen.origin.longitude], name: specimen.name}]"
         />
       </li>
     </ul>
