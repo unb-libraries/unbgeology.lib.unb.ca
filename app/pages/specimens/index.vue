@@ -5,6 +5,15 @@
     </h1>
   </section>
   <section class="container mx-auto">
+    <LeafletMap v-if="markers.length" class="h-80" :center="[markers[0].latitude, markers[0].longitude]">
+      <LeafletMarker
+        v-for="marker in markers"
+        :key="marker.id"
+        :name="marker.name"
+        :center="[marker.latitude, marker.longitude]"
+        :accuracy="marker.accuracy"
+      />
+    </LeafletMap>
     <PvTable v-if="specimens && specimens.length" :value="specimens">
       <PvTableColumn field="objectId" header="ID">
         <template #body="slotProps">
@@ -32,5 +41,15 @@
 
 <script setup lang="ts">
 import type { Specimen } from "entity-types/Specimen"
+
 const { data: specimens } = await useFetch<Specimen[]>(`/api/specimens`)
+const markers = computed(() => (specimens.value ?? [])
+  .filter(specimen => specimen.origin !== undefined)
+  .map(specimen => ({
+    id: specimen.objectId,
+    name: specimen.name,
+    latitude: specimen.origin!.latitude,
+    longitude: specimen.origin!.longitude,
+    accuracy: specimen.origin!.accuracy,
+  })))
 </script>
