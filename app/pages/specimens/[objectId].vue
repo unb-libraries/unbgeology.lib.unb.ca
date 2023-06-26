@@ -19,11 +19,13 @@
         <span>Dimensions:</span><span>{{ specimen.dimensions.width }}mm x {{ specimen.dimensions.length }}mm</span>
       </li>
       <li v-if="specimen.origin">
-        <LeafletMap
-          class="h-80"
-          :center="[specimen.origin.latitude, specimen.origin.longitude]"
-          :markers="[{ center: [specimen.origin.latitude, specimen.origin.longitude], name: specimen.name}]"
-        />
+        <LeafletMap class="h-80" :center="[specimen.origin.latitude, specimen.origin.longitude]">
+          <LeafletMarker
+            :name="specimen.name"
+            :center="[specimen.origin.latitude, specimen.origin.longitude]"
+            :accuracy="specimen.origin.accuracy"
+          />
+        </LeafletMap>
       </li>
     </ul>
   </section>
