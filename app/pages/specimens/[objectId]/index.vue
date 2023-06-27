@@ -27,6 +27,12 @@
           />
         </LeafletMap>
       </li>
+      <li>
+        <span>Created:</span><span>{{ specimen.created }}</span>
+      </li>
+      <li>
+        <span>Updated:</span><span>{{ specimen.updated }}</span>
+      </li>
     </ul>
   </section>
 </template>
