@@ -11,6 +11,8 @@
           <LeafletMarker
             :name="specimen.name"
             :center="[latitude || 0, longitude || 0]"
+            :draggable="true"
+            @dragged="onMarkerDragged"
           />
         </LeafletMap>
       </div>
@@ -25,6 +27,7 @@
 
 <script setup lang="ts">
 import type { Specimen } from 'entity-types/Specimen'
+import type { Coordinate } from '~/types/leaflet'
 
 const objectId = useRoute().params.objectId
 const { data: specimen, error } = await useFetch<Specimen>(`/api/specimens/${objectId}`)
@@ -34,6 +37,12 @@ if (error.value) {
 
 const latitude = ref(specimen.value?.origin?.latitude)
 const longitude = ref(specimen.value?.origin?.longitude)
+
+const onMarkerDragged = function (coord: Coordinate) {
+  const [newLat, newLong] = coord
+  latitude.value = newLat
+  longitude.value = newLong
+}
 
 const onSubmit = function () {
   const { error } = useFetch(`/api/specimens/${objectId}`, {
