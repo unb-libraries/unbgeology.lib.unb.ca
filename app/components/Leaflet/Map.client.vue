@@ -26,7 +26,10 @@ provide(`onMapReady`, onMapReady)
 
 onUpdated(async () => {
   const L = await import(`leaflet`)
+  const [centerLat, centerLong] = props.center
+
   map = map || L.map(`map`)
+  map.setView([centerLat, centerLong], map.getZoom() || 6)
   while (callbacks.length > 0) {
     const callback = callbacks.pop()!
     callback(map, L)
@@ -34,9 +37,6 @@ onUpdated(async () => {
 })
 
 onMapReady((map, { tileLayer: setTileLayer }) => {
-  const [centerLat, centerLong] = props.center
-
-  map.setView([centerLat, centerLong], 6)
   map.on(`click`, (e) => {
     const { lat, lng } = e.latlng
     emit(`click`, [lat, lng])
