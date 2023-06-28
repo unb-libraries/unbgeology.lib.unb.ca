@@ -7,7 +7,8 @@
   <section v-if="specimen" class="container mx-auto">
     <form @submit.prevent="onSubmit">
       <div>
-        <LeafletMap class="h-80" :center="[latitude || 0, longitude || 0]" @click="onMapClick">
+        <LeafletMap class="h-80" :center="[latitude || 0, longitude || 0]" @click.stop="onMapClick">
+          <LeafletSearch @item-select="onSearchItemSelect" />
           <LeafletMarker
             v-if="latitude !== undefined && longitude !== undefined"
             :name="specimen.name"
@@ -29,6 +30,7 @@
 <script setup lang="ts">
 import type { Specimen } from 'entity-types/Specimen'
 import type { Coordinate } from '~/types/leaflet'
+import type { Location } from '~/types/nominatim'
 
 const objectId = useRoute().params.objectId
 const { data: specimen, error } = await useFetch<Specimen>(`/api/specimens/${objectId}`)
@@ -43,6 +45,12 @@ const onMarkerDragged = function (coord: Coordinate) {
   const [newLat, newLong] = coord
   latitude.value = newLat
   longitude.value = newLong
+}
+
+const onSearchItemSelect = function (item: Location) {
+  const { lat, lon } = item
+  latitude.value = lat
+  longitude.value = lon
 }
 
 const onMapClick = function (coord: Coordinate) {
