@@ -7,10 +7,11 @@
   <section v-if="specimen" class="container mx-auto">
     <form @submit.prevent="onSubmit">
       <div>
-        <LeafletMap class="h-80" :center="[latitude || 0, longitude || 0]">
+        <LeafletMap class="h-80" :center="[latitude || 0, longitude || 0]" @click="onMapClick">
           <LeafletMarker
+            v-if="latitude !== undefined && longitude !== undefined"
             :name="specimen.name"
-            :center="[latitude || 0, longitude || 0]"
+            :center="[latitude, longitude]"
             :draggable="true"
             @dragged="onMarkerDragged"
           />
@@ -39,6 +40,12 @@ const latitude = ref(specimen.value?.origin?.latitude)
 const longitude = ref(specimen.value?.origin?.longitude)
 
 const onMarkerDragged = function (coord: Coordinate) {
+  const [newLat, newLong] = coord
+  latitude.value = newLat
+  longitude.value = newLong
+}
+
+const onMapClick = function (coord: Coordinate) {
   const [newLat, newLong] = coord
   latitude.value = newLat
   longitude.value = newLong

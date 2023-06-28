@@ -5,29 +5,43 @@
 </template>
 
 <script setup lang="ts">
+import { Map } from "leaflet"
 import type { Coordinate, Callback } from "~/types/leaflet"
 
 const props = defineProps<{
   center: Coordinate,
 }>()
 
+const emit = defineEmits<{
+  click: [coord: Coordinate]
+}>()
+
 const callbacks: Callback[] = []
 const onMapReady = function (callback: Callback) {
   callbacks.push(callback)
 }
+
+let map: Map
 provide(`onMapReady`, onMapReady)
 
-onMounted(async () => {
-  const Leaflet = await import(`leaflet`)
-  const map = Leaflet.map(`map`)
-  callbacks.forEach((callback) => {
-    callback(map, Leaflet)
-  })
+onUpdated(async () => {
+  const L = await import(`leaflet`)
+  map = map || L.map(`map`)
+  while (callbacks.length > 0) {
+    const callback = callbacks.pop()!
+    callback(map, L)
+  }
 })
 
 onMapReady((map, { tileLayer: setTileLayer }) => {
   const [centerLat, centerLong] = props.center
+
   map.setView([centerLat, centerLong], 6)
+  map.on(`click`, (e) => {
+    const { lat, lng } = e.latlng
+    emit(`click`, [lat, lng])
+  })
+
   setTileLayer(`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png`, {
     attribution: `&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>`,
   }).addTo(map)
