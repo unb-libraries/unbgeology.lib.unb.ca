@@ -5,6 +5,7 @@
 <!-- esline-enable -->
 
 <script setup lang="ts">
+import type { Marker } from "leaflet"
 import type { Coordinate, MapInjection } from '~/types/leaflet'
 
 const props = withDefaults(defineProps<{
@@ -22,9 +23,11 @@ const emit = defineEmits<{
   dragged: [coord: Coordinate],
 }>()
 
+let marker: Marker
+
 const onMapReady = inject(`onMapReady`) as MapInjection
 onMapReady((map, { marker: createMarker, circle: createCircle }) => {
-  const marker = createMarker(props.center, {
+  marker = createMarker(props.center, {
     draggable: props.draggable,
     autoPan: true,
   })
@@ -50,6 +53,12 @@ onMapReady((map, { marker: createMarker, circle: createCircle }) => {
       fillOpacity: 0.3,
       radius: props.accuracy,
     }).addTo(map)
+  }
+})
+
+onUpdated(() => {
+  if (marker) {
+    marker.setLatLng(props.center)
   }
 })
 </script>
