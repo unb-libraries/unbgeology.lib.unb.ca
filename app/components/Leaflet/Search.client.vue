@@ -5,6 +5,7 @@
     class="leaflet-control"
     :suggestions="locations"
     option-label="display_name"
+    @click.stop
     @complete="searchLocation"
     @item-select="$emit('itemSelect', $event.value)"
   />

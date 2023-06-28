@@ -7,7 +7,7 @@
   <section v-if="specimen" class="container mx-auto">
     <form @submit.prevent="onSubmit">
       <div>
-        <LeafletMap class="h-80" :center="[latitude || 0, longitude || 0]" @click.stop="onMapClick">
+        <LeafletMap class="h-80" :center="[latitude || 0, longitude || 0]" @click="onMapClick">
           <LeafletSearch @item-select="onSearchItemSelect" />
           <LeafletMarker
             v-if="latitude !== undefined && longitude !== undefined"
