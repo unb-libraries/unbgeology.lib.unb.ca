@@ -1,7 +1,7 @@
 services:
   mongodb-unbgeology-lib-unb-ca:
     image: mongo:6.0
-    container_name: mongo.unbgeology.lib.unb.ca
+    container_name: mongo-unbgeology-lib-unb-ca
     restart: unless-stopped
     expose:
       - 27017
@@ -10,24 +10,22 @@ services:
     env_file:
       - ./env/mongo.env
     networks:
-      - unbgeology.lib.unb.ca
+      - unbgeology-lib-unb-ca
   
   unbgeology-lib-unb-ca:
     build:
       context: .
+    depends_on:
+      - mongodb-unbgeology-lib-unb-ca
+      - idp-saml-unbgeology-lib-unb-ca
     restart: unless-stopped
-    container_name: unbgeology.lib.unb.ca
-    expose:
-      - 80
-      - 9229
-      - 31180
+    container_name: unbgeology-lib-unb-ca
     volumes:
       - ./app/node_modules:/app/html/node_modules
       - ./app/.build:/app/html/.build
       - ./app/nuxt.config.ts:/app/html/nuxt.config.ts
       - ./app/config:/app/html/config
       - ./app/components:/app/html/components
-      - ./app/layouts:/app/html/layouts
       - ./app/modules:/app/html/modules
       - ./app/pages:/app/html/pages
       - ./app/plugins:/app/html/plugins
@@ -36,34 +34,28 @@ services:
       - ./app/server:/app/html/server
       - ./app/types:/app/html/types
       - ./app/layers:/app/html/layers
-      - ./app/.build/.data:/app/.data
+      - ./build/package.json:/app/html/package.json
+      - ./build/package-lock.json:/app/html/package-lock.json
     env_file:
       - ./env/nuxt.env
     networks:
-      - unbgeology.lib.unb.ca
+      - unbgeology-lib-unb-ca
     ports:
       - 3118:80
       - 31180:31180
-      # - 9229:9229
 
   idp-saml-unbgeology-lib-unb-ca:
-    image: kristophjunge/test-saml-idp
-    container_name: idp.unbgeology.lib.unb.ca
+    image: simplesamlphp
+    container_name: idp-unbgeology-lib-unb-ca
     restart: unless-stopped
-    expose:
-      - 8080
-      - 8443
     env_file:
       - ./env/saml.env
     networks:
-      - unbgeology.lib.unb.ca
+      - unbgeology-lib-unb-ca
     ports:
       - 6118:8080
       - 61180:8443
 
 networks:
-  unbgeology.lib.unb.ca:
-    name: unbgeology.lib.unb.ca
-
-volumes:
-  h3-data:
+  unbgeology-lib-unb-ca:
+    name: unbgeology-lib-unb-ca
