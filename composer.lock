@@ -1297,16 +1297,16 @@
         },
         {
             "name": "monolog/monolog",
-            "version": "3.3.1",
+            "version": "3.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/monolog.git",
-                "reference": "9b5daeaffce5b926cac47923798bba91059e60e2"
+                "reference": "e2392369686d420ca32df3803de28b5d6f76867d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/9b5daeaffce5b926cac47923798bba91059e60e2",
-                "reference": "9b5daeaffce5b926cac47923798bba91059e60e2",
+                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/e2392369686d420ca32df3803de28b5d6f76867d",
+                "reference": "e2392369686d420ca32df3803de28b5d6f76867d",
                 "shasum": ""
             },
             "require": {
@@ -1321,7 +1321,7 @@
                 "doctrine/couchdb": "~1.0@dev",
                 "elasticsearch/elasticsearch": "^7 || ^8",
                 "ext-json": "*",
-                "graylog2/gelf-php": "^1.4.2 || ^2@dev",
+                "graylog2/gelf-php": "^1.4.2 || ^2.0",
                 "guzzlehttp/guzzle": "^7.4.5",
                 "guzzlehttp/psr7": "^2.2",
                 "mongodb/mongodb": "^1.8",
@@ -1329,7 +1329,7 @@
                 "phpstan/phpstan": "^1.9",
                 "phpstan/phpstan-deprecation-rules": "^1.0",
                 "phpstan/phpstan-strict-rules": "^1.4",
-                "phpunit/phpunit": "^9.5.26",
+                "phpunit/phpunit": "^10.1",
                 "predis/predis": "^1.1 || ^2",
                 "ruflin/elastica": "^7",
                 "symfony/mailer": "^5.4 || ^6",
@@ -1382,7 +1382,7 @@
             ],
             "support": {
                 "issues": "https://github.com/Seldaek/monolog/issues",
-                "source": "https://github.com/Seldaek/monolog/tree/3.3.1"
+                "source": "https://github.com/Seldaek/monolog/tree/3.4.0"
             },
             "funding": [
                 {
@@ -1394,7 +1394,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-02-06T13:46:10+00:00"
+            "time": "2023-06-21T08:46:11+00:00"
         },
         {
             "name": "netresearch/jsonmapper",
@@ -1754,16 +1754,16 @@
         },
         {
             "name": "php-http/discovery",
-            "version": "1.18.1",
+            "version": "1.19.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-http/discovery.git",
-                "reference": "f258b3a1d16acb7b21f3b42d7a2494a733365237"
+                "reference": "1856a119a0b0ba8da8b5c33c080aa7af8fac25b4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-http/discovery/zipball/f258b3a1d16acb7b21f3b42d7a2494a733365237",
-                "reference": "f258b3a1d16acb7b21f3b42d7a2494a733365237",
+                "url": "https://api.github.com/repos/php-http/discovery/zipball/1856a119a0b0ba8da8b5c33c080aa7af8fac25b4",
+                "reference": "1856a119a0b0ba8da8b5c33c080aa7af8fac25b4",
                 "shasum": ""
             },
             "require": {
@@ -1826,9 +1826,9 @@
             ],
             "support": {
                 "issues": "https://github.com/php-http/discovery/issues",
-                "source": "https://github.com/php-http/discovery/tree/1.18.1"
+                "source": "https://github.com/php-http/discovery/tree/1.19.0"
             },
-            "time": "2023-05-17T08:53:10+00:00"
+            "time": "2023-06-19T08:45:36+00:00"
         },
         {
             "name": "php-http/httplug",
@@ -2897,16 +2897,16 @@
         },
         {
             "name": "symfony/filesystem",
-            "version": "v6.3.0",
+            "version": "v6.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/filesystem.git",
-                "reference": "97b698e1d77d356304def77a8d0cd73090b359ea"
+                "reference": "edd36776956f2a6fcf577edb5b05eb0e3bdc52ae"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/filesystem/zipball/97b698e1d77d356304def77a8d0cd73090b359ea",
-                "reference": "97b698e1d77d356304def77a8d0cd73090b359ea",
+                "url": "https://api.github.com/repos/symfony/filesystem/zipball/edd36776956f2a6fcf577edb5b05eb0e3bdc52ae",
+                "reference": "edd36776956f2a6fcf577edb5b05eb0e3bdc52ae",
                 "shasum": ""
             },
             "require": {
@@ -2940,7 +2940,7 @@
             "description": "Provides basic utilities for the filesystem",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/filesystem/tree/v6.3.0"
+                "source": "https://github.com/symfony/filesystem/tree/v6.3.1"
             },
             "funding": [
                 {
@@ -2956,7 +2956,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-05-30T17:12:32+00:00"
+            "time": "2023-06-01T08:30:39+00:00"
         },
         {
             "name": "symfony/finder",
@@ -3024,16 +3024,16 @@
         },
         {
             "name": "symfony/http-client",
-            "version": "v6.3.0",
+            "version": "v6.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/http-client.git",
-                "reference": "b2f892c91e4e02a939edddeb7ef452522d10a424"
+                "reference": "1c828a06aef2f5eeba42026dfc532d4fc5406123"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/http-client/zipball/b2f892c91e4e02a939edddeb7ef452522d10a424",
-                "reference": "b2f892c91e4e02a939edddeb7ef452522d10a424",
+                "url": "https://api.github.com/repos/symfony/http-client/zipball/1c828a06aef2f5eeba42026dfc532d4fc5406123",
+                "reference": "1c828a06aef2f5eeba42026dfc532d4fc5406123",
                 "shasum": ""
             },
             "require": {
@@ -3096,7 +3096,7 @@
                 "http"
             ],
             "support": {
-                "source": "https://github.com/symfony/http-client/tree/v6.3.0"
+                "source": "https://github.com/symfony/http-client/tree/v6.3.1"
             },
             "funding": [
                 {
@@ -3112,7 +3112,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-05-12T08:49:48+00:00"
+            "time": "2023-06-24T11:51:27+00:00"
         },
         {
             "name": "symfony/http-client-contracts",
@@ -4128,12 +4128,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/unb-libraries/dockworker.git",
-                "reference": "fc85c1e578c71e0c5e29cc4452df3c86ac456515"
+                "reference": "01e51f2c454605f35e314bf9d993270543e25683"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/unb-libraries/dockworker/zipball/fc85c1e578c71e0c5e29cc4452df3c86ac456515",
-                "reference": "fc85c1e578c71e0c5e29cc4452df3c86ac456515",
+                "url": "https://api.github.com/repos/unb-libraries/dockworker/zipball/01e51f2c454605f35e314bf9d993270543e25683",
+                "reference": "01e51f2c454605f35e314bf9d993270543e25683",
                 "shasum": ""
             },
             "require": {
@@ -4154,6 +4154,10 @@
                 "php": "^8.1",
                 "symfony/http-client": "^6.2",
                 "twig/twig": "^3"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^1",
+                "squizlabs/php_codesniffer": "^3"
             },
             "bin": [
                 "bin/dockworker"
@@ -4179,7 +4183,7 @@
                 "issues": "https://github.com/unb-libraries/dockworker/issues",
                 "source": "https://github.com/unb-libraries/dockworker/tree/6.x"
             },
-            "time": "2023-06-13T14:10:15+00:00"
+            "time": "2023-06-30T17:11:27+00:00"
         },
         {
             "name": "unb-libraries/dockworker-application",
@@ -4187,16 +4191,20 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/unb-libraries/dockworker-application.git",
-                "reference": "35d75a51e0fe2a6a59a89c85e694eb2a86c780da"
+                "reference": "8ff1efc55d52ddf001e2597ddc1cbdca802e08b8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/unb-libraries/dockworker-application/zipball/35d75a51e0fe2a6a59a89c85e694eb2a86c780da",
-                "reference": "35d75a51e0fe2a6a59a89c85e694eb2a86c780da",
+                "url": "https://api.github.com/repos/unb-libraries/dockworker-application/zipball/8ff1efc55d52ddf001e2597ddc1cbdca802e08b8",
+                "reference": "8ff1efc55d52ddf001e2597ddc1cbdca802e08b8",
                 "shasum": ""
             },
             "require": {
                 "unb-libraries/dockworker": "6.x-dev"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^1",
+                "squizlabs/php_codesniffer": "^3"
             },
             "default-branch": true,
             "type": "library",
@@ -4220,7 +4228,7 @@
                 "issues": "https://github.com/unb-libraries/dockworker-application/issues",
                 "source": "https://github.com/unb-libraries/dockworker-application/tree/6.x"
             },
-            "time": "2023-06-13T10:58:53+00:00"
+            "time": "2023-06-15T17:16:29+00:00"
         },
         {
             "name": "unb-libraries/dockworker-daemon",
@@ -4228,16 +4236,20 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/unb-libraries/dockworker-daemon.git",
-                "reference": "b5da34e0cf2ba97eb932535e63f741f7e006dd80"
+                "reference": "0f49e1ab99ae205b4283a73db308eac98d57af60"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/unb-libraries/dockworker-daemon/zipball/b5da34e0cf2ba97eb932535e63f741f7e006dd80",
-                "reference": "b5da34e0cf2ba97eb932535e63f741f7e006dd80",
+                "url": "https://api.github.com/repos/unb-libraries/dockworker-daemon/zipball/0f49e1ab99ae205b4283a73db308eac98d57af60",
+                "reference": "0f49e1ab99ae205b4283a73db308eac98d57af60",
                 "shasum": ""
             },
             "require": {
                 "unb-libraries/dockworker-application": "6.x-dev"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^1",
+                "squizlabs/php_codesniffer": "^3"
             },
             "default-branch": true,
             "type": "library",
@@ -4261,7 +4273,7 @@
                 "issues": "https://github.com/unb-libraries/dockworker-daemon/issues",
                 "source": "https://github.com/unb-libraries/dockworker-daemon/tree/6.x"
             },
-            "time": "2023-06-13T11:05:55+00:00"
+            "time": "2023-06-16T12:34:28+00:00"
         },
         {
             "name": "unb-libraries/dockworker-node",
@@ -4269,16 +4281,20 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/unb-libraries/dockworker-node.git",
-                "reference": "e8b3cdeddb5a1ddee4063e5ca415ecf651fecc70"
+                "reference": "a78cc2414ee17d7750a9cd9169d12c38db728426"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/unb-libraries/dockworker-node/zipball/e8b3cdeddb5a1ddee4063e5ca415ecf651fecc70",
-                "reference": "e8b3cdeddb5a1ddee4063e5ca415ecf651fecc70",
+                "url": "https://api.github.com/repos/unb-libraries/dockworker-node/zipball/a78cc2414ee17d7750a9cd9169d12c38db728426",
+                "reference": "a78cc2414ee17d7750a9cd9169d12c38db728426",
                 "shasum": ""
             },
             "require": {
                 "unb-libraries/dockworker-daemon": "6.x-dev"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^1",
+                "squizlabs/php_codesniffer": "^3"
             },
             "default-branch": true,
             "type": "library",
@@ -4302,7 +4318,7 @@
                 "issues": "https://github.com/unb-libraries/dockworker-node/issues",
                 "source": "https://github.com/unb-libraries/dockworker-node/tree/6.x"
             },
-            "time": "2023-06-13T16:47:14+00:00"
+            "time": "2023-06-23T13:58:25+00:00"
         }
     ],
     "aliases": [],
