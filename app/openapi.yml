@@ -92,7 +92,7 @@ paths:
           required: true
           schema:
             type: string
-          example: 69-F69
+          example: UNB-001
         - name: sessionId
           in: cookie
           schema:
@@ -133,7 +133,7 @@ paths:
           required: true
           schema:
             type: string
-          example: 69-F69
+          example: UNB-001
         - name: sessionId
           in: cookie
           required: true
@@ -171,14 +171,15 @@ components:
       properties:
         id:
           type: string
-          example: 69-F69
+          example: UNB-001
         name:
           type: string
-          example: Ampyxina sp.
+          example: Metaconglomerate
         description:
           type: string
           format: md
           maxLength: 1000
+          example: __*Metaconglomerate*__ is a rock type which originated from conglomerate after undergoing metamorphism.
         dimension:
           type: object
           properties:
@@ -186,15 +187,19 @@ components:
               type: number
               title: Width in millimetre.
               minimum: 0
+              example: 29
             length:
               type: number
               title: Length in millimetre.
               minimum: 0
+              example: 78
         date:
           type: string
           format: date
+          example: 100 Million Years
         age:
           type: string
+          example: pre-Cambrian
         origin:
           type: object
           required:
@@ -230,11 +235,14 @@ components:
         pieces:
           type: number
           minimum: 1
+          default: 1
+          example: 1
         partial:
           type: boolean
+          default: false
         composition:
           type: string
-          example: Calcareous Shale
+          example: Granitic
         status:
           type: string
           enum:
@@ -245,10 +253,14 @@ components:
           default: draft
         created:
           type: number
+          description: UNIX timestamp of record's creation.
           readOnly: true
+          example: 1687276202
         modified:
           type: number
+          description: UNIX timestamp of records's most recent modification.
           readOnly: true
+          example: 1687276202
 
 
     Error:
