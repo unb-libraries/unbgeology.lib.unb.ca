@@ -20,7 +20,9 @@
           </div>
         </div>
         <nav class="flex flex-col md:flex md:flex-row md:items-center md:space-x-6" :class="collapsed ? 'hidden' : ''">
-          <!-- Menu items here -->
+          <NuxtLink to="/specimens">
+            Specimens
+          </NuxtLink>
           <button class="bg-black p-3 text-white">
             <a v-if="!currentUser" class="ml-2 py-2 md:ml-0 md:py-0" href="/login">Login</a>
             <a v-else class="ml-2 py-2 md:ml-0 md:py-0" href="/logout">Logout {{ currentUser }}</a>
