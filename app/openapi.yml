@@ -195,7 +195,38 @@ components:
           format: date
         age:
           type: string
-          example: Middle Ordovician
+        origin:
+          type: object
+          required:
+            - latitude
+            - longitude
+          properties:
+            latitude:
+              type: number
+              description: Latitude in Decimal Degrees.
+              minimum: -90
+              maximum: 90
+              example: 45.54654574420113
+            longitude:
+              type: number
+              description: Longitude in Decimal Degrees.
+              minimum: -180
+              maximum: 180
+              example: -65.01963261586597
+            accuracy:
+              type: number
+              description: Accuracy of the location in metres.
+              minimum: 0
+              default: 0
+              example: 50
+            name:
+              type: string
+              description: Resolved geographical location name.
+              example: Point Wolfe, Fundy National Park, New Brunswick, Canada
+            description:
+              type: string
+              description: Additional location details, e.g. name of rock formation.
+              example: The Hopewell Conglomerate
         pieces:
           type: number
           minimum: 1
