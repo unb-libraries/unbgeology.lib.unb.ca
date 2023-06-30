@@ -11,11 +11,6 @@ paths:
   /specimens:
     get:
       parameters:
-        - name: sessionId
-          in: cookie
-          required: true
-          schema:
-            type: string
         - name: start
           in: query
           schema:
@@ -50,12 +45,8 @@ paths:
           description: Server error.
 
     post:
-      parameters:
-        - name: sessionId
-          in: cookie
-          required: true
-          schema:
-            type: string
+      security:
+        - Session: []
       requestBody:
         required: true
         content:
@@ -93,10 +84,6 @@ paths:
           schema:
             type: string
           example: UNB-001
-        - name: sessionId
-          in: cookie
-          schema:
-            type: string
         - name: only
           in: query
           schema:
@@ -134,11 +121,9 @@ paths:
           schema:
             type: string
           example: UNB-001
-        - name: sessionId
-          in: cookie
-          required: true
-          schema:
-            type: string
+      security:
+        - Session: []
+      
       responses:
         200:
           description: Successfully updated specimen object.
@@ -268,3 +253,9 @@ components:
       properties:
         errorDetails:
           type: string
+
+  securitySchemes:
+    Session:
+      type: apiKey
+      in: cookie
+      name: sessionId
