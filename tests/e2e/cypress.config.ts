@@ -11,7 +11,7 @@ export default defineConfig({
     fixturesFolder: `${e2eRoot}/fixtures`,
     screenshotsFolder: `${e2eRoot}/screenshots`,
     specPattern: `${e2eRoot}/specs/**/*.cy.ts`,
-    supportFile: `${e2eRoot}/support/index.ts`,
+    supportFile: `${e2eRoot}/support/e2e.ts`,
     videosFolder: `${e2eRoot}/videos`,
   },
 })
