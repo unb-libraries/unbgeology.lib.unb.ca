@@ -5,8 +5,8 @@
     "lint:fix": "eslint . --fix",
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "vitest run -c ./tests/unit/vitest.config.ts",
-    "test:e2e": "cypress run -C ./tests/e2e/cypress.config.ts",
-    "test:e2e:headless": "cypress open -C ./tests/e2e/cypress.config.ts"
+    "test:e2e": "cypress open -C ./tests/e2e/cypress.config.ts",
+    "test:e2e:headless": "cypress run -C ./tests/e2e/cypress.config.ts"
   },
   "devDependencies": {
     "@nuxtjs/eslint-config-typescript": "^12.0.0",
