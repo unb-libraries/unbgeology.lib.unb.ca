@@ -16,7 +16,7 @@ dockworker:
     framework:
       name: Nuxt
       version: 3
-      startup_finished_marker: '99_zz_notify_user_URI'
+      startup_finished_marker: '99_startup_sequence_complete'
       endpoint:
         name: http
         port: 80
