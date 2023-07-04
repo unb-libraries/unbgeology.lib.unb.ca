@@ -16,7 +16,7 @@ dockworker:
     framework:
       name: Nuxt
       version: 3
-      startup_finished_marker: '99_startup_sequence_complete'
+      startup_finished_marker: 'Connected to MongoDB'
       endpoint:
         name: http
         port: 80
