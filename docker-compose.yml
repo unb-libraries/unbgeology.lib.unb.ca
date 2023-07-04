@@ -45,7 +45,7 @@ services:
       - 31180:31180
 
   idp-saml-unbgeology-lib-unb-ca:
-    image: simplesamlphp
+    image: ghcr.io/unb-libraries/simplesamlphp:1.x
     container_name: idp-unbgeology-lib-unb-ca
     restart: unless-stopped
     env_file:
