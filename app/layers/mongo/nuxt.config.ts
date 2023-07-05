@@ -2,10 +2,12 @@
 
 export default defineNuxtConfig({
   buildDir: `./.build/.nuxt`,
+  nitro: {
   runtimeConfig: {
     mongodb: {
       uri: ``,
       authDb: `admin`,
+      },
     },
   },
 })
