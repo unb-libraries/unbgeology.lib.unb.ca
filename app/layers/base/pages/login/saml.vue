@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { sendRedirect, readBody, createError, useSession, deleteCookie } from "h3"
-import { type SAMLProfile } from "~~/types/saml"
+import type { SAMLProfile } from "~/types/saml"
 
 definePageMeta({
   middleware: [
@@ -20,17 +20,16 @@ definePageMeta({
     async function () {
       if (process.client) { return }
 
-      const event = useRequestEvent()
       const { $saml } = useNuxtApp()
+      const event = useRequestEvent()
 
       const { SAMLResponse, RelayState = `/` } = await readBody(event)
       if (!SAMLResponse) {
         throw createError({ status: 400, statusText: `SAMLResponse is required` })
       }
 
-      const { profile } = await $saml.validatePostResponseAsync({ SAMLResponse })
       event.context.saml = {
-        profile: profile?.attributes,
+        profile: await $saml.getProfile(SAMLResponse),
         RelayState,
       }
     },

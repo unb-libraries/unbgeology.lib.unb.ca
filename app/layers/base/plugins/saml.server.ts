@@ -1,10 +1,19 @@
-import { SAML } from "@node-saml/node-saml"
+import {
+  initSaml as init,
+  createSamlMetadata as createMetadata,
+  getSamlAuthUrl as getAuthUrl,
+  getSamlProfile as getProfile,
+} from "../saml/saml"
 
 export default defineNuxtPlugin(() => {
-  const saml = new SAML(useRuntimeConfig().public.saml)
   return {
     provide: {
-      saml,
+      saml: {
+        init,
+        createMetadata,
+        getAuthUrl,
+        getProfile,
+      },
     },
   }
 })

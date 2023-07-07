@@ -1,5 +1,5 @@
-import type { RouteLocationNormalized, RouteMeta } from "vue-router"
 import { sendRedirect } from "h3"
+import type { RouteLocationNormalized, RouteMeta } from "vue-router"
 
 interface AuthMeta {
   public: boolean

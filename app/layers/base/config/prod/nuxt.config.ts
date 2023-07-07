@@ -1,7 +1,6 @@
 import { mkdirSync, writeFileSync } from "fs"
-import { SAML } from "@node-saml/node-saml"
-import { ValidateInResponseTo } from "@node-saml/node-saml/lib/types"
 import { createResolver } from "nuxt/kit"
+import { createSamlMetadata, initSaml } from "../../saml/saml"
 
 const {
   APP_ROOT,
@@ -19,10 +18,8 @@ export default defineNuxtConfig({
       const samlDir = resolve(`saml`)
       mkdirSync(samlDir, { recursive: true })
 
-      const saml = new SAML(nitro.options.runtimeConfig.public.saml)
-      writeFileSync(
-        resolve(`saml`, `metadata.xml`),
-        saml.generateServiceProviderMetadata(null),
+      initSaml(nitro.options.runtimeConfig.public.saml)
+      writeFileSync(resolve(`saml`, `metadata.xml`), createSamlMetadata(),
       )
 
       nitro.options.publicAssets.push({
@@ -40,7 +37,7 @@ export default defineNuxtConfig({
           callbackUrl: NUXT_PUBLIC_SAML_CALLBACK_URL || ``,
           issuer: NUXT_PUBLIC_SAML_ISSUER || ``,
           cert: NUXT_PUBLIC_SAML_CERT || ``,
-          validateInResponseTo: ValidateInResponseTo.never,
+          validateInResponseTo: `never`,
           disableRequestedAuthnContext: true,
         },
       },

@@ -7,11 +7,10 @@ definePageMeta({
     async function (from: RouteLocationNormalized, to: RouteLocationNormalized) {
       if (process.client) { return }
 
-      const event = useRequestEvent()
-      const { host } = event.node.req.headers
-      // const { method } = event.node.req
       const { $saml } = useNuxtApp()
+      const event = useRequestEvent()
 
+      const { host } = event.node.req.headers
       const redirect = from.query.redirect as string
       const params = redirect
         ? {
@@ -20,7 +19,9 @@ definePageMeta({
             },
           }
         : {}
-      const samlUrl = await $saml.getAuthorizeUrlAsync(``, host, params)
+
+      $saml.init(useRuntimeConfig().public.saml)
+      const samlUrl = await $saml.getAuthUrl(host!, params)
       return sendRedirect(event, samlUrl, 302)
     },
   ],
