@@ -22,11 +22,11 @@
     </div>
     <div class="my-8 flex flex-col">
       <label class="mb-2 text-lg font-bold" for="age">Age</label>
-      <PvInputSelect v-model="age" name="age" :options="['very hold', 'fairly young']" />
+      <PvInputSelect v-model="age" name="age" :options="['Cretaceous', 'Eocene', 'Ordovician', 'Holocene', 'Precambrian']" />
     </div>
     <div class="my-8 flex flex-col">
       <label class="mb-2 text-lg font-bold" for="composition">Composition</label>
-      <PvInputSelect v-model="composition" name="composition" :options="['Solid', 'Rather fuzzy']" />
+      <PvInputSelect v-model="composition" name="composition" :options="['Calcite', 'Citin', 'Feldspar', 'Mica', 'Quartz', 'Resin', 'Volcanic Glass']" />
     </div>
     <div class="my-8 flex flex-col">
       <label class="mb-2 text-lg font-bold" for="width">Width</label>
