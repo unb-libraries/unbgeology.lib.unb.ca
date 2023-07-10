@@ -1,15 +1,16 @@
-import type { Specimen as ISpecimen } from "entity-types/Specimen"
 import Specimen from "entity-types/Specimen"
+import type { Specimen as ISpecimen } from "entity-types/Specimen"
 
 export default defineEventHandler(async (event) => {
-  const body: ISpecimen = await readBody(event)
-  const { objectId } = body
+  const body = await readBody<Partial<ISpecimen>>(event)
+  const count = await Specimen.estimatedDocumentCount()
+  body.objectId = `UNB-${`${count + 1}`.padStart(3, `0`)}`
 
   try {
     await Specimen.create(body)
     setResponseStatus(event, 201, `Created specimen object.`)
     return await Specimen
-      .findOne({ objectId })
+      .findOne({ objectId: body.objectId })
       .select({ __v: false, _id: false })
       .exec()
   } catch (err: any) {
