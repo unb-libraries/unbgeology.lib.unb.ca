@@ -1,11 +1,18 @@
 <template>
-  <section class="container mx-auto my-4">
+  <section class="container mx-auto my-4 flex flex-row justify-between">
     <h1 class="text-4xl">
       Specimens
     </h1>
+    <button class="bg-black p-3 text-white">
+      <a href="/specimens/create">New specimen</a>
+    </button>
   </section>
-  <section class="container mx-auto">
-    <LeafletMap v-if="markers.length" class="h-80" :center="[markers[0].latitude, markers[0].longitude]">
+  <section class="container mx-auto mb-16 mt-4">
+    <LeafletMap
+      v-if="markers.length"
+      class="h-80"
+      :center="[markers[0].latitude, markers[0].longitude]"
+    >
       <LeafletMarker
         v-for="marker in markers"
         :key="marker.id"
