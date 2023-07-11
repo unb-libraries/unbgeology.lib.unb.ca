@@ -26,7 +26,9 @@ const emit = defineEmits<{
 let marker: Marker
 
 const onMapReady = inject(`onMapReady`) as MapInjection
-onMapReady((map, { marker: createMarker, circle: createCircle }) => {
+onMapReady((map, { marker: createMarker, circle: createCircle, Icon }) => {
+  Icon.Default.imagePath = `/leaflet/img/`
+
   marker = createMarker(props.center, {
     draggable: props.draggable,
     autoPan: true,

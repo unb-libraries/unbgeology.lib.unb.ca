@@ -36,7 +36,7 @@ onUpdated(async () => {
   }
 })
 
-onMapReady((map, { tileLayer: setTileLayer, Icon }) => {
+onMapReady((map, { tileLayer: setTileLayer }) => {
   map.on(`click`, (e) => {
     const { lat, lng } = e.latlng
     emit(`click`, [lat, lng])
@@ -45,7 +45,5 @@ onMapReady((map, { tileLayer: setTileLayer, Icon }) => {
   setTileLayer(`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png`, {
     attribution: `&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>`,
   }).addTo(map)
-
-  Icon.Default.imagePath = `/leaflet/img/`
 })
 </script>
