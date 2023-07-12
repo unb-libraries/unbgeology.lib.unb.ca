@@ -8,6 +8,208 @@ servers:
   - url: http://local-unbgeology.lib.unb.ca:3118/api
 
 paths:
+  /classifications:
+    get:
+      responses:
+        200:
+          description: Successfully retrieved category objects.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - $ref: "#/components/schemas/Classification"
+                    - type: object
+                      properties:
+                        super:
+                          type: array
+                          items:
+                            $ref: "#/components/schemas/Classification"
+                          example:
+                            - name: Rock
+                              slug: rock
+                            - name: Igneous Rock
+                              slug: igneous-rock
+
+        204:
+          description: No classification objects found.
+        406:
+          description: Requested format not supported.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        500:
+          description: Server error.
+    post:
+      security:
+        - Session: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/Classification"
+                - type: object
+                  properties:
+                    super:
+                      type: string
+                      description: Name or slug of an existing classification.
+                      example: "igneous-rock"
+      responses:
+        201:
+          description: Successfully created classification object.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Classification"
+                  - type: object
+                    properties:
+                      super:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Classification"
+                        example:
+                          - name: Rock
+                            slug: rock
+                          - name: Igneous Rock
+                            slug: igneous-rock
+        # 202:
+        #   description: Accepted batch.
+        400:
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        401:
+          description: Authentication required to create specimen object.
+        403:
+          description: Permission required to create specimen object.
+        500:
+          description: Server error.
+
+  /classifications/{slug}:
+    get:
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: quartz-diorite
+      responses:
+        200:
+          description: Successfully retrieved classification object.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Classification"
+                  - type: object
+                    properties:
+                      super:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Classification"
+                        example:
+                          - name: Rock
+                            slug: rock
+                          - name: Igneous Rock
+                            slug: 'igneous-rock'
+        400:
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        404:
+          description: Classification object not found.
+        500:
+          description: Server error.
+
+    put:
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: quartz-diorite
+      security:
+        - Session: []
+      
+      responses:
+        200:
+          description: Successfully updated classification object.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - type: object
+                    properties:
+                      name:
+                        type: string
+                  - type: object
+                    properties:
+                      slug:
+                        type: string
+                  - type: object
+                    properties:
+                      super:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Classification"
+                example:
+                  name: Quartz monzonite
+        400:
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        404:
+          description: Classification object not found.
+        401:
+          description: Authentication required to update classification object.
+        403:
+          description: Permission required to update classification object.
+        500:
+          description: Server error.
+
+    delete:
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: quartz-diorite
+      security:
+        - Session: []
+      
+      responses:
+        204:
+          description: Classification object deleted.
+        400:
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        404:
+          description: Classification object not found.
+        401:
+          description: Authentication required to update classification object.
+        403:
+          description: Permission required to update classification object.
+        500:
+          description: Server error.
+
+
   /specimens:
     get:
       parameters:
@@ -148,6 +350,19 @@ paths:
                   
 components:
   schemas:
+    Classification:
+      type: object
+      required:
+        - name
+        - slug
+      properties:
+        name:
+          type: string
+          example: Quartz diorite
+        slug:
+          type: string
+          example: quartz-diorite
+
     Specimen:
       type: object
       required:
