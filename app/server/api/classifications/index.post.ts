@@ -2,44 +2,23 @@ import Classification, { type Classification as IClassification } from "entity-t
 
 export default defineEventHandler(async (event) => {
   const { name, slug, super: parentNameOrSlug } = await readBody(event)
-  const classification: Partial<IClassification> = { name, slug }
 
   try {
-    if (parentNameOrSlug) {
-      const parent = await Classification
+    await Classification.create({
+      name,
+      slug,
+      super: await Classification
         .findOne<IClassification>({ $or: [{ name: parentNameOrSlug }, { slug: parentNameOrSlug }] })
-        .exec()
-      if (parent) {
-        classification.super = parent
-        classification.subClassOf = [parent, ...parent.subClassOf]
-      }
-    }
+        .exec(),
+    })
 
-    await Classification.create(classification)
-    return await Classification
-      .aggregate()
-      .match({ slug })
-      .lookup({
-        from: `classifications`,
-        localField: `subClassOf`,
-        foreignField: `_id`,
-        as: `superiors`,
-      })
-      .project({
-        name: 1,
-        slug: 1,
-        super: {
-          $map: {
-            input: `$superiors`,
-            as: `superior`,
-            in: {
-              name: `$$superior.name`,
-              slug: `$$superior.slug`,
-            },
-          },
-        },
-        _id: 0,
-      })
+    const classification = await Classification
+      .findOne({ slug })
+      .populate({ path: `super`, select: { _id: 0, name: 1, slug: 1 } })
+      .select({ _id: 0, __v: 0 })
+
+    setResponseStatus(event, 201, `Classification object created.`)
+    return classification
   } catch (err: any) {
     // Duplicate key
     if (err.code && err.code === 11000) {

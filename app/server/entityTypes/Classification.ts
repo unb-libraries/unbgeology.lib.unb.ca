@@ -3,8 +3,7 @@ import { type Entity, EntityFieldTypes } from "~/types/entity"
 export interface Classification extends Entity {
   name: string
   slug: string
-  super: Classification
-  subClassOf: Classification[]
+  super?: Classification
 }
 
 export default defineEntityType(`Classification`, {
@@ -19,11 +18,6 @@ export default defineEntityType(`Classification`, {
   },
   super: {
     type: EntityFieldTypes.ObjectId,
-    ref: `Classification`,
-    required: false,
-  },
-  subClassOf: {
-    type: [EntityFieldTypes.ObjectId],
     ref: `Classification`,
     required: false,
   },

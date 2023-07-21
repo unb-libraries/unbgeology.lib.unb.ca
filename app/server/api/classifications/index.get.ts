@@ -2,26 +2,7 @@ import Classification from "entity-types/Classification"
 
 export default defineEventHandler(async (event) => {
   return await Classification
-    .aggregate()
-    .lookup({
-      from: `classifications`,
-      localField: `subClassOf`,
-      foreignField: `_id`,
-      as: `superiors`,
-    })
-    .project({
-      name: 1,
-      slug: 1,
-      super: {
-        $map: {
-          input: `$superiors`,
-          as: `superior`,
-          in: {
-            name: `$$superior.name`,
-            slug: `$$superior.slug`,
-          },
-        },
-      },
-      _id: 0,
-    })
+    .find()
+    .populate({ path: `super`, select: { _id: 0, name: 1, slug: 1 } })
+    .select({ _id: 0, __v: 0 })
 })
