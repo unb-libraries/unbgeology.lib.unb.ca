@@ -1,0 +1,26 @@
+[
+  {
+      "name": "Rock",
+      "slug": "rock"
+  },
+  {
+      "name": "Igneous Rock",
+      "slug": "igneous-rock",
+      "super": "rock"
+  },
+  {
+      "name": "Diorite",
+      "slug": "diorite",
+      "super": "igneous-rock"
+  },
+  {
+      "name": "Rhyolite",
+      "slug": "rhyolite",
+      "super": "igneous-rock"
+  },
+  {
+      "name": "Pantellerite",
+      "slug": "pantellerite",
+      "super": "rhyolite"
+  }
+]
