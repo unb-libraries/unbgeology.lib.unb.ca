@@ -2,8 +2,9 @@ import { readFiles } from "h3-formidable"
 import { type FieldsAndFiles } from "h3-formidable"
 
 export default defineEventHandler(async (event) => {
+  const { uploadDir } = useRuntimeConfig()
   const upload = await readFiles(event, {
-    uploadDir: `/app/files`,
+    uploadDir,
     keepExtensions: true,
   })
 

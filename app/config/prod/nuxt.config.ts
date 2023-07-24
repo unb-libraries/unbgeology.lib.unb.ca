@@ -1,3 +1,5 @@
+import { existsSync, mkdirSync } from "fs"
+
 export default defineNuxtConfig({
   buildDir: `/app/html/.build/.nuxt`,
   css: [
@@ -5,6 +7,14 @@ export default defineNuxtConfig({
     // REFACTOR: only load this on pages with maps
     `~/node_modules/leaflet/dist/leaflet.css`,
   ],
+  hooks: {
+    'nitro:config': (nitroConfig) => {
+      const { uploadDir } = nitroConfig.runtimeConfig!
+      if (!existsSync(uploadDir)) {
+        mkdirSync(uploadDir, { recursive: true })
+      }
+    },
+  },
   nitro: {
     publicAssets: [
       {
@@ -12,6 +22,9 @@ export default defineNuxtConfig({
         dir: `../node_modules/leaflet/dist/images`,
       },
     ],
+    runtimeConfig: {
+      uploadDir: `/app/files/`,
+    },
   },
   postcss: {
     plugins: {
