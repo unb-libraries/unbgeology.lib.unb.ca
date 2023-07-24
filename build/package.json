@@ -18,6 +18,7 @@
     "tailwindcss": "^3.3.1"
   },
   "dependencies": {
+    "h3-formidable": "^0.3.8",
     "leaflet": "^1.9.4",
     "lodash": "^4.17.21"
   },
