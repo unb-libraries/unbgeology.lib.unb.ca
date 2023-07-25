@@ -2,7 +2,7 @@ import Classification, { type Classification as IClassification } from "~/server
 
 export default defineEventHandler(async (event) => {
   const { slug } = event.context.params!
-  const { name: newName, slug: newSlug, super: newSuper } = await readBody(event)
+  const { super: newSuper, ...update } = await readBody(event)
 
   const classification: IClassification | undefined = await Classification.findOne({ slug })
   if (!classification) {
@@ -12,31 +12,14 @@ export default defineEventHandler(async (event) => {
   if (newSuper !== undefined && newSuper !== ``) {
     const parent: IClassification | undefined = await Classification.findOne({ $or: [{ name: newSuper }, { slug: newSuper }] })
     if (!parent) {
-      throw createError({ statusCode: 400, statusMessage: `Cannot attach to non-existing classification object ${newSlug}.` })
+      throw createError({ statusCode: 400, statusMessage: `Cannot attach to non-existing classification object ${newSuper}.` })
     }
-
-    await Classification.updateOne({ slug }, {
-      name: newName || classification.name,
-      slug: newSlug || classification.slug,
-      super: parent,
-    })
+    update.super = parent
   } else if (newSuper === ``) {
-    await Classification.updateOne({ slug }, {
-      name: newName || classification.name,
-      slug: newSlug || classification.slug,
-      $unset: { super: `` },
-    })
-    await Classification.updateOne({ slug }, {
-      name: newName || classification.name,
-      slug: newSlug || classification.slug,
-    })
-  } else {
-    await Classification.updateOne({ slug }, {
-      name: newName || classification.name,
-      slug: newSlug || classification.slug,
-    })
+    update.$unset = { super: `` }
   }
 
+  await Classification.updateOne({ slug }, update)
   return await Classification
     .findOne({ slug })
     .populate({ path: `super`, select: { _id: 0, name: 1, slug: 1 } })
