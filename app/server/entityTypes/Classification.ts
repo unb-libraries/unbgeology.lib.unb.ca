@@ -4,6 +4,7 @@ export interface Classification extends Entity {
   name: string
   slug: string
   super?: Classification
+  imageFilename?: String,
 }
 
 export default defineEntityType(`Classification`, {
@@ -19,6 +20,10 @@ export default defineEntityType(`Classification`, {
   super: {
     type: EntityFieldTypes.ObjectId,
     ref: `Classification`,
+    required: false,
+  },
+  imageFilename: {
+    type: EntityFieldTypes.String,
     required: false,
   },
 })
