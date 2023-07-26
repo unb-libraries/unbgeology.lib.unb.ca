@@ -38,28 +38,28 @@ describe(`Classifications API`, () => {
     const classifications: Classification[] = await response.json()
 
     expect(response.status).toBe(200)
-    fixture.forEach((item) => {
-      const classification = findClassification(classifications, item)
-      expect(classification.name).toBe(item.name)
-      expect(classification.slug).toBe(item.slug)
-      if (item.super) {
-        const parent = findByProperty(`slug`, item.super)
-        const superClass = findClassification(classifications, parent!)
-        expect(classification.super).toMatchObject({
-          name: superClass.name,
-          slug: superClass.slug,
-        })
-      }
+    expect(classifications).toHaveLength(fixture.length)
+    classifications.forEach((classification) => {
+      const item = fixture.find(item => item.slug === classification.slug)
+      expect(classification).toMatchObject({
+        name: item?.name,
+        slug: item?.slug,
+        links: {
+          self: `/api/classifications/${item?.slug}`,
+          super: `/api/classifications/${item?.slug}/super`,
+        },
+      })
     })
   })
 
   test(`POST /api/classifications`, async () => {
+    const leaf = findLeaf()
     const response = await request(`/api/classifications`, {
       method: `POST`,
       body: JSON.stringify({
         name: `Napoleonite`,
         slug: `napoleonite`,
-        super: `diorite`,
+        super: leaf.slug,
       }),
     })
 
@@ -67,9 +67,9 @@ describe(`Classifications API`, () => {
     expect(await response.json()).toMatchObject({
       name: `Napoleonite`,
       slug: `napoleonite`,
-      super: {
-        name: findByProperty(`slug`, `diorite`)?.name,
-        slug: findByProperty(`slug`, `diorite`)?.slug,
+      links: {
+        self: `/api/classifications/napoleonite`,
+        super: `/api/classifications/napoleonite/super`,
       },
     })
   })
@@ -80,15 +80,14 @@ describe(`Classifications API`, () => {
     const classification = await response.json()
 
     expect(response.status).toBe(200)
-    expect(classification.name).toBe(item.name)
-    expect(classification.slug).toBe(item.slug)
-    if (item.super) {
-      const parent = findByProperty(`slug`, item.super)!
-      expect(classification.super).toMatchObject({
-        name: parent.name,
-        slug: parent.slug,
-      })
-    }
+    expect(classification).toMatchObject({
+      name: item?.name,
+      slug: item?.slug,
+      links: {
+        self: `/api/classifications/${item?.slug}`,
+        super: `/api/classifications/${item?.slug}/super`,
+      },
+    })
   })
 
   test(`PUT /api/classifications/:slug`, async () => {
@@ -101,9 +100,15 @@ describe(`Classifications API`, () => {
     })
 
     const classification = await response.json()
-    expect(classification.name).toBe(item.name)
-    expect(classification.slug).toBe(item.slug)
-    expect(classification.super).toBeUndefined()
+    expect(response.status).toBe(200)
+    expect(classification).toMatchObject({
+      name: item?.name,
+      slug: item?.slug,
+      links: {
+        self: `/api/classifications/${item?.slug}`,
+        super: `/api/classifications/${item?.slug}/super`,
+      },
+    })
   })
 
   test(`DELETE /api/classifications/:slug`, async () => {

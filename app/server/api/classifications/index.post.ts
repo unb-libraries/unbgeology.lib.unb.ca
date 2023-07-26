@@ -12,13 +12,8 @@ export default defineEventHandler(async (event) => {
         .exec(),
     })
 
-    const classification = await Classification
-      .findOne({ slug })
-      .populate({ path: `super`, select: { _id: 0, name: 1, slug: 1 } })
-      .select({ _id: 0, __v: 0 })
-
     setResponseStatus(event, 201, `Classification object created.`)
-    return classification
+    return $fetch(`/api/classifications/${slug}`)
   } catch (err: any) {
     // Duplicate key
     if (err.code && err.code === 11000) {

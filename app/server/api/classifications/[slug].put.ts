@@ -20,8 +20,5 @@ export default defineEventHandler(async (event) => {
   }
 
   await Classification.updateOne({ slug }, update)
-  return await Classification
-    .findOne({ slug })
-    .populate({ path: `super`, select: { _id: 0, name: 1, slug: 1 } })
-    .select({ _id: 0, __v: 0 })
+  return $fetch(`/api/classifications/${update.slug || slug}`)
 })

@@ -1,8 +1,16 @@
 import Classification from "entity-types/Classification"
 
 export default defineEventHandler(async (event) => {
-  return await Classification
+  const docs = await Classification
     .find()
-    .populate({ path: `super`, select: { _id: 0, name: 1, slug: 1 } })
-    .select({ _id: 0, __v: 0 })
+    .select(`-_id -__v -super`)
+
+  return docs.map((doc: any) => {
+    const classification = doc.toJSON()
+    classification.links = {
+      self: `/api/classifications/${classification.slug}`,
+      super: `/api/classifications/${classification.slug}/super`,
+    }
+    return classification
+  })
 })
