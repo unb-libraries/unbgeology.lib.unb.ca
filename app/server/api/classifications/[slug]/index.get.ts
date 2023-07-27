@@ -1,21 +1,26 @@
 import Classification from "entity-types/Classification"
+import { resolveURL } from "ufo"
 
 export default defineEventHandler(async (event) => {
-  const { slug } = event.context.params!
+  const { slug } = getRouterParams(event)
+  const path = getRequestPath(event)
+
   const doc = await Classification
     .findOne({ slug })
     .select(`-_id -__v -super`)
 
-  const classification = doc.toJSON()
-  classification.links = {
-    self: `/api/classifications/${classification.slug}`,
-    super: `/api/classifications/${classification.slug}/super`,
-    sub: `/api/classifications/${classification.slug}/sub`,
-  }
-
-  if (!classification) {
+  if (!doc) {
     throw createError({ statusCode: 404, statusMessage: `Classification object "${slug}" not found.` })
   }
 
-  return classification
+  return {
+    self: path,
+    ...doc.toJSON(),
+    super: {
+      self: resolveURL(path, `super`),
+    },
+    sub: {
+      self: resolveURL(path, `sub`),
+    },
+  }
 })

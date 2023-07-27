@@ -1,7 +1,10 @@
+import { resolveURL } from "ufo"
 import Classification, { type Classification as IClassification } from "~/server/entityTypes/Classification"
 
 export default defineEventHandler(async (event) => {
   const { slug } = event.context.params!
+  const basePath = resolveURL(``, ...getRequestPath(event).split(`/`, 3).slice(-2))
+
   const { super: newSuper, ...update } = await readBody(event)
 
   const classification: IClassification | undefined = await Classification.findOne({ slug })
@@ -20,5 +23,5 @@ export default defineEventHandler(async (event) => {
   }
 
   await Classification.updateOne({ slug }, update)
-  return $fetch(`/api/classifications/${update.slug || slug}`)
+  return $fetch(resolveURL(basePath, update.slug || slug))
 })

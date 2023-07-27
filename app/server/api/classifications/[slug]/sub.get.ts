@@ -1,7 +1,10 @@
+import { resolveURL } from "ufo"
 import Classification from "~/server/entityTypes/Classification"
 
 export default defineEventHandler(async (event) => {
-  const { slug } = event.context.params!
+  const { slug } = getRouterParams(event)
+  const basePath = resolveURL(``, ...getRequestPath(event).split(`/`, 3).slice(-2))
+
   const doc = await Classification.findOne({ slug })
   if (!doc) {
     throw createError({ statusCode: 404, statusMessage: `Classification object "${slug}" not found.` })
@@ -23,13 +26,16 @@ export default defineEventHandler(async (event) => {
     .project(`-_id sub`)
     .project(`-sub._id -sub.__v -sub.__d -sub.super`)
 
-  return docs.map((doc: any) => {
-    const classification = doc.sub
-    classification.links = {
-      self: `/api/classifications/${classification.slug}`,
-      super: `/api/classifications/${classification.slug}/super`,
-      sub: `/api/classifications/${classification.slug}/sub`,
-    }
-    return classification
-  })
+  return docs
+    .map((doc: any) => doc.sub)
+    .map((doc: any) => ({
+      self: resolveURL(basePath, doc.slug),
+      ...doc,
+      super: {
+        self: resolveURL(basePath, doc.slug, `super`),
+      },
+      sub: {
+        self: resolveURL(basePath, doc.slug, `sub`),
+      },
+    }))
 })

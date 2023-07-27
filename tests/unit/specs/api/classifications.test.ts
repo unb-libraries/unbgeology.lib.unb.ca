@@ -42,12 +42,14 @@ describe(`Classifications API`, () => {
     classifications.forEach((classification) => {
       const item = fixture.find(item => item.slug === classification.slug)
       expect(classification).toMatchObject({
+        self: `/api/classifications/${item?.slug}`,
         name: item?.name,
         slug: item?.slug,
-        links: {
-          self: `/api/classifications/${item?.slug}`,
-          super: `/api/classifications/${item?.slug}/super`,
-          sub: `/api/classifications/${item?.slug}/sub`,
+        super: {
+          self: `/api/classifications/${item?.slug}/super`,
+        },
+        sub: {
+          self: `/api/classifications/${item?.slug}/sub`,
         },
       })
     })
@@ -66,12 +68,14 @@ describe(`Classifications API`, () => {
 
     expect(response.status).toBe(201)
     expect(await response.json()).toMatchObject({
+      self: `/api/classifications/napoleonite`,
       name: `Napoleonite`,
       slug: `napoleonite`,
-      links: {
-        self: `/api/classifications/napoleonite`,
-        super: `/api/classifications/napoleonite/super`,
-        sub: `/api/classifications/napoleonite/sub`,
+      super: {
+        self: `/api/classifications/napoleonite/super`,
+      },
+      sub: {
+        self: `/api/classifications/napoleonite/sub`,
       },
     })
   })
@@ -83,12 +87,14 @@ describe(`Classifications API`, () => {
 
     expect(response.status).toBe(200)
     expect(classification).toMatchObject({
+      self: `/api/classifications/${item?.slug}`,
       name: item?.name,
       slug: item?.slug,
-      links: {
-        self: `/api/classifications/${item?.slug}`,
-        super: `/api/classifications/${item?.slug}/super`,
-        sub: `/api/classifications/${item?.slug}/sub`,
+      super: {
+        self: `/api/classifications/${item?.slug}/super`,
+      },
+      sub: {
+        self: `/api/classifications/${item?.slug}/sub`,
       },
     })
   })
@@ -105,12 +111,14 @@ describe(`Classifications API`, () => {
     const classification = await response.json()
     expect(response.status).toBe(200)
     expect(classification).toMatchObject({
+      self: `/api/classifications/${item?.slug}`,
       name: item?.name,
       slug: item?.slug,
-      links: {
-        self: `/api/classifications/${item?.slug}`,
-        super: `/api/classifications/${item?.slug}/super`,
-        sub: `/api/classifications/${item?.slug}/sub`,
+      super: {
+        self: `/api/classifications/${item?.slug}/super`,
+      },
+      sub: {
+        self: `/api/classifications/${item?.slug}/sub`,
       },
     })
   })
