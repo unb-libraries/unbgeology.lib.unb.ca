@@ -47,6 +47,7 @@ describe(`Classifications API`, () => {
         links: {
           self: `/api/classifications/${item?.slug}`,
           super: `/api/classifications/${item?.slug}/super`,
+          sub: `/api/classifications/${item?.slug}/sub`,
         },
       })
     })
@@ -70,6 +71,7 @@ describe(`Classifications API`, () => {
       links: {
         self: `/api/classifications/napoleonite`,
         super: `/api/classifications/napoleonite/super`,
+        sub: `/api/classifications/napoleonite/sub`,
       },
     })
   })
@@ -86,6 +88,7 @@ describe(`Classifications API`, () => {
       links: {
         self: `/api/classifications/${item?.slug}`,
         super: `/api/classifications/${item?.slug}/super`,
+        sub: `/api/classifications/${item?.slug}/sub`,
       },
     })
   })
@@ -107,6 +110,7 @@ describe(`Classifications API`, () => {
       links: {
         self: `/api/classifications/${item?.slug}`,
         super: `/api/classifications/${item?.slug}/super`,
+        sub: `/api/classifications/${item?.slug}/sub`,
       },
     })
   })

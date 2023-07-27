@@ -10,6 +10,7 @@ export default defineEventHandler(async (event) => {
   classification.links = {
     self: `/api/classifications/${classification.slug}`,
     super: `/api/classifications/${classification.slug}/super`,
+    sub: `/api/classifications/${classification.slug}/sub`,
   }
 
   if (!classification) {

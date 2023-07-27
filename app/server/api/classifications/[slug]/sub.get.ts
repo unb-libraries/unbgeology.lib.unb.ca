@@ -2,7 +2,8 @@ import Classification from "~/server/entityTypes/Classification"
 
 export default defineEventHandler(async (event) => {
   const { slug } = event.context.params!
-  if (!await Classification.findOne({ slug })) {
+  const doc = await Classification.findOne({ slug })
+  if (!doc) {
     throw createError({ statusCode: 404, statusMessage: `Classification object "${slug}" not found.` })
   }
 
@@ -10,19 +11,20 @@ export default defineEventHandler(async (event) => {
     .match({ slug })
     .graphLookup({
       from: `classifications`,
-      startWith: `$super`,
-      connectFromField: `super`,
-      connectToField: `_id`,
-      as: `super`,
+      startWith: `$_id`,
+      connectFromField: `_id`,
+      connectToField: `super`,
+      as: `sub`,
       depthField: `__d`,
+      maxDepth: 0,
     })
-    .unwind(`super`)
-    .sort({ "super.__d": -1 })
-    .project(`-_id super`)
-    .project(`-super._id -super.__v -super.__d -super.super`)
+    .unwind(`sub`)
+    .sort({ "sub.__d": -1 })
+    .project(`-_id sub`)
+    .project(`-sub._id -sub.__v -sub.__d -sub.super`)
 
   return docs.map((doc: any) => {
-    const classification = doc.super
+    const classification = doc.sub
     classification.links = {
       self: `/api/classifications/${classification.slug}`,
       super: `/api/classifications/${classification.slug}/super`,
