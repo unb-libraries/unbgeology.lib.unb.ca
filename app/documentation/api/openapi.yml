@@ -1,0 +1,274 @@
+openapi: 3.0.2
+info:
+  title: UNB Earth Sciences Collection API
+  description: The UNB Eartch Science Collection provides access to specimen metadata curated by the UNB Eartch Science Centre.
+  version: '0.1'
+
+servers:
+  - url: http://local-unbgeology.lib.unb.ca:3118/api
+
+paths:
+  /classifications:
+    get:
+      tags:
+        - Classification
+      responses:
+        200:
+          $ref: "./classifications.yml#/components/responses/ClassificationQueryResult"
+        204:
+          description: Objects deleted.
+        406:
+          $ref: "#/components/responses/NotAccepted"
+        default:
+          $ref: "#/components/responses/ServerError"
+    post:
+      tags:
+        - Classification
+      security:
+        - Session: []
+      requestBody:
+        $ref: "./classifications.yml#/components/requestBodies/Classification"
+      responses:
+        201:
+          $ref: "./classifications.yml#/components/responses/ClassificationCreated"
+        # 202:
+        #   description: Accepted batch.
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthenticated"
+        403:
+          $ref: "#/components/responses/Unauthorized"
+        default:
+          $ref: "#/components/responses/ServerError"
+
+  /classifications/{slug}:
+    get:
+      tags:
+        - Classification
+      operationId: classification.canonical
+      parameters:
+        - $ref: "./classifications.yml#/components/parameters/Slug"
+      responses:
+        200:
+          $ref: "./classifications.yml#/components/responses/ClassificationFound"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        404:
+          $ref: "#/components/responses/NotFound"
+        default:
+          $ref: "#/components/responses/ServerError"
+
+    put:
+      tags:
+        - Classification
+      parameters:
+        - $ref: "./classifications.yml#/components/parameters/Slug"
+      security:
+        - Session: []
+      
+      responses:
+        200:
+          $ref: "./classifications.yml#/components/responses/ClassificationUpdated"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        404:
+          $ref: "#/components/responses/NotFound"
+        401:
+          $ref: "#/components/responses/Unauthenticated"
+        403:
+          $ref: "#/components/responses/Unauthorized"
+        default:
+          $ref: "#/components/responses/ServerError"
+
+    delete:
+      tags:
+        - Classification
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: quartz-diorite
+        - name: deleteOrphans
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+      security:
+        - Session: []
+      
+      responses:
+        204:
+          $ref: "#/components/responses/ObjectDeleted"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        404:
+          $ref: "#/components/responses/NotFound"
+        401:
+          $ref: "#/components/responses/Unauthenticated"
+        403:
+          $ref: "#/components/responses/Unauthorized"
+        default:
+          $ref: "#/components/responses/ServerError"
+
+
+  /specimens:
+    get:
+      tags:
+        - Specimen
+      responses:
+        200:
+          $ref: "./specimens.yml#/components/responses/SpecimenQueryResult"
+        204:
+          $ref: "#/components/responses/ObjectDeleted"
+        406:
+          $ref: "#/components/responses/NotAccepted"
+        default:
+          $ref: "#/components/responses/ServerError"
+
+    post:
+      tags:
+        - Specimen
+      security:
+        - Session: []
+      requestBody:
+        required: true
+        $ref: "./specimens.yml#/components/requestBodies/Specimen"
+      responses:
+        201:
+          $ref: "./specimens.yml#/components/responses/SpecimenCreated"
+        # 202:
+        #   description: Accepted batch.
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthenticated"
+        403:
+          $ref: "#/components/responses/Unauthorized"
+        default:
+          $ref: "#/components/responses/ServerError"
+
+  /specimens/{id}:
+    get:
+      tags:
+        - Specimen
+      parameters:
+        - $ref: "./specimens.yml#/components/parameters/ID"
+      responses:
+        200:
+          $ref: "./specimens.yml#/components/responses/SpecimenFound"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        404:
+          $ref: "#/components/responses/NotFound"
+        401:
+          $ref: "#/components/responses/Unauthenticated"
+        403:
+          $ref: "#/components/responses/Unauthorized"
+        default:
+          $ref: "#/components/responses/ServerError"
+    
+    put:
+      tags:
+        - Specimen
+      parameters:
+        - $ref: "./specimens.yml#/components/parameters/ID"
+      requestBody:
+        required: false
+        $ref: "./specimens.yml#/components/requestBodies/SpecimenUpdate"
+      security:
+        - Session: []
+      
+      responses:
+        200:
+          $ref: "./specimens.yml#/components/responses/SpecimenUpdated"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        404:
+          $ref: "#/components/responses/NotFound"
+        401:
+          $ref: "#/components/responses/Unauthenticated"
+        403:
+          $ref: "#/components/responses/Unauthorized"
+        default:
+          $ref: "#/components/responses/ServerError"
+
+    delete:
+      tags:
+        - Specimen
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: unb-001
+      security:
+        - Session: []
+      
+      responses:
+        204:
+          $ref: "#/components/responses/ObjectDeleted"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        404:
+          $ref: "#/components/responses/NotFound"
+        401:
+          $ref: "#/components/responses/Unauthenticated"
+        403:
+          $ref: "#/components/responses/Unauthorized"
+        default:
+          $ref: "#/components/responses/ServerError"
+                  
+components:
+  schemas:
+    QueryResult:
+      type: object
+      properties:
+        total:
+          type: integer
+          minimum: 0
+        items:
+          type: array
+          items: {}
+    Error:
+      type: object
+      properties:
+        errorDetails:
+          type: string
+
+  responses:
+    Error:
+      description: Error response.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    ObjectDeleted:
+      description: Object deleted.
+    BadRequest:
+      description: Bad request.
+      $ref: "#/components/responses/Error"
+    Unauthenticated:
+      description: Authentication required.
+      $ref: "#/components/responses/Error"
+    Unauthorized:
+      description: Permission required.
+      $ref: "#/components/responses/Error"
+    NotFound:
+      description: Object not found.
+      $ref: "#/components/responses/Error"
+    NotAccepted:
+      description: Requested format not supported.
+      $ref: "#/components/responses/Error"
+    ServerError:
+      description: Server error.
+
+  securitySchemes:
+    Session:
+      type: apiKey
+      in: cookie
+      name: sessionId

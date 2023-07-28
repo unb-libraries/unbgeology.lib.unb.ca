@@ -1,0 +1,113 @@
+components:
+  partials:
+    ClassificationLinks:
+      type: object
+      properties:
+        self:
+          type: string
+          format: uri
+          example: /api/classifications/quartz-diorite
+        super:
+          type: object
+          properties:
+            self:
+              type: string
+              format: uri
+              example: /api/classifications/quartz-diorite/super
+        sub:
+          type: object
+          properties:
+            self:
+              type: string
+              format: uri
+              example: /api/classifications/quartz-diorite/sub
+
+  schemas:
+    Classification:
+      type: object
+      required:
+        - name
+        - slug
+      properties:
+        name:
+          type: string
+          example: Quartz diorite
+        slug:
+          type: string
+          example: quartz-diorite
+
+  parameters:
+    Slug:
+      name: slug
+      in: path
+      required: true
+      schema:
+        type: string
+      example: quartz-diorite
+
+  requestBodies:
+    Classification:
+      required: true
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/Classification"
+              - type: object
+                properties:
+                  super:
+                    type: string
+                    example: diorite    
+
+  responses:
+    Classification:
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/Classification"
+              - $ref: "#/components/partials/ClassificationLinks"
+
+    ClassificationFound:
+      description: Classification object found.
+      $ref: "#/components/responses/Classification"
+    
+    ClassificationCreated:
+      description: Classification object created.
+      $ref: "#/components/responses/Classification"
+
+    ClassificationUpdated:
+      description: Classification object found.
+      $ref: "#/components/responses/Classification"
+    
+    ClassificationQueryResult:
+      description: Classification objects found.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "./openapi.yml#/components/schemas/QueryResult"
+              - type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: "#/components/schemas/Classification"
+                        - $ref: "#/components/partials/ClassificationLinks"
+          example:
+            total: 2
+            items:
+              - name: Igneous Rock
+                slug: igneous-rock
+                super:
+                  self: /api/classifications/igneous-rock/super
+                sub:
+                  self: /api/classifications/igneous-rock/sub
+              - name: Quartz diorite
+                slug: quartz-diorite
+                super:
+                  self: /api/classifications/quartz-diorite/super
+                sub:
+                  self: /api/classifications/quartz-diorite/sub
+            self: /api/classifications?page=3
