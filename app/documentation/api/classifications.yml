@@ -96,7 +96,11 @@ components:
                         - $ref: "#/components/schemas/Classification"
                         - $ref: "#/components/partials/ClassificationLinks"
           example:
-            total: 2
+            count: 2
+            total: 9
+            page: 3
+            pages: 5
+            pageSize: 2
             items:
               - name: Igneous Rock
                 slug: igneous-rock
@@ -111,3 +115,7 @@ components:
                 sub:
                   self: /api/classifications/quartz-diorite/sub
             self: /api/classifications?page=3
+            next: /api/classifications?page=4
+            previous: /api/classifications?page=2
+            first: /api/classifications?page=1
+            last: /api/classifications?page=5

@@ -9,6 +9,9 @@ servers:
 
 paths:
   /classifications:
+    parameters:
+      - $ref: "#/components/parameters/Page"
+      - $ref: "#/components/parameters/PageSize"
     get:
       tags:
         - Classification
@@ -119,6 +122,9 @@ paths:
     get:
       tags:
         - Specimen
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
       responses:
         200:
           $ref: "./specimens.yml#/components/responses/SpecimenQueryResult"
@@ -228,9 +234,34 @@ components:
     QueryResult:
       type: object
       properties:
+        count:
+          type: integer
+          minimum: 0
         total:
           type: integer
           minimum: 0
+        pages:
+          type: integer
+          minimum: 1
+        page:
+          type: integer
+          minimum: 1
+        pageSize:
+          type: integer
+          minimum: 1
+          example: 25
+        previous:
+          type: string
+          format: uri
+        next:
+          type: string
+          format: uri
+        first:
+          type: string
+          format: uri
+        last:
+          type: string
+          format: uri
         items:
           type: array
           items: {}
@@ -239,6 +270,24 @@ components:
       properties:
         errorDetails:
           type: string
+
+  parameters:
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+      required: false
+    PageSize:
+      name: pageSize
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 25
+      required: false
 
   responses:
     Error:

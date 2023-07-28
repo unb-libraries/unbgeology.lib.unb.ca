@@ -174,9 +174,19 @@ components:
                         - $ref: "#/components/partials/SpecimenLinks"
                         - $ref: "#/components/schemas/Specimen"
           example:
-            total: 25
+            count: 5
+            total: 32
+            page: 4
+            pages: 7
+            pageSize: 5
             items:
               - id: UNB-1976
-              - id: ...
-              - id: UNB-2001
-            self: /api/specimens?page=18
+              - id: UNB-1977
+              - id: UNB-1978
+              - id: UNB-1979
+              - id: UNB-1980
+            self: /api/specimens?page=4
+            next: /api/specimens?page=5
+            previous: /api/specimens?page=3
+            first: /api/specimens?page=1
+            last: /api/specimens?page=7
