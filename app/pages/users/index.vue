@@ -10,10 +10,10 @@
   <section class="container mx-auto">
     <PvTable v-if="users && users.length" :value="users">
       <PvTableColumn field="username" header="Username" />
-      <PvTableColumn field="firstName" header="First Name" />
-      <PvTableColumn field="lastName" header="Last Name" />
-      <PvTableColumn field="email" header="Email" />
-      <PvTableColumn field="phone" header="Phone" />
+      <PvTableColumn field="profile.firstName" header="First Name" />
+      <PvTableColumn field="profile.lastName" header="Last Name" />
+      <PvTableColumn field="profile.email" header="Email" />
+      <PvTableColumn field="profile.phone" header="Phone" />
       <PvTableColumn field="active" header="Status">
         <template #body="slotProps">
           <span v-if="slotProps.data.active" class="text-green-600">Active</span>
@@ -57,9 +57,5 @@ const toggleStatus = async function (username: string, active: boolean) {
   }
 }
 
-const { data: users, refresh } = await useFetch<User[]>(`/api/users`, {
-  transform: function (users) {
-    return Object.values(users)
-  },
-})
+const { data: users, refresh } = await useFetch<User[]>(`/api/users`)
 </script>

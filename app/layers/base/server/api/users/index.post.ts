@@ -1,25 +1,12 @@
-import { type User, UserCollection } from "~~/types/user"
+import User from "~/server/entityTypes/User"
 
 export default defineEventHandler(requireAuthentication(async (event) => {
-  const storage = useStorage(`db`)
-
-  const users = (await storage.getItem(`users`) || {}) as UserCollection
   const { username } = await readBody(event)
-
-  if (users[username]) {
-    throw createError({ statusCode: 409, statusMessage: `User already exists.` })
+  try {
+    await User.create({ username })
+    setResponseStatus(event, 201, `Created user object.`)
+    return $fetch(`/api/users/${username}`)
+  } catch (err: any) {
+    throw createError({ statusCode: 409, statusMessage: `User object with ${username} already exists.` })
   }
-
-  const user: User = {
-    username,
-    email: ``,
-    phone: ``,
-    firstName: ``,
-    lastName: ``,
-  }
-
-  users[username] = user
-  storage.setItem(`users`, users)
-
-  return user
 }))

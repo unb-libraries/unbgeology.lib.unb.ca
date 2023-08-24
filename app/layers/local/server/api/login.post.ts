@@ -1,9 +1,10 @@
+import User from "~/server/entityTypes/User"
+
 export default defineEventHandler(async (event) => {
   const { username } = await readBody(event)
 
-  const storage = useStorage(`db`)
-  const users = await storage.getItem(`users`)
-  if (!users[username]) {
+  const user = await User.findOne({ username })
+  if (!user) {
     throw createError({ statusCode: 405, statusMessage: `Authentication failed.` })
   }
 

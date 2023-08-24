@@ -1,17 +1,21 @@
-import { type UserCollection } from "~~/types/user"
+import User, { type IUser } from "~/server/entityTypes/User"
 
 export default defineEventHandler(requireAuthentication(async (event) => {
-  const storage = useStorage(`db`)
-  const { username } = event.context.params!
+  const { username } = getRouterParams(event)
+  const path = getRequestPath(event)
 
-  const users = (await storage.getItem(`users`) || {}) as UserCollection
+  const doc = await User
+    .findOne<IUser>({ username })
+    .select(`-__v -_id`)
 
-  if (!users || !users[username]) {
-    throw createError({
-      statusCode: 404,
-      statusMessage: `User not found`,
-    })
+  if (!doc) {
+    throw createError({ statusCode: 404, statusMessage: `User object with username ${username} does not exist.` })
   }
 
-  return users[username]
+  return {
+    self: path,
+    ...doc.toJSON(),
+    created: new Date(doc.created),
+    updated: new Date(doc.updated),
+  }
 }))

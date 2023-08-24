@@ -1,23 +1,20 @@
-import { type User, UserCollection } from "~~/types/user"
+import User from "~/server/entityTypes/User"
 
 export default defineEventHandler(requireAuthentication(async (event) => {
-  const storage = useStorage(`db`)
+  const { username } = getRouterParams(event)
+  const { lastLogin, ...profile } = await readBody(event)
 
-  const { username } = event.context.params!
-  const users = (await storage.getItem(`users`) || {}) as UserCollection
+  const profileUpdate = Object.fromEntries(Object.entries(profile)
+    .map(([field, value]) => [`profile.${field}`, value]))
 
-  if (!users[username]) {
-    throw createError({ statusCode: 404, statusMessage: `User does not exist.` })
+  const { matchedCount, modifiedCount } = await User.updateOne({ username }, { lastLogin, ...profileUpdate })
+  if (!matchedCount) {
+    throw createError({ statusCode: 404, statusMessage: `User object with username ${username} does not exist.` })
   }
 
-  const body: Partial<User> = await readBody(event)
-  const user = users[username]
-  const partiallyUpdatedUser: Partial<User> = Object.fromEntries(
-    Object.entries(body).filter(([key, _]) => key in user),
-  )
+  if (!modifiedCount) {
+    setResponseStatus(event, 200, `No objects modified.`)
+  }
 
-  users[username] = { ...user, ...partiallyUpdatedUser }
-  storage.setItem(`users`, users)
-
-  return users[username]
+  return $fetch(`/api/users/${username}`)
 }))
