@@ -8,4 +8,8 @@ interface Entity {
   readonly updated: Date
 }
 
-export { Entity, EntityFieldTypes }
+interface DiscriminatedEntity extends Entity {
+  readonly __t: string
+}
+
+export { Entity, EntityFieldTypes, DiscriminatedEntity }
