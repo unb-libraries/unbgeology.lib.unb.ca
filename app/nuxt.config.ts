@@ -12,7 +12,16 @@ export default defineNuxtConfig({
   ],
   alias: {
     "entity-types": url.fileURLToPath(new URL(`./server/entityTypes`, import.meta.url)),
+    "taxonomies": url.fileURLToPath(new URL(`./server/taxonomies`, import.meta.url)),
     "layers": url.fileURLToPath(new URL(`./layers`, import.meta.url)),
     "types": url.fileURLToPath(new URL(`./types`, import.meta.url)),
+  },
+  nitro: {
+    imports: {
+      dirs: [
+        `./server/entityTypes/*`,
+        `./server/taxonomies/*`,
+      ],
+    },
   },
 })
