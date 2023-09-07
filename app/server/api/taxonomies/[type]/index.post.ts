@@ -3,7 +3,7 @@ import { type Model } from "mongoose"
 
 export default defineEventHandler(async (event) => {
   const { type } = getRouterParams(event)
-  const { label, slug, ...other } = await readBody(event)
+  const { label, slug, parent: parentSlug, ...other } = await readBody(event)
 
   const Discriminator: Model<ITaxonomy> | undefined = Object
     .values(Taxonomy.discriminators || {})
@@ -13,6 +13,15 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: `Taxonomy ${type} does not exist.` })
   }
 
-  return await Discriminator
-    .create({ label, slug, ...other })
+  if (parentSlug) {
+    const parent = await Discriminator.findOne({ slug: parentSlug })
+    if (!parent) {
+      throw createError({ statusCode: 400, statusMessage: `Taxonomy ${parentSlug} does not exist.` })
+    }
+    await Discriminator.create({ label, slug, parent: parent._id, ...other })
+  } else {
+    await Discriminator.create({ label, slug, ...other })
+  }
+
+  return $fetch(`/api/taxonomies/${type}/${slug}`)
 })

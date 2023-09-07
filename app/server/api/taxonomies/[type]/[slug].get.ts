@@ -15,6 +15,7 @@ export default defineEventHandler(async (event) => {
 
   const doc = await Discriminator
     .findOne({ slug })
+    .populate(`parent`)
     .select(`-_id -__v -__t`)
 
   if (!doc) {
@@ -23,7 +24,17 @@ export default defineEventHandler(async (event) => {
 
   return {
     self: path,
-    ...doc.toJSON(),
+    ...doc.toJSON({
+      transform(doc, ret, options) {
+        if (ret.parent) {
+          ret.parent = {
+            self: `/api/taxonomies/${type}/${ret.parent.slug}`,
+          }
+        }
+        return ret
+      },
+    }),
+    type,
     created: new Date(doc.created),
     updated: new Date(doc.updated),
   }

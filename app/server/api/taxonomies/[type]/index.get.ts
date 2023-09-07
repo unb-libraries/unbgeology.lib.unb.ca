@@ -15,6 +15,7 @@ export default defineEventHandler(async (event) => {
 
   const docs = await Discriminator
     .find()
+    .populate(`parent`)
     .select(`-_id -__v`)
 
   return docs
@@ -22,6 +23,13 @@ export default defineEventHandler(async (event) => {
       transform(doc, ret, options) {
         ret.type = ret.__t
         delete ret.__t
+
+        if (ret.parent) {
+          ret.parent = {
+            self: `/api/taxonomies/${type}/${ret.parent.slug}`,
+          }
+        }
+
         return ret
       },
     }))
