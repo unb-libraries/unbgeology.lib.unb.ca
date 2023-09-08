@@ -1,5 +1,6 @@
 import { defineEmbeddedEntityType, defineEntityType } from "layers/mongo/server/utils/mongoose"
 import { Entity, EntityFieldTypes } from "types/entity"
+import { type StorageLocation } from "taxonomies/StorageLocation"
 
 export enum Status {
   DRAFT = `draft`,
@@ -20,6 +21,12 @@ export interface Place {
   description?: string
 }
 
+interface Storage {
+  location: StorageLocation
+  dateIn: Date
+  dateOut?: Date
+}
+
 export interface Specimen extends Entity {
   objectId: string
   name: string
@@ -31,6 +38,7 @@ export interface Specimen extends Entity {
   pieces?: number
   partial?: boolean
   composition?: string
+  storage: Storage[],
   status: Status
 }
 
@@ -94,6 +102,21 @@ export default defineEntityType<Specimen>(`Specimen`, {
     type: EntityFieldTypes.String,
     required: false,
   },
+  storage: [{
+    location: {
+      type: EntityFieldTypes.ObjectId,
+      ref: `StorageLocation`,
+      required: true,
+    },
+    dateIn: {
+      type: EntityFieldTypes.Date,
+      required: true,
+    },
+    dateOut: {
+      type: EntityFieldTypes.Date,
+      required: false,
+    },
+  }],
   status: {
     type: EntityFieldTypes.String,
     required: true,
