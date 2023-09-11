@@ -1,9 +1,9 @@
-import Person, { type IPerson } from "./Person"
+import { type Profile } from "entity-types/Profile"
 import { EntityFieldTypes, type Entity } from "~/types/entity"
 
 export interface IUser extends Entity {
   username: string
-  profile?: IPerson
+  profile?: Profile
   lastLogin?: Date
 }
 
@@ -13,7 +13,11 @@ export default defineEntityType<IUser>(`User`, {
     required: true,
     unique: true,
   },
-  profile: Person,
+  profile: {
+    type: EntityFieldTypes.ObjectId,
+    ref: `Profile`,
+    required: false,
+  },
   lastLogin: {
     type: EntityFieldTypes.Date,
     required: false,
