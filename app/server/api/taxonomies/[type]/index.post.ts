@@ -1,11 +1,11 @@
-import { type ITaxonomy } from "entity-types/Taxonomy"
+import { type Taxonomy } from "entity-types/Taxonomy"
 import { type Model } from "mongoose"
 
 export default defineEventHandler(async (event) => {
   const { type } = getRouterParams(event)
   const { label, slug, parent: parentSlug, ...other } = await readBody(event)
 
-  const Discriminator: Model<ITaxonomy> | undefined = Object
+  const Discriminator: Model<Taxonomy> | undefined = Object
     .values(Taxonomy.discriminators || {})
     .find(t => t.modelName.toLowerCase() === type)
 
