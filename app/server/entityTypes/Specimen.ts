@@ -1,5 +1,6 @@
 import { defineEmbeddedEntityType, defineEntityType } from "layers/mongo/server/utils/mongoose"
 import { Entity, EntityFieldTypes } from "types/entity"
+import { type Organization } from "entity-types/Organization"
 import { type StorageLocation } from "taxonomies/StorageLocation"
 
 export enum Status {
@@ -21,7 +22,21 @@ export interface Place {
   description?: string
 }
 
-interface Storage {
+export enum LoanType {
+  IN = `in`,
+  OUT = `out`,
+}
+
+export interface Loan {
+  type: LoanType
+  organization: Organization
+  contact: Profile
+  start: Date
+  end: Date
+  contract: string
+}
+
+export interface Storage {
   location: StorageLocation
   dateIn: Date
   dateOut?: Date
@@ -37,7 +52,7 @@ export interface Specimen extends Entity {
   origin?: Place
   pieces?: number
   partial?: boolean
-  composition?: string
+  loans?: [Loan],
   storage: Storage[],
   status: Status
 }
@@ -102,6 +117,31 @@ export default defineEntityType<Specimen>(`Specimen`, {
     type: EntityFieldTypes.String,
     required: false,
   },
+  loans: [{
+    type: {
+      type: EntityFieldTypes.String,
+      enum: LoanType,
+      required: true,
+    },
+    organization: {
+      type: EntityFieldTypes.ObjectId,
+      ref: `Organization`,
+      required: true,
+    },
+    contact: {
+      type: EntityFieldTypes.ObjectId,
+      ref: `Profile`,
+      required: true,
+    },
+    start: {
+      type: EntityFieldTypes.Date,
+      required: true,
+    },
+    end: {
+      type: EntityFieldTypes.Date,
+      required: true,
+    },
+  }],
   storage: [{
     location: {
       type: EntityFieldTypes.ObjectId,
