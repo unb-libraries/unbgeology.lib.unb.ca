@@ -1,6 +1,7 @@
 import { defineEmbeddedEntityType, defineEntityType } from "layers/mongo/server/utils/mongoose"
 import { Entity, EntityFieldTypes } from "types/entity"
 import { type Organization } from "entity-types/Organization"
+import { type Profile } from "entity-types/Profile"
 import { type StorageLocation } from "taxonomies/StorageLocation"
 import { type Classification } from "taxonomies/Classification"
 import { type Publication } from "entity-types/Publication"
@@ -55,6 +56,8 @@ export interface Specimen extends Entity {
   origin?: Place
   pieces?: number
   partial?: boolean
+  collector?: Profile,
+  sponsor?: Profile,
   loans?: [Loan],
   storage: Storage[],
   publications?: [Publication],
@@ -124,6 +127,17 @@ export default defineEntityType<Specimen>(`Specimen`, {
   },
   composition: {
     type: EntityFieldTypes.String,
+    enum: Composition,
+    required: false,
+  },
+  collector: {
+    type: EntityFieldTypes.ObjectId,
+    ref: `Profile`,
+    required: false,
+  },
+  sponsor: {
+    type: EntityFieldTypes.ObjectId,
+    ref: `Profile`,
     required: false,
   },
   loans: [{
