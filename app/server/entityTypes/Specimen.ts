@@ -3,6 +3,7 @@ import { Entity, EntityFieldTypes } from "types/entity"
 import { type Organization } from "entity-types/Organization"
 import { type StorageLocation } from "taxonomies/StorageLocation"
 import { type Classification } from "taxonomies/Classification"
+import { type Publication } from "entity-types/Publication"
 
 export enum Status {
   DRAFT = `draft`,
@@ -56,6 +57,7 @@ export interface Specimen extends Entity {
   partial?: boolean
   loans?: [Loan],
   storage: Storage[],
+  publications?: [Publication],
   status: Status
 }
 
@@ -163,6 +165,10 @@ export default defineEntityType<Specimen>(`Specimen`, {
       type: EntityFieldTypes.Date,
       required: false,
     },
+  }],
+  publications: [{
+    type: EntityFieldTypes.ObjectId,
+    ref: `Publication`,
   }],
   status: {
     type: EntityFieldTypes.String,
