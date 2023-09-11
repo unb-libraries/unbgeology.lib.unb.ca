@@ -1,4 +1,4 @@
-import { EntityFieldTypes } from "~/types/entity"
+import { type Entity, EntityFieldTypes } from "~/layers/mongo/types/entity"
 
 export interface IRoom {
   number: string

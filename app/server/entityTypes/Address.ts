@@ -1,4 +1,4 @@
-import { EntityFieldTypes } from "~/types/entity"
+import { EntityFieldTypes } from "~/layers/mongo/types/entity"
 
 export interface Address {
   address1: string

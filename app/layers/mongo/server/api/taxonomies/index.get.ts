@@ -1,5 +1,3 @@
-import Taxonomy from "entity-types/Taxonomy"
-
 export default defineEventHandler((event) => {
   const { path } = event
 

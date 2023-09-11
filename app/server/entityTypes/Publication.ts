@@ -1,4 +1,4 @@
-import { Entity, EntityFieldTypes } from "~/types/entity"
+import { Entity, EntityFieldTypes } from "~/layers/mongo/types/entity"
 
 export interface Publication extends Entity {
   citation: string

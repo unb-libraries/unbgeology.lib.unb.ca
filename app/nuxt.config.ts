@@ -20,6 +20,7 @@ export default defineNuxtConfig({
     imports: {
       dirs: [
         `./server/entityTypes/*`,
+        `./layers/*/server/entityTypes/*`,
         `./server/taxonomies/*`,
       ],
     },

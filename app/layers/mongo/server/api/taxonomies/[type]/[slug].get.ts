@@ -1,5 +1,5 @@
-import { type Taxonomy } from "entity-types/Taxonomy"
 import { type Model } from "mongoose"
+import { type Taxonomy } from "~/layers/mongo/types/taxonomy"
 
 export default defineEventHandler(async (event) => {
   const { type, slug } = getRouterParams(event)

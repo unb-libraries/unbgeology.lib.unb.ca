@@ -1,7 +1,7 @@
-import { type ITaxonomy } from "entity-types/Taxonomy"
-import { EntityFieldTypes } from "~/types/entity"
+import { type Taxonomy } from "~/layers/mongo/types/taxonomy"
+import { EntityFieldTypes } from "~/layers/mongo/types/entity"
 
-export interface StorageLocation extends ITaxonomy {
+export interface StorageLocation extends Taxonomy {
   public: boolean
 }
 

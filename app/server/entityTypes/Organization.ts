@@ -1,5 +1,5 @@
 import { type Address } from "entity-types/Address"
-import { Entity, EntityFieldTypes } from "~/types/entity"
+import { Entity, EntityFieldTypes } from "~/layers/mongo/types/entity"
 
 export interface Organization extends Entity {
   name: string

@@ -1,10 +1,9 @@
-import { defineEmbeddedEntityType, defineEntityType } from "layers/mongo/server/utils/mongoose"
-import { Entity, EntityFieldTypes } from "types/entity"
 import { type Organization } from "entity-types/Organization"
 import { type Profile } from "entity-types/Profile"
 import { type StorageLocation } from "taxonomies/StorageLocation"
 import { type Classification } from "taxonomies/Classification"
 import { type Publication } from "entity-types/Publication"
+import { Entity, EntityFieldTypes } from "~/layers/mongo/types/entity"
 
 export enum Status {
   DRAFT = `draft`,

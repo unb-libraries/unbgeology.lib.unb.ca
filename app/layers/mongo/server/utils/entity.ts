@@ -1,5 +1,5 @@
-import { type Entity } from "types/entity"
 import { model as defineModel, Schema, type SchemaDefinition } from "mongoose"
+import { type Entity } from "../../types/entity"
 
 export const defineEntityType = function<E extends Entity> (name: string, definition: SchemaDefinition<E>) {
   const schema = new Schema<E>({
@@ -7,7 +7,6 @@ export const defineEntityType = function<E extends Entity> (name: string, defini
     created: Schema.Types.Number,
     updated: Schema.Types.Number,
   }, {
-    id: false,
     timestamps: {
       createdAt: `created`,
       updatedAt: `updated`,
@@ -18,8 +17,18 @@ export const defineEntityType = function<E extends Entity> (name: string, defini
   return defineModel<E>(name, schema)
 }
 
+export const defineNestedEntityType = function<E extends object> (definition: SchemaDefinition<E>) {
+  return definition
+}
+
 export const defineEmbeddedEntityType = function<E extends object> (definition: SchemaDefinition<E>) {
-  return new Schema<E>(definition, {
-    _id: false,
+  return new Schema<E>(definition)
+}
+
+export const defineWeakEntityType = function<E extends Entity> (definition: SchemaDefinition<E>) {
+  return new Schema<E>({
+    ...definition,
+    created: Schema.Types.Number,
+    updated: Schema.Types.Number,
   })
 }

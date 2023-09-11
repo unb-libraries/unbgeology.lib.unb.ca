@@ -1,5 +1,5 @@
 import { type Organization } from "entity-types/Organization"
-import { Entity, EntityFieldTypes } from "~/types/entity"
+import { Entity, EntityFieldTypes } from "~/layers/mongo/types/entity"
 
 export interface Profile extends Entity {
   firstName: string

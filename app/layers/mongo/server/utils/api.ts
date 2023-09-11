@@ -1,6 +1,6 @@
 import { type Model } from "mongoose"
 import { type EventHandler } from "h3"
-import { Entity } from "~/types/entity"
+import { Entity } from "~/layers/mongo/types/entity"
 
 export const useEntityListHandler = function<E extends Entity = Entity> (model: Model<E>): EventHandler {
   return async function (event) {

@@ -1,6 +1,6 @@
-import { Entity, EntityFieldTypes } from "~/types/entity"
-import Address, { type IAddress} from "./Address"
-import Room, { type IRoom } from "./Room"
+import { type Address } from "entity-types/Address"
+import { type Room } from "entity-types/Room"
+import { Entity, EntityFieldTypes } from "~/layers/mongo/types/entity"
 
 export interface IBuilding extends Entity {
   name: string
