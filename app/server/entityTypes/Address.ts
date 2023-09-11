@@ -1,7 +1,6 @@
 import { EntityFieldTypes } from "~/types/entity"
 
-export interface IAddress {
-  type: `civic` | `po`
+export interface Address {
   address1: string
   address2?: string
   city: string
@@ -10,11 +9,7 @@ export interface IAddress {
   country: string
 }
 
-export default defineEmbeddedEntityType<IAddress>({
-  type: {
-    type: EntityFieldTypes.String,
-    required: true,
-  },
+export default defineEmbeddedEntityType<Address>({
   address1: {
     type: EntityFieldTypes.String,
     required: true,
