@@ -2,6 +2,7 @@ import { defineEmbeddedEntityType, defineEntityType } from "layers/mongo/server/
 import { Entity, EntityFieldTypes } from "types/entity"
 import { type Organization } from "entity-types/Organization"
 import { type StorageLocation } from "taxonomies/StorageLocation"
+import { type Classification } from "taxonomies/Classification"
 
 export enum Status {
   DRAFT = `draft`,
@@ -46,6 +47,7 @@ export interface Specimen extends Entity {
   objectId: string
   name: string
   description?: string
+  classification: Classification
   dimensions?: Dimension
   date?: Date
   age?: string
@@ -70,6 +72,11 @@ export default defineEntityType<Specimen>(`Specimen`, {
   description: {
     type: EntityFieldTypes.String,
     required: false,
+  },
+  classification: {
+    type: EntityFieldTypes.ObjectId,
+    ref: `Classification`,
+    required: true,
   },
   dimensions: {
     type: defineEmbeddedEntityType<Dimension>({
