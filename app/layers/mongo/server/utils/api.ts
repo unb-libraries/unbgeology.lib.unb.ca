@@ -26,6 +26,10 @@ interface EntityHandlerOptions<E extends Entity> {
   discriminatorKey?: string
 }
 
+interface EntityDeleteHandlerOptions<E extends Entity> extends EntityHandlerOptions<E> {
+  findAndDelete?: (event: H3Event, model: Model<E>) => Promise<string[]>
+}
+
 export const useEntityListHandler = function<E extends Entity = Entity> (model: Model<E>, options?: EntityHandlerOptions<E>): EventHandler {
   return async function (event) {
     if (options?.discriminatorKey) {
@@ -88,13 +92,19 @@ export const useEntityUpdateHandler = function<E extends Entity = Entity> (model
   }
 }
 
-export const useEntityDeleteHandler = function<E extends Entity = Entity> (model: Model<E>, options?: EntityHandlerOptions<E>): EventHandler {
+export const useEntityDeleteHandler = function<E extends Entity = Entity> (model: Model<E>, options?: EntityDeleteHandlerOptions<E>): EventHandler {
   return async function (event) {
     const { id } = getRouterParams(event)
     if (options?.discriminatorKey) {
       model = getDiscriminator(event, model, options.discriminatorKey)
     }
+
+    if (options?.findAndDelete) {
+      const ids = await options.findAndDelete(event, model)
+      await model.deleteMany({ _id: { $in: ids } })
+    } else {
     await model.deleteOne({ _id: id })
+    }
     return null
   }
 }
