@@ -30,12 +30,33 @@ interface EntityDeleteHandlerOptions<E extends Entity> extends EntityHandlerOpti
   findAndDelete?: (event: H3Event, model: Model<E>) => Promise<string[]>
 }
 
+export const useEntityCollectionHandler = function<E extends Entity = Entity> (model: Model<E>, options?: EntityHandlerOptions<E>): EventHandler {
+  return async function (event) {
+    const { method } = event
+    switch (method) {
+      case `GET`: return await useEntityListHandler(model, options)(event)
+      case `POST`: return await useEntityCreateHandler(model, options)(event)
+    }
+  }
+}
+
+export const useEntityHandler = function<E extends Entity = Entity> (model: Model<E>, options?: EntityHandlerOptions<E>): EventHandler {
+  return async function (event) {
+    const { method } = event
+    switch (method) {
+      case `GET`: return await useEntityReadHandler(model, options)(event)
+      case `PUT`: return await useEntityUpdateHandler(model, options)(event)
+      case `DELETE`: return await useEntityDeleteHandler(model, options)(event)
+    }
+  }
+}
+
 export const useEntityListHandler = function<E extends Entity = Entity> (model: Model<E>, options?: EntityHandlerOptions<E>): EventHandler {
   return async function (event) {
     if (options?.discriminatorKey) {
       model = getDiscriminator(event, model, options.discriminatorKey)
     }
-    
+
     const query = model.find()
     findReferences(model).forEach(path => query.populate(path, `_id`))
     const docs = await query.exec()
@@ -50,7 +71,7 @@ export const useEntityReadHandler = function<E extends Entity = Entity> (model: 
     if (options?.discriminatorKey) {
       model = getDiscriminator(event, model, options.discriminatorKey)
     }
-    
+
     const query = model.findById(id)
     findReferences(model).forEach(path => query.populate(path, `_id`))
     const doc = await query.exec()
@@ -65,12 +86,12 @@ export const useEntityCreateHandler = function<E extends Entity = Entity> (model
     if (options?.discriminatorKey) {
       model = getDiscriminator(event, model, options.discriminatorKey)
     }
-    
+
     const { _id: id } = await model.create(body)
     const query = model.findById(id)
     findReferences(model).forEach(path => query.populate(path, `_id`))
     const doc = await query.exec()
-    
+
     return doc?.toJSON()
   }
 }
@@ -82,12 +103,12 @@ export const useEntityUpdateHandler = function<E extends Entity = Entity> (model
     if (options?.discriminatorKey) {
       model = getDiscriminator(event, model, options.discriminatorKey)
     }
-    
+
     await model.updateOne({ _id: id }, body)
     const query = model.findById(id)
     findReferences(model).forEach(path => query.populate(path, `_id`))
     const doc = await query.exec()
-    
+
     return doc?.toJSON()
   }
 }
@@ -103,7 +124,7 @@ export const useEntityDeleteHandler = function<E extends Entity = Entity> (model
       const ids = await options.findAndDelete(event, model)
       await model.deleteMany({ _id: { $in: ids } })
     } else {
-    await model.deleteOne({ _id: id })
+      await model.deleteOne({ _id: id })
     }
     return null
   }
