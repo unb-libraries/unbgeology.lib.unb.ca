@@ -1,5 +1,5 @@
 import { model as defineModel, Schema, type SchemaDefinition } from "mongoose"
-import { type Entity } from "../../types/entity"
+import { type Entity } from "~/layers/mongo/types/entity"
 
 export const defineEntityType = function<E extends Entity> (name: string, definition: SchemaDefinition<E>) {
   const schema = new Schema<E>({
@@ -7,10 +7,33 @@ export const defineEntityType = function<E extends Entity> (name: string, defini
     created: Schema.Types.Number,
     updated: Schema.Types.Number,
   }, {
+    methods: {
+      url() {
+        const { collectionName } = this.collection
+        const type = `__t` in this ? String(this.__t) : ``
+        const id = String(this._id)
+        return type
+          ? `/api/${collectionName}/${type}/${id}`
+          : `/api/${collectionName}/${id}`
+      },
+    },
     timestamps: {
       createdAt: `created`,
       updatedAt: `updated`,
       currentTime: () => Date.now(),
+    },
+    toJSON: {
+      transform(doc, ret, options) {
+        ret.self = doc.url()
+        ret.created &&= new Date(doc.created)
+        ret.updated &&= new Date(doc.updated)
+
+        delete ret.__v
+        delete ret._id
+        delete ret.__t
+
+        return ret
+      },
     },
   })
 
