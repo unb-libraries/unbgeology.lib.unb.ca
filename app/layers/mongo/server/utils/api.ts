@@ -2,12 +2,17 @@ import { type Model } from "mongoose"
 import { type EventHandler, type H3Event } from "h3"
 import { Entity } from "~/layers/mongo/types/entity"
 
-const getDiscriminator = function<E extends Entity> (event: H3Event, model: Model<E>, discriminator: string) {
-  const type = getRouterParam(event, discriminator)
-  if (type && model.discriminators?.[type]) {
-    return model.discriminators?.[type]
+const getDiscriminator = function<E extends Entity> (event: H3Event, model: Model<E>, discriminatorParam: string) {
+  const type = getRouterParam(event, discriminatorParam)
+  if (!type || !model.discriminators) {
+    return model
   }
-  return model
+
+  const discriminator = Object
+    .values(model.discriminators)
+    .find(dsc => dsc.modelName.toLowerCase() === type)
+
+  return discriminator || model
 }
 
 const findReferences = function<E extends Entity> (model: Model<E>) {
