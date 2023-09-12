@@ -17,6 +17,12 @@ export const defineEntityType = function<E extends Entity> (name: string, defini
           : `/api/${collectionName}/${id}`
       },
     },
+    statics: {
+      async findByUrl(url: string) {
+        const id = url.split(`/`).at(-1)
+        return await this.findById(id)
+      },
+    },
     timestamps: {
       createdAt: `created`,
       updatedAt: `updated`,
