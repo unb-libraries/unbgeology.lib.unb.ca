@@ -10,6 +10,13 @@ const getDiscriminator = function<E extends Entity> (event: H3Event, model: Mode
   return model
 }
 
+const findReferences = function<E extends Entity> (model: Model<E>) {
+  return Object
+    .values(model.schema.paths)
+    .filter(({ path, instance, options }) => path !== `_id` && instance === `ObjectId` && options.ref)
+    .map(({ path }) => path)
+}
+
 interface EntityHandlerOptions<E extends Entity> {
   discriminatorKey?: string
 }
@@ -19,7 +26,11 @@ export const useEntityListHandler = function<E extends Entity = Entity> (model: 
     if (options?.discriminatorKey) {
       model = getDiscriminator(event, model, options.discriminatorKey)
     }
-    const docs = await model.find()
+    
+    const query = model.find()
+    findReferences(model).forEach(path => query.populate(path, `_id`))
+    const docs = await query.exec()
+
     return docs.map(doc => doc.toJSON())
   }
 }
@@ -30,7 +41,11 @@ export const useEntityReadHandler = function<E extends Entity = Entity> (model: 
     if (options?.discriminatorKey) {
       model = getDiscriminator(event, model, options.discriminatorKey)
     }
-    const doc = await model.findById(id)
+    
+    const query = model.findById(id)
+    findReferences(model).forEach(path => query.populate(path, `_id`))
+    const doc = await query.exec()
+
     return doc?.toJSON()
   }
 }
@@ -41,8 +56,12 @@ export const useEntityCreateHandler = function<E extends Entity = Entity> (model
     if (options?.discriminatorKey) {
       model = getDiscriminator(event, model, options.discriminatorKey)
     }
+    
     const { _id: id } = await model.create(body)
-    const doc = await model.findById(id)
+    const query = model.findById(id)
+    findReferences(model).forEach(path => query.populate(path, `_id`))
+    const doc = await query.exec()
+    
     return doc?.toJSON()
   }
 }
@@ -54,8 +73,12 @@ export const useEntityUpdateHandler = function<E extends Entity = Entity> (model
     if (options?.discriminatorKey) {
       model = getDiscriminator(event, model, options.discriminatorKey)
     }
+    
     await model.updateOne({ _id: id }, body)
-    const doc = await model.findById(id)
+    const query = model.findById(id)
+    findReferences(model).forEach(path => query.populate(path, `_id`))
+    const doc = await query.exec()
+    
     return doc?.toJSON()
   }
 }
