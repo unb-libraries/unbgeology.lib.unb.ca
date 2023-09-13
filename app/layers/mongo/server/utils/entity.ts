@@ -1,5 +1,9 @@
-import { model as defineModel, Schema, type SchemaDefinition } from "mongoose"
+import { model as defineModel, model as loadModel, Schema, type SchemaDefinition } from "mongoose"
 import { type Entity } from "~/layers/mongo/types/entity"
+
+export const useEntityType = function<E extends Entity> (name: string) {
+  return loadModel<E>(name)
+}
 
 export const defineEntityType = function<E extends Entity> (name: string, definition: SchemaDefinition<E>) {
   const schema = new Schema<E>({

@@ -1,4 +1,4 @@
-import { type Model } from "mongoose"
+import { type Model, type Schema } from "mongoose"
 import { type EventHandler, type H3Event } from "h3"
 import { Entity } from "~/layers/mongo/types/entity"
 
@@ -20,6 +20,27 @@ const findReferences = function<E extends Entity> (model: Model<E>) {
     .values(model.schema.paths)
     .filter(({ path, instance, options }) => path !== `_id` && instance === `ObjectId` && options.ref)
     .map(({ path }) => path)
+}
+
+const entityURLtoID = async function (url: string, modelName: string) {
+  const model = useEntityType(modelName)
+  const { _id } = await model.findByUrl(url)
+  return _id
+}
+
+const resolveEntityURLs = async function<E extends Entity> (obj: Partial<E>, schema: Schema<E>) {
+  const entries = await Promise.all(Object.entries(obj)
+    .filter(([pathName, _]) => schema.path(pathName).instance === `ObjectId`)
+    .map(async ([pathName, url]) => {
+      const pathSchema = schema.path(pathName)
+      const { ref } = pathSchema.options
+      return [pathName, await entityURLtoID(url, ref)]
+    }))
+
+  return {
+    ...obj,
+    ...Object.fromEntries(entries),
+  }
 }
 
 interface EntityHandlerOptions<E extends Entity> {
@@ -82,7 +103,7 @@ export const useEntityReadHandler = function<E extends Entity = Entity> (model: 
 
 export const useEntityCreateHandler = function<E extends Entity = Entity> (model: Model<E>, options?: EntityHandlerOptions<E>): EventHandler {
   return async function (event) {
-    const body = await readBody<Partial<E>>(event)
+    const body = await resolveEntityURLs(await readBody<Partial<E>>(event), model.schema)
     if (options?.discriminatorKey) {
       model = getDiscriminator(event, model, options.discriminatorKey)
     }
@@ -99,7 +120,7 @@ export const useEntityCreateHandler = function<E extends Entity = Entity> (model
 export const useEntityUpdateHandler = function<E extends Entity = Entity> (model: Model<E>, options?: EntityHandlerOptions<E>): EventHandler {
   return async function (event) {
     const { id } = getRouterParams(event)
-    const body = await readBody<Partial<E>>(event)
+    const body = await resolveEntityURLs(await readBody<Partial<E>>(event), model.schema)
     if (options?.discriminatorKey) {
       model = getDiscriminator(event, model, options.discriminatorKey)
     }
