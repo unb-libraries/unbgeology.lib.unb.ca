@@ -1,6 +1,6 @@
-import { type Model, type Schema } from "mongoose"
+import { type Model, type Schema, type Types } from "mongoose"
 import { type EventHandler, type H3Event } from "h3"
-import { Entity } from "~/layers/mongo/types/entity"
+import { Entity, EntityFieldTypes } from "~/layers/mongo/types/entity"
 
 const getDiscriminator = function<E extends Entity> (event: H3Event, model: Model<E>, discriminatorParam: string) {
   const type = getRouterParam(event, discriminatorParam)
@@ -24,7 +24,7 @@ const findReferences = function<E extends Entity> (model: Model<E>) {
 
 const entityURLtoID = async function (url: string, modelName: string) {
   const model = useEntityType(modelName)
-  const { _id } = await model.findByUrl(url)
+  const { _id }: { _id: Types.ObjectId } = await model.findByUrl(url)
   return _id
 }
 
@@ -49,6 +49,10 @@ interface EntityHandlerOptions<E extends Entity> {
 
 interface EntityDeleteHandlerOptions<E extends Entity> extends EntityHandlerOptions<E> {
   findAndDelete?: (event: H3Event, model: Model<E>) => Promise<string[]>
+}
+
+interface EntityRelationshipHandlerOptions<E extends Entity> extends EntityHandlerOptions<E> {
+  rel: string
 }
 
 export const useEntityCollectionHandler = function<E extends Entity = Entity> (model: Model<E>, options?: EntityHandlerOptions<E>): EventHandler {
@@ -148,5 +152,29 @@ export const useEntityDeleteHandler = function<E extends Entity = Entity> (model
       await model.deleteOne({ _id: id })
     }
     return null
+  }
+}
+
+export const useEntityReferenceCollectionAddHandler = function<E extends Entity = Entity> (model: Model<E>, options: EntityRelationshipHandlerOptions<E>): EventHandler {
+  return async function (event) {
+    const { id, [options.rel]: path } = getRouterParams(event)
+    const body = await readBody(event)
+    const schemaPath = model.schema.path(path)
+
+    if (!(schemaPath instanceof EntityFieldTypes.Array)) {
+      throw createError({ statusCode: 400, statusMessage: `Invalid path.` })
+    }
+
+    const targetModelName = schemaPath.caster?.options.ref
+    const entityURLs = Array.isArray(body[path]) ? body[path] : [body[path]]
+    const entityIDs: Types.ObjectId[] = await Promise.all(
+      entityURLs.map(async (url: string) => await entityURLtoID(url, targetModelName)))
+
+    const doc = await model
+      .findByIdAndUpdate(id, { $push: { [path]: entityIDs } }, { returnDocument: `after` })
+      .populate(path, `_id`)
+      .select(path)
+
+    return doc?.toJSON()[path]
   }
 }
