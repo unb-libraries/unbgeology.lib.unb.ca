@@ -184,7 +184,7 @@ export const useEntityReferenceCollectionAddHandler = function<E extends Entity 
       entityURLs.map(async (url: string) => await entityURLtoID(url, targetModelName)))
 
     const doc = await model
-      .findByIdAndUpdate(id, { $push: { [path]: entityIDs } }, { returnDocument: `after` })
+      .findByIdAndUpdate(id, { $push: { [path]: { $each: entityIDs } } }, { returnDocument: `after` })
       .populate(path, `_id`)
       .select(path)
 
