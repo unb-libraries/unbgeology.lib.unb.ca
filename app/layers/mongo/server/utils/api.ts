@@ -191,3 +191,27 @@ export const useEntityReferenceCollectionAddHandler = function<E extends Entity 
     return doc?.toJSON()[path]
   }
 }
+
+export const useEntityReferenceCollectionRemoveHandler = function<E extends Entity = Entity> (model: Model<E>, options: EntityRelationshipHandlerOptions<E>): EventHandler {
+  return async function (event) {
+    const { id, [options.rel]: path } = getRouterParams(event)
+    const body = await readBody(event)
+    const schemaPath = model.schema.path(path)
+
+    if (!(schemaPath instanceof EntityFieldTypes.Array)) {
+      throw createError({ statusCode: 400, statusMessage: `Invalid path.` })
+    }
+
+    const targetModelName = schemaPath.caster?.options.ref
+    const entityURLs = Array.isArray(body[path]) ? body[path] : [body[path]]
+    const entityIDs: Types.ObjectId[] = await Promise.all(
+      entityURLs.map(async (url: string) => await entityURLtoID(url, targetModelName)))
+
+    const doc = await model
+      .findByIdAndUpdate(id, { $pull: { [path]: { $in: entityIDs } } }, { returnDocument: `after` })
+      .populate(path, `_id`)
+      .select(path)
+
+    return doc?.toJSON()[path]
+  }
+}
