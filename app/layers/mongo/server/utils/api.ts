@@ -155,6 +155,19 @@ export const useEntityDeleteHandler = function<E extends Entity = Entity> (model
   }
 }
 
+export const useEntityReferenceCollectionHandler = function<E extends Entity = Entity> (model: Model<E>, options: EntityRelationshipHandlerOptions<E>): EventHandler {
+  return async function (event) {
+    const { id, [options.rel]: path } = getRouterParams(event)
+
+    const doc = await model
+      .findById(id)
+      .populate(path, `_id`)
+      .select(path)
+
+    return doc?.toJSON()[path]
+  }
+}
+
 export const useEntityReferenceCollectionAddHandler = function<E extends Entity = Entity> (model: Model<E>, options: EntityRelationshipHandlerOptions<E>): EventHandler {
   return async function (event) {
     const { id, [options.rel]: path } = getRouterParams(event)
