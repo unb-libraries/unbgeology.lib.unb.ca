@@ -1,8 +1,29 @@
-import { model as defineModel, model as loadModel, Schema, type SchemaDefinition } from "mongoose"
-import { type Entity } from "~/layers/mongo/types/entity"
+import { defu } from "defu"
+import { model as defineModel, model as loadModel, Model, Schema, SchemaType, type SchemaDefinition } from "mongoose"
+import { EntityFieldTypes, type Entity } from "~/layers/mongo/types/entity"
 
 export const useEntityType = function<E extends Entity> (name: string) {
   return loadModel<E>(name)
+}
+export enum Cardinality {
+  ONE_TO_ONE = 1,
+  ONE_TO_MANY = 2,
+  MANY_TO_ONE = 4,
+  MANY_TO_MANY = 8,
+  ANY = 15,
+}
+
+interface EntityRelationship {
+  cardinality: Cardinality
+  path: string
+  nested?: EntityRelationship[]
+}
+
+interface RelationshipsTraverseOptions {
+  rootPath?: string
+  filter?: {
+    cardinality?: Cardinality,
+  },
 }
 
 export const defineEntityType = function<E extends Entity> (name: string, definition: SchemaDefinition<E>) {
@@ -25,6 +46,47 @@ export const defineEntityType = function<E extends Entity> (name: string, defini
       async findByUrl(url: string) {
         const id = url.split(`/`).at(-1)
         return await this.findById(id)
+      },
+      relationships(options?: RelationshipsTraverseOptions) {
+        options = defu<RelationshipsTraverseOptions, Required<RelationshipsTraverseOptions>[]>(options || {}, {
+          rootPath: ``,
+          filter: {
+            cardinality: Cardinality.ANY,
+          },
+        })
+
+        const traverse = (options: RelationshipsTraverseOptions): EntityRelationship[] => {
+          const { Array: ArrayPath, ObjectId: RefeferencePath } = EntityFieldTypes
+          const buildPath = function (...segments: string[]) {
+            return segments.filter(s => s).join(`.`)
+          }
+          
+          const paths = Object
+            .values(options.rootPath ? this.schema.path(options.rootPath).schema?.paths ?? [] : this.schema.paths)
+          .filter(schema => schema.path !== `_id`)
+          
+          const filters: [Cardinality, (pathSchema: SchemaType) => boolean][] = [
+            [Cardinality.ONE_TO_ONE, ps => !(ps instanceof ArrayPath) && ps.schema !== undefined],
+            [Cardinality.ONE_TO_MANY, ps => ps instanceof RefeferencePath],
+            [Cardinality.MANY_TO_ONE, ps => ps instanceof ArrayPath && ps.schema !== undefined],
+            [Cardinality.MANY_TO_MANY, ps => ps instanceof ArrayPath && ps.caster instanceof RefeferencePath],
+          ]
+
+          const rel: EntityRelationship[] = []
+          filters.forEach(([cardinality, filter]) => {
+            if (options.filter!.cardinality! & cardinality) {
+              rel.push(...paths.filter(filter).map<EntityRelationship>(ps => ({
+                cardinality,
+                path: ps.path,
+                nested: traverse(defu({ rootPath: buildPath(options.rootPath!, ps.path) }, options)),
+            })))
+            }
+          })
+
+        return rel
+        }
+
+        return traverse(options)
       },
     },
     timestamps: {
