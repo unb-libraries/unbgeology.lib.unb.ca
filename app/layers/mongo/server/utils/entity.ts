@@ -23,6 +23,7 @@ interface RelationshipsTraverseOptions {
   rootPath?: string
   filter?: {
     cardinality?: Cardinality,
+    includeUnmatchedParent?: boolean,
   },
 }
 
@@ -52,6 +53,7 @@ export const defineEntityType = function<E extends Entity> (name: string, defini
           rootPath: ``,
           filter: {
             cardinality: Cardinality.ANY,
+            includeUnmatchedParent: true,
           },
         })
 
@@ -74,12 +76,18 @@ export const defineEntityType = function<E extends Entity> (name: string, defini
 
           const rel: EntityRelationship[] = []
           filters.forEach(([cardinality, filter]) => {
-            if (options.filter!.cardinality! & cardinality) {
-              rel.push(...paths.filter(filter).map<EntityRelationship>(ps => ({
+            const filtered = paths
+              .filter(filter)
+              .map<EntityRelationship>(ps => ({
                 cardinality,
                 path: ps.path,
                 nested: traverse(defu({ rootPath: buildPath(options.rootPath!, ps.path) }, options)),
-            })))
+              }))
+
+            if (options.filter!.cardinality! & cardinality) {
+              rel.push(...filtered)
+            } else if (options.filter?.includeUnmatchedParent) {
+              rel.push(...filtered.filter(rel => (rel.nested ?? []).length > 0))
             }
           })
 
