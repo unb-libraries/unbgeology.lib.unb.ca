@@ -25,6 +25,7 @@ interface RelationshipsTraverseOptions {
     cardinality?: Cardinality,
     includeUnmatchedParent?: boolean,
   },
+  flatten?: boolean,
 }
 
 export const defineEntityType = function<E extends Entity> (name: string, definition: SchemaDefinition<E>) {
@@ -55,6 +56,7 @@ export const defineEntityType = function<E extends Entity> (name: string, defini
             cardinality: Cardinality.ANY,
             includeUnmatchedParent: true,
           },
+          flatten: false,
         })
 
         const traverse = (options: RelationshipsTraverseOptions): EntityRelationship[] => {
@@ -91,7 +93,21 @@ export const defineEntityType = function<E extends Entity> (name: string, defini
             }
           })
 
-        return rel
+          const flatten = (ers: EntityRelationship[]) => {
+            ers.forEach((er) => {
+              ers.push(...flatten((er.nested ?? []).map(n => ({
+                ...n,
+                path: `${er.path}.${n.path}`,
+              }))))
+              delete er.nested
+              return er
+            })
+            return ers
+          }
+
+          return options.flatten
+            ? flatten(rel).filter(rel => rel.cardinality & options.filter!.cardinality!)
+            : rel
         }
 
         return traverse(options)
