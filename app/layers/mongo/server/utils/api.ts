@@ -1,21 +1,21 @@
-import { type Model, type Schema, type Types } from "mongoose"
+import { type Schema, type Types } from "mongoose"
 import { type EventHandler, type H3Event } from "h3"
-import { Entity, EntityFieldTypes } from "~/layers/mongo/types/entity"
+import { Entity, EntityModel, EntityFieldTypes, Cardinality, EntityInstanceMethods } from "~/layers/mongo/types/entity"
 
-const getDiscriminator = function<E extends Entity> (event: H3Event, model: Model<E>, discriminatorParam: string) {
+const getDiscriminator = function<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods, M extends EntityModel<E, I> = EntityModel<E, I>> (event: H3Event, model: M, discriminatorParam: string) {
   const type = getRouterParam(event, discriminatorParam)
   if (!type || !model.discriminators) {
     return model
   }
 
   const discriminator = Object
-    .values(model.discriminators)
+    .values(model.discriminators as { [name: string]: M})
     .find(dsc => dsc.modelName.toLowerCase() === type)
 
   return discriminator || model
 }
 
-const findReferences = function<E extends Entity> (model: Model<E>) {
+const findReferences = function<E extends Entity, I extends EntityInstanceMethods = EntityInstanceMethods> (model: EntityModel<E, I>) {
   return Object
     .values(model.schema.paths)
     .filter(({ path, instance, options }) => path !== `_id` && instance === `ObjectId` && options.ref)
@@ -24,11 +24,11 @@ const findReferences = function<E extends Entity> (model: Model<E>) {
 
 const entityURLtoID = async function (url: string, modelName: string) {
   const model = useEntityType(modelName)
-  const { _id }: { _id: Types.ObjectId } = await model.findByUrl(url)
+  const { _id }: { _id: Types.ObjectId } = await model.findByURL(url)
   return _id
 }
 
-const resolveEntityURLs = async function<E extends Entity> (obj: Partial<E>, schema: Schema<E>) {
+const resolveEntityURLs = async function<E extends Entity> (obj: Partial<E>, schema: Schema) {
   const entries = await Promise.all(Object.entries(obj)
     .filter(([pathName, _]) => schema.path(pathName).instance === `ObjectId`)
     .map(async ([pathName, url]) => {
@@ -43,29 +43,30 @@ const resolveEntityURLs = async function<E extends Entity> (obj: Partial<E>, sch
   }
 }
 
-interface EntityHandlerOptions<E extends Entity> {
+interface EntityHandlerOptions {
   discriminatorKey?: string
+  rel?: string
 }
 
-interface EntityDeleteHandlerOptions<E extends Entity> extends EntityHandlerOptions<E> {
-  findAndDelete?: (event: H3Event, model: Model<E>) => Promise<string[]>
+interface EntityDeleteHandlerOptions extends EntityHandlerOptions {
+  findAndDelete?: <E extends Entity, I extends EntityInstanceMethods = EntityInstanceMethods, M extends EntityModel<E, I> = EntityModel<E, I>> (event: H3Event, model: M) => Promise<string[]>
 }
 
-interface EntityRelationshipHandlerOptions<E extends Entity> extends EntityHandlerOptions<E> {
+interface EntityRelationshipHandlerOptions extends EntityHandlerOptions {
   rel: string
 }
 
-export const useEntityCollectionHandler = function<E extends Entity = Entity> (model: Model<E>, options?: EntityHandlerOptions<E>): EventHandler {
+export const useEntityCollectionHandler = function<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods, M extends EntityModel<E, I> = EntityModel<E, I>> (model: M, options?: EntityHandlerOptions): EventHandler {
   return async function (event) {
     const { method } = event
     switch (method) {
-      case `GET`: return await useEntityListHandler(model, options)(event)
-      case `POST`: return await useEntityCreateHandler(model, options)(event)
+      case `GET`: return await useEntityListHandler<E, I, M>(model, options)(event)
+      case `POST`: return await useEntityCreateHandler<E, I, M>(model, options)(event)
     }
   }
 }
 
-export const useEntityHandler = function<E extends Entity = Entity> (model: Model<E>, options?: EntityHandlerOptions<E>): EventHandler {
+export const useEntityHandler = function<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods, M extends EntityModel<E, I> = EntityModel<E, I>> (model: M, options?: EntityHandlerOptions): EventHandler {
   return async function (event) {
     const { method } = event
     switch (method) {
@@ -76,10 +77,11 @@ export const useEntityHandler = function<E extends Entity = Entity> (model: Mode
   }
 }
 
-export const useEntityListHandler = function<E extends Entity = Entity> (model: Model<E>, options?: EntityHandlerOptions<E>): EventHandler {
+export const useEntityListHandler = function<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods, M extends EntityModel<E, I> = EntityModel<E, I>> (model: M, options?: EntityHandlerOptions): EventHandler {
   return async function (event) {
+    const { id } = getRouterParams(event)
     if (options?.discriminatorKey) {
-      model = getDiscriminator(event, model, options.discriminatorKey)
+      model = getDiscriminator<E, I, M>(event, model, options.discriminatorKey)
     }
 
     const query = model.find()
@@ -90,11 +92,11 @@ export const useEntityListHandler = function<E extends Entity = Entity> (model: 
   }
 }
 
-export const useEntityReadHandler = function<E extends Entity = Entity> (model: Model<E>, options?: EntityHandlerOptions<E>): EventHandler {
+export const useEntityReadHandler = function<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods, M extends EntityModel<E, I> = EntityModel<E, I>> (model: M, options?: EntityHandlerOptions): EventHandler {
   return async function (event) {
     const { id } = getRouterParams(event)
     if (options?.discriminatorKey) {
-      model = getDiscriminator(event, model, options.discriminatorKey)
+      model = getDiscriminator<E, I, M>(event, model, options.discriminatorKey)
     }
 
     const query = model.findById(id)
@@ -105,11 +107,11 @@ export const useEntityReadHandler = function<E extends Entity = Entity> (model: 
   }
 }
 
-export const useEntityCreateHandler = function<E extends Entity = Entity> (model: Model<E>, options?: EntityHandlerOptions<E>): EventHandler {
+export const useEntityCreateHandler = function<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods, M extends EntityModel<E, I> = EntityModel<E, I>> (model: M, options?: EntityHandlerOptions): EventHandler {
   return async function (event) {
-    const body = await resolveEntityURLs(await readBody<Partial<E>>(event), model.schema)
+    const body = await resolveEntityURLs<E>(await readBody<Partial<E>>(event), model.schema)
     if (options?.discriminatorKey) {
-      model = getDiscriminator(event, model, options.discriminatorKey)
+      model = getDiscriminator<E, I, M>(event, model, options.discriminatorKey)
     }
 
     const { _id: id } = await model.create(body)
@@ -121,12 +123,12 @@ export const useEntityCreateHandler = function<E extends Entity = Entity> (model
   }
 }
 
-export const useEntityUpdateHandler = function<E extends Entity = Entity> (model: Model<E>, options?: EntityHandlerOptions<E>): EventHandler {
+export const useEntityUpdateHandler = function<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods, M extends EntityModel<E, I> = EntityModel<E, I>> (model: M, options?: EntityHandlerOptions): EventHandler {
   return async function (event) {
     const { id } = getRouterParams(event)
-    const body = await resolveEntityURLs(await readBody<Partial<E>>(event), model.schema)
+    const body = await resolveEntityURLs<E>(await readBody<Partial<E>>(event), model.schema)
     if (options?.discriminatorKey) {
-      model = getDiscriminator(event, model, options.discriminatorKey)
+      model = getDiscriminator<E, I, M>(event, model, options.discriminatorKey)
     }
 
     await model.updateOne({ _id: id }, body)
@@ -138,15 +140,15 @@ export const useEntityUpdateHandler = function<E extends Entity = Entity> (model
   }
 }
 
-export const useEntityDeleteHandler = function<E extends Entity = Entity> (model: Model<E>, options?: EntityDeleteHandlerOptions<E>): EventHandler {
+export const useEntityDeleteHandler = function<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods, M extends EntityModel<E, I> = EntityModel<E, I>> (model: M, options?: EntityDeleteHandlerOptions): EventHandler {
   return async function (event) {
     const { id } = getRouterParams(event)
     if (options?.discriminatorKey) {
-      model = getDiscriminator(event, model, options.discriminatorKey)
+      model = getDiscriminator<E, I, M>(event, model, options.discriminatorKey)
     }
 
     if (options?.findAndDelete) {
-      const ids = await options.findAndDelete(event, model)
+      const ids = await options.findAndDelete<E, I, M>(event, model)
       await model.deleteMany({ _id: { $in: ids } })
     } else {
       await model.deleteOne({ _id: id })
@@ -155,20 +157,20 @@ export const useEntityDeleteHandler = function<E extends Entity = Entity> (model
   }
 }
 
-export const useEntityReferenceCollectionHandler = function<E extends Entity = Entity> (model: Model<E>, options: EntityRelationshipHandlerOptions<E>): EventHandler {
+export const useEntityReferenceCollectionHandler = function<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods, M extends EntityModel<E, I> = EntityModel<E, I>> (model: M, options: EntityRelationshipHandlerOptions): EventHandler {
   return async function (event) {
     const { id, [options.rel]: path } = getRouterParams(event)
 
-    const doc = await model
-      .findById(id)
-      .populate(path, `_id`)
+    const query = model.findById(id)
+    query.populate(path, `_id`)
       .select(path)
+    const doc = await query.exec()
 
-    return doc?.toJSON()[path]
+    return doc?.toJSON()
   }
 }
 
-export const useEntityReferenceCollectionAddHandler = function<E extends Entity = Entity> (model: Model<E>, options: EntityRelationshipHandlerOptions<E>): EventHandler {
+export const useEntityReferenceCollectionAddHandler = function<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods, M extends EntityModel<E, I> = EntityModel<E, I>> (model: M, options: EntityRelationshipHandlerOptions): EventHandler {
   return async function (event) {
     const { id, [options.rel]: path } = getRouterParams(event)
     const body = await readBody(event)
@@ -183,16 +185,17 @@ export const useEntityReferenceCollectionAddHandler = function<E extends Entity 
     const entityIDs: Types.ObjectId[] = await Promise.all(
       entityURLs.map(async (url: string) => await entityURLtoID(url, targetModelName)))
 
-    const doc = await model
-      .findByIdAndUpdate(id, { $addToSet: { [path]: { $each: entityIDs } } }, { returnDocument: `after` })
+    const query = model.findByIdAndUpdate(id, { $addToSet: { [path]: { $each: entityIDs } } }, { returnDocument: `after` })
+    query
       .populate(path, `_id`)
       .select(path)
+    const doc = await query.exec()
 
     return doc?.toJSON()[path]
   }
 }
 
-export const useEntityReferenceCollectionRemoveHandler = function<E extends Entity = Entity> (model: Model<E>, options: EntityRelationshipHandlerOptions<E>): EventHandler {
+export const useEntityReferenceCollectionRemoveHandler = function<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods, M extends EntityModel<E, I> = EntityModel<E, I>> (model: M, options: EntityRelationshipHandlerOptions): EventHandler {
   return async function (event) {
     const { id, [options.rel]: path } = getRouterParams(event)
     const body = await readBody(event)

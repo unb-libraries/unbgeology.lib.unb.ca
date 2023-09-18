@@ -1,56 +1,40 @@
 import { defu } from "defu"
-import { model as defineModel, model as loadModel, Model, Schema, SchemaType, type SchemaDefinition } from "mongoose"
-import { EntityFieldTypes, type Entity } from "~/layers/mongo/types/entity"
+import { 
+  model as defineModel,
+  model as loadModel,
+  Model,
+  Schema,
+  SchemaType,
+  type HydratedDocument,
+  type SchemaDefinition,
+} from "mongoose"
+import { 
+  EntityFieldTypes,
+  type Entity,
+  Cardinality,
+  type EntityRelationship,
+  type EntityRelationshipsTraverseOptions,
+  type EntityInstanceMethods,
+  type EntityModel,
+} from "~/layers/mongo/types/entity"
 
-export const useEntityType = function<E extends Entity> (name: string) {
-  return loadModel<E>(name)
-}
-export enum Cardinality {
-  ONE_TO_ONE = 1,
-  ONE_TO_MANY = 2,
-  MANY_TO_ONE = 4,
-  MANY_TO_MANY = 8,
-  ANY = 15,
-}
-
-interface EntityRelationship {
-  cardinality: Cardinality
-  path: string
-  nested?: EntityRelationship[]
-}
-
-interface RelationshipsTraverseOptions {
-  rootPath?: string
-  filter?: {
-    cardinality?: Cardinality,
-    includeUnmatchedParent?: boolean,
-  },
-  flatten?: boolean,
+export const useEntityType = function<E extends Entity = Entity, M extends EntityModel = EntityModel> (name: string) {
+  return loadModel<E, M>(name)
 }
 
-export const defineEntityType = function<E extends Entity> (name: string, definition: SchemaDefinition<E>) {
-  const schema = new Schema<E>({
+export const defineEntityType = function<E extends Entity, M extends EntityModel = EntityModel, I extends EntityInstanceMethods = EntityInstanceMethods> (name: string, definition: SchemaDefinition<E>) {
+  const schema = new Schema<E, M, I>({
     ...definition,
     created: Schema.Types.Number,
     updated: Schema.Types.Number,
   }, {
-    methods: {
-      url() {
-        const { collectionName } = this.collection
-        const type = `__t` in this ? String(this.__t) : ``
-        const id = String(this._id)
-        return type
-          ? `/api/${collectionName}/${type}/${id}`
-          : `/api/${collectionName}/${id}`
-      },
-    },
     statics: {
-      async findByUrl(url: string) {
+      async findbyURL(url: string) {
         const id = url.split(`/`).at(-1)
         return await this.findById(id)
       },
-      relationships(options?: RelationshipsTraverseOptions) {
-        options = defu<RelationshipsTraverseOptions, Required<RelationshipsTraverseOptions>[]>(options || {}, {
+      relationships(options?: EntityRelationshipsTraverseOptions) {
+        options = defu<EntityRelationshipsTraverseOptions, Required<EntityRelationshipsTraverseOptions>[]>(options || {}, {
           rootPath: ``,
           filter: {
             cardinality: Cardinality.ANY,
@@ -59,7 +43,7 @@ export const defineEntityType = function<E extends Entity> (name: string, defini
           flatten: false,
         })
 
-        const traverse = (options: RelationshipsTraverseOptions): EntityRelationship[] => {
+        const traverse = (options: EntityRelationshipsTraverseOptions): EntityRelationship[] => {
           const { Array: ArrayPath, ObjectId: RefeferencePath } = EntityFieldTypes
           const buildPath = function (...segments: string[]) {
             return segments.filter(s => s).join(`.`)
@@ -133,7 +117,16 @@ export const defineEntityType = function<E extends Entity> (name: string, defini
     },
   })
 
-  return defineModel<E>(name, schema)
+  schema.method(`url`, function url(this: HydratedDocument<E>) {
+    const { collectionName } = this.collection
+    const type = `__t` in this ? String(this.__t) : ``
+    const id = String(this._id)
+    return type
+      ? `/api/${collectionName}/${type}/${id}`
+      : `/api/${collectionName}/${id}`
+  })
+
+  return defineModel<E, M>(name, schema)
 }
 
 export const defineNestedEntityType = function<E extends object> (definition: SchemaDefinition<E>) {
