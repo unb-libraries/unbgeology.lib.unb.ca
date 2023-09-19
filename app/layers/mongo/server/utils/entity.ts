@@ -10,6 +10,7 @@ import {
 } from "mongoose"
 import { 
   EntityFieldTypes,
+  type EntityTypeOptions,
   type Entity,
   Cardinality,
   type EntityRelationship,
@@ -22,7 +23,7 @@ export const useEntityType = function<E extends Entity = Entity, M extends Entit
   return loadModel<E, M>(name)
 }
 
-export const defineEntityType = function<E extends Entity, M extends EntityModel = EntityModel, I extends EntityInstanceMethods = EntityInstanceMethods> (name: string, definition: SchemaDefinition<E>) {
+export const defineEntityType = function<E extends Entity, M extends EntityModel = EntityModel, I extends EntityInstanceMethods = EntityInstanceMethods> (name: string, definition: SchemaDefinition<E>, options?: EntityTypeOptions) {
   const schema = new Schema<E, M, I>({
     ...definition,
     created: Schema.Types.Number,
@@ -32,12 +33,19 @@ export const defineEntityType = function<E extends Entity, M extends EntityModel
       baseURL() {
         return `/api/${useEntityType(name).collection.collectionName}`
       },
-      async findbyURL(url: string) {
-        const id = useEntityType(name).parseURL(url)
-        return await this.findById(id)
+      async findByPK(pk: string) {
+        const path = useEntityType(name).pk()
+        return await this.findOne().where(path, pk)
       },
-      parseURL(url: string) {
-        return url.split(`/`).at(-1)
+      async findByURL(url: string) {
+        const pk = url.split(`/`).at(-1)
+        return pk
+          ? await useEntityType(name).findByPK(pk)
+          : undefined
+      },
+      pk() {
+        const pk = options?.pk || `_id`
+        return useEntityType(name).schema.path(pk) ? pk : `_id`
       },
       relationships(options?: EntityRelationshipsTraverseOptions) {
         options = defu<EntityRelationshipsTraverseOptions, Required<EntityRelationshipsTraverseOptions>[]>(options || {}, {
@@ -123,17 +131,23 @@ export const defineEntityType = function<E extends Entity, M extends EntityModel
         delete ret.__v
         delete ret._id
         delete ret.__t
+        delete ret[useEntityType(name).pk()]
 
         return ret
       },
     },
   })
 
-  schema.method(`url`, function url(this: HydratedDocument<E>, rel?: string) {
-    const type = `__t` in this ? String(this.__t) : ``
-    const id = String(this._id)
+  schema.method(`pk`, function (this: HydratedDocument<E, I>) {
+    const path = useEntityType(name).pk()
+    return this.get(path)
+  })
 
-    const build = useEntityType(name).baseURL().split(`/`).concat(id)
+  schema.method(`url`, function url(this: HydratedDocument<E, I>, rel?: string) {
+    const type = `__t` in this ? String(this.__t) : ``
+    const pk = this.pk()
+
+    const build = useEntityType(name).baseURL().split(`/`).concat(pk)
     if (type) { build.splice(2, 0, type) }
     if (rel) { build.push(rel) }
 

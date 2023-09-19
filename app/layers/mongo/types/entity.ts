@@ -25,6 +25,10 @@ export interface EntityRelationshipsTraverseOptions {
   flatten?: boolean,
 }
 
+export interface EntityTypeOptions {
+  pk?: string
+}
+
 export interface Entity {
   readonly _id: Types.ObjectId
   readonly created: Date
@@ -32,12 +36,16 @@ export interface Entity {
 }
 
 export interface EntityInstanceMethods {
-  url(): string
+  pk(): string
+  url(rel?: string): string
 }
 
 export interface EntityModel<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods> extends Model<E, {}, I> {
+  baseURL(): string
+  findByPK(pk: string): Promise<HydratedDocument<E, I> | undefined>
+  findByURL(url: string): Promise<HydratedDocument<E, I> | undefined>
+  pk(): string
   relationships(options?: EntityRelationshipsTraverseOptions): EntityRelationship[]
-  findByURL(url: string): Promise<HydratedDocument<E, I>>
 }
 
 export interface DiscriminatedEntity extends Entity {
