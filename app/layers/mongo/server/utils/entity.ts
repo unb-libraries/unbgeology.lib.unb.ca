@@ -108,6 +108,12 @@ export const defineEntityType = function<E extends Entity, M extends EntityModel
         ret.created &&= new Date(doc.created)
         ret.updated &&= new Date(doc.updated)
 
+        useEntityType(name)
+          .relationships({ filter: { cardinality: ~Cardinality.ONE_TO_ONE } })
+          .forEach((rel) => {
+            ret[rel.path] &&= { self: doc.url(rel.path) }
+          })
+
         delete ret.__v
         delete ret._id
         delete ret.__t
@@ -117,13 +123,16 @@ export const defineEntityType = function<E extends Entity, M extends EntityModel
     },
   })
 
-  schema.method(`url`, function url(this: HydratedDocument<E>) {
+  schema.method(`url`, function url(this: HydratedDocument<E>, rel?: string) {
     const { collectionName } = this.collection
     const type = `__t` in this ? String(this.__t) : ``
     const id = String(this._id)
-    return type
-      ? `/api/${collectionName}/${type}/${id}`
-      : `/api/${collectionName}/${id}`
+
+    const build = [`/api`, collectionName, id]
+    if (type) { build.splice(2, 0, type) }
+    if (rel) { build.push(rel) }
+
+    return build.join(`/`)
   })
 
   return defineModel<E, M>(name, schema)

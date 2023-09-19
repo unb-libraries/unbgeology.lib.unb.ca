@@ -85,7 +85,8 @@ export const useEntityListHandler = function<E extends Entity = Entity, I extend
     }
 
     const query = model.find()
-    findReferences(model).forEach(path => query.populate(path, `_id`))
+    model.relationships({ filter: { cardinality: Cardinality.MANY_TO_ONE }})
+      .forEach(rel => query.populate(rel.path, `_id`))
     const docs = await query.exec()
 
     return docs.map(doc => doc.toJSON())
