@@ -28,19 +28,13 @@ const entityURLtoID = async function (url: string, modelName: string) {
   return _id
 }
 
-const resolveEntityURLs = async function<E extends Entity> (obj: Partial<E>, schema: Schema) {
-  const entries = await Promise.all(Object.entries(obj)
-    .filter(([pathName, _]) => schema.path(pathName).instance === `ObjectId`)
-    .map(async ([pathName, url]) => {
-      const pathSchema = schema.path(pathName)
-      const { ref } = pathSchema.options
-      return [pathName, await entityURLtoID(url, ref)]
-    }))
-
-  return {
-    ...obj,
-    ...Object.fromEntries(entries),
-  }
+const resolveEntityURLs = function<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods, M extends EntityModel<E, I> = EntityModel<E, I>> (obj: Record<string, keyof E>, model: M) {
+  model.relationships({ filter: { cardinality: Cardinality.ONE_TO_MANY }})
+    .filter(rel => rel.path in obj)
+    .forEach((rel) => {
+      obj[rel.path] = model.parseURL(obj[rel.path] as string) as keyof E
+    })
+  return obj
 }
 
 interface EntityHandlerOptions {
@@ -110,7 +104,7 @@ export const useEntityReadHandler = function<E extends Entity = Entity, I extend
 
 export const useEntityCreateHandler = function<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods, M extends EntityModel<E, I> = EntityModel<E, I>> (model: M, options?: EntityHandlerOptions): EventHandler {
   return async function (event) {
-    const body = await resolveEntityURLs<E>(await readBody<Partial<E>>(event), model.schema)
+    const body = await resolveEntityURLs<E, I, M>(await readBody(event), model)
     if (options?.discriminatorKey) {
       model = getDiscriminator<E, I, M>(event, model, options.discriminatorKey)
     }
@@ -127,7 +121,7 @@ export const useEntityCreateHandler = function<E extends Entity = Entity, I exte
 export const useEntityUpdateHandler = function<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods, M extends EntityModel<E, I> = EntityModel<E, I>> (model: M, options?: EntityHandlerOptions): EventHandler {
   return async function (event) {
     const { id } = getRouterParams(event)
-    const body = await resolveEntityURLs<E>(await readBody<Partial<E>>(event), model.schema)
+    const body = await resolveEntityURLs<E, I, M>(await readBody(event), model)
     if (options?.discriminatorKey) {
       model = getDiscriminator<E, I, M>(event, model, options.discriminatorKey)
     }

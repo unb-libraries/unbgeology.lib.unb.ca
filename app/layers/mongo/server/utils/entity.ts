@@ -29,9 +29,15 @@ export const defineEntityType = function<E extends Entity, M extends EntityModel
     updated: Schema.Types.Number,
   }, {
     statics: {
+      baseURL() {
+        return `/api/${useEntityType(name).collection.collectionName}`
+      },
       async findbyURL(url: string) {
-        const id = url.split(`/`).at(-1)
+        const id = useEntityType(name).parseURL(url)
         return await this.findById(id)
+      },
+      parseURL(url: string) {
+        return url.split(`/`).at(-1)
       },
       relationships(options?: EntityRelationshipsTraverseOptions) {
         options = defu<EntityRelationshipsTraverseOptions, Required<EntityRelationshipsTraverseOptions>[]>(options || {}, {
@@ -124,11 +130,10 @@ export const defineEntityType = function<E extends Entity, M extends EntityModel
   })
 
   schema.method(`url`, function url(this: HydratedDocument<E>, rel?: string) {
-    const { collectionName } = this.collection
     const type = `__t` in this ? String(this.__t) : ``
     const id = String(this._id)
 
-    const build = [`/api`, collectionName, id]
+    const build = useEntityType(name).baseURL().split(`/`).concat(id)
     if (type) { build.splice(2, 0, type) }
     if (rel) { build.push(rel) }
 
