@@ -17,6 +17,8 @@ import {
   type EntityRelationship,
   type EntityRelationshipsTraverseOptions,
   type EntityInstanceMethods,
+  type PK,
+  type EntityQueryHelpers,
   type EntityModel,
 } from "~/layers/mongo/types/entity"
 
@@ -24,7 +26,7 @@ export const useEntityType = function<E extends Entity = Entity, M extends Entit
   return loadModel<E, M>(name)
 }
 
-export const defineEntityType = function<E extends Entity, M extends EntityModel = EntityModel, I extends EntityInstanceMethods = EntityInstanceMethods> (name: string, definition: SchemaDefinition<E>, options?: EntityTypeOptions) {
+export const defineEntityType = function<E extends Entity, I extends EntityInstanceMethods = EntityInstanceMethods, Q extends EntityQueryHelpers<E> = EntityQueryHelpers<E>, M extends EntityModel<E, I, Q> = EntityModel<E, I, Q>> (name: string, definition: SchemaDefinition<E>, options?: EntityTypeOptions) {
   if (options?.slug) {
     definition.slug = {
       type: EntityFieldTypes.String,
@@ -45,7 +47,7 @@ export const defineEntityType = function<E extends Entity, M extends EntityModel
     }
   }
 
-  const schema = new Schema<E, M, I>({
+  const schema = new Schema<E, M, I, Q>({
     ...definition,
     created: Schema.Types.Number,
     updated: Schema.Types.Number,
@@ -54,9 +56,9 @@ export const defineEntityType = function<E extends Entity, M extends EntityModel
       baseURL() {
         return `/api/${useEntityType(name).collection.collectionName}`
       },
-      async findByPK(pk: string) {
+      findByPK(pk: PK) {
         const path = useEntityType(name).pk()
-        return await this.findOne().where(path, pk)
+        return this.findOne().where(path, pk)
       },
       async findByURL(url: string) {
         const pk = url.split(`/`).at(-1)
@@ -67,6 +69,9 @@ export const defineEntityType = function<E extends Entity, M extends EntityModel
       pk() {
         const pk = options?.pk || `_id`
         return useEntityType(name).schema.path(pk) ? pk : `_id`
+      },
+      getRelationship(path: string) {
+        return useEntityType(name).relationships({ flatten: true }).find(rel => rel.path === path)
       },
       relationships(options?: EntityRelationshipsTraverseOptions) {
         options = defu<EntityRelationshipsTraverseOptions, Required<EntityRelationshipsTraverseOptions>[]>(options || {}, {
@@ -103,7 +108,11 @@ export const defineEntityType = function<E extends Entity, M extends EntityModel
               .map<EntityRelationship>(ps => ({
                 cardinality,
                 path: ps.path,
-                targetModelName: ps.options.ref ?? undefined,
+                targetModelName: ps instanceof ArrayPath && ps.caster instanceof RefeferencePath
+                  ? ps.caster.options.ref
+                  : ps instanceof RefeferencePath
+                    ? ps.options.ref
+                    : undefined,
                 nested: options.nested ? traverse(defu({ rootPath: buildPath(options.rootPath!, ps.path) }, options)) : [],
               }))
 
@@ -146,9 +155,9 @@ export const defineEntityType = function<E extends Entity, M extends EntityModel
         ret.updated &&= new Date(doc.updated)
 
         useEntityType(name)
-          .relationships({ filter: { cardinality: ~Cardinality.ONE_TO_ONE } })
+          .relationships({ filter: { cardinality: Cardinality.MANY_TO_MANY | Cardinality.ONE_TO_MANY } })
           .forEach((rel) => {
-            ret[rel.path] &&= { self: doc.url(rel.path) }
+            ret[rel.path] = { self: doc.url(rel.path) }
           })
 
         delete ret.__v
@@ -171,13 +180,13 @@ export const defineEntityType = function<E extends Entity, M extends EntityModel
     const pk = this.pk()
 
     const build = useEntityType(name).baseURL().split(`/`).concat(pk)
-    if (type) { build.splice(2, 0, type) }
+    if (type) { build.splice(3, 0, type) }
     if (rel) { build.push(rel) }
 
     return build.join(`/`)
   })
 
-  return defineModel<E, M>(name, schema)
+  return defineModel<E, M, Q>(name, schema)
 }
 
 export const defineNestedEntityType = function<E extends object> (definition: SchemaDefinition<E>) {

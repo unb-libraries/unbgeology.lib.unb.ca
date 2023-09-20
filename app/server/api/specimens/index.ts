@@ -1,1 +1,1 @@
-export default defineEventHandler(useEntityCollectionHandler(Specimen))
+export default defineEventHandler(useEntityHandler(Specimen))

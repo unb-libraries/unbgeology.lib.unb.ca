@@ -1,1 +1,1 @@
-export default defineEventHandler(useEntityCollectionHandler(Taxonomy, { discriminatorKey: `type` }))
+export default defineEventHandler(useEntityHandler(Taxonomy, { discriminatorKey: `type` }))
