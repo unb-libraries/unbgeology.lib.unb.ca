@@ -27,10 +27,12 @@ export interface EntityRelationshipsTraverseOptions {
 
 export interface EntityTypeOptions {
   pk?: string
+  slug?: string | string[] | (() => string)
 }
 
 export interface Entity {
   readonly _id: Types.ObjectId
+  slug?: string
   readonly created: Date
   readonly updated: Date
 }

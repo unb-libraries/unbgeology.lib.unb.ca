@@ -1,4 +1,5 @@
 import { defu } from "defu"
+import slugify from "slugify"
 import { 
   model as defineModel,
   model as loadModel,
@@ -24,6 +25,26 @@ export const useEntityType = function<E extends Entity = Entity, M extends Entit
 }
 
 export const defineEntityType = function<E extends Entity, M extends EntityModel = EntityModel, I extends EntityInstanceMethods = EntityInstanceMethods> (name: string, definition: SchemaDefinition<E>, options?: EntityTypeOptions) {
+  if (options?.slug) {
+    definition.slug = {
+      type: EntityFieldTypes.String,
+      required: true,
+      immutable: true,
+      default: function (this: Record<string, keyof E>) {
+        let value = this.id.toString()
+        if (typeof options.slug === `string`) {
+          value = this[options.slug as string].toString()
+        } else if (Array.isArray(options.slug)) {
+          value = (options.slug as string[]).map(path => this[path]).join(` `)
+          return slugify(value)
+        } else if (typeof options.slug === `function`) {
+          value = options.slug()
+        }
+        return slugify(value, { lower: true, strict: true })
+      },
+    }
+  }
+
   const schema = new Schema<E, M, I>({
     ...definition,
     created: Schema.Types.Number,
