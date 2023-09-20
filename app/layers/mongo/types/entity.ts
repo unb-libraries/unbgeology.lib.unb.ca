@@ -13,16 +13,18 @@ export enum Cardinality {
 export interface EntityRelationship {
   cardinality: Cardinality
   path: string
+  targetModelName?: string
   nested?: EntityRelationship[]
 }
 
 export interface EntityRelationshipsTraverseOptions {
   rootPath?: string
   filter?: {
-    cardinality?: Cardinality,
-    includeUnmatchedParent?: boolean,
+    cardinality?: Cardinality
+    includeUnmatchedParent?: boolean
   },
-  flatten?: boolean,
+  flatten?: boolean
+  nested?: boolean
 }
 
 export interface EntityTypeOptions {

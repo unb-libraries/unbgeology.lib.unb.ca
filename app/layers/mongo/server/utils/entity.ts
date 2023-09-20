@@ -76,6 +76,7 @@ export const defineEntityType = function<E extends Entity, M extends EntityModel
             includeUnmatchedParent: true,
           },
           flatten: false,
+          nested: true,
         })
 
         const traverse = (options: EntityRelationshipsTraverseOptions): EntityRelationship[] => {
@@ -90,8 +91,8 @@ export const defineEntityType = function<E extends Entity, M extends EntityModel
           
           const filters: [Cardinality, (pathSchema: SchemaType) => boolean][] = [
             [Cardinality.ONE_TO_ONE, ps => !(ps instanceof ArrayPath) && ps.schema !== undefined],
-            [Cardinality.ONE_TO_MANY, ps => ps instanceof RefeferencePath],
-            [Cardinality.MANY_TO_ONE, ps => ps instanceof ArrayPath && ps.schema !== undefined],
+            [Cardinality.MANY_TO_ONE, ps => ps instanceof RefeferencePath],
+            [Cardinality.ONE_TO_MANY, ps => ps instanceof ArrayPath && ps.schema !== undefined],
             [Cardinality.MANY_TO_MANY, ps => ps instanceof ArrayPath && ps.caster instanceof RefeferencePath],
           ]
 
@@ -102,7 +103,8 @@ export const defineEntityType = function<E extends Entity, M extends EntityModel
               .map<EntityRelationship>(ps => ({
                 cardinality,
                 path: ps.path,
-                nested: traverse(defu({ rootPath: buildPath(options.rootPath!, ps.path) }, options)),
+                targetModelName: ps.options.ref ?? undefined,
+                nested: options.nested ? traverse(defu({ rootPath: buildPath(options.rootPath!, ps.path) }, options)) : [],
               }))
 
             if (options.filter!.cardinality! & cardinality) {
