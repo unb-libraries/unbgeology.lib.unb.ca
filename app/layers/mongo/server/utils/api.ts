@@ -1,9 +1,7 @@
-import { type Types } from "mongoose"
 import { type EventHandler, type H3Event } from "h3"
 import {
   type Entity,
   type EntityModel,
-  EntityFieldTypes,
   Cardinality,
   type EntityHandlerOptions,
   type EntityDeleteHandlerOptions,
@@ -21,19 +19,6 @@ const getDiscriminator = function<E extends Entity = Entity> (event: H3Event, mo
     .find(dsc => dsc.modelName.toLowerCase() === type)
 
   return discriminator || model
-}
-
-const findReferences = function<E extends Entity> (model: EntityModel) {
-  return Object
-    .values(model.schema.paths)
-    .filter(({ path, instance, options }) => path !== `_id` && instance === `ObjectId` && options.ref)
-    .map(({ path }) => path)
-}
-
-const entityURLtoID = async function (url: string, modelName: string) {
-  const model = useEntityType(modelName)
-  const { _id }: { _id: Types.ObjectId } = await model.findByURL(url)
-  return _id
 }
 
 const resolveEntityURLs = async function<E extends Entity = Entity> (obj: Record<string, keyof E>, model: EntityModel) {
@@ -54,12 +39,12 @@ export const useEntityHandler = function<E extends Entity = Entity> (model: Enti
   return async function (event) {
     const { method } = event
     const { id } = getRouterParams(event)
-    
+
     switch (method) {
       case `POST`: {
         if (!id) {
           return await useEntityCreateHandler<E>(model, options)(event)
-    }
+        }
         throw createError({})
       }
       case `GET`: {
@@ -168,64 +153,51 @@ export const useEntityDeleteHandler = function<E extends Entity = Entity> (model
   }
 }
 
-export const useEntityReferenceCollectionHandler = function<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods, M extends EntityModel<E, I> = EntityModel<E, I>> (model: M, options: EntityRelationshipHandlerOptions): EventHandler {
+export const useEntityRelationshipListHandler = function<E extends Entity = Entity> (model: EntityModel, options: EntityRelationshipHandlerOptions): EventHandler {
   return async function (event) {
-    const { id, [options.rel]: path } = getRouterParams(event)
+    const { id: pk } = getRouterParams(event)
 
-    const query = model.findById(id)
-    query.populate(path, `_id`)
-      .select(path)
+    if (options?.discriminatorKey) {
+      model = getDiscriminator<E>(event, model, options.discriminatorKey)
+    }
+
+    const query = model.findByPK(pk)
+    query.populate(options.rel)
+    const rel = model.getRelationship(options?.rel)
+    if (rel) {
+      query.populate(rel.path)
+    }
     const doc = await query.exec()
-
-    return doc?.toJSON()
+    return doc?.get(options.rel)
   }
 }
 
-export const useEntityReferenceCollectionAddHandler = function<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods, M extends EntityModel<E, I> = EntityModel<E, I>> (model: M, options: EntityRelationshipHandlerOptions): EventHandler {
+export const useEntityRelationshipAddHandler = function<E extends Entity = Entity> (model: EntityModel, options: EntityRelationshipHandlerOptions): EventHandler {
   return async function (event) {
-    const { id, [options.rel]: path } = getRouterParams(event)
-    const body = await readBody(event)
-    const schemaPath = model.schema.path(path)
+    const { id: pk } = getRouterParams(event)
+    const body = Object.values(await resolveEntityURLs<E>(await readBody(event), model))[0]
 
-    if (!(schemaPath instanceof EntityFieldTypes.Array)) {
-      throw createError({ statusCode: 400, statusMessage: `Invalid path.` })
+    if (options?.discriminatorKey) {
+      model = getDiscriminator<E>(event, model, options.discriminatorKey)
     }
 
-    const targetModelName = schemaPath.caster?.options.ref
-    const entityURLs = Array.isArray(body[path]) ? body[path] : [body[path]]
-    const entityIDs: Types.ObjectId[] = await Promise.all(
-      entityURLs.map(async (url: string) => await entityURLtoID(url, targetModelName)))
-
-    const query = model.findByIdAndUpdate(id, { $addToSet: { [path]: { $each: entityIDs } } }, { returnDocument: `after` })
-    query
-      .populate(path, `_id`)
-      .select(path)
-    const doc = await query.exec()
-
-    return doc?.toJSON()[path]
+    const doc = await model.findByPK(pk)
+    await model.updateOne({ _id: doc._id }, { $addToSet: { [options.rel]: body } })
+    return $fetch(doc.url(options.rel))
   }
 }
 
-export const useEntityReferenceCollectionRemoveHandler = function<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods, M extends EntityModel<E, I> = EntityModel<E, I>> (model: M, options: EntityRelationshipHandlerOptions): EventHandler {
+export const useEntityRelationshipDeleteHandler = function<E extends Entity = Entity> (model: EntityModel, options: EntityRelationshipHandlerOptions) : EventHandler {
   return async function (event) {
-    const { id, [options.rel]: path } = getRouterParams(event)
-    const body = await readBody(event)
-    const schemaPath = model.schema.path(path)
+    const { id: pk } = getRouterParams(event)
+    const body = Object.values(await resolveEntityURLs<E>(await readBody(event), model))[0]
 
-    if (!(schemaPath instanceof EntityFieldTypes.Array)) {
-      throw createError({ statusCode: 400, statusMessage: `Invalid path.` })
+    if (options?.discriminatorKey) {
+      model = getDiscriminator<E>(event, model, options.discriminatorKey)
     }
 
-    const targetModelName = schemaPath.caster?.options.ref
-    const entityURLs = Array.isArray(body[path]) ? body[path] : [body[path]]
-    const entityIDs: Types.ObjectId[] = await Promise.all(
-      entityURLs.map(async (url: string) => await entityURLtoID(url, targetModelName)))
-
-    const doc = await model
-      .findByIdAndUpdate(id, { $pull: { [path]: { $in: entityIDs } } }, { returnDocument: `after` })
-      .populate(path, `_id`)
-      .select(path)
-
-    return doc?.toJSON()[path]
+    const doc = await model.findByPK(pk)
+    await model.updateOne({ _id: doc._id }, { $pull: { [options.rel]: body } })
+    return $fetch(doc.url(options.rel))
   }
 }
