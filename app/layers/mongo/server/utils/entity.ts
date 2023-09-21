@@ -1,15 +1,14 @@
 import { defu } from "defu"
 import slugify from "slugify"
-import { 
+import {
   model as defineModel,
   model as loadModel,
-  Model,
   Schema,
   SchemaType,
   type HydratedDocument,
   type SchemaDefinition,
 } from "mongoose"
-import { 
+import {
   EntityFieldTypes,
   type EntityTypeOptions,
   type Entity,
@@ -22,11 +21,7 @@ import {
   type EntityModel,
 } from "~/layers/mongo/types/entity"
 
-export const useEntityType = function<E extends Entity = Entity, M extends EntityModel = EntityModel> (name: string) {
-  return loadModel<E, M>(name)
-}
-
-export const defineEntityType = function<E extends Entity, I extends EntityInstanceMethods = EntityInstanceMethods, Q extends EntityQueryHelpers<E> = EntityQueryHelpers<E>, M extends EntityModel<E, I, Q> = EntityModel<E, I, Q>> (name: string, definition: SchemaDefinition<E>, options?: EntityTypeOptions) {
+const useEntityTypeSchema = function<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods, Q extends EntityQueryHelpers = EntityQueryHelpers, M extends EntityModel<E, I, Q> = EntityModel<E, I, Q>> (name: string, definition: SchemaDefinition<E>, options?: EntityTypeOptions) {
   if (options?.slug) {
     definition.slug = {
       type: EntityFieldTypes.String,
@@ -89,11 +84,11 @@ export const defineEntityType = function<E extends Entity, I extends EntityInsta
           const buildPath = function (...segments: string[]) {
             return segments.filter(s => s).join(`.`)
           }
-          
+
           const paths = Object
             .values(options.rootPath ? this.schema.path(options.rootPath).schema?.paths ?? [] : this.schema.paths)
-          .filter(schema => schema.path !== `_id`)
-          
+            .filter(schema => schema.path !== `_id`)
+
           const filters: [Cardinality, (pathSchema: SchemaType) => boolean][] = [
             [Cardinality.ONE_TO_ONE, ps => !(ps instanceof ArrayPath) && ps.schema !== undefined],
             [Cardinality.MANY_TO_ONE, ps => ps instanceof RefeferencePath],
@@ -150,12 +145,20 @@ export const defineEntityType = function<E extends Entity, I extends EntityInsta
     },
     toJSON: {
       transform(doc, ret, options) {
+        const entityType = useEntityType(name)
+        
+        // TODO: Find the schema path recursively.
+        const childSchema = entityType.schema.childSchemas.find(s => s.schema === doc.schema)
+        const path = childSchema?.model.path
+
         ret.self = doc.url()
         ret.created &&= new Date(doc.created)
         ret.updated &&= new Date(doc.updated)
 
-        useEntityType(name)
-          .relationships({ filter: { cardinality: Cardinality.MANY_TO_MANY | Cardinality.ONE_TO_MANY } })
+        const traverseOptions: EntityRelationshipsTraverseOptions = { filter: { cardinality: Cardinality.MANY_TO_MANY | Cardinality.ONE_TO_MANY }}
+        if (path) { traverseOptions.rootPath = path }
+        entityType
+          .relationships(traverseOptions)
           .forEach((rel) => {
             ret[rel.path] = { self: doc.url(rel.path) }
           })
@@ -169,6 +172,16 @@ export const defineEntityType = function<E extends Entity, I extends EntityInsta
       },
     },
   })
+
+  return schema
+}
+
+export const useEntityType = function<E extends Entity = Entity, M extends EntityModel = EntityModel> (name: string) {
+  return loadModel<E, M>(name)
+}
+
+export const defineEntityType = function<E extends Entity, I extends EntityInstanceMethods = EntityInstanceMethods, Q extends EntityQueryHelpers = EntityQueryHelpers, M extends EntityModel<E, I, Q> = EntityModel<E, I, Q>> (name: string, definition: SchemaDefinition<E>, options?: EntityTypeOptions) {
+  const schema = useEntityTypeSchema<E, I, Q, M>(name, definition, options)
 
   schema.method(`pk`, function (this: HydratedDocument<E, I>) {
     const path = useEntityType(name).pk()
@@ -189,18 +202,13 @@ export const defineEntityType = function<E extends Entity, I extends EntityInsta
   return defineModel<E, M, Q>(name, schema)
 }
 
-export const defineNestedEntityType = function<E extends object> (definition: SchemaDefinition<E>) {
-  return definition
-}
-
-export const defineEmbeddedEntityType = function<E extends object> (definition: SchemaDefinition<E>) {
-  return new Schema<E>(definition)
-}
-
-export const defineWeakEntityType = function<E extends Entity> (definition: SchemaDefinition<E>) {
-  return new Schema<E>({
-    ...definition,
-    created: Schema.Types.Number,
-    updated: Schema.Types.Number,
+export const defineEmbeddedEntityType = function<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods> (baseTypeName: string, path: string, definition: SchemaDefinition<E>, options?: EntityTypeOptions) {
+  const schema = useEntityTypeSchema(baseTypeName, definition, options)
+  
+  schema.method(`url`, function(this: HydratedDocument<E, I>, rel?: string) {
+    const url = `${this.$parent()?.url(path)}/${this.id}`
+    return !rel ? url : `${url}/${rel}`
   })
+  
+  return schema
 }
