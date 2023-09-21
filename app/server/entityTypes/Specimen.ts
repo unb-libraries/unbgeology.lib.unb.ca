@@ -1,8 +1,9 @@
 import { type Organization } from "entity-types/Organization"
 import { type Profile } from "entity-types/Profile"
-import { type StorageLocation } from "taxonomies/StorageLocation"
 import { type Classification } from "taxonomies/Classification"
+import { type StorageLocation } from "taxonomies/StorageLocation"
 import { type Publication } from "entity-types/Publication"
+import { type User } from "entity-types/User"
 import { Entity, EntityFieldTypes } from "~/layers/mongo/types/entity"
 
 export enum Status {
@@ -24,12 +25,16 @@ export interface Place {
   description?: string
 }
 
+export enum Composition {
+  SOLID = `solid`,
+}
+
 export enum LoanType {
   IN = `in`,
   OUT = `out`,
 }
 
-export interface Loan {
+export interface Loan extends Entity {
   type: LoanType
   organization: Organization
   contact: Profile
@@ -38,7 +43,7 @@ export interface Loan {
   contract: string
 }
 
-export interface Storage {
+export interface Storage extends Entity {
   location: StorageLocation
   dateIn: Date
   dateOut?: Date
@@ -47,53 +52,57 @@ export interface Storage {
 export interface Specimen extends Entity {
   objectId: string
   name: string
-  description?: string
-  classification: Classification
-  dimensions?: Dimension
+  description: string
+  classifications: Classification[]
+  dimensions: Dimension
   date?: Date
-  age?: string
-  origin?: Place
-  pieces?: number
-  partial?: boolean
+  age: string
+  origin: Place
+  pieces: number
+  partial: boolean
+  composition: Composition,
   collector?: Profile,
   sponsor?: Profile,
-  loans?: [Loan],
+  loans?: Loan[],
   storage: Storage[],
-  publications?: [Publication],
+  publications?: Publication[],
   status: Status
+  editor: User
+}
+
+export type SpecimenDraft = Partial<Specimen> & { status: Status.DRAFT }
+const optionalWhileInDraft = function (this: Specimen) {
+  return this.status !== Status.DRAFT
 }
 
 export default defineEntityType<Specimen>(`Specimen`, {
-  objectId: {
-    type: EntityFieldTypes.String,
-    required: true,
-    unique: true,
-  },
   name: {
     type: EntityFieldTypes.String,
     required: true,
   },
   description: {
     type: EntityFieldTypes.String,
-    required: false,
+    required: optionalWhileInDraft,
   },
-  classification: {
-    type: EntityFieldTypes.ObjectId,
-    ref: `Classification`,
-    required: true,
+  classifications: {
+    type: [{
+      type: EntityFieldTypes.ObjectId,
+      ref: `Classification`,
+      required: optionalWhileInDraft,
+    }],
+    default: undefined,
   },
   dimensions: {
-    type: defineEmbeddedEntityType<Dimension>({
-      width: {
-        type: EntityFieldTypes.Number,
-        required: true,
+    width: {
+      type: EntityFieldTypes.Number,
+      required: optionalWhileInDraft,
+    },
+    length: {
+      type: EntityFieldTypes.Number,
+      required: function (this: Specimen) {
+        return this.status !== Status.DRAFT
       },
-      length: {
-        type: EntityFieldTypes.Number,
-        required: true,
-      },
-    }),
-    required: false,
+    },
   },
   date: {
     type: EntityFieldTypes.Date,
@@ -101,10 +110,10 @@ export default defineEntityType<Specimen>(`Specimen`, {
   },
   age: {
     type: EntityFieldTypes.String,
-    required: false,
+    required: optionalWhileInDraft,
   },
   origin: {
-    type: defineEmbeddedEntityType<Place>({
+    type: {
       latitude: {
         type: EntityFieldTypes.Number,
         required: true,
@@ -113,21 +122,21 @@ export default defineEntityType<Specimen>(`Specimen`, {
         type: EntityFieldTypes.Number,
         required: true,
       },
-    }),
-    required: false,
+    },
+    required: optionalWhileInDraft,
   },
   pieces: {
     type: EntityFieldTypes.Number,
-    required: false,
+    required: optionalWhileInDraft,
   },
   partial: {
     type: EntityFieldTypes.Boolean,
-    required: false,
+    required: optionalWhileInDraft,
   },
   composition: {
     type: EntityFieldTypes.String,
     enum: Composition,
-    required: false,
+    required: optionalWhileInDraft,
   },
   collector: {
     type: EntityFieldTypes.ObjectId,
@@ -139,54 +148,68 @@ export default defineEntityType<Specimen>(`Specimen`, {
     ref: `Profile`,
     required: false,
   },
-  loans: [{
-    type: {
-      type: EntityFieldTypes.String,
-      enum: LoanType,
-      required: true,
-    },
-    organization: {
+  loans: {
+    type: [defineEmbeddedEntityType<Loan>(`Specimen`, `loans`, {
+      type: {
+        type: EntityFieldTypes.String,
+        enum: LoanType,
+        required: true,
+      },
+      organization: {
+        type: EntityFieldTypes.ObjectId,
+        ref: `Organization`,
+        required: true,
+      },
+      contact: {
+        type: EntityFieldTypes.ObjectId,
+        ref: `Profile`,
+        required: true,
+      },
+      start: {
+        type: EntityFieldTypes.Date,
+        required: true,
+      },
+      end: {
+        type: EntityFieldTypes.Date,
+        required: true,
+      },
+    })],
+    default: undefined,
+  },
+  storage: {
+    type: [defineEmbeddedEntityType<Storage>(`Specimen`, `storage`, {
+      location: {
+        type: EntityFieldTypes.ObjectId,
+        ref: `StorageLocation`,
+        required: true,
+      },
+      dateIn: {
+        type: EntityFieldTypes.Date,
+        required: true,
+      },
+      dateOut: {
+        type: EntityFieldTypes.Date,
+        required: false,
+      },
+    })],
+    default: undefined,
+  },
+  publications: {
+    type: [{
       type: EntityFieldTypes.ObjectId,
-      ref: `Organization`,
-      required: true,
-    },
-    contact: {
-      type: EntityFieldTypes.ObjectId,
-      ref: `Profile`,
-      required: true,
-    },
-    start: {
-      type: EntityFieldTypes.Date,
-      required: true,
-    },
-    end: {
-      type: EntityFieldTypes.Date,
-      required: true,
-    },
-  }],
-  storage: [{
-    location: {
-      type: EntityFieldTypes.ObjectId,
-      ref: `StorageLocation`,
-      required: true,
-    },
-    dateIn: {
-      type: EntityFieldTypes.Date,
-      required: true,
-    },
-    dateOut: {
-      type: EntityFieldTypes.Date,
-      required: false,
-    },
-  }],
-  publications: [{
-    type: EntityFieldTypes.ObjectId,
-    ref: `Publication`,
-  }],
+      ref: `Publication`,
+    }],
+    default: undefined,
+  },
   status: {
     type: EntityFieldTypes.String,
     required: true,
     enum: Status,
     default: Status.DRAFT,
   },
-})
+  editor: {
+    type: EntityFieldTypes.ObjectId,
+    ref: `User`,
+    required: false,
+  },
+}, { slug: `name`, pk: `slug` })
