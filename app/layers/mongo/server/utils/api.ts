@@ -1,4 +1,5 @@
 import { type EventHandler, type H3Event } from "h3"
+import { type PopulateOptions } from "mongoose"
 import {
   type Entity,
   type EntityModel,
@@ -165,7 +166,13 @@ export const useEntityRelationshipListHandler = function<E extends Entity = Enti
     query.populate(options.rel)
     const rel = model.getRelationship(options?.rel)
     if (rel) {
-      query.populate(rel.path)
+      const populate: PopulateOptions = { path: rel.path, populate: [] }
+      if (rel.targetModelName) {
+        (populate.populate! as PopulateOptions[]).push(...useEntityType(rel.targetModelName)
+          .relationships({ filter: { cardinality: Cardinality.MANY_TO_ONE } })
+          .map(tmr => ({ path: tmr.path, select: `_id` })))
+      }
+      query.populate(populate)
     }
     const doc = await query.exec()
     return doc?.get(options.rel)
