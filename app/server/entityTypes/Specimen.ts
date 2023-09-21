@@ -2,7 +2,6 @@ import { type Organization } from "entity-types/Organization"
 import { type Profile } from "entity-types/Profile"
 import { type Classification } from "taxonomies/Classification"
 import { type StorageLocation } from "taxonomies/StorageLocation"
-import { type Publication } from "entity-types/Publication"
 import { type User } from "entity-types/User"
 import { Entity, EntityFieldTypes } from "~/layers/mongo/types/entity"
 
@@ -47,6 +46,12 @@ export interface Storage extends Entity {
   location: StorageLocation
   dateIn: Date
   dateOut?: Date
+}
+
+export interface Publication extends Entity {
+  citation: string
+  abstract: string
+  doi?: string
 }
 
 export interface Specimen extends Entity {
@@ -195,10 +200,20 @@ export default defineEntityType<Specimen>(`Specimen`, {
     default: undefined,
   },
   publications: {
-    type: [{
-      type: EntityFieldTypes.ObjectId,
-      ref: `Publication`,
-    }],
+    type: [defineEmbeddedEntityType<Publication>(`Specimen`, `publications`, {
+      citation: {
+        type: EntityFieldTypes.String,
+        required: true,
+      },
+      abstract: {
+        type: EntityFieldTypes.String,
+        required: true,
+      },
+      doi: {
+        type: EntityFieldTypes.String,
+        required: false,
+      },
+    })],
     default: undefined,
   },
   status: {
