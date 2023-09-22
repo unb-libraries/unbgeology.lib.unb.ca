@@ -1,5 +1,6 @@
 import { Schema, type Model, type Types, type HydratedDocument, Query } from "mongoose"
 import { type H3Event } from "h3"
+import { type PaginateOptions } from "~/layers/mongo/types/paginate"
 
 export const EntityFieldTypes = Schema.Types
 
@@ -65,6 +66,10 @@ export interface DiscriminatedEntity extends Entity {
 
 export interface EntityHandlerOptions {
   discriminatorKey?: string
+}
+
+export interface EntityListHandlerOptions extends EntityHandlerOptions {
+  paginate: boolean | Omit<PaginateOptions, `totalItems`>
 }
 
 export interface EntityDeleteHandlerOptions extends EntityHandlerOptions {
