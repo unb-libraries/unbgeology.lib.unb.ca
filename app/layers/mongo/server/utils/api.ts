@@ -89,8 +89,13 @@ export const useEntityListHandler = function<E extends Entity = Entity> (model: 
         const pk = useEntityType(rel.targetModelName as string).pk()
         query.populate(rel.path, pk !== `_id` ? `${pk} -_id` : `_id`)
       })
-    const docs = await query.exec()
 
+    const { sort } = getQuery(event)
+    if (sort) {
+      query.sort(Array.isArray(sort) ? sort.join(` `) : `${sort}`)
+    }
+
+    const docs = await query.exec()
     return {
       self: path,
       items: docs.map(doc => doc.toJSON()),
