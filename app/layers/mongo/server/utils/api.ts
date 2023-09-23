@@ -84,7 +84,14 @@ export const useEntityListHandler = function<E extends Entity = Entity> (model: 
       path = buildPageLink(path, { page, pageSize })
     }
 
+    const { field } = getQuery(event)
+    if (field) {
+      const select = Array.isArray(field) ? [model.pk(), ...field] : [model.pk(), field]
+      query.select(select)
+    }
+
     model.relationships({ filter: { cardinality: Cardinality.MANY_TO_ONE }, nested: false })
+      .filter(rel => !field || (Array.isArray(field) && field.includes(rel.path)) || field === rel.path)
       .forEach((rel) => {
         const pk = useEntityType(rel.targetModelName as string).pk()
         query.populate(rel.path, pk !== `_id` ? `${pk} -_id` : `_id`)

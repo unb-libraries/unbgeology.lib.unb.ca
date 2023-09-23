@@ -160,7 +160,7 @@ const useEntityTypeSchema = function<E extends Entity = Entity, I extends Entity
         entityType
           .relationships(traverseOptions)
           .forEach((rel) => {
-            ret[rel.path] = { self: doc.url(rel.path) }
+            ret[rel.path] &&= { self: doc.url(rel.path) }
           })
 
         delete ret.__v

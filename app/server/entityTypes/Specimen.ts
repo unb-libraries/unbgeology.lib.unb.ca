@@ -95,7 +95,6 @@ export default defineEntityType<Specimen>(`Specimen`, {
       ref: `Classification`,
       required: optionalWhileInDraft,
     }],
-    default: undefined,
   },
   dimensions: {
     width: {
@@ -179,7 +178,6 @@ export default defineEntityType<Specimen>(`Specimen`, {
         required: true,
       },
     })],
-    default: undefined,
   },
   storage: {
     type: [defineEmbeddedEntityType<Storage>(`Specimen`, `storage`, {
@@ -197,7 +195,6 @@ export default defineEntityType<Specimen>(`Specimen`, {
         required: false,
       },
     })],
-    default: undefined,
   },
   publications: {
     type: [defineEmbeddedEntityType<Publication>(`Specimen`, `publications`, {
@@ -214,7 +211,6 @@ export default defineEntityType<Specimen>(`Specimen`, {
         required: false,
       },
     })],
-    default: undefined,
   },
   status: {
     type: EntityFieldTypes.String,
