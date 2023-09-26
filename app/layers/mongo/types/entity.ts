@@ -82,7 +82,7 @@ export interface EntityRelationshipHandlerOptions extends EntityHandlerOptions {
 
 type EntityFieldDefinitionCardinality = `single` | `multi`
 
-interface IEntityFieldDefinition {
+export interface IEntityFieldDefinition {
   type?: `value` | `ref`
   path: string
   modelName: string
@@ -90,11 +90,11 @@ interface IEntityFieldDefinition {
   fieldDefinitions?: IEntityFieldDefinition[]
 }
 
-interface IEntityValueFieldDefinition extends IEntityFieldDefinition {
+export interface IEntityValueFieldDefinition extends IEntityFieldDefinition {
   type: `value`
 }
 
-interface IEntityReferenceFieldDefinition extends IEntityFieldDefinition {
+export interface IEntityReferenceFieldDefinition extends IEntityFieldDefinition {
   type: `ref`
   targetModelName?: string
 }
@@ -138,4 +138,5 @@ export type EntityFieldDefinition = EntityValueFieldDefinition | EntityReference
 
 export interface EntityFieldTraverseOptions {
   basePath?: string
+  flatten?: boolean
 }
