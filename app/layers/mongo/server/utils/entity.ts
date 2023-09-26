@@ -23,6 +23,7 @@ import {
   EntityReferenceFieldDefinition,
   type EntityFieldTraverseOptions,
   type IEntityFieldDefinition,
+  type SelectRecord,
 } from "~/layers/mongo/types/entity"
 
 export const createEntityFieldDefinition = function (modelName: string, path: string) {
@@ -37,7 +38,7 @@ export const createEntityFieldDefinition = function (modelName: string, path: st
     : new EntityValueFieldDefinition(modelName, ps.path, cardinality)
 }
 
-export const getEntityFieldsDefinitions = function<E extends Entity = Entity> (model: EntityModel<E>, options?: EntityFieldTraverseOptions) {
+export const getEntityFieldsDefinitions = function<E extends Entity = Entity> (model: EntityModel<E>, options?: EntityFieldTraverseOptions): IEntityFieldDefinition[] {
   options = defu(options, { basePath: ``, flatten: false })
 
   const flatten = (definitions: IEntityFieldDefinition[]): IEntityFieldDefinition[] => {
@@ -71,6 +72,21 @@ export const getEntityFieldsDefinitions = function<E extends Entity = Entity> (m
   })
 
   return options.flatten ? flatten(definitions) : definitions
+}
+
+export const selectEntityFieldDefinitions = function<E extends Entity = Entity> (model: EntityModel<E>, selection: SelectRecord<true>): IEntityFieldDefinition[] {
+  const fieldDefinitions = getEntityFieldsDefinitions(model)
+  const select: (selection: SelectRecord<true>, fieldDefinitions: IEntityFieldDefinition[]) => IEntityFieldDefinition[] = (selection, fieldDefinitions) => {
+    return Object.entries(selection)
+      .filter(([path, _]) => fieldDefinitions.find(d => d.path === path))
+      .map(([path, selection]) => {
+        const fieldDefinition = fieldDefinitions.find(d => d.path === path)!
+        return typeof selection === `boolean`
+          ? { ...fieldDefinition, fieldDefinitions: undefined }
+          : { ...fieldDefinition, fieldDefinitions: select(selection, fieldDefinition.fieldDefinitions ?? []) }
+      })
+  }
+  return select(selection, fieldDefinitions)
 }
 
 const useEntityTypeSchema = function<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods, Q extends EntityQueryHelpers = EntityQueryHelpers, M extends EntityModel<E, I, Q> = EntityModel<E, I, Q>> (name: string, definition: SchemaDefinition<E>, options?: EntityTypeOptions) {

@@ -140,3 +140,5 @@ export interface EntityFieldTraverseOptions {
   basePath?: string
   flatten?: boolean
 }
+
+export type SelectRecord = { [path: string]: boolean | SelectRecord }
