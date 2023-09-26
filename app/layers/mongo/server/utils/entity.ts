@@ -19,7 +19,45 @@ import {
   type PK,
   type EntityQueryHelpers,
   type EntityModel,
+  EntityValueFieldDefinition,
+  EntityReferenceFieldDefinition,
+  type EntityFieldTraverseOptions,
 } from "~/layers/mongo/types/entity"
+
+export const createEntityFieldDefinition = function (modelName: string, path: string) {
+  const ps = useEntityType(modelName).schema.path(path)
+  const { Array: ArrayPath, ObjectId: ReferencePath } = EntityFieldTypes
+  const type = ps instanceof ReferencePath || (ps instanceof ArrayPath && ps.caster instanceof ReferencePath) ? `ref` : `value`
+  const cardinality = ps instanceof ArrayPath ? `multi` : `single`
+  const targetModelName = ps instanceof ArrayPath ? ps.caster?.options.ref : ps.options.ref
+
+  return type === `ref`
+    ? new EntityReferenceFieldDefinition(modelName, ps.path, cardinality, targetModelName)
+    : new EntityValueFieldDefinition(modelName, ps.path, cardinality)
+}
+
+export const getEntityFieldsDefinitions = function<E extends Entity = Entity> (model: EntityModel<E>, options?: EntityFieldTraverseOptions) {
+  options = defu(options, { basePath: `` })
+
+  const schema = options.basePath ? model.schema.path(options.basePath).schema : model.schema
+  if (!schema) {
+    return []
+  }
+
+  const { paths } = schema
+  return Object.values(paths).filter(ps => ![`_id`, `__v`, `__t`].includes(ps.path)).map((ps) => {
+    const path = options?.basePath ? `${options.basePath}.${ps.path}` : ps.path
+    const field = createEntityFieldDefinition(model.modelName, path)
+
+    if (field.type === `value`) {
+      field.fieldDefinitions = getEntityFieldsDefinitions(model, { basePath: path })
+    } else if (field.type === `ref` && !field.recursive) {
+      field.fieldDefinitions = getEntityFieldsDefinitions(useEntityType(field.targetModelName))
+    }
+
+    return field
+  })
+}
 
 const useEntityTypeSchema = function<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods, Q extends EntityQueryHelpers = EntityQueryHelpers, M extends EntityModel<E, I, Q> = EntityModel<E, I, Q>> (name: string, definition: SchemaDefinition<E>, options?: EntityTypeOptions) {
   if (options?.slug) {

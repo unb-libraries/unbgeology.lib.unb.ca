@@ -79,3 +79,63 @@ export interface EntityDeleteHandlerOptions extends EntityHandlerOptions {
 export interface EntityRelationshipHandlerOptions extends EntityHandlerOptions {
   rel: string
 }
+
+type EntityFieldDefinitionCardinality = `single` | `multi`
+
+interface IEntityFieldDefinition {
+  type?: `value` | `ref`
+  path: string
+  modelName: string
+  cardinality: EntityFieldDefinitionCardinality
+  fieldDefinitions?: IEntityFieldDefinition[]
+}
+
+interface IEntityValueFieldDefinition extends IEntityFieldDefinition {
+  type: `value`
+}
+
+interface IEntityReferenceFieldDefinition extends IEntityFieldDefinition {
+  type: `ref`
+  targetModelName?: string
+}
+
+export abstract class EntityFieldDefinitionBase implements IEntityFieldDefinition {
+  readonly type?: `value` | `ref`
+  readonly path
+  readonly modelName
+  readonly cardinality
+  fieldDefinitions?: IEntityFieldDefinition[]
+
+  constructor(modelName: string, path: string, cardinality: EntityFieldDefinitionCardinality, fieldDefinitions?: EntityFieldDefinitionBase[]) {
+    this.path = path
+    this.modelName = modelName
+    this.cardinality = cardinality
+    if (fieldDefinitions) {
+      this.fieldDefinitions = fieldDefinitions
+    }
+  }
+}
+
+export class EntityValueFieldDefinition extends EntityFieldDefinitionBase implements IEntityValueFieldDefinition {
+  readonly type = `value`
+}
+
+export class EntityReferenceFieldDefinition extends EntityFieldDefinitionBase implements IEntityReferenceFieldDefinition {
+  readonly type = `ref`
+  readonly targetModelName: string
+
+  get recursive() {
+    return this.targetModelName === this.modelName
+  }
+
+  constructor(modelName: string, path: string, cardinality: EntityFieldDefinitionCardinality, targetModelName: string, fieldDefinitions?: EntityFieldDefinitionBase[]) {
+    super(modelName, path, cardinality, fieldDefinitions)
+    this.targetModelName = targetModelName
+  }
+}
+
+export type EntityFieldDefinition = EntityValueFieldDefinition | EntityReferenceFieldDefinition
+
+export interface EntityFieldTraverseOptions {
+  basePath?: string
+}
