@@ -14,5 +14,11 @@ export default defineNitroPlugin(async (nitroApp: NitroApp) => {
   console.info(`Connected to MongoDB.`)
 
   await Specimen.init()
-  console.info(`Initialized Specimen collection.`)
+  await StorageLocation.init()
+  await Classification.init()
+  await Organization.init()
+  await Profile.init()
+  await User.init()
+  await Taxonomy.init()
+  console.info(`Initialized collections.`)
 })
