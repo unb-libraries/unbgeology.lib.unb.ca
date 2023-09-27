@@ -16,11 +16,11 @@ dockworker:
     framework:
       name: Nuxt
       version: 3
-      startup_finished_marker: 'Connected to MongoDB'
+      startup_finished_marker: '99_startup_sequence_complete'
       endpoint:
         name: http
         port: 80
-        readiness_timeout: 15
+        readiness_timeout: 30
     license:
       license: MIT
       holder: University of New Brunswick Libraries

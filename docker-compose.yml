@@ -1,6 +1,6 @@
 services:
   mongodb-unbgeology-lib-unb-ca:
-    image: mongo:6.0
+    image: mongo:4
     container_name: mongo-unbgeology-lib-unb-ca
     restart: unless-stopped
     expose:
