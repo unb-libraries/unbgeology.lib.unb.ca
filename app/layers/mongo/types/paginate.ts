@@ -6,12 +6,12 @@ export interface Navigator {
 }
 
 export interface PaginateOptions {
-  page?: number
-  pageSize?: number
+  page: number
+  pageSize: number
 }
 
 export interface PageableListHandlerOptions {
-  paginate: false | PaginateOptions
+  paginate?: false | Pick<PaginateOptions, `pageSize`>
 }
 
 export interface Paginator {
@@ -21,7 +21,6 @@ export interface Paginator {
   totalItems: number
 }
 
-export interface PaginatorOptions {
+export interface PaginatorOptions extends PaginateOptions{
   totalItems: number
-  paginate?: PaginateOptions
 }

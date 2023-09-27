@@ -1,15 +1,5 @@
 import { type H3Event } from "h3"
-import { defu } from "defu"
 import type { PaginateOptions, Navigator, PaginatorOptions } from "~/layers/mongo/types/paginate"
-
-const defaultPaginateOptions: PaginateOptions = {
-  pageSize: 25,
-  page: 1,
-}
-
-export const getPaginateOptions = function (event: H3Event, defaultOptions: PaginateOptions) {
-  return defu(getQuery(event), defaultOptions, defaultPaginateOptions)
-}
 
 const buildQuery = (...params: [string, string | number][]) => {
   return new URLSearchParams(params.map(([p, v]) => [p, `${v}`])).toString()
@@ -20,12 +10,11 @@ export const buildPageLink = function (path: string, params: PaginateOptions) {
 }
 
 export const usePaginator = function (event: H3Event, options: PaginatorOptions) {
-  options.paginate = getPaginateOptions(event, options.paginate ?? {})
   const { pathname: path } = getRequestURL(event)
 
   const { totalItems } = options
-  const pageSize = Math.min(options.paginate.pageSize || 1, options.totalItems)
-  const page = Math.min(Math.max(1, options.paginate.page || 1), Math.ceil(options.totalItems / (options.paginate.pageSize || 1)))
+  const pageSize = Math.min(options.pageSize || 1, options.totalItems)
+  const page = Math.min(Math.max(1, options.page || 1), Math.ceil(options.totalItems / (options.pageSize || 1)))
 
   const nav: Navigator = {}
   if (totalItems > page * pageSize) {
