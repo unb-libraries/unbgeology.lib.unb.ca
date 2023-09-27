@@ -40,7 +40,7 @@ const resolveEntityURLs = async function<E extends Entity = Entity> (obj: Record
 export const useEntityHandler = function<E extends Entity = Entity> (model: EntityModel, options?: EntityHandlerOptions): EventHandler {
   return async function (event) {
     const { method } = event
-    const { id } = getRouterParams(event)
+    const { [model.pk()]: id } = getRouterParams(event)
 
     switch (method) {
       case `POST`: {
@@ -113,12 +113,12 @@ export const useEntityListHandler = function<E extends Entity = Entity> (model: 
 
 export const useEntityReadHandler = function<E extends Entity = Entity> (model: EntityModel, options?: EntityHandlerOptions): EventHandler {
   return async function (event) {
-    const { id } = getRouterParams(event)
+    const { [model.pk()]: pk } = getRouterParams(event)
     if (options?.discriminatorKey) {
       model = getDiscriminator<E>(event, model, options.discriminatorKey)
     }
 
-    const query = model.findByPK(id)
+    const query = model.findByPK(pk)
     model.relationships({ filter: { cardinality: Cardinality.MANY_TO_ONE }, nested: false })
       .forEach((rel) => {
         const pk = useEntityType(rel.targetModelName as string).pk()
@@ -152,7 +152,7 @@ export const useEntityCreateHandler = function<E extends Entity = Entity> (model
 
 export const useEntityUpdateHandler = function<E extends Entity = Entity> (model: EntityModel, options?: EntityHandlerOptions): EventHandler {
   return async function (event) {
-    const { id: pk } = getRouterParams(event)
+    const { [model.pk()]: pk } = getRouterParams(event)
     const body = await resolveEntityURLs<E>(await readBody(event), model)
 
     if (options?.discriminatorKey) {
@@ -167,7 +167,7 @@ export const useEntityUpdateHandler = function<E extends Entity = Entity> (model
 
 export const useEntityDeleteHandler = function<E extends Entity = Entity> (model: EntityModel, options?: EntityDeleteHandlerOptions): EventHandler {
   return async function (event) {
-    const { id: pk } = getRouterParams(event)
+    const { [model.pk()]: pk } = getRouterParams(event)
     if (options?.discriminatorKey) {
       model = getDiscriminator<E>(event, model, options.discriminatorKey)
     }
@@ -188,7 +188,7 @@ export const useEntityRelationshipListHandler = function<E extends Entity = Enti
 
   return async function (event) {
     let { pathname: path } = getRequestURL(event)
-    const { id: pk } = getRouterParams(event)
+    const { [model.pk()]: pk } = getRouterParams(event)
 
     if (options?.discriminatorKey) {
       model = getDiscriminator<E>(event, model, options.discriminatorKey)
@@ -231,7 +231,7 @@ export const useEntityRelationshipListHandler = function<E extends Entity = Enti
 
 export const useEntityRelationshipAddHandler = function<E extends Entity = Entity> (model: EntityModel, options: EntityRelationshipHandlerOptions): EventHandler {
   return async function (event) {
-    const { id: pk } = getRouterParams(event)
+    const { [model.pk()]: pk } = getRouterParams(event)
     const body = Object.values(await resolveEntityURLs<E>(await readBody(event), model))[0]
 
     if (options?.discriminatorKey) {
@@ -246,7 +246,7 @@ export const useEntityRelationshipAddHandler = function<E extends Entity = Entit
 
 export const useEntityRelationshipDeleteHandler = function<E extends Entity = Entity> (model: EntityModel, options: EntityRelationshipHandlerOptions) : EventHandler {
   return async function (event) {
-    const { id: pk } = getRouterParams(event)
+    const { [model.pk()]: pk } = getRouterParams(event)
     const body = Object.values(await resolveEntityURLs<E>(await readBody(event), model))[0]
 
     if (options?.discriminatorKey) {
