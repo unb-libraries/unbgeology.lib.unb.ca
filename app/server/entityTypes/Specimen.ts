@@ -97,16 +97,15 @@ export default defineEntityType<Specimen>(`Specimen`, {
     }],
   },
   dimensions: {
-    width: {
-      type: EntityFieldTypes.Number,
-      required: optionalWhileInDraft,
-    },
-    length: {
-      type: EntityFieldTypes.Number,
-      required: function (this: Specimen) {
-        return this.status !== Status.DRAFT
+    type: {
+      width: {
+        type: EntityFieldTypes.Number,
+      },
+      length: {
+        type: EntityFieldTypes.Number,
       },
     },
+    required: optionalWhileInDraft,
   },
   date: {
     type: EntityFieldTypes.Date,
