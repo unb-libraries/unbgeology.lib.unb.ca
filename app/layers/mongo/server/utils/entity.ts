@@ -236,7 +236,7 @@ const useEntityTypeSchema = function<E extends Entity = Entity, I extends Entity
     toJSON: {
       transform(doc, ret, options) {
         if (doc.url) {
-        ret.self = doc.url()
+          ret.self = doc.url()
         }
         if (doc.schema.path(`created`)) {
           ret.created &&= new Date(doc.get(`created`))
@@ -291,11 +291,11 @@ export const defineEntityType = function<E extends Entity, I extends EntityInsta
 
 export const defineEmbeddedEntityType = function<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods> (baseTypeName: string, path: string, definition: SchemaDefinition<E>, options?: EntityTypeOptions) {
   const schema = useEntityTypeSchema(baseTypeName, definition, options)
-  
-  schema.method(`url`, function(this: HydratedDocument<E, I>, rel?: string) {
+
+  schema.method(`url`, function (this: HydratedDocument<E, I>, rel?: string) {
     const url = `${this.$parent()?.url(path)}/${this.id}`
     return !rel ? url : `${url}/${rel}`
   })
-  
+
   return schema
 }
