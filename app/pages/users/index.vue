@@ -8,7 +8,7 @@
     </button>
   </section>
   <section class="container mx-auto">
-    <PvTable v-if="users && users.length" :value="users">
+    <PvTable v-if="data?.items && data.items.length" :value="data.items">
       <PvTableColumn field="username" header="Username" />
       <PvTableColumn field="profile.firstName" header="First Name" />
       <PvTableColumn field="profile.lastName" header="Last Name" />
@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { type User } from "~~/types/user"
+import { type User } from "entity-types/User"
 
 definePageMeta({
   auth: {
@@ -57,5 +57,6 @@ const toggleStatus = async function (username: string, active: boolean) {
   }
 }
 
-const { data: users, refresh } = await useFetch<User[]>(`/api/users`)
+const { data, refresh } = await useFetch<{ items: User[] }>(`/api/users`)
+
 </script>
