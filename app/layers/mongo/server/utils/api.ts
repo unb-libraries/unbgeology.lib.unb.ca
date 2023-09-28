@@ -8,6 +8,7 @@ import {
   type EntityHandlerOptions,
   type EntityDeleteHandlerOptions,
   type EntityRelationshipHandlerOptions,
+  EntityReferenceFieldDefinition,
 } from "~/layers/mongo/types/entity"
 
 const getDiscriminator = function<E extends Entity = Entity> (event: H3Event, model: EntityModel, discriminatorParam: string) {
@@ -39,7 +40,7 @@ const resolveEntityURLs = async function<E extends Entity = Entity> (obj: Record
 
 export const useEntityHandler = function<E extends Entity = Entity> (model: EntityModel, options?: EntityHandlerOptions): EventHandler {
   return async function (event) {
-    const { method } = event
+    const method = getMethod(event)
     const { [model.pk()]: id } = getRouterParams(event)
 
     switch (method) {
@@ -66,47 +67,54 @@ export const useEntityHandler = function<E extends Entity = Entity> (model: Enti
 }
 
 export const useEntityListHandler = function<E extends Entity = Entity> (model: EntityModel, options?: EntityHandlerOptions & PageableListHandlerOptions): EventHandler {
-  options = { ...{ paginate: {} }, ...options }
-
   return async function (event) {
-    let { pathname: path } = getRequestURL(event)
+    const { pathname: path } = getRequestURL(event)
     if (options?.discriminatorKey) {
       model = getDiscriminator<E>(event, model, options.discriminatorKey)
     }
 
     const query = model.find()
 
-    let paginator: Paginator | undefined
-    if (options?.paginate) {
-      paginator = usePaginator(event, { totalItems: await model.count(), paginate: typeof options.paginate !== `object` ? options.paginate : {} })
-      const { page, pageSize } = paginator
+    const { page, pageSize } = await getPaginateOptions(event, model, options?.paginate || {})
+    if (options?.paginate !== false) {
       query.skip((page - 1) * pageSize).limit(pageSize)
-      path = buildPageLink(path, { page, pageSize })
     }
 
-    const { field } = getQuery(event)
-    if (field) {
-      const select = Array.isArray(field) ? [model.pk(), ...field] : [model.pk(), field]
-      query.select(select)
+    const select = getSelectOptions(event)
+    if (Object.keys(select).length > 0) {
+      const fields = selectEntityFieldDefinitions(model, select)
+      const { populate = [], select: selection } = getSelectPopulate(fields)
+      if (populate.length > 0) {
+        populate?.forEach(p => query.populate(p))
+      }
+      if (selection.length > 0) {
+        query.select(selection.concat(model.pk()).join(` `))
+      }
+    } else {
+      const fields = getEntityFieldsDefinitions(model)
+      fields
+        .filter(f => f.type === `ref` && f.cardinality === `single`)
+        .forEach(f => query.populate(f.path, useEntityType((f as EntityReferenceFieldDefinition).targetModelName).pk()))
+
+      const projection = fields.reduce((projection, field) => ({ ...projection, [field.path]: field.cardinality === `multi` ? [] : 1 }), { _id: 1 })
+      query.projection(projection)
     }
 
-    model.relationships({ filter: { cardinality: Cardinality.MANY_TO_ONE }, nested: false })
-      .filter(rel => !field || (Array.isArray(field) && field.includes(rel.path)) || field === rel.path)
-      .forEach((rel) => {
-        const pk = useEntityType(rel.targetModelName as string).pk()
-        query.populate(rel.path, pk !== `_id` ? `${pk} -_id` : `_id`)
-      })
-
-    const { sort } = getQuery(event)
-    if (sort) {
-      query.sort(Array.isArray(sort) ? sort.join(` `) : `${sort}`)
-    }
+    const sort = getSortOptions(event)
+    query.sort(Object.entries(sort).map(([field, direction]) => direction === `asc` ? field : `-${field}`).join(` `))
 
     const docs = await query.exec()
+
+    const paginator = usePaginator(event, {
+      totalItems: await model.count(),
+      page,
+      pageSize,
+    })
+
     return {
-      self: path,
+      self: options?.paginate ? buildPageLink(path, { page, pageSize }) : path,
       items: docs.map(doc => doc.toJSON()),
-      ...paginator ?? {},
+      ...options?.paginate !== false ? paginator : {},
     }
   }
 }
@@ -184,8 +192,6 @@ export const useEntityDeleteHandler = function<E extends Entity = Entity> (model
 }
 
 export const useEntityRelationshipListHandler = function<E extends Entity = Entity> (model: EntityModel, options: EntityRelationshipHandlerOptions & PageableListHandlerOptions): EventHandler {
-  options = { ...{ paginate: {} }, ...options }
-
   return async function (event) {
     let { pathname: path } = getRequestURL(event)
     const { [model.pk()]: pk } = getRouterParams(event)

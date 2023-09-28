@@ -24,6 +24,7 @@ import {
   type EntityFieldTraverseOptions,
   type IEntityFieldDefinition,
   type SelectRecord,
+  type SelectivePopulationMap,
 } from "~/layers/mongo/types/entity"
 
 export const createEntityFieldDefinition = function (modelName: string, path: string) {
@@ -87,6 +88,27 @@ export const selectEntityFieldDefinitions = function<E extends Entity = Entity> 
       })
   }
   return select(selection, fieldDefinitions)
+}
+
+export const getSelectPopulate = function (fields: IEntityFieldDefinition[]): SelectivePopulationMap {
+  const apply = function (item: string, items: string[], fn: (i: string) => string): string[] {
+    return items.length > 0 ? items.map(fn) : [item]
+  }
+
+  return fields.map((f) => {
+    const subPop = getSelectPopulate(f.fieldDefinitions ?? [])
+    return {
+      select: f.type === `value`
+        ? apply(f.path, subPop.select, s => `${f.path}.${s}`)
+        : [],
+      populate: f.type === `ref`
+        ? [{ path: f.path, populate: subPop.populate, select: subPop.select }]
+        : (subPop.populate ?? []).map(s => ({ ...s, path: `${f.path}.${s.path}` })),
+    }
+  }).reduce((map, pop) => ({
+    select: [...map.select, ...pop.select],
+    populate: [...map.populate ?? [], ...pop.populate ?? []],
+  }), { select: [] } as SelectivePopulationMap)
 }
 
 const useEntityTypeSchema = function<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods, Q extends EntityQueryHelpers = EntityQueryHelpers, M extends EntityModel<E, I, Q> = EntityModel<E, I, Q>> (name: string, definition: SchemaDefinition<E>, options?: EntityTypeOptions) {
@@ -213,22 +235,20 @@ const useEntityTypeSchema = function<E extends Entity = Entity, I extends Entity
     },
     toJSON: {
       transform(doc, ret, options) {
-        const entityType = useEntityType(name)
-        
-        // TODO: Find the schema path recursively.
-        const childSchema = entityType.schema.childSchemas.find(s => s.schema === doc.schema)
-        const path = childSchema?.model.path
-
+        if (doc.url) {
         ret.self = doc.url()
-        ret.created &&= new Date(doc.created)
-        ret.updated &&= new Date(doc.updated)
+        }
+        if (doc.schema.path(`created`)) {
+          ret.created &&= new Date(doc.get(`created`))
+        }
+        if (doc.schema.path(`updated`)) {
+          ret.updated &&= new Date(doc.get(`updated`))
+        }
 
-        const traverseOptions: EntityRelationshipsTraverseOptions = { filter: { cardinality: Cardinality.MANY_TO_MANY | Cardinality.ONE_TO_MANY }}
-        if (path) { traverseOptions.rootPath = path }
-        entityType
-          .relationships(traverseOptions)
-          .forEach((rel) => {
-            ret[rel.path] &&= { self: doc.url(rel.path) }
+        Object.entries(ret)
+          .filter(([_, value]) => Array.isArray(value) && value.length === 0)
+          .forEach(([key, _]) => {
+            ret[key] = { self: doc.url(key) }
           })
 
         delete ret.__v

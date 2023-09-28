@@ -51,9 +51,9 @@ export type PK = string | number | Types.ObjectId
 export interface EntityQueryHelpers {
 }
 
-export interface EntityModel<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods, Q extends EntityQueryHelpers<E> = EntityQueryHelpers<E>> extends Model<E, I, Q> {
+export interface EntityModel<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods, Q extends EntityQueryHelpers = EntityQueryHelpers> extends Model<E, I, Q> {
   baseURL(): string
-  findByPK(pk: string): Query<HydratedDocument<E>, HydratedDocument<E>, EntityQueryHelpers>
+  findByPK(pk: string): Query<HydratedDocument<E, I>, HydratedDocument<E, I>, EntityQueryHelpers>
   findByURL(url: string): Promise<HydratedDocument<E, I> | undefined>
   pk(): string
   getRelationship(path: string): EntityRelationship | undefined
@@ -141,4 +141,9 @@ export interface EntityFieldTraverseOptions {
   flatten?: boolean
 }
 
-export type SelectRecord = { [path: string]: boolean | SelectRecord }
+export type SelectRecord<T> = { [path: string]: T | SelectRecord<T> }
+
+export interface SelectivePopulationMap {
+  select: string[]
+  populate?: (SelectivePopulationMap & { path: string })[]
+}
