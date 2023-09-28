@@ -6,9 +6,6 @@
   </section>
   <section v-if="specimen" class="container mx-auto">
     <ul>
-      <li v-if="specimen.objectId">
-        <span>ID:</span><span>{{ specimen.objectId }}</span>
-      </li>
       <li v-if="specimen.age">
         <span>Age:</span><span>{{ specimen.age }}</span>
       </li>
@@ -39,8 +36,8 @@
 
 <script setup lang="ts">
 import type { Specimen } from 'entity-types/Specimen'
-const objectId = useRoute().params.objectId
-const { data: specimen, error } = await useFetch<Specimen>(`/api/specimens/${objectId}`)
+const { objectId: slug } = useRoute().params
+const { data: specimen, error } = await useFetch<Specimen>(`/api/specimens/${slug}`)
 if (error.value) {
   showError({ statusCode: 404 })
 }

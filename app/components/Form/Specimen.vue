@@ -26,7 +26,7 @@
     </div>
     <div class="my-8 flex flex-col">
       <label class="mb-2 text-lg font-bold" for="composition">Composition</label>
-      <PvInputSelect v-model="composition" name="composition" :options="['Calcite', 'Citin', 'Feldspar', 'Mica', 'Quartz', 'Resin', 'Volcanic Glass']" />
+      <PvInputSelect v-model="composition" name="composition" :options="['solid']" />
     </div>
     <div class="my-8 flex flex-col">
       <label class="mb-2 text-lg font-bold" for="width">Width</label>
@@ -147,7 +147,7 @@ const onSubmit = function () {
   }
 
   const update = async function (specimen: Partial<Specimen>) {
-    const { data, error } = await useFetch<Partial<Specimen>>(`/api/specimens/${props.specimen!.objectId}`, {
+    const { data, error } = await useFetch<Partial<Specimen>>(`/api/specimens/${props.specimen!.slug}`, {
       method: `PUT`,
       body: specimen,
     })

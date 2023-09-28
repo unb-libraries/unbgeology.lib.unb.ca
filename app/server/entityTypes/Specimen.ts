@@ -57,6 +57,7 @@ export interface Publication extends Entity {
 export interface Specimen extends Entity {
   objectId: string
   name: string
+  slug: string
   description: string
   classifications: Classification[]
   dimensions: Dimension

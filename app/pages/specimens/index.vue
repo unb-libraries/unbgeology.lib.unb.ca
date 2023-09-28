@@ -15,21 +15,20 @@
     >
       <LeafletMarker
         v-for="marker in markers"
-        :key="marker.id"
+        :key="marker.self"
         :name="marker.name"
         :center="[marker.latitude, marker.longitude]"
         :accuracy="marker.accuracy"
       />
     </LeafletMap>
-    <PvTable v-if="specimens && specimens.length" :value="specimens">
-      <PvTableColumn field="objectId" header="ID">
+    <PvTable v-if="data?.items && data.items.length" :value="data.items">
+      <PvTableColumn field="name" header="Name">
         <template #body="slotProps">
-          <NuxtLink class="text-blue-900 hover:underline" :to="`/specimens/${slotProps.data.objectId}`">
-            {{ slotProps.data.objectId }}
+          <NuxtLink class="text-blue-900 hover:underline" :to="`/specimens/${slotProps.data.slug}`">
+            {{ slotProps.data.name }}
           </NuxtLink>
         </template>
       </PvTableColumn>
-      <PvTableColumn field="name" header="Name" />
       <PvTableColumn field="age" header="Age" />
       <PvTableColumn field="pieces" header="Pieces" />
       <PvTableColumn field="dimensions" header="Dimensions (W x L)">
@@ -42,7 +41,7 @@
       <PvTableColumn field="objectId">
         <template #body="{ data }">
           <div class="flex flex-row">
-            <a :href="`/specimens/${data.objectId}/edit`" :title="`Edit ${data.objectId}`">
+            <a :href="`/specimens/${data.slug}/edit`" :title="`Edit ${data.name}`">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -54,7 +53,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
               </svg>
             </a>
-            <a @click.prevent="onDelete(data.objectId)">
+            <a :title="`Delete ${data.name}`" @click.prevent="onDelete(data.self)">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -79,20 +78,20 @@
 <script setup lang="ts">
 import type { Specimen } from "entity-types/Specimen"
 
-const { data: specimens, refresh } = await useFetch<Specimen[]>(`/api/specimens`)
-const markers = computed(() => (specimens.value ?? [])
+const { data, refresh } = await useFetch<{ items: Specimen[] }>(`/api/specimens`)
+const markers = computed(() => (data.value?.items ?? [])
   .filter(specimen => specimen.origin !== undefined)
   .map(specimen => ({
-    id: specimen.objectId,
+    self: specimen.self,
     name: specimen.name,
     latitude: specimen.origin!.latitude,
     longitude: specimen.origin!.longitude,
     accuracy: specimen.origin!.accuracy,
   })))
 
-const onDelete = async function (objectId: string) {
+const onDelete = async function (uri: string) {
   // FIX: https://github.com/nuxt/nuxt/issues/19077
-  await useFetch<void, Error, string, `delete`>(`/api/specimens/${objectId}`, { method: `DELETE` })
+  await useFetch<void, Error, string, `delete`>(uri, { method: `DELETE` })
   refresh()
 }
 </script>
