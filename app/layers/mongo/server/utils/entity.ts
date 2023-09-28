@@ -254,7 +254,6 @@ const useEntityTypeSchema = function<E extends Entity = Entity, I extends Entity
         delete ret.__v
         delete ret._id
         delete ret.__t
-        delete ret[useEntityType(name).pk()]
 
         return ret
       },
