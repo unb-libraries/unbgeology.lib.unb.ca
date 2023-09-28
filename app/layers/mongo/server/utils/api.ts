@@ -25,8 +25,9 @@ const getDiscriminator = function<E extends Entity = Entity> (event: H3Event, mo
 }
 
 const resolveEntityURLs = async function<E extends Entity = Entity> (obj: Record<string, keyof E>, model: EntityModel) {
+  // REFACTOR: Use getEntityFieldsDefinitions.
   const relationships = model
-    .relationships({ flatten: true })
+    .relationships({ filter: { cardinality: Cardinality.MANY_TO_MANY | Cardinality.MANY_TO_ONE }, flatten: true })
     .filter(rel => rel.path in obj)
 
   for (const i in relationships) {
