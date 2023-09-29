@@ -8,8 +8,13 @@ import InputNumber from "primevue/inputnumber"
 import InputText from "primevue/inputtext"
 import RadioButton from "primevue/radiobutton"
 
+import Tailwind from "primevue/passthrough/tailwind"
+
 export default defineNuxtPlugin((nuxtApp) => {
-  nuxtApp.vueApp.use(PrimeVue)
+  nuxtApp.vueApp.use(PrimeVue, {
+    unstyled: true,
+    pt: Tailwind,
+  })
 
   // Table
   nuxtApp.vueApp.component(`PvTable`, DataTable)

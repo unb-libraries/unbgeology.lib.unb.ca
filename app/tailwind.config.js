@@ -5,6 +5,7 @@ module.exports = {
     `./layouts/**/*.vue`,
     `./pages/**/*.vue`,
     `./plugins/**/*.{js,ts}`,
+    `./node_modules/primevue/**/*.{vue,js,ts,jsx,tsx}`,
   ],
   theme: {
     extend: {},

@@ -5,8 +5,4 @@ export default defineNuxtConfig({
     transpile: [`primevue`],
   },
   buildDir: `./.build/.nuxt`,
-  css: [
-    `primevue/resources/themes/lara-light-blue/theme.css`,
-    `primevue/resources/primevue.css`,
-  ],
 })
