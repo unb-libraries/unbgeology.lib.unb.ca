@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@node-saml/node-saml": "^4.0.0",
-    "lightship": "7.1"
+    "lightship": "^9.0.0"
   },
   "devDependencies": {
     "@nuxtjs/eslint-config-typescript": "^12.0.0",

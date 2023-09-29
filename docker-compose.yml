@@ -34,8 +34,6 @@ services:
       - ./app/server:/app/html/server
       - ./app/types:/app/html/types
       - ./app/layers:/app/html/layers
-      - ./build/package.json:/app/html/package.json
-      - ./build/package-lock.json:/app/html/package-lock.json
     env_file:
       - ./env/nuxt.env
     networks:
@@ -43,6 +41,7 @@ services:
     ports:
       - 3118:80
       - 31180:31180
+      - 9118:9118
 
   idp-saml-unbgeology-lib-unb-ca:
     image: ghcr.io/unb-libraries/simplesamlphp:1.x
