@@ -24,6 +24,7 @@ services:
       - ./app/node_modules:/app/html/node_modules
       - ./app/.build:/app/html/.build
       - ./app/nuxt.config.ts:/app/html/nuxt.config.ts
+      - ./app/tailwind.config.js:/app/html/tailwind.config.js
       - ./app/config:/app/html/config
       - ./app/components:/app/html/components
       - ./app/modules:/app/html/modules
