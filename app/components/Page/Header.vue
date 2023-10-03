@@ -19,15 +19,31 @@
             </svg>
           </div>
         </div>
-        <nav class="flex flex-col md:flex md:flex-row md:items-center md:space-x-6" :class="collapsed ? 'hidden' : ''">
-          <NuxtLink to="/specimens">
-            Specimens
-          </NuxtLink>
-          <button class="bg-black p-3 text-white">
-            <a v-if="!currentUser" class="ml-2 py-2 md:ml-0 md:py-0" href="/login">Login</a>
-            <a v-else class="ml-2 py-2 md:ml-0 md:py-0" href="/logout">Logout {{ currentUser }}</a>
-          </button>
-        </nav>
+        <div class="flex flex-col md:space-y-2">
+          <nav class="flex flex-col items-end text-sm uppercase md:flex md:flex-row md:space-x-6" :class="collapsed ? 'hidden' : ''">
+            <span v-if="currentUser">Hello {{ currentUser }}</span>
+            <NuxtLink v-if="currentUser" to="/specimens/create">
+              Add specimen
+            </NuxtLink>
+            <NuxtLink v-if="!currentUser" to="/login" class="ml-2 py-2 md:ml-0 md:py-0">
+              Login / Admin
+            </NuxtLink>
+            <NuxtLink v-else to="/logout" class="ml-2 py-2 md:ml-0 md:py-0">
+              Log out
+            </NuxtLink>
+          </nav>
+          <nav class="flex flex-col md:flex md:flex-row md:justify-end md:space-x-6" :class="collapsed ? 'hidden' : ''">
+            <NuxtLink to="/specimens">
+              Search
+            </NuxtLink>
+            <NuxtLink to="/about">
+              About
+            </NuxtLink>
+            <NuxtLink to="/contact">
+              Contact
+            </NuxtLink>
+          </nav>
+        </div>
       </div>
     </div>
   </header>
