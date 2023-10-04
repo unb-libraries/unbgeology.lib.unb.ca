@@ -6,7 +6,6 @@ import Dropdown from "primevue/dropdown"
 import InputMask from "primevue/inputmask"
 import InputNumber from "primevue/inputnumber"
 import InputText from "primevue/inputtext"
-import RadioButton from "primevue/radiobutton"
 
 import Tailwind from "primevue/passthrough/tailwind"
 
@@ -25,6 +24,5 @@ export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.vueApp.component(`PvInputText`, InputText)
   nuxtApp.vueApp.component(`PvInputMask`, InputMask)
   nuxtApp.vueApp.component(`PvInputNumber`, InputNumber)
-  nuxtApp.vueApp.component(`PvInputRadio`, RadioButton)
   nuxtApp.vueApp.component(`PvInputSelect`, Dropdown)
 })

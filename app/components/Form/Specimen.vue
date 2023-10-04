@@ -1,62 +1,92 @@
 <template>
   <form @submit.prevent="onSubmit">
-    <div>
-      <LeafletMap class="h-80" :center="[latitude || 0, longitude || 0]" @click="onMapClick">
-        <LeafletSearch @item-select="onSearchItemSelect" />
-        <LeafletMarker
-          v-if="latitude !== undefined && longitude !== undefined"
-          :name="name"
-          :center="[latitude, longitude]"
-          :draggable="true"
-          @dragged="onMarkerDragged"
-        />
-      </LeafletMap>
-    </div>
-    <div class="my-8 flex flex-col">
-      <label class="mb-2 text-lg font-bold" for="name">Name</label>
-      <PvInputText v-model="name" name="name" />
-    </div>
-    <div class="my-8 flex flex-col">
-      <label class="mb-2 text-lg font-bold" for="date">Date</label>
-      <PvInputMask v-model="date" name="date" mask="9999?/99/99" placeholder="YYYY/MM/DD" />
-    </div>
-    <div class="my-8 flex flex-col">
-      <label class="mb-2 text-lg font-bold" for="age">Age</label>
-      <PvInputSelect v-model="age" name="age" :options="['Cretaceous', 'Eocene', 'Ordovician', 'Holocene', 'Precambrian']" />
-    </div>
-    <div class="my-8 flex flex-col">
-      <label class="mb-2 text-lg font-bold" for="composition">Composition</label>
-      <PvInputSelect v-model="composition" name="composition" :options="['solid']" />
-    </div>
-    <div class="my-8 flex flex-col">
-      <label class="mb-2 text-lg font-bold" for="width">Width</label>
-      <PvInputNumber v-model="width" name="width" />
-    </div>
-    <div class="my-8 flex flex-col">
-      <label class="mb-2 text-lg font-bold" for="length">Length</label>
-      <PvInputNumber v-model="length" name="length" />
-    </div>
-    <div class="my-8 flex flex-col">
-      <label class="mb-2 text-lg font-bold" for="pieces">Pieces</label>
-      <PvInputNumber v-model="pieces" name="pieces" />
-    </div>
-    <div class="my-8 flex flex-col">
-      <label class="mb-2 text-lg font-bold">Partial</label>
-      <div name="partial" class="flex flex-row">
-        <div class="mr-6">
-          <PvInputRadio v-model="partial" name="partial-yes" value="true" />
-          <label class="mx-3" for="partial-yes">Yes</label>
+    <div class="flex flex-col md:flex-row">
+      <div class="mr-4 grow">
+        <div class="flex flex-col">
+          <label class="mb-2 text-lg font-bold" for="name">Name</label>
+          <PvInputText v-model="name" name="name" />
         </div>
-        <div>
-          <PvInputRadio v-model="partial" name="partial-no" value="false" />
-          <label class="mx-3" for="partial-no">No</label>
+        <div class="my-6 flex flex-col">
+          <label class="mb-2 text-lg font-bold" for="date">Date</label>
+          <PvInputMask v-model="date" name="date" mask="9999?/99/99" placeholder="YYYY/MM/DD" />
+        </div>
+        <div class="my-6 flex flex-row">
+          <div class="mr-3 flex w-1/2 flex-col">
+            <label class="mb-2 text-lg font-bold" for="age">Age</label>
+            <PvInputSelect v-model="age" name="age" :options="['Cretaceous', 'Eocene', 'Ordovician', 'Holocene', 'Precambrian']" />
+          </div>
+          <div class="ml-3 flex w-1/2 flex-col">
+            <label class="mb-2 text-lg font-bold" for="composition">Composition</label>
+            <PvInputSelect v-model="composition" name="composition" :options="['solid']" />
+          </div>
+        </div>
+        <div class="my-6 flex flex-row">
+          <div class="mr-3 flex w-1/2 flex-col">
+            <label class="mb-2 text-lg font-bold" for="width">Width</label>
+            <PvInputNumber v-model="width" name="width" />
+          </div>
+          <div class="ml-3 flex w-1/2 flex-col">
+            <label class="mb-2 text-lg font-bold" for="length">Length</label>
+            <PvInputNumber v-model="length" name="length" />
+          </div>
+        </div>
+        <div class="mt-6 flex flex-row">
+          <div class="mr-3 flex w-1/2 flex-col">
+            <label class="mb-2 text-lg font-bold" for="pieces">Pieces</label>
+            <PvInputNumber v-model="pieces" name="pieces" />
+          </div>
+          <div class="ml-3 flex w-1/2 flex-col">
+            <label class="mb-2 text-lg font-bold">Partial</label>
+            <div name="partial" class="flex h-full flex-row items-center">
+              <div class="mr-6">
+                <input
+                  id="partial-yes"
+                  v-model="partial"
+                  type="radio"
+                  name="partial"
+                  value="true"
+                  class="dark:bg-primary border-primary-20 dark:border-primary-60/75 hover:border-accent-light checked:border-accent-mid focus:ring-accent-light/50 focus:ring-offset-base dark:focus:ring-offset-primary h-6 w-6 cursor-pointer appearance-none rounded-full border bg-white align-middle checked:border-8 focus:ring-2 focus:ring-offset-2"
+                >
+                <label class="mx-3 align-middle" for="partial-yes">Yes</label>
+              </div>
+              <div>
+                <input
+                  id="partial-no"
+                  v-model="partial"
+                  type="radio"
+                  name="partial"
+                  value="false"
+                  class="dark:bg-primary border-primary-20 dark:border-primary-60/75 hover:border-accent-light checked:border-accent-mid focus:ring-accent-light/50 focus:ring-offset-base dark:focus:ring-offset-primary h-6 w-6 cursor-pointer appearance-none rounded-full border bg-white align-middle checked:border-8 focus:ring-2 focus:ring-offset-2"
+                >
+                <label class="mx-3 align-middle" for="partial-no">No</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="w-full md:ml-4 md:w-1/2">
+        <div class="flex h-full w-full flex-col">
+          <label class="mb-2 text-lg font-bold" for="origin">Origin</label>
+          <LeafletMap class="h-full rounded-md" name="origin" :center="[latitude || 0, longitude || 0]" @click="onMapClick">
+            <LeafletSearch @item-select="onSearchItemSelect" />
+            <LeafletMarker
+              v-if="latitude !== undefined && longitude !== undefined"
+              :name="name"
+              :center="[latitude, longitude]"
+              :draggable="true"
+              @dragged="onMarkerDragged"
+            />
+          </LeafletMap>
         </div>
       </div>
     </div>
-    <div class="my-8">
-      <button type="submit" class="bg-black p-3 text-white">
+    <div class="mt-8 flex flex-row">
+      <button type="submit" class="bg-accent-dark dark:bg-accent-mid hover:bg-accent-light mr-2 rounded-md p-3 font-bold text-white">
         Save
       </button>
+      <NuxtLink to="/" class="font-base ml-2 p-3">
+        Cancel
+      </NuxtLink>
     </div>
   </form>
 </template>
@@ -165,5 +195,4 @@ const onSubmit = function () {
     update(body)
   }
 }
-
 </script>
