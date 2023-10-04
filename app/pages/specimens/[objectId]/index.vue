@@ -1,10 +1,8 @@
 <template>
-  <section v-if="specimen" class="container mx-auto my-4">
-    <h1 class="text-4xl">
+  <NuxtLayout v-if="specimen" name="page">
+    <template #title>
       {{ specimen.name }}
-    </h1>
-  </section>
-  <section v-if="specimen" class="container mx-auto">
+    </template>
     <ul>
       <li v-if="specimen.age">
         <span>Age:</span><span>{{ specimen.age }}</span>
@@ -31,11 +29,16 @@
         <span>Updated:</span><span>{{ specimen.updated }}</span>
       </li>
     </ul>
-  </section>
+  </NuxtLayout>
 </template>
 
 <script setup lang="ts">
 import type { Specimen } from 'entity-types/Specimen'
+
+definePageMeta({
+  layout: false,
+})
+
 const { objectId: slug } = useRoute().params
 const { data: specimen, error } = await useFetch<Specimen>(`/api/specimens/${slug}`)
 if (error.value) {

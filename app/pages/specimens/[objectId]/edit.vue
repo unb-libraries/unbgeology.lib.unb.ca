@@ -1,19 +1,21 @@
 <template>
-  <section v-if="specimen" class="container mx-auto my-4">
-    <h1 class="text-4xl">
-      {{ specimen.name }}
-    </h1>
-  </section>
-  <section v-if="specimen" class="container mx-auto my-4">
+  <NuxtLayout v-if="specimen" name="page">
+    <template #title>
+      Edit <span class="italic">{{ specimen.name }}</span>
+    </template>
     <div v-if="message" class="my-4 border border-emerald-600 bg-emerald-200 p-3 text-emerald-900">
       {{ message }}
     </div>
     <FormSpecimen :specimen="specimen" @updated="onSpecimenUpdate" />
-  </section>
+  </NuxtLayout>
 </template>
 
 <script setup lang="ts">
 import type { Specimen } from 'entity-types/Specimen'
+
+definePageMeta({
+  layout: false,
+})
 
 const message = ref()
 

@@ -1,7 +1,10 @@
 <template>
-  <section class="container mx-auto">
-    <h1 class="my-8 text-center text-4xl">
-      Contact
-    </h1>
-  </section>
+  <div>Here be a contact form.</div>
 </template>
+
+<script setup>
+definePageMeta({
+  layout: `page`,
+  name: `Contact`,
+})
+</script>
