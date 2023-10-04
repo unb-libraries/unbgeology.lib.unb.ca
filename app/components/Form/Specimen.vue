@@ -80,6 +80,10 @@
         </div>
       </div>
     </div>
+    <div class="flex flex-col mt-6">
+      <label class="mb-2 w-full text-lg font-bold" for="description">Description</label>
+      <textarea v-model="description" class="rounded-lg p-2 dark:bg-primary border border-primary-20 dark:border-primary-60/75 hover:border-accent-light dark:focus:border-accent-mid" name="description" rows="10"></textarea>
+    </div>
     <div class="mt-8 flex flex-row">
       <button type="submit" class="bg-accent-dark dark:bg-accent-mid hover:bg-accent-light mr-2 rounded-md p-3 font-bold text-white">
         Save
@@ -106,6 +110,7 @@ const emit = defineEmits<{
 }>()
 
 const name = ref(props.specimen?.name)
+const description = ref(props.specimen?.description)
 const pieces = ref(props.specimen?.pieces)
 const age = ref(props.specimen?.age)
 const width = ref(props.specimen?.dimensions?.width)
