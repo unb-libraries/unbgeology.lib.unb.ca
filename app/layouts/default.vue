@@ -1,9 +1,9 @@
 <template>
   <div class="flex h-full flex-col">
-    <page-header class="bg-gray-300" />
+    <page-header />
     <main class="grow">
       <slot />
     </main>
-    <page-footer class="bg-gray-200" />
+    <page-footer />
   </div>
 </template>

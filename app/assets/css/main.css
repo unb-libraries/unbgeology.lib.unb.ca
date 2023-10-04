@@ -5,6 +5,7 @@
 @layer base {
   body {
     height: 100vh;
+    @apply bg-base dark:bg-primary-80 text-primary dark:text-base;
   }
 
   #__nuxt {

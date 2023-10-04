@@ -3,6 +3,7 @@
     id="leaflet-location-search"
     v-model="location"
     class="leaflet-control"
+    input-class="dark:bg-white bg-white text-primary dark:text-primary px-2 py-1 rounded-sm"
     :suggestions="locations"
     option-label="display_name"
     @click.stop

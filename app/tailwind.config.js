@@ -2,6 +2,7 @@
 module.exports = {
   content: [
     `./components/**/*.{js,vue,ts}`,
+    `./layers/primevue/plugins/primevue.ts`,
     `./layouts/**/*.vue`,
     `./pages/**/*.vue`,
     `./plugins/**/*.{js,ts}`,
