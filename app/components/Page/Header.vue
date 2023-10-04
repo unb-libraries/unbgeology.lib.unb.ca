@@ -3,9 +3,9 @@
     <div class="p-4">
       <div class="container mx-auto flex flex-col justify-between text-lg md:flex-row">
         <div class="flex flex-row justify-between">
-          <NuxtLink class="self-center" to="/" @click="collapsed = true">
+          <a class="self-center" href="/" @click="collapsed = true">
             <span>UNB Earth Sciences Collections</span>
-          </NuxtLink>
+          </a>
           <div class="cursor-pointer md:hidden" @click="collapsed = !collapsed">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -22,26 +22,26 @@
         <div class="flex flex-col md:space-y-2">
           <nav class="flex flex-col items-end text-sm uppercase md:flex md:flex-row md:space-x-6" :class="collapsed ? 'hidden' : ''">
             <span v-if="currentUser">Hello {{ currentUser }}</span>
-            <NuxtLink v-if="currentUser" to="/specimens/create">
+            <a v-if="currentUser" href="/specimens/create">
               Add specimen
-            </NuxtLink>
-            <NuxtLink v-if="!currentUser" to="/login" class="ml-2 py-2 md:ml-0 md:py-0">
+            </a>
+            <a v-if="!currentUser" href="/login" class="ml-2 py-2 md:ml-0 md:py-0">
               Login / Admin
-            </NuxtLink>
-            <NuxtLink v-else to="/logout" class="ml-2 py-2 md:ml-0 md:py-0">
+            </a>
+            <a v-else href="/logout" class="ml-2 py-2 md:ml-0 md:py-0">
               Log out
-            </NuxtLink>
+            </a>
           </nav>
           <nav class="flex flex-col md:flex md:flex-row md:justify-end md:space-x-6" :class="collapsed ? 'hidden' : ''">
-            <NuxtLink to="/specimens">
+            <a href="/specimens">
               Search
-            </NuxtLink>
-            <NuxtLink to="/about">
+            </a>
+            <a href="/about">
               About
-            </NuxtLink>
-            <NuxtLink to="/contact">
+            </a>
+            <a href="/contact">
               Contact
-            </NuxtLink>
+            </a>
           </nav>
         </div>
       </div>
