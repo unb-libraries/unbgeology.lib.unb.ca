@@ -2,11 +2,11 @@
   <form @submit.prevent="onSubmit">
     <div class="flex flex-col">
       <label class="mb-2 text-lg font-bold" for="label">Label</label>
-      <PvInputText v-model="label" name="Label" />
+      <PvInputText :id="`${uri}:label`" v-model="label" name="Label" />
     </div>
     <div class="mr-3 flex w-1/2 flex-col">
-      <label class="mb-2 text-lg font-bold" for="age">Parent</label>
-      <PvInputSelect v-model="parent" name="age" :options="terms" option-label="label" />
+      <label class="mb-2 text-lg font-bold" for="parent">Parent</label>
+      <PvInputSelect :id="`${uri}:parent`" v-model="parent" name="parent" :options="terms" option-label="label" />
     </div>
     <slot />
     <div class="mt-8 flex flex-row">
@@ -24,21 +24,33 @@
 import { type Taxonomy } from '~/layers/mongo/types/taxonomy'
 
 const props = defineProps<{
-  type: string
+  uri: string
 }>()
 
 const label = ref(``)
 const parent = ref(``)
 const terms = ref<Taxonomy[]>([])
 
-watch(() => props.type, async (newType) => {
-  if (newType) {
-    const { data } = await useFetch<{ items: Taxonomy[] }>(newType)
+watch(() => props.uri, async (newUri) => {
+  if (newUri) {
+    const { data } = await useFetch<{ items: Taxonomy[] }>(newUri)
     terms.value = data.value?.items ?? []
   }
 }, { immediate: true })
 
-const onSubmit = function () {
+const onSubmit = async function () {
+  const { data: term } = await useFetch<Taxonomy>(props.uri, {
+    method: `POST`,
+    body: {
+      label: label.value,
+      parent: parent.value,
+    },
+  })
 
+  if (term.value) {
+    label.value = ``
+    parent.value = ``
+    terms.value.push(term.value)
+  }
 }
 </script>

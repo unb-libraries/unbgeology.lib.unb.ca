@@ -7,14 +7,9 @@ export default defineEntityType<Taxonomy>(`Taxonomy`, {
     required: true,
     unique: true,
   },
-  slug: {
-    type: EntityFieldTypes.String,
-    required: true,
-    unique: true,
-  },
   parent: {
     type: EntityFieldTypes.ObjectId,
     ref: `Taxonomy`,
     required: false,
   },
-})
+}, { slug: `label`, pk: `slug` })
