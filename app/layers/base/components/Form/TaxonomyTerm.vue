@@ -25,14 +25,16 @@ import { type Taxonomy } from '~/layers/mongo/types/taxonomy'
 
 const props = defineProps<{
   uri: string
+  term?: Taxonomy
 }>()
 
 const emits = defineEmits<{
   created: [taxonomy: Taxonomy],
+  updated: [taxonomy: Taxonomy],
 }>()
 
-const label = ref(``)
-const parent = ref(``)
+const label = ref(props.term?.label ?? ``)
+const parent = ref(props.term?.parent ?? ``)
 const terms = ref<Taxonomy[]>([])
 
 watch(() => props.uri, async (newUri) => {
@@ -42,20 +44,49 @@ watch(() => props.uri, async (newUri) => {
   }
 }, { immediate: true })
 
-const onSubmit = async function () {
-  const { data: term } = await useFetch<Taxonomy>(props.uri, {
-    method: `POST`,
-    body: {
-      label: label.value,
-      parent: parent.value,
-    },
-  })
+watch(() => props.term, async (newTerm) => {
+  label.value = newTerm?.label!
+  parent.value = newTerm?.parent!
+})
 
-  if (term.value) {
-    label.value = ``
-    parent.value = ``
-    emits(`created`, term.value)
-    terms.value.push(term.value)
+const onSubmit = async function () {
+  const onCreate = async () => {
+    const { data: term } = await useFetch<Taxonomy>(props.uri, {
+      method: `POST`,
+      body: {
+        label: label.value,
+        parent: parent.value,
+      },
+    })
+
+    if (term.value) {
+      label.value = ``
+      parent.value = ``
+      emits(`created`, term.value)
+      terms.value.push(term.value)
+    }
+  }
+
+  const onUpdate = async (uri: string) => {
+    const { data: updatedTerm } = await useFetch<Taxonomy>(uri, {
+      method: `PUT`,
+      body: {
+        label: label.value,
+        parent: parent.value,
+      },
+    })
+
+    if (updatedTerm.value) {
+      label.value = ``
+      parent.value = ``
+      emits(`updated`, updatedTerm.value)
+    }
+  }
+
+  if (props.term) {
+    onUpdate(props.term.self)
+  } else {
+    onCreate()
   }
 }
 </script>
