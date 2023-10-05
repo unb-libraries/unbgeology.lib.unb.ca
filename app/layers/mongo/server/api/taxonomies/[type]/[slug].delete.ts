@@ -1,16 +1,15 @@
-import { Types } from "mongoose"
-
 export default defineEventHandler(useEntityDeleteHandler(Taxonomy, {
   discriminatorKey: `type`,
   findAndDelete: async (event, model) => {
-    const { id } = getRouterParams(event)
+    const { slug } = getRouterParams(event)
+    const { _id } = await model.findByPK(slug)
 
-    const ids = [id]
+    const ids = [_id]
     const childDocs = await model.aggregate()
       // Explicitly cast "id" to ObjectId as regular, implicit mongoose
       // casting is not supported in aggregation pipelines.
       // See: https://github.com/Automattic/mongoose/issues/1399
-      .match({ _id: new Types.ObjectId(id) })
+      .match({ _id })
       .graphLookup({
         from: `taxonomies`,
         startWith: `$_id`,
