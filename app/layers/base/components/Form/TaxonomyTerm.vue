@@ -27,6 +27,10 @@ const props = defineProps<{
   uri: string
 }>()
 
+const emits = defineEmits<{
+  created: [taxonomy: Taxonomy],
+}>()
+
 const label = ref(``)
 const parent = ref(``)
 const terms = ref<Taxonomy[]>([])
@@ -50,6 +54,7 @@ const onSubmit = async function () {
   if (term.value) {
     label.value = ``
     parent.value = ``
+    emits(`created`, term.value)
     terms.value.push(term.value)
   }
 }
