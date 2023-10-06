@@ -32,7 +32,7 @@
     <PvTableColumn field="objectId">
       <template #body="{ data }">
         <div class="flex flex-row">
-          <a :href="`/specimens/${data.slug}/edit`" :title="`Edit ${data.name}`">
+          <a :href="`/dashboard/${data.self.substring(5)}`" :title="`Edit ${data.name}`">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"

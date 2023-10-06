@@ -4,7 +4,6 @@
 
 <script setup lang="ts">
 definePageMeta({
-  layout: `page`,
-  name: `New specimen`,
+  layout: `dashboard`,
 })
 </script>

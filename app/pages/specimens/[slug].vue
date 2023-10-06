@@ -39,7 +39,7 @@ definePageMeta({
   layout: false,
 })
 
-const { objectId: slug } = useRoute().params
+const { slug } = useRoute().params
 const { data: specimen, error } = await useFetch<Specimen>(`/api/specimens/${slug}`)
 if (error.value) {
   showError({ statusCode: 404 })
