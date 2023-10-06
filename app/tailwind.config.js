@@ -4,6 +4,7 @@ module.exports = {
     `./components/**/*.{js,vue,ts}`,
     `./layers/primevue/plugins/primevue.ts`,
     `./layouts/**/*.vue`,
+    `./layers/**/layouts/*.vue`,
     `./pages/**/*.vue`,
     `./plugins/**/*.{js,ts}`,
     `./node_modules/primevue/**/*.{vue,js,ts,jsx,tsx}`,
