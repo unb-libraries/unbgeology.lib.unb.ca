@@ -31,6 +31,9 @@
         <div class="column grow">
           <slot />
         </div>
+        <aside class="column w-80">
+          <slot name="sidebar" />
+        </aside>
       </div>
     </div>
   </NuxtLayout>
