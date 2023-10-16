@@ -26,6 +26,6 @@
 
 <style scoped>
 .placeholder {
-  @apply aspect-auto h-40 md:h-80 bg-gray-200 hover:bg-gray-300
+  @apply aspect-auto h-40 md:h-80 bg-primary-20 dark:bg-primary hover:bg-primary-40 dark:hover:bg-primary-60
 }
 </style>
