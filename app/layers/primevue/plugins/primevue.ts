@@ -14,6 +14,57 @@ export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.vueApp.use(PrimeVue, {
     unstyled: true,
     pt: usePassThrough(Tailwind, {
+      column: {
+        bodycell: {
+          class: [
+            `text-left`,
+            `border-0`,
+            `border-b`,
+            `border-solid`,
+            `border-primary-80`,
+            `p-4`,
+            `dark:text-base`,
+            `dark:border-primary-40`,
+          ],
+        },
+        headercell: {
+          class: [
+            `text-left`,
+            `border-0`,
+            `border-b-2`,
+            `border-solid`,
+            `border-primary-80`,
+            `dark:border-primary-40`,
+            `font-bold`,
+            `transition`,
+            `duration-200`,
+            `p-4`,
+            `bg-primary`,
+            `text-primary`,
+            `dark:text-base`,
+            `dark:bg-primary-80`,
+          ],
+        },
+      },
+      datatable: {
+        bodyrow: {
+          class: [
+            `bg-transparent`,
+            `text-primary`,
+            `transition`,
+            `duration-200`,
+            `focus:outline`,
+            `focus:outline-[0.15rem]`,
+            `focus:outline-blue-200`,
+            `focus:outline-offset-[-0.15rem]`,
+            `dark:text-white`,
+            `dark:focus:outline`,
+            `dark:focus:outline-[0.15rem]`,
+            `dark:focus:outline-blue-300`,
+            `dark:focus:outline-offset-[-0.15rem]`,
+          ],
+        },
+      },
       dropdown: {
         root: {
           class: [
