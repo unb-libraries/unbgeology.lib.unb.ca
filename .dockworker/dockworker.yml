@@ -55,7 +55,3 @@ dockworker:
             - dev
             - prod
           image_name: ghcr.io/unb-libraries/unbgeology.lib.unb.ca
-    local:
-      additional_hostnames:
-        - unbgeology.lib.unb.ca
-        - unbgeology.lib.unb.ca.local
