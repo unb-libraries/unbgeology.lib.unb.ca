@@ -20,15 +20,15 @@
           </div>
         </div>
         <div class="flex flex-col md:space-y-2">
-          <nav class="flex flex-col items-end text-sm uppercase md:flex md:flex-row md:space-x-6" :class="collapsed ? 'hidden' : ''">
+          <nav class="flex flex-col justify-end text-sm uppercase md:flex md:flex-row md:space-x-6" :class="collapsed ? 'hidden' : ''">
             <span v-if="currentUser">Hello {{ currentUser }}</span>
-            <a v-if="currentUser" href="/specimens/create">
+            <a v-if="currentUser" href="/specimens/create" class="py-2 md:ml-2 md:py-0">
               Add specimen
             </a>
-            <a v-if="!currentUser" href="/login" class="ml-2 py-2 md:ml-0 md:py-0">
+            <a v-if="!currentUser" href="/login" class="py-2 md:py-0">
               Login / Admin
             </a>
-            <a v-else href="/logout" class="ml-2 py-2 md:ml-0 md:py-0">
+            <a v-else href="/logout" class="py-2 md:ml-2 md:py-0">
               Log out
             </a>
           </nav>
