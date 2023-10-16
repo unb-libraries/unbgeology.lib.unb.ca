@@ -4,15 +4,14 @@
 
 @layer base {
   body {
-    height: 100vh;
-    @apply bg-base dark:bg-primary-80 text-primary dark:text-base;
+    @apply h-screen bg-base dark:bg-primary-80 text-primary dark:text-base;
   }
 
   #__nuxt {
-    height: 100%;
+    @apply h-full
   }
 
   p {
-    margin-bottom: 3rem; /* 48px */
+    @apply mb-12
   }
 }
