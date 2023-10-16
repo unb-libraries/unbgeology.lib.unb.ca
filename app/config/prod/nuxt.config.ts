@@ -26,10 +26,4 @@ export default defineNuxtConfig({
       uploadDir: `/app/files/`,
     },
   },
-  postcss: {
-    plugins: {
-      tailwindcss: {},
-      autoprefixer: {},
-    },
-  },
 })
