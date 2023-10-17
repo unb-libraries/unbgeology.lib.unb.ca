@@ -1,6 +1,6 @@
 <template>
   <form @submit.prevent="submit()">
-    <div class="mt-6 flex flex-col">
+    <div class="flex flex-col">
       <label class="mb-2 text-lg font-bold" for="label">Label</label>
       <PvInputText :id="`${uri}:label`" v-model="label" name="Label" />
     </div>
@@ -13,9 +13,9 @@
       <button type="submit" class="bg-accent-dark dark:bg-accent-mid hover:bg-accent-light mr-2 rounded-md p-3 font-bold text-white">
         Save
       </button>
-      <a href="#" class="font-base ml-2 p-3" @click.prevent="emits(`cancelled`)">
+      <NuxtLink :to="redirectOnCancel ?? `/`" class="font-base ml-2 p-3" @click.prevent="emits(`cancelled`)">
         Cancel
-      </a>
+      </NuxtLink>
     </div>
   </form>
 </template>
@@ -26,6 +26,10 @@ import { type Taxonomy } from '~/layers/mongo/types/taxonomy'
 const props = defineProps<{
   uri: string
   term?: Taxonomy
+  redirectOnSuccess?: string
+  redirectOnCancel?: string
+  onSuccess?:(term: Taxonomy) => void
+  onCancel?: () => void
 }>()
 
 const emits = defineEmits<{
@@ -53,11 +57,20 @@ const submit = async function () {
     },
   })
 
-  if (term.value && !props.term) {
-    emits(`created`, term.value)
-    refresh()
-  } else if (term.value) {
-    emits(`updated`, term.value)
+  if (term.value) {
+    if (!props.term) {
+      emits(`created`, term.value)
+    } else {
+      emits(`updated`, term.value)
+    }
+
+    if (props.redirectOnSuccess) {
+      navigateTo(props.redirectOnSuccess)
+    } else if (props.onSuccess) {
+      props.onSuccess(term.value)
+    } else {
+      refresh()
+    }
   }
 }
 </script>
