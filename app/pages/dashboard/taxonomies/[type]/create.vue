@@ -1,7 +1,6 @@
 <template>
   <TaxonomyTermForm
     :type="(type as string)"
-    :pk="(slug as string)"
     :success-url="`/dashboard/taxonomies/${type}`"
     :cancel-url="`/dashboard/taxonomies/${type}`"
   />
@@ -12,5 +11,5 @@ definePageMeta({
   layout: `dashboard`,
 })
 
-const { type, slug } = useRoute().params
+const { type } = useRoute().params
 </script>
