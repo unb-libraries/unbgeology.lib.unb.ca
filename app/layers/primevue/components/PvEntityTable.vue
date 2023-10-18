@@ -1,5 +1,5 @@
 <template>
-  <PvTable :value="entities" :row-class="() => `group hover:bg-accent-light`">
+  <PvTable :value="list?.items" :row-class="() => `group hover:bg-accent-light`">
     <template #empty>
       <slot name="empty">
         No items found.
@@ -26,7 +26,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
             </svg>
           </a>
-          <a :title="`Remove ${label(data) ?? `item`}`" class="h-8 w-8 rounded-md p-1 hover:cursor-pointer hover:bg-red" @click.prevent="onDelete(data.self)">
+          <a :title="`Remove ${label(data) ?? `item`}`" class="h-8 w-8 rounded-md p-1 hover:cursor-pointer hover:bg-red" @click.prevent="remove(data)">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -52,8 +52,7 @@ const props = defineProps<{
   label?: string | ((entity: E) => string)
 }>()
 
-const { data: list, refresh } = await useFetch(props.uri)
-const entities = computed(() => list.value?.items ?? [])
+const { list, remove } = await fetchEntityList(props.uri)
 const columns = computed(() => Object.values(props.columns).map(col => Array.isArray(col) ? col : [col, col.substring(0, 1).toUpperCase() + col.substring(1).toLowerCase()]))
 const label = computed(() => (entity: E) => {
   if (typeof props.label === `string` && props.label in entity) {
@@ -65,10 +64,4 @@ const label = computed(() => (entity: E) => {
     return column ? entity[column[0] as keyof E] : undefined
   }
 })
-
-const onDelete = async function (uri: string) {
-  // FIX: https://github.com/nuxt/nuxt/issues/19077
-  await useFetch<void, Error, string, `delete`>(uri, { method: `DELETE` })
-  refresh()
-}
 </script>
