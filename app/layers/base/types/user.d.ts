@@ -1,12 +1,13 @@
-interface User {
-  username: string
-  email: string
-  phone: string
-  lastName: string
-  firstName: string
-  created: Date
-  lastLogin: Date
-}
-type UserCollection = {[username: keyof User.username]: User}
+import { type Entity } from "~/layers/base/types/entity"
 
-export { User, UserCollection }
+export interface User extends Entity {
+  username: string
+  profile: {
+    email: string
+    phone: string
+    lastName: string
+    firstName: string
+  }
+  created: Date
+  updated: Date
+}

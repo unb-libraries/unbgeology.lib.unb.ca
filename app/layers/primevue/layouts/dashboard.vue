@@ -27,6 +27,14 @@
               {{ taxonomy.name }}
             </NuxtLink>
           </section>
+          <section class="nav-group">
+            <h2 class="nav-group-heading">
+              Users
+            </h2>
+            <NuxtLink :to="`/dashboard/users`" class="nav-item" active-class="nav-item-active">
+              View all
+            </NuxtLink>
+          </section>
         </nav>
         <div class="column grow">
           <slot />
@@ -45,7 +53,7 @@ const { data: taxonomies } = await useFetch(`/api/taxonomies`)
 
 <style scoped>
   .column {
-    @apply flex flex-col bg-primary empty:w-0 p-6 empty:p-0 mx-2 first:ml-0 last:mr-0
+    @apply flex flex-col dark:bg-primary empty:w-0 p-6 empty:p-0 mx-2 first:ml-0 last:mr-0
   }
   .nav-group {
     @apply flex flex-col my-6 first:mt-0 last:mb-0
@@ -56,7 +64,7 @@ const { data: taxonomies } = await useFetch(`/api/taxonomies`)
   }
 
   .nav-item {
-    @apply hover:bg-accent-light px-3 py-2 my-1
+    @apply hover:bg-accent-light py-2 px-3 my-1
   }
 
   .nav-item-active {
