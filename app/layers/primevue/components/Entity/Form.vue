@@ -1,11 +1,11 @@
 <template>
   <form @submit.prevent="submit()">
-    <slot :entity="(entity as E)" />
+    <slot :entity="entity" />
     <div class="mt-8 flex flex-row">
       <button type="submit" class="bg-accent-dark dark:bg-accent-mid hover:bg-accent-light mr-2 rounded-md p-3 font-bold text-white">
         Save
       </button>
-      <NuxtLink :to="cancelUrl ?? `/`" class="font-base ml-2 p-3" @click.prevent="emits(`cancelled`)">
+      <NuxtLink v-if="cancelUrl" :to="cancelUrl" class="font-base ml-2 p-3" @click.prevent="emits(`cancelled`)">
         Cancel
       </NuxtLink>
     </div>
@@ -16,9 +16,7 @@
 import { type Entity } from "~/layers/base/types/entity"
 
 const props = defineProps<{
-  type: [string, string, typeof useEntityType<E>]
-  pk?: string
-  successUrl?: string
+  entity: Partial<E>
   cancelUrl?: string
 }>()
 
@@ -28,36 +26,11 @@ const emits = defineEmits<{
   cancelled: [],
 }>()
 
-const [entityTypeId, bundle, entityType] = props.type
-const { create, fetchByPK, update } = entityType(Symbol(entityTypeId), bundle)
-const isNew = props.pk === undefined
-const entity = !isNew
-  ? await (async (pk: string) => {
-      return (await fetchByPK(pk)).entity
-    })(props.pk)
-  : ref({} as E)
-
-if (props.pk && !entity.value) {
-  showError({ statusCode: 404 })
-}
-
 const submit = async function () {
-  if (isNew) {
-    const { entity: newEntity } = await create(entity.value as E)
-    if (newEntity.value) {
-      emits(`created`, newEntity.value as E)
-      if (props.successUrl) {
-        navigateTo(props.successUrl)
-      }
-    }
+  if (!props.entity.self) {
+    emits(`created`, props.entity as E)
   } else {
-    const { entity: updatedEntity } = await update(entity.value as E)
-    if (updatedEntity.value) {
-      emits(`updated`, updatedEntity.value as E)
-      if (props.successUrl) {
-        navigateTo(props.successUrl)
-      }
-    }
+    emits(`updated`, props.entity as E)
   }
 }
 </script>
