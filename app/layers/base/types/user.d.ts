@@ -8,6 +8,4 @@ export interface User extends Entity {
     lastName: string
     firstName: string
   }
-  created: Date
-  updated: Date
 }

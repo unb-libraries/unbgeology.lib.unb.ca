@@ -47,7 +47,7 @@ export async function createEntity <E extends Entity = Entity>(entity: E, entity
 export async function fetchEntity <E extends Entity = Entity> (pk: string, entityType: symbol, bundle?: string): Promise<EntityFetchResponse<E>>
 export async function fetchEntity <E extends Entity = Entity> (uri: string): Promise<EntityFetchResponse<E>>
 export async function fetchEntity <E extends Entity = Entity>(pkOrUri: string, entityType?: symbol, bundle: string = ``): Promise<EntityFetchResponse<E>> {
-  const url = entityType && bundle
+  const url = entityType
     ? `${useBaseUrl(entityType, bundle)}/${pkOrUri}`
     : pkOrUri
 
