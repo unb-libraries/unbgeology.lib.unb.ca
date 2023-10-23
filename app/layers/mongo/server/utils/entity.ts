@@ -290,6 +290,7 @@ export const defineEntityType = function<E extends Entity, I extends EntityInsta
 }
 
 export const defineEntityBundle = function<E extends Entity = Entity, B extends E = E> (base: ReturnType<typeof defineEntityType<E>>, name: string, definition?: SchemaDefinition<B>, options?: EntityTypeOptions<B>) {
+  const schemaOptions = defu(options ?? {}, base.schema.options)
   let schema: Schema
 
   let baseModel = base
@@ -298,9 +299,10 @@ export const defineEntityBundle = function<E extends Entity = Entity, B extends 
   }
 
   if (baseModel === base) {
-    schema = new Schema(definition || {}, options)
+    schema = new Schema(definition || {}, schemaOptions)
   } else {
-    schema = new Schema(definition, options)
+    const schemaDefinition = defu(definition ?? {}, base.schema.obj)
+    schema = new Schema(schemaDefinition, schemaOptions)
   }
 
   return baseModel.discriminator<B>(`${base.modelName}.${name}`, schema, name.toLowerCase())
