@@ -289,6 +289,23 @@ export const defineEntityType = function<E extends Entity, I extends EntityInsta
   return defineModel<E, M, Q>(name, schema)
 }
 
+export const defineEntityBundle = function<E extends Entity = Entity, B extends E = E> (base: ReturnType<typeof defineEntityType<E>>, name: string, definition?: SchemaDefinition<B>, options?: EntityTypeOptions<B>) {
+  let schema: Schema
+
+  let baseModel = base
+  while (baseModel.baseModelName) {
+    baseModel = useEntityType(baseModel.modelName)
+  }
+
+  if (baseModel === base) {
+    schema = new Schema(definition || {}, options)
+  } else {
+    schema = new Schema(definition, options)
+  }
+
+  return baseModel.discriminator<B>(`${base.modelName}.${name}`, schema, name.toLowerCase())
+}
+
 export const defineEmbeddedEntityType = function<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods> (baseTypeName: string, path: string, definition: SchemaDefinition<E>, options?: EntityTypeOptions) {
   const schema = useEntityTypeSchema(baseTypeName, definition, options)
 
