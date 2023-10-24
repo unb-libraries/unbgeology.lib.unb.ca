@@ -1,5 +1,5 @@
 import { type EventHandler, type H3Event } from "h3"
-import { type PopulateOptions } from "mongoose"
+import { type PopulateOptions, type Document, type Types } from "mongoose"
 import { type Paginator, type PageableListHandlerOptions } from "~/layers/mongo/types/paginate"
 import {
   type Entity,
@@ -9,6 +9,8 @@ import {
   type EntityDeleteHandlerOptions,
   type EntityRelationshipHandlerOptions,
   EntityReferenceFieldDefinition,
+  type EntityJSON,
+  type EntityListOptions,
 } from "~/layers/mongo/types/entity"
 
 const getDiscriminator = function<E extends Entity = Entity> (event: H3Event, model: EntityModel, discriminatorParam: string) {
@@ -263,5 +265,14 @@ export const useEntityRelationshipDeleteHandler = function<E extends Entity = En
     const doc = await model.findByPK(pk)
     await model.updateOne({ _id: doc._id }, { $pull: { [options.rel]: body } })
     return $fetch(doc.url(options.rel))
+  }
+}
+
+export function sendEntityList <E extends Entity = Entity>(event: H3Event, entities: Document<Types.ObjectId, {}, E>[]) {
+  const { pathname } = getRequestURL(event)
+
+  return {
+    self: pathname,
+    entities: entities.map(entity => entity.toJSON<EntityJSON<E>>()),
   }
 }

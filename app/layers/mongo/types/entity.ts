@@ -143,7 +143,13 @@ export interface EntityFieldTraverseOptions {
 
 export type SelectRecord<T> = { [path: string]: T | SelectRecord<T> }
 
-export interface SelectivePopulationMap {
-  select: string[]
-  populate?: (SelectivePopulationMap & { path: string })[]
+
+export interface EntityJSONReference {
+  self: string
+}
+
+export type EntityPropertyValue = string | number | EntityJSONReference | EntityPropertyValue[]
+
+export type EntityJSON<E extends Entity = Entity> = {
+  [Property in keyof E]: EntityPropertyValue
 }
