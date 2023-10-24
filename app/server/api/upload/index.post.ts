@@ -1,22 +1,24 @@
 import { readFiles } from "h3-formidable"
-import { type FieldsAndFiles } from "h3-formidable"
+import { File as FileEntity, File } from "~/server/entityTypes/File"
 
 export default defineEventHandler(async (event) => {
-  const { uploadDir } = useRuntimeConfig()
   const upload = await readFiles(event, {
-    uploadDir,
     keepExtensions: true,
   })
 
-  const files = [].concat(...Object.values(upload).map((files: FieldsAndFiles[`files`]) => files.map((file: FieldsAndFiles[`files`]) => {
-    const { originalFilename, newFilename, mimetype, size } = file
-    return {
+  const files = await Promise.all(Object.values(upload).map(files => files?.map(async (file) => {
+    const { filepath, newFilename, originalFilename, mimetype, size } = file
+    return await FileEntity.create({
       uploadName: originalFilename,
       filename: newFilename,
-      filetype: mimetype,
+      filepath,
+      filetype: originalFilename?.split(`.`).at(-1),
       filesize: size,
-    }
-  })))
+      type: mimetype?.split(`/`).at(0),
+    })
+  })).flat())
 
-  return files.length > 1 ? files : files[0]
+  return files.length > 1
+    ? sendEntityList<File>(event, files)
+    : sendEntity<File>(event, files[0])
 })
