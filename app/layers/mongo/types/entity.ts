@@ -153,3 +153,7 @@ export type EntityPropertyValue = string | number | EntityJSONReference | Entity
 export type EntityJSON<E extends Entity = Entity> = {
   [Property in keyof E]: EntityPropertyValue
 }
+
+export interface EntityListOptions<E extends Entity = Entity> {
+  total?: number
+}

@@ -268,11 +268,13 @@ export const useEntityRelationshipDeleteHandler = function<E extends Entity = En
   }
 }
 
-export function sendEntityList <E extends Entity = Entity>(event: H3Event, entities: Document<Types.ObjectId, {}, E>[]) {
+export function sendEntityList <E extends Entity = Entity>(event: H3Event, entities: Document<Types.ObjectId, {}, E>[], options?: EntityListOptions<E>) {
   const { pathname } = getRequestURL(event)
+  const paginator = usePaginator(event, { total: options?.total ?? entities.length })
 
   return {
     self: pathname,
     entities: entities.map(entity => entity.toJSON<EntityJSON<E>>()),
+    ...paginator,
   }
 }
