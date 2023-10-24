@@ -41,3 +41,23 @@ export const File = defineEntityType<File>(`File`, {
   },
 })
 
+export interface Image extends File {
+  alt: string
+  dimensions: {
+    width: number
+    height: number
+  }
+  title: string
+}
+
+export const Image = defineEntityBundle<File, Image>(File, `Image`, {
+  alt: {
+    type: EntityFieldTypes.String,
+    required: false,
+  },
+  title: {
+    type: EntityFieldTypes.String,
+    required: false,
+  },
+})
+
