@@ -61,3 +61,8 @@ export const Image = defineEntityBundle<File, Image>(File, `Image`, {
   },
 })
 
+export interface Document extends File {
+}
+
+export const Document = defineEntityBundle<File, Document>(File, `Document`, {
+})
