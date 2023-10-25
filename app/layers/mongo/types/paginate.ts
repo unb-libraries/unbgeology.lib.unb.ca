@@ -21,6 +21,6 @@ export interface Paginator {
   totalItems: number
 }
 
-export interface PaginatorOptions extends PaginateOptions{
-  totalItems: number
+export interface PaginatorOptions {
+  total: number
 }
