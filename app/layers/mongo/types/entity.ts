@@ -158,3 +158,10 @@ export interface EntityListOptions<E extends Entity = Entity> {
   total?: number
   transform?: (entity: EntityJSON<E>) => EntityJSON<E>
 }
+
+export interface QueryOptions {
+  page: number
+  pageSize: number
+  select: string[]
+  sort: string[]
+}

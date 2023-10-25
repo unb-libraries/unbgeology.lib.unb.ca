@@ -11,6 +11,7 @@ import {
   EntityReferenceFieldDefinition,
   type EntityJSON,
   type EntityListOptions,
+  type QueryOptions,
 } from "~/layers/mongo/types/entity"
 
 const getDiscriminator = function<E extends Entity = Entity> (event: H3Event, model: EntityModel, discriminatorParam: string) {
@@ -265,6 +266,31 @@ export const useEntityRelationshipDeleteHandler = function<E extends Entity = En
     const doc = await model.findByPK(pk)
     await model.updateOne({ _id: doc._id }, { $pull: { [options.rel]: body } })
     return $fetch(doc.url(options.rel))
+  }
+}
+
+export function getSelectedFields(fields: string[], prefix?: string) {
+  if (prefix) {
+    return fields.filter(f => f.startsWith(prefix)).map(f => f.split(`.`)[1])
+  }
+  return fields.map(f => f.split(`.`)[0])
+}
+
+export function getQueryOptions(event: H3Event): QueryOptions {
+  const { select, sort, ...query } = getQuery(event)
+  let { page, pageSize } = query
+
+  pageSize = pageSize ? Array.isArray(pageSize) ? parseInt(`${pageSize.at(-1)}`) : parseInt(`${pageSize}`) : 25
+  pageSize = Math.min(Math.max(1, pageSize), 100)
+
+  page = page ? Array.isArray(page) ? parseInt(`${page.at(-1)}`) : parseInt(`${page}`) : 1
+  page = Math.max(1, page)
+
+  return {
+    page,
+    pageSize,
+    select: select ? Array.isArray(select) ? select : [select] : [],
+    sort: sort ? Array.isArray(sort) ? sort : [sort] : [],
   }
 }
 
