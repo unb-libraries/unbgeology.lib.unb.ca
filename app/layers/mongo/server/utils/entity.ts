@@ -111,6 +111,23 @@ export const getSelectPopulate = function (fields: IEntityFieldDefinition[]): Se
   }), { select: [] } as SelectivePopulationMap)
 }
 
+const defineEntityTypeOptions = function <E extends Entity = Entity> (options: EntityTypeOptions<E>, defaultOptions?: EntityTypeOptions<E>) {
+  if (options?.toJSON?.transform && options?.toJSON?.transform !== true) {
+    const customTransform = options.toJSON.transform
+    if (defaultOptions?.toJSON?.transform) {
+      const originalTransform = defaultOptions.toJSON.transform
+      options.toJSON.transform = function (doc, ret, transformOptions) {
+        // @ts-ignore
+        let _ret = originalTransform(doc, ret, transformOptions)
+        _ret = customTransform(doc, ret, transformOptions)
+        return _ret
+      }
+    }
+  }
+
+  return defu(options, defaultOptions)
+}
+
 const useEntityTypeSchema = function<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods, Q extends EntityQueryHelpers = EntityQueryHelpers, M extends EntityModel<E, I, Q> = EntityModel<E, I, Q>> (name: string, definition: SchemaDefinition<E>, options?: EntityTypeOptions) {
   if (options?.slug) {
     definition.slug = {
@@ -290,7 +307,7 @@ export const defineEntityType = function<E extends Entity, I extends EntityInsta
 }
 
 export const defineEntityBundle = function<E extends Entity = Entity, B extends E = E> (base: ReturnType<typeof defineEntityType<E>>, name: string, definition?: SchemaDefinition<B>, options?: EntityTypeOptions<B>) {
-  const schemaOptions = defu(options ?? {}, base.schema.options)
+  const schemaOptions = defineEntityTypeOptions<B>(options ?? {}, base.schema.options)
   let schema: Schema
 
   let baseModel = base
