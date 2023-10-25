@@ -156,4 +156,5 @@ export type EntityJSON<E extends Entity = Entity> = {
 
 export interface EntityListOptions<E extends Entity = Entity> {
   total?: number
+  transform?: (entity: EntityJSON<E>) => EntityJSON<E>
 }

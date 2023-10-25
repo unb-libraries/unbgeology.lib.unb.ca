@@ -268,8 +268,12 @@ export const useEntityRelationshipDeleteHandler = function<E extends Entity = En
   }
 }
 
-export function sendEntity <E extends Entity = Entity>(event: H3Event, entity: Document<Types.ObjectId, {}, E>) {
-  return entity.toJSON<EntityJSON<E>>({ flattenMaps: false })
+export function sendEntity <E extends Entity = Entity>(event: H3Event, entity: Document<Types.ObjectId, {}, E>, transform?: (entity: EntityJSON<E>) => EntityJSON<E>) {
+  let json = entity.toJSON<EntityJSON<E>>({ flattenMaps: false })
+  if (transform) {
+    json = transform(json)
+  }
+  return json
 }
 
 export function sendEntityList <E extends Entity = Entity>(event: H3Event, entities: Document<Types.ObjectId, {}, E>[], options?: EntityListOptions<E>) {
@@ -278,7 +282,13 @@ export function sendEntityList <E extends Entity = Entity>(event: H3Event, entit
 
   return {
     self: pathname,
-    entities: entities.map(entity => entity.toJSON<EntityJSON<E>>()),
+    entities: entities.map((entity) => {
+      let json = entity.toJSON<EntityJSON<E>>({ flattenMaps: false })
+      if (options?.transform) {
+        json = options.transform(json)
+      }
+      return json
+    }),
     ...paginator,
   }
 }
