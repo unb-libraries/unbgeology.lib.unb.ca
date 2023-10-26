@@ -1,7 +1,7 @@
-import { Schema, type SchemaDefinition } from "mongoose"
+import { type SchemaDefinition, type SchemaOptions } from "mongoose"
 import { type Taxonomy } from "~/layers/mongo/types/taxonomy"
 
-export const defineTaxonomyType = function<T extends Taxonomy> (name: string, definition?: SchemaDefinition<T>) {
-  const schema = new Schema(definition || {})
-  return Taxonomy.discriminator<T>(name, schema, name.toLowerCase())
+export const defineTaxonomyType = function<T extends Taxonomy = Taxonomy> (name: string, definition?: SchemaDefinition<T>, options?: SchemaOptions<T>) {
+  // @ts-ignore
+  return defineEntityBundle<T, Taxonomy>(Taxonomy, name, definition, options)
 }

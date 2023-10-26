@@ -12,4 +12,13 @@ export default defineEntityType<Taxonomy>(`Taxonomy`, {
     ref: `Taxonomy`,
     required: false,
   },
-}, { slug: `label`, pk: `slug` })
+}, {
+  slug: `label`,
+  virtuals: {
+    uri: {
+      get() {
+        return `/api/taxonomies/${this.type}/${this.pk}`
+      },
+    },
+  },
+})

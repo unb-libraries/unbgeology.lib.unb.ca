@@ -1,4 +1,4 @@
-import { type Taxonomy } from "entity-types/Taxonomy"
+import { type Taxonomy } from "~/layers/mongo/types/taxonomy"
 
 export interface Classification extends Taxonomy {
 }
