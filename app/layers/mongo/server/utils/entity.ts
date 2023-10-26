@@ -40,6 +40,13 @@ const EntityTypeSchema = function <
 > (definition: SchemaDefinition<E>, options?: EntityTypeOptions<E>) {
   const schemaOptions = defineEntityTypeOptions(options ?? {}, {
     discriminatorKey: `type`,
+    query: {
+      paginate(page: number, pageSize: number) {
+        return this
+          .skip((page - 1) * pageSize)
+          .limit(pageSize)
+      },
+    },
     statics: {
       baseURL() {
         return `/api/${this.collection.collectionName}`

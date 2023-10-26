@@ -54,6 +54,7 @@ export interface EntityInstanceMethods {
 export type PK = string | number | Types.ObjectId
 
 export interface EntityQueryHelpers {
+  paginate(page: number, pageSize: number): EntityQueryHelpers
 }
 
 export interface EntityModel<
