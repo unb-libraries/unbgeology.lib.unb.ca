@@ -56,11 +56,11 @@ const EntityTypeSchema = function <
           .find(path => path.options.alias === `pk`)?.path ?? `_id`
         return this.findOne().where(path, pk)
       },
-      async findByURL(url: string) {
-        const pk = url.split(`/`).at(-1)
+      async findByURI(uri: string) {
+        const { id: pk } = await $fetch<E>(uri)
         return pk
           ? await this.findByPK(pk)
-          : undefined
+          : null
       },
     },
     timestamps: {
