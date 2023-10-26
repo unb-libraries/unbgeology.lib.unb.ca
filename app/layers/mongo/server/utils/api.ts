@@ -318,3 +318,10 @@ export function sendEntityList <E extends Entity = Entity>(event: H3Event, entit
     ...paginator,
   }
 }
+
+export function sendEntityOr404 <E extends Entity = Entity>(event: H3Event, entity?: Document<Types.ObjectId, {}, E>, transform?: (entity: EntityJSON<E>) => EntityJSON<E>) {
+  if (entity) {
+    return sendEntity<E>(event, entity, transform)
+  }
+  throw createError({ statusCode: 404, statusMessage: `The requested resource does not exist.` })
+}
