@@ -1,6 +1,11 @@
-import { Schema, type Model, type Types, type HydratedDocument, Query } from "mongoose"
-import { type H3Event } from "h3"
-import { type PaginateOptions } from "~/layers/mongo/types/paginate"
+import {
+  Schema,
+  type SchemaOptions,
+  type Model,
+  type Types,
+  type HydratedDocument,
+  Query,
+} from "mongoose"
 
 export const EntityFieldTypes = Schema.Types
 
@@ -51,13 +56,15 @@ export type PK = string | number | Types.ObjectId
 export interface EntityQueryHelpers {
 }
 
-export interface EntityModel<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods, Q extends EntityQueryHelpers = EntityQueryHelpers> extends Model<E, I, Q> {
+export interface EntityModel<
+  E extends Entity = Entity,
+  I extends EntityInstanceMethods = EntityInstanceMethods,
+  Q extends EntityQueryHelpers = EntityQueryHelpers
+> extends Model<E, I, Q>
+{
   baseURL(): string
   findByPK(pk: string): Query<HydratedDocument<E, I>, HydratedDocument<E, I>, EntityQueryHelpers>
   findByURL(url: string): Promise<HydratedDocument<E, I> | undefined>
-  pk(): string
-  getRelationship(path: string): EntityRelationship | undefined
-  relationships(options?: EntityRelationshipsTraverseOptions): EntityRelationship[]
 }
 
 export interface DiscriminatedEntity extends Entity {
