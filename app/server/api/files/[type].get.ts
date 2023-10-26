@@ -7,7 +7,6 @@ export default defineEventHandler(async (event) => {
   const files = await FileEntity.find({ type })
     .select(getSelectedFields(select))
     .sort(sort.join(` `))
-    .skip((page - 1) * pageSize)
-    .limit(pageSize)
+    .paginate(page, pageSize)
   return sendEntityList<File>(event, files)
 })
