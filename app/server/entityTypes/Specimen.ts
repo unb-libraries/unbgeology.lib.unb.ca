@@ -153,7 +153,7 @@ export default defineEntityType<Specimen>(`Specimen`, {
     required: false,
   },
   loans: {
-    type: [defineEmbeddedEntityType<Loan>(`Specimen`, `loans`, {
+    type: [defineEmbeddedEntityType<Loan>({
       type: {
         type: EntityFieldTypes.String,
         enum: LoanType,
@@ -180,7 +180,7 @@ export default defineEntityType<Specimen>(`Specimen`, {
     })],
   },
   storage: {
-    type: [defineEmbeddedEntityType<Storage>(`Specimen`, `storage`, {
+    type: [defineEmbeddedEntityType<Storage>({
       location: {
         type: EntityFieldTypes.ObjectId,
         ref: `StorageLocation`,
@@ -197,7 +197,7 @@ export default defineEntityType<Specimen>(`Specimen`, {
     })],
   },
   publications: {
-    type: [defineEmbeddedEntityType<Publication>(`Specimen`, `publications`, {
+    type: [defineEmbeddedEntityType<Publication>({
       citation: {
         type: EntityFieldTypes.String,
         required: true,

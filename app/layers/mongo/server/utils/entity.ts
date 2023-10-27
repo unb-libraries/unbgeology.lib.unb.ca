@@ -47,6 +47,11 @@ const EntityTypeSchema = function <
           .limit(pageSize)
       },
     },
+    methods: {
+      url() {
+        return `/api/${this.collection.collectionName}/${this.pk}`
+      },
+    },
     statics: {
       baseURL() {
         return `/api/${this.collection.collectionName}`
@@ -177,14 +182,16 @@ export const defineEntityBundle = function<E extends Entity = Entity, B extends 
   return baseModel.discriminator<B>(`${base.modelName}.${name}`, schema, name.toLowerCase())
 }
 
-export const defineEmbeddedEntityType = function<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods> (baseTypeName: string, path: string, definition: SchemaDefinition<E>, options?: EntityTypeOptions<E>) {
-  // const schema = useEntityTypeSchema(baseTypeName, definition, options)
-  return EntityTypeSchema<E, I>(definition, options)
+export const defineEmbeddedEntityType = function<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods> (definition: SchemaDefinition<E>, options?: EntityTypeOptions<E>) {
+  const schema = EntityTypeSchema<E, I>(definition, defineEntityTypeOptions(options ?? {}))
 
-  // schema.method(`url`, function (this: HydratedDocument<E, I>, rel?: string) {
-  //   const url = `${this.$parent()?.url(path)}/${this.id}`
-  //   return !rel ? url : `${url}/${rel}`
-  // // })
-
-  // return schema
+  if (!(`uri` in schema.virtuals)) {
+    schema.virtual(`uri`).get(function () {
+      const path: string = Object.entries(this.parent()?.schema.paths)
+        .find(([_, path]) => path.schema === schema)![0]
+      return `${this.parent().url()}/${path}/${this.pk}`
+    })
+  }
+  
+  return schema
 }
