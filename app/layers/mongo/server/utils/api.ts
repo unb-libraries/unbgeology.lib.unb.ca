@@ -286,10 +286,21 @@ export function getQueryOptions(event: H3Event): QueryOptions {
   page = page ? Array.isArray(page) ? parseInt(`${page.at(-1)}`) : parseInt(`${page}`) : 1
   page = Math.max(1, page)
 
+  const selection = select ? Array.isArray(select) ? select : [select] : []
+
   return {
     page,
     pageSize,
-    select: select ? Array.isArray(select) ? select : [select] : [],
+    select: selection,
+    filterSelect({ root, prefix, default: defaultFields }) {
+      const fields = defaultFields ?? []
+      if (root) {
+        fields.push(...selection.filter(f => f.startsWith(root)).map(f => f.split(`.`)[1]))
+      } else {
+        fields.push(...selection.map(f => f.split(`.`)[0]))
+      }
+      return prefix ? fields.map(f => `${prefix}.${f}`) : fields
+    },
     sort: sort ? Array.isArray(sort) ? sort : [sort] : [],
   }
 }
