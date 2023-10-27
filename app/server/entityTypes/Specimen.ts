@@ -223,4 +223,6 @@ export default defineEntityType<Specimen>(`Specimen`, {
     ref: `User`,
     required: false,
   },
-}, { slug: `name`, pk: `slug` })
+}, {
+  slug: `name`,
+})
