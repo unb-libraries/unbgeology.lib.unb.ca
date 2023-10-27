@@ -12,6 +12,7 @@ export default defineEntityType<User>(`User`, {
     type: EntityFieldTypes.String,
     required: true,
     unique: true,
+    alias: `pk`,
   },
   profile: {
     type: EntityFieldTypes.ObjectId,
@@ -22,4 +23,11 @@ export default defineEntityType<User>(`User`, {
     type: EntityFieldTypes.Date,
     required: false,
   },
-}, { pk: `username` })
+}, {
+  toJSON: {
+    transform: function (doc, ret) {
+      delete ret.username
+      return ret
+    },
+  },
+})
