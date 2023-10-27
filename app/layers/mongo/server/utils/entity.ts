@@ -62,10 +62,19 @@ const EntityTypeSchema = function <
         return this.findOne().where(path, pk)
       },
       async findByURI(uri: string) {
-        const { id: pk } = await $fetch<E>(uri)
-        return pk
-          ? await this.findByPK(pk)
+        const entities = await this.findManyByURI([uri])
+        return entities.length > 0
+          ? entities[0]
           : null
+      },
+      async findManyByURI(uris: string[]) {
+        const entities = await Promise.all(uris.map(async (uri) => {
+          const { id: pk } = await $fetch<E>(uri)
+          return pk
+            ? await this.findByPK(pk)
+            : null
+        }))
+        return entities.filter(e => e)
       },
     },
     timestamps: {
