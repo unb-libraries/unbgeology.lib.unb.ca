@@ -93,7 +93,7 @@ export default defineEntityType<Specimen>(`Specimen`, {
   classifications: {
     type: [{
       type: EntityFieldTypes.ObjectId,
-      ref: `Classification`,
+      ref: `Taxonomy.Classification`,
       required: optionalWhileInDraft,
     }],
   },
