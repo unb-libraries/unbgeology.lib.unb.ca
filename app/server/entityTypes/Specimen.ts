@@ -1,5 +1,4 @@
-import { type Organization } from "entity-types/Organization"
-import { type Profile } from "entity-types/Profile"
+import { type Organization, type Person } from "entity-types/Affiliation"
 import { type Classification } from "taxonomies/Classification"
 import { type StorageLocation } from "taxonomies/StorageLocation"
 import { type User } from "entity-types/User"
@@ -67,8 +66,8 @@ export interface Specimen extends Entity {
   pieces: number
   partial: boolean
   composition: Composition,
-  collector?: Profile,
-  sponsor?: Profile,
+  collector?: Person,
+  sponsor?: Person,
   loans?: Loan[],
   storage: Storage[],
   publications?: Publication[],
@@ -144,12 +143,12 @@ export default defineEntityType<Specimen>(`Specimen`, {
   },
   collector: {
     type: EntityFieldTypes.ObjectId,
-    ref: `Profile`,
+    ref: `Affiliation.Person`,
     required: false,
   },
   sponsor: {
     type: EntityFieldTypes.ObjectId,
-    ref: `Profile`,
+    ref: `Affiliation.Person`,
     required: false,
   },
   loans: {
@@ -161,7 +160,7 @@ export default defineEntityType<Specimen>(`Specimen`, {
       },
       organization: {
         type: EntityFieldTypes.ObjectId,
-        ref: `Organization`,
+        ref: `Affiliation.Organization`,
         required: true,
       },
       contact: {
