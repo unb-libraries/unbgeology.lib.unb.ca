@@ -35,7 +35,11 @@ export enum LoanType {
 export interface Loan extends Entity {
   type: LoanType
   organization: Organization
-  contact: Profile
+  contact: {
+    name: string
+    email: string
+    phone: string
+  }
   start: Date
   end: Date
   contract: string
@@ -164,9 +168,18 @@ export default defineEntityType<Specimen>(`Specimen`, {
         required: true,
       },
       contact: {
-        type: EntityFieldTypes.ObjectId,
-        ref: `Profile`,
-        required: true,
+        name: {
+          type: EntityFieldTypes.String,
+          required: true,
+        },
+        email: {
+          type: EntityFieldTypes.String,
+          required: true,
+        },
+        phone: {
+          type: EntityFieldTypes.String,
+          required: true,
+        },
       },
       start: {
         type: EntityFieldTypes.Date,
