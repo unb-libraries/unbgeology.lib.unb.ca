@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
     const fields = getSelectedFields(select, `classifications`)
     return fields.length > 0 ? fields : [`_id`]
   }
-  
+
   const {
     classifications: classificationURIs,
     editor: userURI,
@@ -23,6 +23,6 @@ export default defineEventHandler(async (event) => {
   const specimen = await Specimen.findOneAndUpdate({ slug }, body, { new: true })
     .populate(`classifications`, getSelectedClassificationFields())
     .select(getSelectedFields(select))
-  
+
   return sendEntityOr404(event, specimen)
 })

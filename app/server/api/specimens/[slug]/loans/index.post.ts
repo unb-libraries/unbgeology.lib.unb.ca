@@ -5,11 +5,11 @@ export default defineEventHandler(async (event) => {
     organization: organizationURI,
     ...body
   } = await readBody(event)
-  
+
   if (organizationURI) {
     body.organization = await Organization.findByURI(organizationURI)
   }
-  
+
   const specimen = await Specimen.findByPK(slug)
   if (specimen) {
     const loan = specimen.loans?.create(body)
@@ -19,5 +19,4 @@ export default defineEventHandler(async (event) => {
   }
 
   throw createError({ statusCode: 404 })
-  
 })

@@ -4,7 +4,7 @@ export default defineEventHandler(async (event) => {
 
   const query = Specimen.findByPK(slug)
     .sort(`dateIn`)
-  
+
   const fields = filterSelect({ prefix: `storage`, default: select.length ? [`_id`] : [] })
   if (fields.length > 0) {
     query.select(fields)
@@ -18,6 +18,6 @@ export default defineEventHandler(async (event) => {
   }
 
   const specimen = await query.exec()
-  
+
   return sendEntityList(event, specimen.storage)
 })

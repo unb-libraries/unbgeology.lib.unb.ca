@@ -1,4 +1,4 @@
-import { type Entity, EntityFieldTypes } from "~/layers/mongo/types/entity";
+import { type Entity, EntityFieldTypes } from "~/layers/mongo/types/entity"
 
 export type Affiliation = Entity
 
@@ -65,7 +65,7 @@ export const Organization = defineEntityBundle<Affiliation, Organization>(Affili
       type: EntityFieldTypes.String,
       required: true,
     },
-  }
+  },
 }, {
   virtuals: {
     uri: {

@@ -4,7 +4,7 @@ export default defineEventHandler(async (event) => {
     .populate(`parent`, `_id`)
 
   if (!term) {
-    throw createError({ statusCode: 404, statusMessage: `Taxonomy entity "${slug}" of type "${type.toUpperCase()}" does not exist.`})
+    throw createError({ statusCode: 404, statusMessage: `Taxonomy entity "${slug}" of type "${type.toUpperCase()}" does not exist.` })
   }
 
   const ids = [term._id]

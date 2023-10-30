@@ -13,6 +13,6 @@ export default defineEventHandler(async (event) => {
     .select(getSelectedFields(select))
     .sort(sort.join(` `))
     .paginate(page, pageSize)
-  
+
   return sendEntityList<Person>(event, people, { total: await Person.countDocuments() })
 })

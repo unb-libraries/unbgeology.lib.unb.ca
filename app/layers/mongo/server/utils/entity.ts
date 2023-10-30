@@ -201,6 +201,6 @@ export const defineEmbeddedEntityType = function<E extends Entity = Entity, I ex
       return `${this.parent().url()}/${path}/${this.pk}`
     })
   }
-  
+
   return schema
 }

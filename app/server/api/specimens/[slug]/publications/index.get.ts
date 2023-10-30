@@ -6,6 +6,6 @@ export default defineEventHandler(async (event) => {
 
   const specimen = await Specimen.findByPK(slug)
     .select(filterSelect({ prefix: `publications`, default: select.length ? [`_id`] : [] }))
-  
+
   return sendEntityList<Publication>(event, specimen.publications)
 })
