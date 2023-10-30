@@ -195,7 +195,7 @@ export default defineEntityType<Specimen>(`Specimen`, {
     type: [defineEmbeddedEntityType<Storage>({
       location: {
         type: EntityFieldTypes.ObjectId,
-        ref: `StorageLocation`,
+        ref: `Taxonomy.StorageLocation`,
         required: true,
       },
       dateIn: {
