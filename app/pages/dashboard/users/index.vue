@@ -1,5 +1,5 @@
 <template>
-  <PvEntityTable uri="/api/users" :columns="[`username`, [`created`, `Member since`], `updated`]">
+  <PvEntityTable uri="/api/users" :columns="[[`id`, `Username`], [`created`, `Member since`], `updated`]">
     <template #updated="{ value, entity }">
       {{ entity.created !== value ? value : `never` }}
     </template>

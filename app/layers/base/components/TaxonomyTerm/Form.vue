@@ -10,7 +10,7 @@
       <slot name="parent" :term="term">
         <div class="my-6 flex flex-col">
           <label class="mb-2 text-lg font-bold" for="parent">Parent</label>
-          <PvInputSelect id="form-select-parent" v-model="term.parent" name="parent" :options="list?.items" option-label="label" />
+          <PvInputSelect id="form-select-parent" v-model="term.parent" name="parent" :options="list?.entities" option-label="label" />
         </div>
       </slot>
       <slot :term="term" />

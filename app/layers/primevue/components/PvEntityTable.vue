@@ -1,5 +1,5 @@
 <template>
-  <PvTable :value="list?.items" :row-class="() => `group hover:bg-accent-light`">
+  <PvTable :value="list?.entities" :row-class="() => `group hover:bg-accent-light`">
     <template #empty>
       <slot name="empty">
         No items found.
@@ -44,7 +44,7 @@
 </template>
 
 <script setup lang="ts" generic="E extends Entity">
-import { type Entity } from '~/layers/mongo/types/entity'
+import { type Entity } from '~/layers/base/types/entity'
 
 const props = defineProps<{
   uri: string

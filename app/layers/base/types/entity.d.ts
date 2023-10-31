@@ -4,8 +4,12 @@ export interface Entity {
   updated: string
 }
 
+export type EntityReference<E extends Entity = Entity> = {
+  self: string
+} & { [P in keyof E]: E[P] }
+
 export interface EntityList<E extends Entity = Entity> {
-  items: E[]
+  entities: E[]
   nav: {
     first?: string
     last?: string
@@ -20,7 +24,7 @@ export interface EntityList<E extends Entity = Entity> {
 
 export interface Taxonomy extends Entity {
   label: string
-  parent: string
+  parent: EntityReference<Taxonomy>
 }
 
 export interface EntityResponse<E> {
@@ -42,6 +46,7 @@ export interface EntityDeleteResponse {
 
 export interface EntityListResponse<E extends Entity = Entity> {
   list: Ref<EntityList<E> | null>
+  refresh: () => void
   add: typeof createEntity<E>
   remove: typeof deleteEntity<E>
   errors: any[]
