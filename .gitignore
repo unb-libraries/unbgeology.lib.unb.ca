@@ -15,3 +15,4 @@ tests/e2e/screenshots
 tests/e2e/videos
 vendor
 **/saml/metadata.xml
+app/public/image

@@ -106,6 +106,7 @@ export async function fetchEntityList <E extends Entity = Entity>(entityTypeOrUr
   const { data: list, refresh } = await useFetch<EntityList<E>>(url)
   return {
     list: list as Ref<EntityList<E> | null>,
+    refresh,
     async add(entity: E) {
       const response = typeof entityTypeOrUri === `symbol`
         ? await createEntity(entity, entityTypeOrUri, bundle)

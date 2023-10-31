@@ -29,6 +29,14 @@
           </section>
           <section class="nav-group">
             <h2 class="nav-group-heading">
+              Files
+            </h2>
+            <NuxtLink :to="`/dashboard/files/images`" class="nav-item" active-class="nav-item-active">
+              Images
+            </NuxtLink>
+          </section>
+          <section class="nav-group">
+            <h2 class="nav-group-heading">
               Users
             </h2>
             <NuxtLink :to="`/dashboard/users`" class="nav-item" active-class="nav-item-active">
@@ -53,7 +61,7 @@ const { data: taxonomies } = await useFetch(`/api/taxonomies`)
 
 <style scoped>
   .column {
-    @apply flex flex-col dark:bg-primary empty:w-0 p-6 empty:p-0 mx-2 first:ml-0 last:mr-0
+    @apply flex flex-col dark:bg-primary empty:w-0 p-6 empty:p-0 empty:ml-0 mx-2 first:ml-0 last:mr-0
   }
   .nav-group {
     @apply flex flex-col my-6 first:mt-0 last:mb-0
