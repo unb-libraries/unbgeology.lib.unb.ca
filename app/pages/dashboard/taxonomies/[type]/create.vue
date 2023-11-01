@@ -7,8 +7,6 @@
 </template>
 
 <script setup lang="ts">
-import { Taxonomy } from '~/layers/base/types/entity'
-
 definePageMeta({
   layout: `dashboard`,
 })

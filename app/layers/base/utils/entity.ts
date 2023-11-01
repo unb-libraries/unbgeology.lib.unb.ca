@@ -71,10 +71,10 @@ export async function fetchEntity <E extends Entity = Entity>(pkOrUri: string, e
   }
 }
 
-export async function updateEntity <E extends EntityJSON = EntityJSON>(entity: E): Promise<EntityResponse<E>> {
-  const update = { ...entity };
-  [`self`, `created`, `updated`].forEach(prop => delete update[prop as keyof Partial<E>])
-  const { data: updatedEntity } = await useFetch<E>(entity.self, {
+export async function updateEntity <E extends Entity = Entity>(entity: EntityJSON<E>): Promise<EntityResponse<E>> {
+  // eslint-disable-next-line
+  const { self, created, updated, ...update } = entity
+  const { data: updatedEntity } = await useFetch<EntityJSON<E>>(self, {
     // @ts-ignore
     method: `PUT`,
     body: update,
