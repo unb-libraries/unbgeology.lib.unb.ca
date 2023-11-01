@@ -5,6 +5,9 @@ export default defineNuxtConfig({
     transpile: [`primevue`],
   },
   buildDir: `./.build/.nuxt`,
+  modules: [
+    `@nuxt/image`,
+  ],
   postcss: {
     plugins: {
       tailwindcss: {},
