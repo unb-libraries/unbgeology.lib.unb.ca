@@ -1,4 +1,4 @@
-import { type User } from "~/server/entityTypes/User"
+import { type User } from "layers/base/types/entity"
 
 export default defineEventHandler(async (event) => {
   const { select, sort, page, pageSize } = getQueryOptions(event)

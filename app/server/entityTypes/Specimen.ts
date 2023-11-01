@@ -1,90 +1,17 @@
-import { type Organization, type Person } from "entity-types/Affiliation"
-import { type Classification } from "taxonomies/Classification"
-import { type StorageLocation } from "taxonomies/StorageLocation"
-import { type User } from "entity-types/User"
-import { Entity, EntityFieldTypes } from "~/layers/mongo/types/entity"
+import { type EntityDocument, EntityFieldTypes } from "layers/mongo/types/entity"
+import { type Specimen, Composition, type Storage, type Loan, LoanType, type Publication, Status } from "types/specimen"
 
-export enum Status {
-  DRAFT = `draft`,
-  REVIEW = `review`,
-  PUBLISHED = `published`,
-}
-
-export interface Dimension {
-  width: number
-  length: number
-}
-
-export interface Place {
-  latitude: number
-  longitude: number
-  accuracy: number
-  name?: string
-  description?: string
-}
-
-export enum Composition {
-  SOLID = `solid`,
-}
-
-export enum LoanType {
-  IN = `in`,
-  OUT = `out`,
-}
-
-export interface Loan extends Entity {
-  type: LoanType
-  organization: Organization
-  contact: {
-    name: string
-    email: string
-    phone: string
-  }
-  start: Date
-  end: Date
-  contract: string
-}
-
-export interface Storage extends Entity {
-  location: StorageLocation
-  dateIn: Date
-  dateOut?: Date
-}
-
-export interface Publication extends Entity {
-  citation: string
-  abstract: string
-  doi?: string
-}
-
-export interface Specimen extends Entity {
-  objectId: string
-  name: string
-  slug: string
-  description: string
-  classifications: Classification[]
-  dimensions: Dimension
-  date?: Date
-  age: string
-  origin: Place
-  pieces: number
-  partial: boolean
-  composition: Composition,
-  collector?: Person,
-  sponsor?: Person,
-  loans?: Loan[],
-  storage: Storage[],
-  publications?: Publication[],
-  status: Status
-  editor: User
-}
+type SpecimenDocument = EntityDocument<Specimen>
+type StorageDocument = EntityDocument<Storage>
+type LoanDocument = EntityDocument<Loan>
+type PublicationDocument = EntityDocument<Publication>
 
 export type SpecimenDraft = Partial<Specimen> & { status: Status.DRAFT }
 const optionalWhileInDraft = function (this: Specimen) {
   return this.status !== Status.DRAFT
 }
 
-export default defineEntityType<Specimen>(`Specimen`, {
+export default defineEntityType<SpecimenDocument>(`Specimen`, {
   name: {
     type: EntityFieldTypes.String,
     required: true,
@@ -156,7 +83,7 @@ export default defineEntityType<Specimen>(`Specimen`, {
     required: false,
   },
   loans: {
-    type: [defineEmbeddedEntityType<Loan>({
+    type: [defineEmbeddedEntityType<LoanDocument>({
       type: {
         type: EntityFieldTypes.String,
         enum: LoanType,
@@ -192,7 +119,7 @@ export default defineEntityType<Specimen>(`Specimen`, {
     })],
   },
   storage: {
-    type: [defineEmbeddedEntityType<Storage>({
+    type: [defineEmbeddedEntityType<StorageDocument>({
       location: {
         type: EntityFieldTypes.ObjectId,
         ref: `Taxonomy.StorageLocation`,
@@ -209,7 +136,7 @@ export default defineEntityType<Specimen>(`Specimen`, {
     })],
   },
   publications: {
-    type: [defineEmbeddedEntityType<Publication>({
+    type: [defineEmbeddedEntityType<PublicationDocument>({
       citation: {
         type: EntityFieldTypes.String,
         required: true,

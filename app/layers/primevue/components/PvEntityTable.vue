@@ -44,7 +44,7 @@
 </template>
 
 <script setup lang="ts" generic="E extends Entity">
-import { type Entity } from '~/layers/base/types/entity'
+import { type Entity } from 'layers/base/types/entity'
 
 const props = defineProps<{
   uri: string

@@ -12,8 +12,8 @@
   </form>
 </template>
 
-<script setup lang="ts" generic="E extends Entity">
-import { type Entity } from "~/layers/base/types/entity"
+<script setup lang="ts" generic="E extends Entity | EntityJSON">
+import { EntityJSON, type Entity } from "~/layers/base/types/entity"
 
 const props = defineProps<{
   entity: Partial<E>
@@ -22,15 +22,15 @@ const props = defineProps<{
 
 const emits = defineEmits<{
   created: [entity: E],
-  updated: [entity: E],
+  updated: [entity: EntityJSON<E>],
   cancelled: [],
 }>()
 
 const submit = async function () {
-  if (!props.entity.self) {
+  if (!(`self` in props.entity)) {
     emits(`created`, props.entity as E)
   } else {
-    emits(`updated`, props.entity as E)
+    emits(`updated`, props.entity as EntityJSON<E>)
   }
 }
 </script>

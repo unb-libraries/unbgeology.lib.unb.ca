@@ -1,31 +1,11 @@
-import { type Entity, EntityFieldTypes } from "~/layers/mongo/types/entity"
+import { type Affiliation as IAffiliation, type Organization as IOrganization, type Person as IPerson } from "types/affiliation"
+import { type EntityDocument, EntityFieldTypes } from "~/layers/mongo/types/entity"
 
-export type Affiliation = Entity
+type AffiliationDocument = EntityDocument<IAffiliation>
+type OrganizationDocument = EntityDocument<IOrganization>
+type PersonDocument = EntityDocument<IPerson>
 
-export interface Address {
-  address1: string
-  address2?: string
-  city: string
-  state?: string
-  postalCode: string
-  country: string
-}
-
-export interface Organization extends Affiliation {
-  name: string
-  address: Address
-}
-
-export interface Person extends Affiliation {
-  firstName: string
-  lastName: string
-  affiliations: [Organization]
-  email: string
-  phone: string
-  public: boolean
-}
-
-export const Affiliation = defineEntityType<Affiliation>(`Affiliation`, {}, {
+export const Affiliation = defineEntityType<AffiliationDocument>(`Affiliation`, {}, {
   virtuals: {
     uri: {
       get() {
@@ -35,7 +15,7 @@ export const Affiliation = defineEntityType<Affiliation>(`Affiliation`, {}, {
   },
 })
 
-export const Organization = defineEntityBundle<Affiliation, Organization>(Affiliation, `Organization`, {
+export const Organization = defineEntityBundle<AffiliationDocument, OrganizationDocument>(Affiliation, `Organization`, {
   name: {
     type: EntityFieldTypes.String,
     required: true,
@@ -76,7 +56,7 @@ export const Organization = defineEntityBundle<Affiliation, Organization>(Affili
   },
 })
 
-export const Person = defineEntityBundle<Affiliation, Person>(Affiliation, `Person`, {
+export const Person = defineEntityBundle<AffiliationDocument, PersonDocument>(Affiliation, `Person`, {
   firstName: {
     type: EntityFieldTypes.String,
     required: true,

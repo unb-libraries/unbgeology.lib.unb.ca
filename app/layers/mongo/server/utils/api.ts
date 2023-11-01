@@ -1,6 +1,7 @@
 import { type Document, type Types } from "mongoose"
 import { type H3Event } from "h3"
-import { type QueryOptions, type Entity, type EntityJSON, type EntityListOptions } from "~/layers/mongo/types/entity"
+import { type QueryOptions, type EntityListOptions } from "layers/mongo/types/entity"
+import { type EntityJSON, type Entity } from "layers/base/types/entity"
 
 export function getSelectedFields(fields: string[], prefix?: string) {
   if (prefix) {

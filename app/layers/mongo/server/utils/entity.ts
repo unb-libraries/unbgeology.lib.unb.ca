@@ -9,13 +9,13 @@ import {
 import {
   EntityFieldTypes,
   type EntityTypeOptions,
-  type Entity,
   type EntityInstanceMethods,
   type EntityQueryHelpers,
   type EntityModel,
+  type EntityDocument,
 } from "~/layers/mongo/types/entity"
 
-const defineEntityTypeOptions = function <E extends Entity = Entity> (options: EntityTypeOptions<E>, defaultOptions?: EntityTypeOptions<E>) {
+const defineEntityTypeOptions = function <E extends EntityDocument = EntityDocument> (options: EntityTypeOptions<E>, defaultOptions?: EntityTypeOptions<E>) {
   if (options?.toJSON?.transform && options?.toJSON?.transform !== true) {
     const customTransform = options.toJSON.transform
     if (defaultOptions?.toJSON?.transform) {
@@ -33,7 +33,7 @@ const defineEntityTypeOptions = function <E extends Entity = Entity> (options: E
 }
 
 const EntityTypeSchema = function <
-  E extends Entity,
+  E extends EntityDocument = EntityDocument,
   I extends EntityInstanceMethods = EntityInstanceMethods,
   Q extends EntityQueryHelpers = EntityQueryHelpers,
   M extends EntityModel<E, I, Q> = EntityModel<E, I, Q>
@@ -128,12 +128,12 @@ const EntityTypeSchema = function <
   return schema
 }
 
-export const useEntityType = function<E extends Entity = Entity, M extends EntityModel = EntityModel> (name: string) {
+export const useEntityType = function<E extends EntityDocument = EntityDocument, M extends EntityModel = EntityModel> (name: string) {
   return loadModel<E, M>(name)
 }
 
 export function defineEntityType <
-  E extends Entity,
+  E extends EntityDocument = EntityDocument,
   I extends EntityInstanceMethods = EntityInstanceMethods,
   Q extends EntityQueryHelpers = EntityQueryHelpers,
   M extends EntityModel<E, I, Q> = EntityModel<E, I, Q>
@@ -172,7 +172,7 @@ export function defineEntityType <
   return model
 }
 
-export const defineEntityBundle = function<E extends Entity = Entity, B extends E = E> (base: ReturnType<typeof defineEntityType<E>>, name: string, definition?: SchemaDefinition<B>, options?: EntityTypeOptions<B>) {
+export const defineEntityBundle = function<E extends EntityDocument = EntityDocument, B extends E = E> (base: ReturnType<typeof defineEntityType<E>>, name: string, definition?: SchemaDefinition<B>, options?: EntityTypeOptions<B>) {
   const schemaOptions = defineEntityTypeOptions<B>(options ?? {}, base.schema.options)
   let schema: Schema
 
@@ -191,7 +191,7 @@ export const defineEntityBundle = function<E extends Entity = Entity, B extends 
   return baseModel.discriminator<B>(`${base.modelName}.${name}`, schema, name.toLowerCase())
 }
 
-export const defineEmbeddedEntityType = function<E extends Entity = Entity, I extends EntityInstanceMethods = EntityInstanceMethods> (definition: SchemaDefinition<E>, options?: EntityTypeOptions<E>) {
+export const defineEmbeddedEntityType = function<E extends EntityDocument = EntityDocument, I extends EntityInstanceMethods = EntityInstanceMethods> (definition: SchemaDefinition<E>, options?: EntityTypeOptions<E>) {
   const schema = EntityTypeSchema<E, I>(definition, defineEntityTypeOptions(options ?? {}))
 
   if (!(`uri` in schema.virtuals)) {

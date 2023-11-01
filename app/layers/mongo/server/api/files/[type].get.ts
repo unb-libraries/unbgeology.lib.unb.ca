@@ -1,4 +1,5 @@
-import { File as FileEntity, type File } from "~/server/entityTypes/File"
+import { File as FileEntity } from "layers/mongo/server/entityTypes/File"
+import { type File } from "layers/base/types/entity"
 
 export default defineEventHandler(async (event) => {
   const { type } = getRouterParams(event)

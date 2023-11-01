@@ -1,15 +1,15 @@
 export interface Entity {
-  self: string
-  created: string
-  updated: string
+  readonly id: string
+  readonly created: string
+  readonly updated: string
 }
 
-export type EntityReference<E extends Entity = Entity> = {
-  self: string
-} & { [P in keyof E]: E[P] }
+export interface EntityJSON<E extends Entity = Entity> extends E {
+  readonly self: string
+}
 
-export interface EntityList<E extends Entity = Entity> {
-  entities: E[]
+export interface EntityJSONList<E extends Entity = Entity> {
+  entities: EntityJSON<E>[]
   nav: {
     first?: string
     last?: string
@@ -22,13 +22,8 @@ export interface EntityList<E extends Entity = Entity> {
   totalItems: number
 }
 
-export interface Taxonomy extends Entity {
-  label: string
-  parent: EntityReference<Taxonomy>
-}
-
 export interface EntityResponse<E> {
-  entity: Ref<E | null>
+  entity: Ref<EntityJSON<E> | null>
   errors: any[]
 }
 
@@ -45,9 +40,45 @@ export interface EntityDeleteResponse {
 }
 
 export interface EntityListResponse<E extends Entity = Entity> {
-  list: Ref<EntityList<E> | null>
+  list: Ref<EntityJSONList<E> | null>
   refresh: () => void
   add: typeof createEntity<E>
   remove: typeof deleteEntity<E>
   errors: any[]
+}
+
+export interface User extends Entity {
+  username: string
+  profile: {
+    firstName: string
+    lastName: string
+    email: string
+    phone: string
+  }
+}
+
+export interface Taxonomy extends Entity {
+  label: string
+  parent: Taxonomy
+}
+
+export interface File extends Entity {
+  filename: string
+  filepath: string
+  filesize: number
+  filetype: string
+  persisted: boolean
+  uploadName: string
+}
+
+export interface Image extends File {
+  alt: string
+  dimensions: {
+    width: number
+    height: number
+  }
+  title: string
+}
+
+export interface Document extends File {
 }

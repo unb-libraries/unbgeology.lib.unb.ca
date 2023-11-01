@@ -1,6 +1,6 @@
-import { type Taxonomy } from "~/layers/mongo/types/taxonomy"
+import { type Classification } from "types/taxonomy"
+import { EntityDocument } from "~/layers/mongo/types/entity"
 
-export interface Classification extends Taxonomy {
-}
+type ClassificationTaxonomy = EntityDocument<Classification>
 
-export default defineTaxonomyType<Classification>(`Classification`)
+export default defineTaxonomyType<ClassificationTaxonomy>(`Classification`)

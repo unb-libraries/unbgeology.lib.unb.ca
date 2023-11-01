@@ -1,28 +1,20 @@
-import {
-  Schema,
-  type SchemaOptions,
-  type Model,
-  type Types,
-  type HydratedDocument,
-  Query,
-} from "mongoose"
+import { Schema, type SchemaOptions, type Model, type HydratedDocument, Query } from "mongoose"
+import { type Entity, type EntityJSON } from "~/layers/base/types/entity"
 
 export const EntityFieldTypes = Schema.Types
 
-export interface Entity {
-  readonly _id: Types.ObjectId
+export type EntityDocument<E extends Entity = Entity> = {
   slug?: string
-  readonly created: Date
-  readonly updated: Date
-}
+  pk: PropertyKey
+  uri: string
+} & E
 
 export interface EntityTypeOptions<E extends Entity = Entity> extends SchemaOptions<E> {
   slug?: string | string[] | (() => string)
 }
 
 export interface EntityInstanceMethods {
-  pk(): string
-  url(rel?: string): string
+  url(): string
 }
 
 export interface EntityQueryHelpers {
@@ -38,17 +30,7 @@ export interface EntityModel<
   baseURL(): string
   findByPK(pk: string): Query<HydratedDocument<E, I>, HydratedDocument<E, I>, EntityQueryHelpers>
   findByURI(uri: string): Promise<HydratedDocument<E, I> | null>
-  findManybyURI(uris: string[]): Promise<HydratedDocument<E, I>>
-}
-
-export interface EntityJSONReference {
-  self: string
-}
-
-export type EntityPropertyValue = string | number | EntityJSONReference | EntityPropertyValue[]
-
-export type EntityJSON<E extends Entity = Entity> = {
-  [Property in keyof E]: EntityPropertyValue
+  findManyByURI(uris: string[]): Promise<HydratedDocument<E, I>>
 }
 
 export interface EntityListOptions<E extends Entity = Entity> {

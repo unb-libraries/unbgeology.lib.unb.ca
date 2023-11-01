@@ -1,5 +1,3 @@
-import User from "~/server/entityTypes/User"
-
 export default defineEventHandler(async (event) => {
   const { username } = await readBody(event)
 
