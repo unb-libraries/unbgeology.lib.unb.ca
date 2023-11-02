@@ -1,11 +1,17 @@
 <template>
   <div class="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12">
-    <div v-for="image in images" :key="image.self" class="bg-primary-20 dark:bg-primary-80 aspect-square hover:cursor-pointer hover:grayscale">
+    <div
+      v-for="image in images"
+      :key="image.self"
+      class="hover:bg-accent-mid aspect-square hover:cursor-pointer"
+      :class="{ 'dark:bg-accent-mid bg-accent-mid': isSelected(image), 'bg-primary-20 dark:bg-primary-80': !isSelected(image) }"
+    >
       <nuxt-img
         :src="`/image/${image.filename}`"
         :alt="image.alt"
         :title="image.title"
-        :class="{ 'border-accent-mid border-4': selection.includes(image)}"
+        class="hover:opacity-30"
+        :class="{ 'opacity-30': isSelected(image) }"
         format="webp"
         fit="cover"
         sizes="sm:180px md:90px lg:60px xl:100px"
@@ -18,37 +24,32 @@
 </template>
 
 <script setup lang="ts">
-import { type EntityJSON, type Image } from 'layers/base/types/entity'
+import { type JImage } from 'layers/base/types/entity'
 
-const props = defineProps<{
-  images: EntityJSON<Image>[]
+defineProps<{
+  images: JImage[]
   multi?: boolean
 }>()
 
 const emits = defineEmits<{
-  selected: [img: EntityJSON<Image>]
-  unselected: [img: EntityJSON<Image>]
+  select: [image: JImage, selection: JImage[]]
+  unselect: [image: JImage, selection: JImage[]]
 }>()
 
-function onClick(img: EntityJSON<Image>) {
-  const multi = props.multi ?? false
-  if (!selection.value.includes(img)) {
-    if (multi) {
-      selection.value.push(img)
-    } else {
-      selection.value = [img]
-    }
-    emits(`selected`, img)
-  } else {
-    if (multi) {
-      const index = selection.value.findIndex(i => i === img)
-      selection.value.splice(index, 1)
-    } else {
-      selection.value = []
-    }
-    emits(`unselected`, img)
-  }
+const selection = ref([] as JImage[])
+
+function isSelected(image: JImage) {
+  return selection.value.includes(image)
 }
 
-const selection = ref([] as EntityJSON<Image>[])
+function onClick(image: JImage) {
+  if (!isSelected(image)) {
+    selection.value.push(image)
+    emits(`select`, image, selection.value)
+  } else {
+    const index = selection.value.findIndex(i => i === image)
+    selection.value.splice(index, 1)
+    emits(`unselect`, image, selection.value)
+  }
+}
 </script>

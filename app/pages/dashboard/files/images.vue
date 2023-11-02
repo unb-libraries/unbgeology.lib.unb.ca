@@ -1,12 +1,13 @@
 <template>
-  <nuxt-img
-    v-if="selectedImage"
-    :src="`/image/${selectedImage.filename}`"
-    :alt="selectedImage.alt"
-    :title="selectedImage.title"
-    class="mb-2"
-  />
-  <PvImageGallery :images="list?.entities ?? []" @selected="onSelect" @unselected="onUnselect" />
+  <div v-if="selectedImage" class="mb-2 h-96">
+    <nuxt-img
+      :src="`/image/${selectedImage.filename}`"
+      :alt="selectedImage.alt"
+      :title="selectedImage.title"
+      class="h-full object-contain"
+    />
+  </div>
+  <PvImageGallery :images="list?.entities ?? []" @select="onSelect" @unselect="onUnselect" />
   <PvFileUpload @uploaded="refresh()" />
 </template>
 
