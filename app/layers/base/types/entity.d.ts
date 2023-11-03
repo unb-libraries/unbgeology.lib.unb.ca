@@ -78,11 +78,15 @@ export interface User extends Entity {
     phone: string
   }
 }
+export type JUser = EntityJSON<User>
+export type JUserList = EntityJSONList<User>
 
 export interface Taxonomy extends Entity {
   label: string
   parent: Taxonomy
 }
+export type JTaxonomy = EntityJSON<Taxonomy>
+export type JTaxonomyList = EntityJSONList<Taxonomy>
 
 export interface File extends Entity {
   filename: string
@@ -92,6 +96,8 @@ export interface File extends Entity {
   persisted: boolean
   uploadName: string
 }
+export type JFile = EntityJSON<Image>
+export type JFileList = EntityJSONList<File>
 
 export interface Image extends File {
   alt: string
@@ -101,6 +107,10 @@ export interface Image extends File {
   }
   title: string
 }
+export type JImage = EntityJSON<Image>
+export type JImageList = EntityJSONList<Image>
 
 export interface Document extends File {
 }
+export type JDocument = EntityJSON<Document>
+export type JDocumentList = EntityJSONList<Document>
