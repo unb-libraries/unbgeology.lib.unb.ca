@@ -38,6 +38,20 @@ export function useEntityType <E extends Entity = Entity>(entityType: symbol, bu
   }
 }
 
+export function getEntityBody <E extends Entity = Entity>(entity: EntityJSON<E>): EntityJSONBody<E> {
+  return Object.fromEntries(Object.entries(entity).map(([key, value]) => {
+    const resolveReference = (ref: EntityJSONPropertyValue | EntityJSONPropertyValue[]): EntityJSONBodyPropertyValue | EntityJSONBodyPropertyValue[] => {
+      if (Array.isArray(ref)) {
+        return ref.map(r => resolveReference(r)).flat()
+      } else if (typeof ref === `object` && ref.self) {
+        return ref.self
+      } else {
+        return ref
+      }
+    }
+    return [key, resolveReference(value as EntityJSONPropertyValue)]
+  })) as EntityJSONBody<E>
+}
 
 export async function createEntity <E extends Entity = Entity> (entity: EntityJSONCreateBody<E>, entityType: symbol, bundle?: string): Promise<EntityCreateResponse<E>>
 export async function createEntity <E extends Entity = Entity> (entity: EntityJSONCreateBody<E>, uri: string): Promise<EntityCreateResponse<E>>
