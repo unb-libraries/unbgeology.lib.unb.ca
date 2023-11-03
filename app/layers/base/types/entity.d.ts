@@ -4,9 +4,19 @@ export interface Entity {
   readonly updated: string
 }
 
-export interface EntityJSON<E extends Entity = Entity> extends E {
+export interface EntityJSONReference {
   readonly self: string
+  readonly id: string
 }
+
+export type EntityJSONInclusion<E extends Entity = Entity> = EntityJSON<Partial<E>>
+export type EntityJSONPropertyValue = string | number | boolean | EntityJSONReference
+export type EntityJSON<E extends Entity = Entity> = {
+  [P in keyof E]:
+    E[P] extends Entity | Entity[] ? EntityJSONInclusion<E[P]> :
+      E[P] extends Entity | Entity[] | undefined ? EntityJSONInclusion<E[P]> | undefined :
+        E[P]
+} & EntityJSONReference
 
 export interface EntityJSONList<E extends Entity = Entity> {
   entities: EntityJSON<E>[]
@@ -21,6 +31,18 @@ export interface EntityJSONList<E extends Entity = Entity> {
   self: string
   totalItems: number
 }
+
+export type EntityJSONBodyPropertyValue = Exclude<EntityJSONPropertyType, EntityJSONReference>
+export type EntityJSONBody<E extends Entity = Entity> = { self : string } & {
+  [P in keyof Omit<E, "id" | "created" | "updated">]:
+    E[P] extends Entity[] ? string[] :
+      E[P] extends Entity[] | undefined ? string[] | undefined :
+        E[P] extends Entity ? string :
+          E[P] extends Entity | undefined ? string | undefined :
+            E[P]
+}
+
+export type EntityJSONCreateBody<E extends Entity = Entity> = Omit<EntityJSONBody<E>, "self">
 
 export interface EntityResponse<E> {
   entity: Ref<EntityJSON<E> | null>

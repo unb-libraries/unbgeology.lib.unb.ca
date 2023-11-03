@@ -1,12 +1,17 @@
 import {
   type Entity,
   type EntityJSON,
+  type EntityJSONReference,
+  type EntityJSONPropertyValue,
   type EntityJSONList,
+  type EntityJSONBody,
+  type EntityJSONCreateBody,
   type EntityResponse,
   type EntityFetchResponse,
   type EntityCreateResponse,
   type EntityDeleteResponse,
   type EntityListResponse,
+  EntityJSONBodyPropertyValue,
 } from "~/layers/base/types/entity"
 
 const useBaseUrl = function (entityType: symbol, bundle: string = ``) {
@@ -15,7 +20,7 @@ const useBaseUrl = function (entityType: symbol, bundle: string = ``) {
 
 export function useEntityType <E extends Entity = Entity>(entityType: symbol, bundle: string = ``) {
   return {
-    async create(entity: E) {
+    async create(entity: EntityJSONCreateBody<E>) {
       return await createEntity<E>(entity, entityType, bundle)
     },
     async fetchByPK(pk: string) {
@@ -24,18 +29,19 @@ export function useEntityType <E extends Entity = Entity>(entityType: symbol, bu
     async fetchAll() {
       return await fetchEntityList<E>(useBaseUrl(entityType, bundle))
     },
-    async update(entity: EntityJSON<E>) {
+    async update(entity: EntityJSONBody<E>) {
       return await updateEntity<E>(entity)
     },
-    async remove(entity: EntityJSON<E>) {
-      return await deleteEntity<E>(entity)
+    async remove(entity: EntityJSONReference) {
+      return await deleteEntity(entity)
     },
   }
 }
 
-export async function createEntity <E extends Entity = Entity> (entity: E, entityType: symbol, bundle?: string): Promise<EntityCreateResponse<E>>
-export async function createEntity <E extends Entity = Entity> (entity: E, uri: string): Promise<EntityCreateResponse<E>>
-export async function createEntity <E extends Entity = Entity>(entity: E, entityTypeOrUri: string | symbol, bundle: string = ``): Promise<EntityCreateResponse<E>> {
+
+export async function createEntity <E extends Entity = Entity> (entity: EntityJSONCreateBody<E>, entityType: symbol, bundle?: string): Promise<EntityCreateResponse<E>>
+export async function createEntity <E extends Entity = Entity> (entity: EntityJSONCreateBody<E>, uri: string): Promise<EntityCreateResponse<E>>
+export async function createEntity <E extends Entity = Entity>(entity: EntityJSONCreateBody<E>, entityTypeOrUri: string | symbol, bundle: string = ``): Promise<EntityCreateResponse<E>> {
   const url = typeof entityTypeOrUri === `symbol` ? useBaseUrl(entityTypeOrUri, bundle) : entityTypeOrUri
   const { data: newEntity } = await useFetch<E>(url, {
     // @ts-ignore
@@ -52,17 +58,18 @@ export async function fetchEntity <E extends Entity = Entity>(pkOrUri: string, e
     ? `${useBaseUrl(entityType, bundle)}/${pkOrUri}`
     : pkOrUri
 
-  const { data: entity, refresh } = await useFetch<E>(url)
+  const { data, refresh } = await useFetch<EntityJSON<E>>(url)
+  const entity: Ref<EntityJSON<E> | null> = data as Ref<EntityJSON<E> | null>
   return {
     entity: entity as Ref<EntityJSON<E> | null>,
     update: async () => {
       if (entity.value) {
-        await updateEntity<E>(entity.value as EntityJSON<E>)
+        await updateEntity<E>(getEntityBody<E>(entity.value))
         refresh()
       }
     },
     remove: async () => {
-      const { success } = await deleteEntity<E>(entity.value as EntityJSON<E>)
+      const { success } = await deleteEntity(entity.value as EntityJSON<E>)
       if (success) {
         entity.value = null
       }
@@ -71,13 +78,12 @@ export async function fetchEntity <E extends Entity = Entity>(pkOrUri: string, e
   }
 }
 
-export async function updateEntity <E extends Entity = Entity>(entity: EntityJSON<E>): Promise<EntityResponse<E>> {
-  // eslint-disable-next-line
-  const { self, created, updated, ...update } = entity
+export async function updateEntity <E extends Entity = Entity>(entity: EntityJSONBody<E>): Promise<EntityResponse<E>> {
+  const { self, ...body } = entity
   const { data: updatedEntity } = await useFetch<EntityJSON<E>>(self, {
     // @ts-ignore
     method: `PUT`,
-    body: update,
+    body,
   })
 
   return {
@@ -87,11 +93,11 @@ export async function updateEntity <E extends Entity = Entity>(entity: EntityJSO
 }
 
 export async function deleteEntity (pk: string, entityType: symbol, bundle?: string): Promise<EntityDeleteResponse>
-export async function deleteEntity <E extends Entity = Entity> (entity: EntityJSON<E>): Promise<EntityDeleteResponse>
-export async function deleteEntity <E extends Entity = Entity>(entityOrPk: EntityJSON<E> | string, entityType?: symbol, bundle: string = ``): Promise<EntityDeleteResponse> {
-  const uri = typeof entityOrPk === `string` && entityType && bundle
-    ? `${useBaseUrl(entityType, bundle)}/${entityOrPk}`
-    : (entityOrPk as EntityJSON<E>).self
+export async function deleteEntity (entityReference: EntityJSONReference): Promise<EntityDeleteResponse>
+export async function deleteEntity(entityReferenceOrPk: EntityJSONReference | string, entityType?: symbol, bundle: string = ``): Promise<EntityDeleteResponse> {
+  const uri = typeof entityReferenceOrPk === `string` && entityType && bundle
+    ? `${useBaseUrl(entityType, bundle)}/${entityReferenceOrPk}`
+    : (entityReferenceOrPk as EntityJSONReference).self
 
   const { error } = await useFetch(uri, { method: `DELETE` })
   return {
