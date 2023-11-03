@@ -35,6 +35,14 @@ export const File = defineEntityType<FileDocument>(`File`, {
       return this.filename
     },
   },
+}, {
+  virtuals: {
+    uri: {
+      get() {
+        return `/api/files/${this.type}/${this.pk}`
+      },
+    },
+  },
 })
 
 export const Image = defineEntityBundle<FileDocument, ImageDocument>(File, `Image`, {

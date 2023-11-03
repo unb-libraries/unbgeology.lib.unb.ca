@@ -42,6 +42,6 @@ export interface QueryOptions {
   page: number
   pageSize: number
   select: string[]
-  filterSelect: (options: { root?: string, prefix?: string, default?: string[] }) => string[],
+  filterSelect: (options?: { root?: string, prefix?: string, default?: string[] }) => string[],
   sort: string[]
 }
