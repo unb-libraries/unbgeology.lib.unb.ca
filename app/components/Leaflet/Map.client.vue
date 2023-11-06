@@ -10,6 +10,7 @@ import type { Coordinate, Callback } from "~/types/leaflet"
 
 const props = defineProps<{
   center: Coordinate,
+  zoom?: number
 }>()
 
 const emit = defineEmits<{
@@ -29,7 +30,7 @@ onUpdated(async () => {
   const [centerLat, centerLong] = props.center
 
   map = map || L.map(`map`)
-  map.setView([centerLat, centerLong], map.getZoom() || 6)
+  map.setView([centerLat, centerLong], map.getZoom() ?? props.zoom ?? 6)
   while (callbacks.length > 0) {
     const callback = callbacks.pop()!
     callback(map, L)

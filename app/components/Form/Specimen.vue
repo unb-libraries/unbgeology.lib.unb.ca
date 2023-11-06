@@ -1,203 +1,117 @@
 <template>
-  <form @submit.prevent="onSubmit">
-    <div class="flex flex-col md:flex-row">
-      <div class="mr-4 grow">
-        <div class="flex flex-col">
-          <label class="mb-2 text-lg font-bold" for="name">Name</label>
-          <PvInputText v-model="name" name="name" />
-        </div>
-        <div class="my-6 flex flex-col">
-          <label class="mb-2 text-lg font-bold" for="date">Date</label>
-          <PvInputMask v-model="date" name="date" mask="9999?/99/99" placeholder="YYYY/MM/DD" />
-        </div>
-        <div class="my-6 flex flex-row">
-          <div class="mr-3 flex w-1/2 flex-col">
-            <label class="mb-2 text-lg font-bold" for="age">Age</label>
-            <PvInputSelect v-model="age" name="age" :options="['Cretaceous', 'Eocene', 'Ordovician', 'Holocene', 'Precambrian']" />
+  <EntityForm :entity="specimen" cancel-url="/dashboard/specimens" @created="create" @updated="update">
+    <template #default="{ body }">
+      <div class="flex flex-col md:flex-row">
+        <div class="mr-4 grow">
+          <div class="flex flex-col">
+            <label class="mb-2 text-lg font-bold" for="name">Name</label>
+            <PvInputText v-model="body.name" name="name" />
           </div>
-          <div class="ml-3 flex w-1/2 flex-col">
-            <label class="mb-2 text-lg font-bold" for="composition">Composition</label>
-            <PvInputSelect v-model="composition" name="composition" :options="['solid']" />
+          <div class="my-6 flex flex-col">
+            <label class="mb-2 text-lg font-bold" for="date">Date</label>
+            <PvInputMask v-model="body.date" name="date" mask="9999?/99/99" placeholder="YYYY/MM/DD" />
           </div>
-        </div>
-        <div class="my-6 flex flex-row">
-          <div class="mr-3 flex w-1/2 flex-col">
-            <label class="mb-2 text-lg font-bold" for="width">Width</label>
-            <PvInputNumber v-model="width" name="width" />
+          <div class="my-6 flex flex-row">
+            <div class="mr-3 flex w-1/2 flex-col">
+              <label class="mb-2 text-lg font-bold" for="age">Age</label>
+              <PvInputSelect v-model="body.age" name="age" :options="['Cretaceous', 'Eocene', 'Ordovician', 'Holocene', 'Precambrian']" />
+            </div>
+            <div class="ml-3 flex w-1/2 flex-col">
+              <label class="mb-2 text-lg font-bold" for="composition">Composition</label>
+              <PvInputSelect v-model="body.composition" name="composition" :options="['solid']" />
+            </div>
           </div>
-          <div class="ml-3 flex w-1/2 flex-col">
-            <label class="mb-2 text-lg font-bold" for="length">Length</label>
-            <PvInputNumber v-model="length" name="length" />
+          <div class="my-6 flex flex-row">
+            <div class="mr-3 flex w-1/2 flex-col">
+              <label class="mb-2 text-lg font-bold" for="width">Width</label>
+              <PvInputNumber v-model="body.dimensions!.width" name="width" />
+            </div>
+            <div class="ml-3 flex w-1/2 flex-col">
+              <label class="mb-2 text-lg font-bold" for="length">Length</label>
+              <PvInputNumber v-model="body.dimensions!.length" name="length" />
+            </div>
           </div>
-        </div>
-        <div class="mt-6 flex flex-row">
-          <div class="mr-3 flex w-1/2 flex-col">
-            <label class="mb-2 text-lg font-bold" for="pieces">Pieces</label>
-            <PvInputNumber v-model="pieces" name="pieces" />
-          </div>
-          <div class="ml-3 flex w-1/2 flex-col">
-            <label class="mb-2 text-lg font-bold">Partial</label>
-            <div name="partial" class="flex h-full flex-row items-center">
-              <div class="mr-6">
-                <input
-                  id="partial-yes"
-                  v-model="partial"
-                  type="radio"
-                  name="partial"
-                  value="true"
-                  class="dark:bg-primary border-primary-20 dark:border-primary-60/75 hover:border-accent-light checked:border-accent-mid focus:ring-accent-light/50 focus:ring-offset-base dark:focus:ring-offset-primary h-6 w-6 cursor-pointer appearance-none rounded-full border bg-white align-middle checked:border-8 focus:ring-2 focus:ring-offset-2"
-                >
-                <label class="mx-3 align-middle" for="partial-yes">Yes</label>
-              </div>
-              <div>
-                <input
-                  id="partial-no"
-                  v-model="partial"
-                  type="radio"
-                  name="partial"
-                  value="false"
-                  class="dark:bg-primary border-primary-20 dark:border-primary-60/75 hover:border-accent-light checked:border-accent-mid focus:ring-accent-light/50 focus:ring-offset-base dark:focus:ring-offset-primary h-6 w-6 cursor-pointer appearance-none rounded-full border bg-white align-middle checked:border-8 focus:ring-2 focus:ring-offset-2"
-                >
-                <label class="mx-3 align-middle" for="partial-no">No</label>
+          <div class="mt-6 flex flex-row">
+            <div class="mr-3 flex w-1/2 flex-col">
+              <label class="mb-2 text-lg font-bold" for="pieces">Pieces</label>
+              <PvInputNumber v-model="body.pieces" name="pieces" />
+            </div>
+            <div class="ml-3 flex w-1/2 flex-col">
+              <label class="mb-2 text-lg font-bold">Partial</label>
+              <div name="partial" class="flex h-full flex-row items-center">
+                <div class="mr-6">
+                  <input
+                    id="partial-yes"
+                    v-model="body.partial"
+                    type="radio"
+                    name="partial"
+                    value="true"
+                    class="dark:bg-primary border-primary-20 dark:border-primary-60/75 hover:border-accent-light checked:border-accent-mid focus:ring-accent-light/50 focus:ring-offset-base dark:focus:ring-offset-primary h-6 w-6 cursor-pointer appearance-none rounded-full border bg-white align-middle checked:border-8 focus:ring-2 focus:ring-offset-2"
+                  >
+                  <label class="mx-3 align-middle" for="partial-yes">Yes</label>
+                </div>
+                <div>
+                  <input
+                    id="partial-no"
+                    v-model="body.partial"
+                    type="radio"
+                    name="partial"
+                    value="false"
+                    class="dark:bg-primary border-primary-20 dark:border-primary-60/75 hover:border-accent-light checked:border-accent-mid focus:ring-accent-light/50 focus:ring-offset-base dark:focus:ring-offset-primary h-6 w-6 cursor-pointer appearance-none rounded-full border bg-white align-middle checked:border-8 focus:ring-2 focus:ring-offset-2"
+                  >
+                  <label class="mx-3 align-middle" for="partial-no">No</label>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <div class="w-full md:ml-4 md:w-1/2">
-        <div class="flex h-full w-full flex-col">
-          <label class="mb-2 text-lg font-bold" for="origin">Origin</label>
-          <LeafletMap class="h-full rounded-md" name="origin" :center="[latitude || 0, longitude || 0]" @click="onMapClick">
-            <LeafletSearch @item-select="onSearchItemSelect" />
-            <LeafletMarker
-              v-if="latitude !== undefined && longitude !== undefined"
-              :name="name"
-              :center="[latitude, longitude]"
-              :draggable="true"
-              @dragged="onMarkerDragged"
-            />
-          </LeafletMap>
+        <div class="w-full md:ml-4 md:w-1/2">
+          <div class="flex h-full w-full flex-col">
+            <label class="mb-2 text-lg font-bold" for="origin">Origin</label>
+            <LeafletMap class="border-primary-20 dark:border-primary-60/75 h-full rounded-md border" name="origin" :zoom="2" :center="[body.origin?.latitude ?? 0, body.origin?.longitude ?? 0]" @click="coord => setOrigin(coord, specimen)">
+              <LeafletSearch @item-select="item => onSearchItemSelect(item, specimen)" />
+              <LeafletMarker
+                v-if="specimen.origin?.latitude !== undefined && specimen.origin?.longitude !== undefined"
+                :name="specimen.name"
+                :center="[body.origin.latitude, body.origin.longitude]"
+                :draggable="true"
+                @dragged="coord => setOrigin(coord, specimen)"
+              />
+            </LeafletMap>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="flex flex-col mt-6">
-      <label class="mb-2 w-full text-lg font-bold" for="description">Description</label>
-      <textarea v-model="description" class="rounded-lg p-2 dark:bg-primary border border-primary-20 dark:border-primary-60/75 hover:border-accent-light dark:focus:border-accent-mid" name="description" rows="10"></textarea>
-    </div>
-    <div class="mt-8 flex flex-row">
-      <button type="submit" class="bg-accent-dark dark:bg-accent-mid hover:bg-accent-light mr-2 rounded-md p-3 font-bold text-white">
-        Save
-      </button>
-      <NuxtLink to="/" class="font-base ml-2 p-3">
-        Cancel
-      </NuxtLink>
-    </div>
-  </form>
+      <div class="mt-6 flex flex-col">
+        <label class="mb-2 w-full text-lg font-bold" for="description">Description</label>
+        <textarea v-model="body.description" class="dark:bg-primary border-primary-20 dark:border-primary-60/75 hover:border-accent-light dark:focus:border-accent-mid rounded-lg border p-2" name="description" rows="10" />
+      </div>
+    </template>
+  </EntityForm>
 </template>
 
 <script setup lang="ts">
-import type { Specimen } from 'entity-types/Specimen'
-import type { Coordinate } from '~/types/leaflet'
-import type { Location } from '~/types/nominatim'
+import { type EntityJSON } from 'layers/base/types/entity'
+import { type Specimen } from 'types/specimen'
+import type { Coordinate } from 'types/leaflet'
+import type { Location } from 'types/nominatim'
 
-const props = defineProps<{
-  specimen?: Specimen,
+defineProps<{
+  specimen: EntityJSON<Specimen>
 }>()
 
-const emit = defineEmits<{
-  created: [specimen: Partial<Specimen>],
-  updated: [specimen: Partial<Specimen>],
-}>()
+const { create, update } = useEntityType<Specimen>(Symbol(`specimens`))
 
-const name = ref(props.specimen?.name)
-const description = ref(props.specimen?.description)
-const pieces = ref(props.specimen?.pieces)
-const age = ref(props.specimen?.age)
-const width = ref(props.specimen?.dimensions?.width)
-const length = ref(props.specimen?.dimensions?.length)
-const composition = ref(props.specimen?.composition)
-const date = ref(props.specimen?.date)
-const partial = ref(`${props.specimen?.partial}`)
-
-const latitude = ref(props.specimen?.origin?.latitude)
-const longitude = ref(props.specimen?.origin?.longitude)
-
-const onMarkerDragged = function (coord: Coordinate) {
+const setOrigin = function (coord: Coordinate, specimen: EntityJSON<Specimen>) {
   const [newLat, newLong] = coord
-  latitude.value = newLat
-  longitude.value = newLong
+  specimen.origin = {
+    latitude: newLat,
+    longitude: newLong,
+    accuracy: 0,
+  }
 }
 
-const onSearchItemSelect = function (item: Location) {
+const onSearchItemSelect = function (item: Location, specimen: EntityJSON<Specimen>) {
   const { lat, lon } = item
-  latitude.value = lat
-  longitude.value = lon
-}
-
-const onMapClick = function (coord: Coordinate) {
-  const [newLat, newLong] = coord
-  latitude.value = newLat
-  longitude.value = newLong
-}
-
-const onSubmit = function () {
-  const body: Partial<Specimen> = {
-    name: name.value,
-    pieces: pieces.value,
-    age: age.value,
-    composition: composition.value,
-    date: date.value,
-  }
-
-  if (latitude.value && longitude.value) {
-    body.origin = {
-      latitude: latitude.value,
-      longitude: longitude.value,
-      accuracy: 0,
-    }
-  }
-
-  if (width.value && length.value) {
-    body.dimensions = {
-      width: width.value,
-      length: length.value,
-    }
-  }
-
-  if (partial.value) {
-    body.partial = partial.value === `true`
-  }
-
-  const create = async function (specimen: Partial<Specimen>) {
-    const { data, error } = await useFetch<Partial<Specimen>>(`/api/specimens`, {
-      method: `POST`,
-      body: specimen,
-    })
-
-    if (!error.value) {
-      emit(`created`, data.value!)
-    } else {
-      console.log(error.value.message)
-    }
-  }
-
-  const update = async function (specimen: Partial<Specimen>) {
-    const { data, error } = await useFetch<Partial<Specimen>>(`/api/specimens/${props.specimen!.slug}`, {
-      method: `PUT`,
-      body: specimen,
-    })
-
-    if (!error.value) {
-      emit(`updated`, data.value!)
-    } else {
-      console.log(error.value.message)
-    }
-  }
-
-  if (!props.specimen) {
-    create(body)
-  } else {
-    update(body)
-  }
+  setOrigin([lat, lon], specimen)
 }
 </script>
