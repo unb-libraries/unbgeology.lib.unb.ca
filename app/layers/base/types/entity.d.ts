@@ -9,12 +9,11 @@ export interface EntityJSONReference {
   readonly id: string
 }
 
-export type EntityJSONInclusion<E extends Entity = Entity> = EntityJSON<Partial<E>>
 export type EntityJSONPropertyValue = string | number | boolean | EntityJSONReference
 export type EntityJSON<E extends Entity = Entity> = {
   [P in keyof E]:
-    E[P] extends Entity | Entity[] ? EntityJSONInclusion<E[P]> :
-      E[P] extends Entity | Entity[] | undefined ? EntityJSONInclusion<E[P]> | undefined :
+    E[P] extends Entity | Entity[] ? EntityJSON<Partial<E[P]>> :
+      E[P] extends Entity | Entity[] | undefined ? EntityJSON<Partial<E[P]>> | undefined :
         E[P]
 } & EntityJSONReference
 
