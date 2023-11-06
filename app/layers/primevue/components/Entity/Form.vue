@@ -1,6 +1,6 @@
 <template>
   <form @submit.prevent="submit()">
-    <slot :entity="entity" />
+    <slot :body="entityBody" />
     <div class="mt-8 flex flex-row">
       <button type="submit" class="bg-accent-dark dark:bg-accent-mid hover:bg-accent-light mr-2 rounded-md p-3 font-bold text-white">
         Save
@@ -12,25 +12,27 @@
   </form>
 </template>
 
-<script setup lang="ts" generic="E extends Entity | EntityJSON">
-import { EntityJSON, type Entity } from "~/layers/base/types/entity"
+<script setup lang="ts" generic="E extends Entity">
+import { type Entity, type EntityJSON, type EntityJSONCreateBody, type EntityJSONUpdateBody } from "~/layers/base/types/entity"
 
 const props = defineProps<{
-  entity: Partial<E>
+  entity: EntityJSON<E>
   cancelUrl?: string
 }>()
 
 const emits = defineEmits<{
-  created: [entity: E],
-  updated: [entity: EntityJSON<E>],
+  created: [entity: EntityJSONCreateBody<E>],
+  updated: [entity: EntityJSONUpdateBody<E>],
   cancelled: [],
 }>()
 
-const submit = async function () {
+const entityBody = ref(getEntityPayload<E>(props.entity))
+
+const submit = function () {
   if (!(`self` in props.entity)) {
-    emits(`created`, props.entity as E)
+    emits(`created`, entityBody.value as EntityJSONCreateBody<E>)
   } else {
-    emits(`updated`, props.entity as EntityJSON<E>)
+    emits(`updated`, entityBody.value as EntityJSONUpdateBody<E>)
   }
 }
 </script>

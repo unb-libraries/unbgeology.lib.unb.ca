@@ -38,13 +38,18 @@ export function useEntityType <E extends Entity = Entity>(entityType: symbol, bu
   }
 }
 
-export function getEntityBody <E extends Entity = Entity>(entity: EntityJSON<E>): EntityJSONBody<E> {
+export function getEntityPayload <E extends Entity = Entity>(entity: EntityJSON<E>): EntityJSONBody<E> {
+  const baseUrl = entity.self
   return Object.fromEntries(Object.entries(entity).map(([key, value]) => {
     const resolveReference = (ref: EntityJSONPropertyValue | EntityJSONPropertyValue[]): EntityJSONBodyPropertyValue | EntityJSONBodyPropertyValue[] => {
       if (Array.isArray(ref)) {
         return ref.map(r => resolveReference(r)).flat()
-      } else if (typeof ref === `object` && ref.self) {
+      } else if (typeof ref === `object` && ref.self && !ref.self.startsWith(baseUrl)) {
         return ref.self
+      } else if (typeof ref === `object` && ref.self && ref.self.startsWith(baseUrl)) {
+        // eslint-disable-next-line
+        const { self, ...embeddedEntity } = ref
+        return embeddedEntity
       } else {
         return ref
       }
@@ -78,7 +83,7 @@ export async function fetchEntity <E extends Entity = Entity>(pkOrUri: string, e
     entity: entity as Ref<EntityJSON<E> | null>,
     update: async () => {
       if (entity.value) {
-        await updateEntity<E>(getEntityBody<E>(entity.value))
+        await updateEntity<E>(getEntityPayload<E>(entity.value))
         refresh()
       }
     },
