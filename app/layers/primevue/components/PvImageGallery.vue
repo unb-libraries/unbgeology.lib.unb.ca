@@ -23,33 +23,46 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" generic="M extends boolean = false">
 import { type JImage } from 'layers/base/types/entity'
 
-defineProps<{
+const props = defineProps<{
   images: JImage[]
-  multi?: boolean
+  multi?: M
+  selection?: M extends false ? JImage : JImage[]
 }>()
 
 const emits = defineEmits<{
-  select: [image: JImage, selection: JImage[]]
-  unselect: [image: JImage, selection: JImage[]]
+  select: [image: JImage, selection: M extends false ? JImage : JImage[]]
+  unselect: [image: JImage, selection: M extends false ? JImage : JImage[]]
 }>()
 
-const selection = ref([] as JImage[])
+const selection = ref<JImage[]>(Array.isArray(props.selection)
+  ? props.selection
+  : props.selection !== undefined
+    ? [props.selection]
+    : [])
 
 function isSelected(image: JImage) {
-  return selection.value.includes(image)
+  return selection.value.find(({ self }) => image.self === self) ?? false
 }
 
 function onClick(image: JImage) {
   if (!isSelected(image)) {
-    selection.value.push(image)
-    emits(`select`, image, selection.value)
+    if (props.multi) {
+      selection.value.push(image)
+    } else {
+      selection.value = [image]
+    }
+    emits(`select`, image, selection.value as M extends false ? JImage : JImage[])
   } else {
-    const index = selection.value.findIndex(i => i === image)
-    selection.value.splice(index, 1)
-    emits(`unselect`, image, selection.value)
+    if (props.multi) {
+      const index = selection.value.findIndex(({ self }) => image.self === self)
+      selection.value.splice(index, 1)
+    } else {
+      selection.value = []
+    }
+    emits(`unselect`, image, selection.value as M extends false ? JImage : JImage[])
   }
 }
 </script>
