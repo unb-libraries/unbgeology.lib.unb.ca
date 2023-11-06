@@ -33,7 +33,7 @@ export interface EntityJSONList<E extends Entity = Entity> {
 }
 
 export type EntityJSONBodyPropertyValue = Exclude<EntityJSONPropertyType, EntityJSONReference>
-export type EntityJSONBody<E extends Entity = Entity> = { self : string } & {
+export type EntityJSONBody<E extends Entity = Entity> = { self? : string } & {
   [P in keyof Omit<E, "id" | "created" | "updated">]:
     E[P] extends Entity[] ? string[] :
       E[P] extends Entity[] | undefined ? string[] | undefined :
@@ -43,6 +43,7 @@ export type EntityJSONBody<E extends Entity = Entity> = { self : string } & {
 }
 
 export type EntityJSONCreateBody<E extends Entity = Entity> = Omit<EntityJSONBody<E>, "self">
+export type EntityJSONUpdateBody<E extends Entity = Entity> = EntityJSONBody<E> & { [K in `self`]-?: EntityJSONBody<E>[K] }
 
 export interface EntityResponse<E> {
   entity: Ref<EntityJSON<E> | null>
