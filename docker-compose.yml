@@ -21,21 +21,7 @@ services:
     restart: unless-stopped
     container_name: unbgeology-lib-unb-ca
     volumes:
-      - ./app/node_modules:/app/html/node_modules
-      - ./app/.build:/app/html/.build
-      - ./app/nuxt.config.ts:/app/html/nuxt.config.ts
-      - ./app/tailwind.config.js:/app/html/tailwind.config.js
-      - ./app/config:/app/html/config
-      - ./app/components:/app/html/components
-      - ./app/layouts:/app/html/layouts
-      - ./app/modules:/app/html/modules
-      - ./app/pages:/app/html/pages
-      - ./app/plugins:/app/html/plugins
-      - ./app/public:/app/html/public
-      - ./app/middleware:/app/html/middleware
-      - ./app/server:/app/html/server
-      - ./app/types:/app/html/types
-      - ./app/layers:/app/html/layers
+      - ./app:/app/html
     env_file:
       - ./env/nuxt.env
     networks:
