@@ -20,6 +20,11 @@ export default defineEntityType<SpecimenDocument>(`Specimen`, {
     type: EntityFieldTypes.String,
     required: optionalWhileInDraft,
   },
+  images: [{
+    type: EntityFieldTypes.ObjectId,
+    ref: `File.Image`,
+    required: false,
+  }],
   classifications: {
     type: [{
       type: EntityFieldTypes.ObjectId,
@@ -164,4 +169,16 @@ export default defineEntityType<SpecimenDocument>(`Specimen`, {
   },
 }, {
   slug: `name`,
+  toJSON: {
+    transform(doc, ret) {
+      if (ret.origin) {
+        delete ret.origin._id
+        delete ret.origin.id
+      }
+      if (ret.dimensions) {
+        delete ret.dimensions._id
+        delete ret.dimensions.id
+      }
+    },
+  },
 })

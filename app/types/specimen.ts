@@ -1,4 +1,4 @@
-import { type Entity, type User } from "layers/base/types/entity"
+import { type Image, type Entity, type User } from "layers/base/types/entity"
 import { type Organization, type Person } from "types/affiliation"
 import { type Classification, type StorageLocation } from "types/taxonomy"
 
@@ -60,6 +60,7 @@ export interface Specimen extends Entity {
   name: string
   slug: string
   description: string
+  images: Image[]
   classifications: Classification[]
   dimensions: Dimension
   date?: Date
