@@ -6,6 +6,7 @@ import Dropdown from "primevue/dropdown"
 import InputMask from "primevue/inputmask"
 import InputNumber from "primevue/inputnumber"
 import InputText from "primevue/inputtext"
+import MultiSelect from "primevue/multiselect"
 import { usePassThrough } from "primevue/passthrough"
 import Tailwind from "primevue/passthrough/tailwind"
 import { type DropdownContext } from "primevue/dropdown"
@@ -226,6 +227,95 @@ export default defineNuxtPlugin((nuxtApp) => {
           ],
         },
       },
+      multiselect: {
+        root: {
+          class: [
+            `md:w-full`,
+            `border-primary-20`,
+            `dark:border-primary-60/75`,
+            `rounded-lg`,
+            `dark:hover:border-accent-light`,
+            `dark:bg-primary`,
+            `cursor-pointer`,
+            `inline-flex`,
+            `relative`,
+            `select-none`,
+            `bg-white`,
+            `border`,
+            `transition-colors`,
+            `duration-200`,
+            `ease-in-out`,
+            `w-full`,
+            `hover:border-blue-500`,
+            `focus:outline-none`,
+            `focus:outline-offset-0`,
+            `focus:shadow-[0_0_0_0.2rem_rgba(191,219,254,1)]`,
+            `dark:focus:shadow-[0_0_0_0.2rem_rgba(147,197,253,0.5)]`,
+          ],
+        },
+        header: {
+          class: [
+            `bg-white`,
+            `border-b`,
+            `border-primary-20`,
+            `flex`,
+            `items-center`,
+            `justify-between`,
+            `p-3`,
+            `rounded-t-lg`,
+            `text-base`,
+            `dark:bg-primary/30`,
+            `dark:border-primary-20`,
+            `dark:text-white`,
+          ],
+        },
+        list: {
+          class: [
+            `dark:bg-primary`,
+            `dark:border-accent-light`,
+          ],
+        },
+        item: ({ context }: { context: DropdownContext }) => ({
+          class: [
+            context.selected ? `dark:bg-accent-dark` : ``,
+            `dark:hover:bg-accent-mid`,
+            `dark:text-base`,
+            `cursor-pointer`,
+            `font-normal`,
+            `overflow-hidden`,
+            `relative`,
+            `whitespace-nowrap`,
+            `m-0`,
+            `p-3`,
+            `border-0`,
+            `transition-shadow`,
+            `duration-200`,
+            `rounded-none`,
+          ],
+        }),
+        token: {
+          class: [
+            `py-1`,
+            `px-2`,
+            `mr-2`,
+            `bg-accent-mid`,
+            `text-gray-700`,
+            `text-white`,
+            `rounded-md`,
+            `cursor-default`,
+            `inline-flex`,
+            `items-center`,
+          ],
+        },
+        removetokenicon: {
+          class: [
+            `p-icon`,
+            `ml-2`,
+            `cursor-pointer`,
+            `hover:text-red`,
+          ],
+        },
+      },
     }),
   })
 
@@ -237,6 +327,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.vueApp.component(`PvAutoComplete`, AutoComplete)
   nuxtApp.vueApp.component(`PvInputText`, InputText)
   nuxtApp.vueApp.component(`PvInputMask`, InputMask)
+  nuxtApp.vueApp.component(`PvInputMultiSelect`, MultiSelect)
   nuxtApp.vueApp.component(`PvInputNumber`, InputNumber)
   nuxtApp.vueApp.component(`PvInputSelect`, Dropdown)
 })
