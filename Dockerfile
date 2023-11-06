@@ -16,7 +16,8 @@ WORKDIR $APP_ROOT
 COPY ./build /build
 COPY ./app .
 
-RUN ${RSYNC_MOVE} /build/scripts/ /scripts/
+RUN ${RSYNC_MOVE} /build/scripts/ /scripts/ && \
+    mkdir /workspace
 
 # Container metadata.
 LABEL ca.unb.lib.generator="nuxt3" \
