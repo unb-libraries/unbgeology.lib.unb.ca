@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts" generic="E extends Entity">
-import { type Entity, type EntityJSON, type EntityJSONCreateBody, type EntityJSONUpdateBody } from "~/layers/base/types/entity"
+import { type Entity, type EntityJSON, type EntityJSONBody } from "layers/base/types/entity"
 
 const props = defineProps<{
   entity: EntityJSON<E>
@@ -21,18 +21,13 @@ const props = defineProps<{
 }>()
 
 const emits = defineEmits<{
-  created: [entity: EntityJSONCreateBody<E>],
-  updated: [entity: EntityJSONUpdateBody<E>],
+  save: [entity: EntityJSONBody<E>],
   cancelled: [],
 }>()
 
 const entityBody = ref(getEntityPayload<E>(props.entity))
 
 const submit = function () {
-  if (!(`self` in props.entity)) {
-    emits(`created`, entityBody.value as EntityJSONCreateBody<E>)
-  } else {
-    emits(`updated`, entityBody.value as EntityJSONUpdateBody<E>)
-  }
+  emits(`save`, entityBody.value as EntityJSONBody<E>)
 }
 </script>
