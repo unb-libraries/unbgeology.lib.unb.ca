@@ -85,12 +85,16 @@
         <label class="mb-2 w-full text-lg font-bold" for="description">Description</label>
         <textarea v-model="body.description" class="dark:bg-primary border-primary-20 dark:border-primary-60/75 hover:border-accent-light dark:focus:border-accent-mid rounded-lg border p-2" name="description" rows="10" />
       </div>
+      <div class="mt-6 flex flex-col">
+        <label class="mb-2 w-full text-lg font-bold" for="images">Images</label>
+        <PvInputImageGallery v-model="body.images" :images="images" name="images" />
+      </div>
     </template>
   </EntityForm>
 </template>
 
 <script setup lang="ts">
-import { type EntityJSON } from 'layers/base/types/entity'
+import { type EntityJSON, type Image } from 'layers/base/types/entity'
 import { type Specimen } from 'types/specimen'
 import type { Coordinate } from 'types/leaflet'
 import type { Location } from 'types/nominatim'
@@ -100,6 +104,9 @@ defineProps<{
 }>()
 
 const { create, update } = useEntityType<Specimen>(Symbol(`specimens`))
+
+const { list: imageEntityList } = await fetchEntityList<Image>(`/api/files/image`)
+const images = computed(() => imageEntityList.value?.entities ?? [])
 
 const setOrigin = function (coord: Coordinate, specimen: EntityJSON<Specimen>) {
   const [newLat, newLong] = coord
