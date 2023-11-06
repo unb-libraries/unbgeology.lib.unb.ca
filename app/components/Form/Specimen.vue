@@ -1,5 +1,5 @@
 <template>
-  <EntityForm :entity="specimen" cancel-url="/dashboard/specimens" @created="create" @updated="update">
+  <EntityForm :entity="specimen" cancel-url="/dashboard/specimens" @save="!specimen.self ? create : update">
     <template #default="{ body }">
       <div class="flex flex-col md:flex-row">
         <div class="mr-4 grow">
