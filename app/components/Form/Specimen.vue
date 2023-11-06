@@ -89,6 +89,17 @@
         <label class="mb-2 w-full text-lg font-bold" for="images">Images</label>
         <PvInputImageGallery v-model="body.images" :images="images" name="images" />
       </div>
+      <div class="mt-6 flex flex-col">
+        <label class="mb-2 w-full text-lg font-bold" for="classifications">Classifications</label>
+        <PvInputMultiSelect
+          v-model="body.classifications"
+          :options="classifications"
+          option-label="label"
+          option-value="self"
+          display="chip"
+          name="classifications"
+        />
+      </div>
     </template>
   </EntityForm>
 </template>
@@ -96,6 +107,7 @@
 <script setup lang="ts">
 import { type EntityJSON, type Image } from 'layers/base/types/entity'
 import { type Specimen } from 'types/specimen'
+import { type Classification } from 'types/taxonomy'
 import type { Coordinate } from 'types/leaflet'
 import type { Location } from 'types/nominatim'
 
@@ -104,9 +116,10 @@ defineProps<{
 }>()
 
 const { create, update } = useEntityType<Specimen>(Symbol(`specimens`))
-
 const { list: imageEntityList } = await fetchEntityList<Image>(`/api/files/image`)
 const images = computed(() => imageEntityList.value?.entities ?? [])
+const { list: classificationList } = await fetchEntityList<Classification>(`/api/taxonomies/classification`)
+const classifications = computed(() => classificationList.value?.entities ?? [])
 
 const setOrigin = function (coord: Coordinate, specimen: EntityJSON<Specimen>) {
   const [newLat, newLong] = coord
