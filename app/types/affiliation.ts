@@ -1,6 +1,6 @@
 import { type Entity } from "layers/base/types/entity"
 
-export type Affiliation = Entity
+export interface Affiliation extends Entity {}
 
 export interface Address {
   address1: string
@@ -19,7 +19,7 @@ export interface Organization extends Affiliation {
 export interface Person extends Affiliation {
   firstName: string
   lastName: string
-  affiliations: [Organization]
+  affiliations?: Organization[]
   email: string
   phone: string
   public: boolean
