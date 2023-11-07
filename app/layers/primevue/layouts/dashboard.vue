@@ -21,6 +21,14 @@
           </section>
           <section class="twa-nav-group">
             <h2 class="twa-nav-group-heading">
+              Affiliates
+            </h2>
+            <NuxtLink :to="`/dashboard/affiliates/people`" class="twa-nav-item" active-class="twa-nav-item-active">
+              People
+            </NuxtLink>
+          </section>
+          <section class="twa-nav-group">
+            <h2 class="twa-nav-group-heading">
               Taxonomies
             </h2>
             <NuxtLink v-for="taxonomy in taxonomies" :key="taxonomy.self" :to="`/dashboard/${taxonomy.self.substring(5)}`" class="twa-nav-item" active-class="twa-nav-item-active">
