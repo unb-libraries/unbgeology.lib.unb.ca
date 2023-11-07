@@ -19,6 +19,8 @@ export type EntityJSON<E extends Entity = Entity> = {
             E[P]
 } & EntityJSONReference
 
+export type EntityJSONProperties<E extends Entity = Entity, P extends keyof Omit<E, keyof Entity> = keyof Omit<E, keyof Entity>> = Pick<EntityJSON<E>, P>
+
 export interface EntityJSONList<E extends Entity = Entity> {
   entities: EntityJSON<E>[]
   nav: {
@@ -34,13 +36,13 @@ export interface EntityJSONList<E extends Entity = Entity> {
 }
 
 export type EntityJSONBodyPropertyValue = Exclude<EntityJSONPropertyType, EntityJSONReference>
-export type EntityJSONBody<E extends Entity = Entity> = { self? : string } & {
-  [P in keyof Omit<E, "id" | "created" | "updated">]:
-    E[P] extends Entity[] ? string[] :
-      E[P] extends Entity[] | undefined ? string[] | undefined :
-        E[P] extends Entity ? string :
-          E[P] extends Entity | undefined ? string | undefined :
-            E[P]
+export type EntityJSONBody<E extends Entity = Entity, P extends keyof Omit<E, keyof Entity> = keyof Omit<E, keyof Entity>> = {
+  [K in P]:
+    E[K] extends Entity[] ? string[] :
+      E[K] extends Entity[] | undefined ? string[] | undefined :
+        E[K] extends Entity ? string :
+          E[K] extends Entity | undefined ? string | undefined :
+            E[K]
 }
 
 export type EntityJSONCreateBody<E extends Entity = Entity> = Omit<EntityJSONBody<E>, "self">

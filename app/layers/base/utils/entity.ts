@@ -11,7 +11,8 @@ import {
   type EntityCreateResponse,
   type EntityDeleteResponse,
   type EntityListResponse,
-  EntityJSONBodyPropertyValue,
+  type EntityJSONBodyPropertyValue,
+  type EntityJSONProperties,
 } from "~/layers/base/types/entity"
 
 const useBaseUrl = function (entityType: symbol, bundle: string = ``) {
@@ -38,24 +39,26 @@ export function useEntityType <E extends Entity = Entity>(entityType: symbol, bu
   }
 }
 
-export function getEntityPayload <E extends Entity = Entity>(entity: EntityJSON<E>): EntityJSONBody<E> {
+export function getEntityPayload <E extends Entity = Entity, P extends keyof Omit<E, keyof Entity> = keyof Omit<E, keyof Entity>>(entity: EntityJSONProperties<E, P> & Partial<EntityJSON<Entity>>): EntityJSONBody<E> {
   const baseUrl = entity.self
-  return Object.fromEntries(Object.entries(entity).map(([key, value]) => {
-    const resolveReference = (ref: EntityJSONPropertyValue | EntityJSONPropertyValue[]): EntityJSONBodyPropertyValue | EntityJSONBodyPropertyValue[] => {
-      if (Array.isArray(ref)) {
-        return ref.map(r => resolveReference(r)).flat()
-      } else if (typeof ref === `object` && ref.self && !ref.self.startsWith(baseUrl)) {
-        return ref.self
-      } else if (typeof ref === `object` && ref.self && ref.self.startsWith(baseUrl)) {
-        // eslint-disable-next-line
-        const { self, ...embeddedEntity } = ref
-        return embeddedEntity
-      } else {
-        return ref
+  return Object.fromEntries(Object.entries(entity)
+    .filter(([key, _]) => [`id`, `created`, `updated`].includes(key))
+    .map(([key, value]) => {
+      const resolveReference = (ref: EntityJSONPropertyValue | EntityJSONPropertyValue[]): EntityJSONBodyPropertyValue | EntityJSONBodyPropertyValue[] => {
+        if (Array.isArray(ref)) {
+          return ref.map(r => resolveReference(r)).flat()
+        } else if (typeof ref === `object` && ref.self && baseUrl && !ref.self.startsWith(baseUrl)) {
+          return ref.self
+        } else if (typeof ref === `object` && ref.self && baseUrl && ref.self.startsWith(baseUrl)) {
+          // eslint-disable-next-line
+          const { self, ...embeddedEntity } = ref
+          return embeddedEntity
+        } else {
+          return ref
+        }
       }
-    }
-    return [key, resolveReference(value as EntityJSONPropertyValue)]
-  })) as EntityJSONBody<E>
+      return [key, resolveReference(value as EntityJSONPropertyValue)]
+    })) as EntityJSONBody<E>
 }
 
 export async function createEntity <E extends Entity = Entity> (entity: EntityJSONCreateBody<E>, entityType: symbol, bundle?: string): Promise<EntityCreateResponse<E>>
