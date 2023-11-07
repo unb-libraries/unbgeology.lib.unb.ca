@@ -42,7 +42,7 @@ export function useEntityType <E extends Entity = Entity>(entityType: symbol, bu
 export function getEntityPayload <E extends Entity = Entity, P extends keyof Omit<E, keyof Entity> = keyof Omit<E, keyof Entity>>(entity: EntityJSONProperties<E, P> & Partial<EntityJSON<Entity>>): EntityJSONBody<E> {
   const baseUrl = entity.self
   return Object.fromEntries(Object.entries(entity)
-    .filter(([key, _]) => [`id`, `created`, `updated`].includes(key))
+    .filter(([key, _]) => ![`id`, `created`, `updated`].includes(key))
     .map(([key, value]) => {
       const resolveReference = (ref: EntityJSONPropertyValue | EntityJSONPropertyValue[]): EntityJSONBodyPropertyValue | EntityJSONBodyPropertyValue[] => {
         if (Array.isArray(ref)) {
