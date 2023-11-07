@@ -26,6 +26,9 @@
             <NuxtLink :to="`/dashboard/affiliates/people`" class="twa-nav-item" active-class="twa-nav-item-active">
               People
             </NuxtLink>
+            <NuxtLink :to="`/dashboard/affiliates/organizations`" class="twa-nav-item" active-class="twa-nav-item-active">
+              Organizations
+            </NuxtLink>
           </section>
           <section class="twa-nav-group">
             <h2 class="twa-nav-group-heading">
