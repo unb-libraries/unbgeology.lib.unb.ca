@@ -7,7 +7,7 @@
     </template>
     <PvTableColumn v-for="[column, header] in columns" :key="column" :field="column" :header="header">
       <template #body="slotProps">
-        <slot v-if="column in slotProps.data && slotProps.data[column] !== undefined" :name="column" :value="slotProps.data[column]" :entity="slotProps.data">
+        <slot :name="column" :value="slotProps.data[column]" :entity="slotProps.data">
           {{ slotProps.data[column] }}
         </slot>
       </template>
