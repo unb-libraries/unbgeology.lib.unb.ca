@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
     return fields.length > 0 ? fields : [`_id`]
   }
 
-  const person = await Person.findByID(id)
+  const person = await Person.findByPK(id)
     .select(getSelectedFields(select))
     .populate(`affiliations`, getAffilationFields())
   return sendEntityOr404(event, person)
