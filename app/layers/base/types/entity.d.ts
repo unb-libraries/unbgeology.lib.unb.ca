@@ -12,9 +12,11 @@ export interface EntityJSONReference {
 export type EntityJSONPropertyValue = string | number | boolean | EntityJSONReference
 export type EntityJSON<E extends Entity = Entity> = {
   [P in keyof E]:
-    E[P] extends Entity | Entity[] ? EntityJSON<Partial<E[P]>> :
-      E[P] extends Entity | Entity[] | undefined ? EntityJSON<Partial<E[P]>> | undefined :
-        E[P]
+    E[P] extends Entity[] ? EntityJSON<Partial<E[P][number]>>[] :
+      E[P] extends Entity[] | undefined ? EntityJSON<Partial<E[P][number]>>[] | undefined :
+        E[P] extends Entity ? EntityJSON<Partial<E[P]>> :
+          E[P] extends Entity | undefined ? EntityJSON<Partial<E[P]>> | undefined :
+            E[P]
 } & EntityJSONReference
 
 export interface EntityJSONList<E extends Entity = Entity> {
