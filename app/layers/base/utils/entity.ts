@@ -50,9 +50,8 @@ export function getEntityPayload <E extends Entity = Entity, P extends keyof Omi
         } else if (typeof ref === `object` && ref.self && baseUrl && !ref.self.startsWith(baseUrl)) {
           return ref.self
         } else if (typeof ref === `object` && ref.self && baseUrl && ref.self.startsWith(baseUrl)) {
-          // eslint-disable-next-line
-          const { self, ...embeddedEntity } = ref
-          return embeddedEntity
+          const { self, ...embeddedPayload } = getEntityPayload(ref)
+          return embeddedPayload
         } else {
           return ref
         }
