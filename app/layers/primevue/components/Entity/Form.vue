@@ -12,22 +12,22 @@
   </form>
 </template>
 
-<script setup lang="ts" generic="E extends Entity">
-import { type Entity, type EntityJSON, type EntityJSONBody } from "layers/base/types/entity"
+<script setup lang="ts" generic="E extends Entity = Entity, P extends keyof Omit<E, keyof Entity> = keyof Omit<E, keyof Entity>">
+import { type Entity, type EntityJSON, type EntityJSONBody, type EntityJSONProperties } from "layers/base/types/entity"
 
 const props = defineProps<{
-  entity: EntityJSON<E>
+  entity: EntityJSONProperties<E, P> & Partial<EntityJSON<Entity>>
   cancelUrl?: string
 }>()
 
 const emits = defineEmits<{
-  save: [entity: EntityJSONBody<E>],
+  save: [entity: EntityJSONBody<E, P>],
   cancelled: [],
 }>()
 
-const entityBody = ref(getEntityPayload<E>(props.entity))
+const entityBody = ref(getEntityPayload<E, P>(props.entity))
 
 const submit = function () {
-  emits(`save`, entityBody.value as EntityJSONBody<E>)
+  emits(`save`, entityBody.value as EntityJSONBody<E, P>)
 }
 </script>
