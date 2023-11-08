@@ -1,19 +1,25 @@
 <template>
-  <FormSpecimen v-if="specimen" :specimen="specimen" />
+  <FormSpecimen v-if="specimen" :specimen="specimen" @save="onSave" />
 </template>
 
 <script setup lang="ts">
-import type { Specimen } from 'entity-types/Specimen'
+import { type Specimen } from 'types/specimen'
+import { type EntityJSONBody } from 'layers/base/types/entity'
 
 definePageMeta({
   layout: `dashboard`,
 })
 
 const { slug } = useRoute().params
-const { data: specimen, error } = await useFetch<Specimen>(`/api/specimens/${slug}`)
+const { fetchByPK, update } = useEntityType<Specimen>(Symbol(`specimens`))
+const { entity: specimen } = await fetchByPK(slug as string)
 
-if (error.value) {
-  console.log(error.value)
+if (!specimen.value) {
   showError({ statusCode: 404 })
+}
+
+const onSave = async (specimen: EntityJSONBody<Specimen>) => {
+  await update(specimen)
+  await navigateTo(`/dashboard/specimens`)
 }
 </script>

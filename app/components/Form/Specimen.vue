@@ -1,5 +1,5 @@
 <template>
-  <EntityForm :entity="specimen" cancel-url="/dashboard/specimens" @save="!specimen.self ? create : update">
+  <EntityForm :entity="specimen" cancel-url="/dashboard/specimens" @save="onSave">
     <template #default="{ body }">
       <div class="flex flex-col md:flex-row">
         <div class="mr-4 grow">
@@ -68,14 +68,14 @@
         <div class="w-full md:ml-4 md:w-1/2">
           <div class="flex h-full w-full flex-col">
             <label class="mb-2 text-lg font-bold" for="origin">Origin</label>
-            <LeafletMap class="border-primary-20 dark:border-primary-60/75 h-full rounded-md border" name="origin" :zoom="2" :center="[body.origin?.latitude ?? 0, body.origin?.longitude ?? 0]" @click="coord => setOrigin(coord, specimen)">
-              <LeafletSearch @item-select="item => onSearchItemSelect(item, specimen)" />
+            <LeafletMap class="border-primary-20 dark:border-primary-60/75 h-full rounded-md border" name="origin" :zoom="2" :center="[body.origin?.latitude ?? 0, body.origin?.longitude ?? 0]" @click="coord => setOrigin(coord, body)">
+              <LeafletSearch @item-select="item => onSearchItemSelect(item, body)" />
               <LeafletMarker
-                v-if="specimen.origin?.latitude !== undefined && specimen.origin?.longitude !== undefined"
-                :name="specimen.name"
+                v-if="body.origin?.latitude !== undefined && body.origin?.longitude !== undefined"
+                :name="body.name"
                 :center="[body.origin.latitude, body.origin.longitude]"
                 :draggable="true"
-                @dragged="coord => setOrigin(coord, specimen)"
+                @dragged="coord => setOrigin(coord, body)"
               />
             </LeafletMap>
           </div>
@@ -105,23 +105,26 @@
 </template>
 
 <script setup lang="ts">
-import { type EntityJSON, type Image } from 'layers/base/types/entity'
+import { EntityJSONProperties, type Image, EntityJSONBody } from 'layers/base/types/entity'
 import { type Specimen } from 'types/specimen'
 import { type Classification } from 'types/taxonomy'
 import type { Coordinate } from 'types/leaflet'
 import type { Location } from 'types/nominatim'
 
 defineProps<{
-  specimen: EntityJSON<Specimen>
+  specimen: EntityJSONProperties<Specimen>
 }>()
 
-const { create, update } = useEntityType<Specimen>(Symbol(`specimens`))
+const emits = defineEmits<{
+  save: [specimen: EntityJSONBody<Specimen>]
+}>()
+
 const { list: imageEntityList } = await fetchEntityList<Image>(`/api/files/image`)
 const images = computed(() => imageEntityList.value?.entities ?? [])
 const { list: classificationList } = await fetchEntityList<Classification>(`/api/taxonomies/classification`)
 const classifications = computed(() => classificationList.value?.entities ?? [])
 
-const setOrigin = function (coord: Coordinate, specimen: EntityJSON<Specimen>) {
+const setOrigin = function (coord: Coordinate, specimen: EntityJSONBody<Specimen>) {
   const [newLat, newLong] = coord
   specimen.origin = {
     latitude: newLat,
@@ -130,8 +133,12 @@ const setOrigin = function (coord: Coordinate, specimen: EntityJSON<Specimen>) {
   }
 }
 
-const onSearchItemSelect = function (item: Location, specimen: EntityJSON<Specimen>) {
+const onSearchItemSelect = function (item: Location, specimen: EntityJSONBody<Specimen>) {
   const { lat, lon } = item
   setOrigin([lat, lon], specimen)
+}
+
+const onSave = (specimen: EntityJSONBody<Specimen>) => {
+  emits(`save`, specimen)
 }
 </script>

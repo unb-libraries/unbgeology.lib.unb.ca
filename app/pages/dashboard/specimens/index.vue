@@ -6,7 +6,9 @@
       </NuxtLink>
     </template>
     <template #dimensions="{ value }">
-      {{ value.width }}mm x {{ value.length }}mm
+      <span v-if="value">
+        {{ value.width }}mm x {{ value.length }}mm
+      </span>
     </template>
     <template #partial="{ value }">
       {{ value ? `Yes` : `No` }}
