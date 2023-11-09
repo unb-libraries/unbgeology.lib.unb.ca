@@ -149,13 +149,28 @@
         </div>
         <FormPerson v-if="displayCollectorForm" :person="newPerson" @save="onSaveNewPerson" @cancel="displayCollectorForm = false" />
       </div>
+
+      <!-- Loans -->
+      <div class="group my-6 flex flex-col">
+        <label class="mb-2 w-full text-lg font-bold">Loans</label>
+        <div class="flex flex-row">
+          <div v-for="loan in body.loans" :key="loan" class="bg-primary-80 hover:bg-accent-light group mx-1.5 ms-0 flex flex-col rounded-md p-3 hover:cursor-pointer" @click="displayLoanForm = true; newLoan = loan">
+            <span>{{ toDate(loan.start) }} - {{ toDate(loan.end) }}</span>
+            <span class="text-primary-40">{{ loan.contact.affiliation }}</span>
+          </div>
+          <button class="border-primary-60/75 text-primary-60/75 hover:bg-accent-light invisible me-0 rounded-md border p-3 text-3xl hover:text-white group-hover:visible" @click.prevent="displayLoanForm = true">
+            +
+          </button>
+        </div>
+        <FormLoan v-if="displayLoanForm" :loan="newLoan" @save="loan => onSaveNewLoan(loan, body.loans)" @cancel="displayLoanForm = false" />
+      </div>
     </template>
   </EntityForm>
 </template>
 
 <script setup lang="ts">
 import { EntityJSONProperties, type Image, EntityJSONBody } from 'layers/base/types/entity'
-import { type Specimen } from 'types/specimen'
+import { type Specimen, type Loan } from 'types/specimen'
 import { type Classification } from 'types/taxonomy'
 import { type Person } from 'types/affiliation'
 import type { Coordinate } from 'types/leaflet'
@@ -183,6 +198,16 @@ const collectorOrSponsor = ref(props.specimen.collector ? true : props.specimen.
 const displayCollectorForm = ref(false)
 const newPerson = ref({} as EntityJSONProperties<Person>)
 
+const displayLoanForm = ref(false)
+const newLoan = ref({
+  contact: {},
+} as EntityJSONProperties<Loan>)
+
+const toDate = (str: string) => {
+  const date = new Date(str)
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
+}
+
 const setOrigin = function (coord: Coordinate, specimen: EntityJSONBody<Specimen>) {
   const [newLat, newLong] = coord
   specimen.origin = {
@@ -206,5 +231,16 @@ const onSaveNewPerson = async (person: EntityJSONBody<Person>) => {
   refreshPeopleList()
   newPerson.value = {} as EntityJSONProperties<Person>
   displayCollectorForm.value = false
+}
+
+const onSaveNewLoan = (loan: EntityJSONBody<Loan>, loans?: EntityJSONBody<Loan>[]) => {
+  if (loan.self) {
+    const index = loans?.findIndex(l => l.self === loan.self)
+    loans[index] = loan
+  } else {
+    loans?.push(loan)
+  }
+  newLoan.value = { contact: {} } as EntityJSONProperties<Loan>
+  displayLoanForm.value = false
 }
 </script>
