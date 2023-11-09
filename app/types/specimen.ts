@@ -1,5 +1,5 @@
 import { type Image, type Entity, type User } from "layers/base/types/entity"
-import { type Organization, type Person } from "types/affiliation"
+import { type Person } from "types/affiliation"
 import { type Classification, type StorageLocation } from "types/taxonomy"
 
 export enum Status {
@@ -32,9 +32,9 @@ export enum LoanType {
 
 export interface Loan extends Entity {
   type: LoanType
-  organization: Organization
   contact: {
     name: string
+    affiliation: string
     email: string
     phone: string
   }

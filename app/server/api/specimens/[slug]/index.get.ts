@@ -10,7 +10,6 @@ export default defineEventHandler(async (event) => {
     .populate(`classifications`, filterSelect({ root: `classifications`, default: [`_id`] }))
     .populate(`collector`, filterSelect({ root: `collector`, default: [`_id`] }))
     .populate(`sponsor`, filterSelect({ root: `sponsor`, default: [`_id`] }))
-    .populate(`loans.organization`, filterSelect({ root: `loans.organization` }))
     .populate(`storage.location`, filterSelect({ root: `storage.location` }))
     .populate(`editor`, filterSelect({ root: `editor`, default: [`_id`, `username`] }))
 

@@ -1,4 +1,4 @@
-import { type Loan } from "entity-types/Specimen"
+import { type Loan } from "types/specimen"
 
 export default defineEventHandler(async (event) => {
   const { slug } = getRouterParams(event)
@@ -8,11 +8,6 @@ export default defineEventHandler(async (event) => {
   const fields = filterSelect({ prefix: `loans`, default: select.length ? [`_id`] : [] })
   if (fields.length > 0) {
     query.select(fields)
-  }
-
-  const organizationFields = filterSelect({ root: `organization`, default: !select.length ? [`_id`] : [] })
-  if (organizationFields.length > 0) {
-    query.populate(`loans.organization`, organizationFields)
   }
 
   const specimen = await query.exec()

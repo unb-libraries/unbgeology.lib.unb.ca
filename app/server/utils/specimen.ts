@@ -69,12 +69,7 @@ export async function readSpecimenBody(event: H3Event) {
     }
   }
   if (Array.isArray(loans)) {
-    body.loans = []
-    for (const loan of loans) {
-      const { organization: organizationURI } = loan
-      loan.organization = await Organization.findByURI(organizationURI)
-      body.loans.push(loan)
-    }
+    body.loans = loans
   }
   if (Array.isArray(storage)) {
     body.storage = []

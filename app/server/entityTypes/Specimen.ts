@@ -94,13 +94,12 @@ export default defineEntityType<SpecimenDocument>(`Specimen`, {
         enum: LoanType,
         required: true,
       },
-      organization: {
-        type: EntityFieldTypes.ObjectId,
-        ref: `Affiliation.Organization`,
-        required: true,
-      },
       contact: {
         name: {
+          type: EntityFieldTypes.String,
+          required: true,
+        },
+        affiliation: {
           type: EntityFieldTypes.String,
           required: true,
         },
