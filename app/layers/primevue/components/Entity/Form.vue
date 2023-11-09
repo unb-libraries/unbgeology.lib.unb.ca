@@ -5,9 +5,9 @@
       <button type="submit" class="bg-accent-dark dark:bg-accent-mid hover:bg-accent-light mr-2 rounded-md p-3 font-bold text-white">
         Save
       </button>
-      <NuxtLink v-if="cancelUrl" :to="cancelUrl" class="font-base ml-2 p-3" @click.prevent="emits(`cancelled`)">
+      <span class="font-base ml-2 p-3 hover:cursor-pointer hover:underline" @click.prevent="emits(`cancel`)">
         Cancel
-      </NuxtLink>
+      </span>
     </div>
   </form>
 </template>
@@ -17,12 +17,11 @@ import { type Entity, type EntityJSON, type EntityJSONBody, type EntityJSONPrope
 
 const props = defineProps<{
   entity: EntityJSONProperties<E, P> & Partial<EntityJSON<Entity>>
-  cancelUrl?: string
 }>()
 
 const emits = defineEmits<{
   save: [entity: EntityJSONBody<E, P>],
-  cancelled: [],
+  cancel: [],
 }>()
 
 const entityBody = ref(getEntityPayload<E, P>(props.entity))
