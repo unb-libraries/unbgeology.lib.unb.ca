@@ -36,36 +36,65 @@ import { type Publication } from "types/specimen"
 const emits = defineEmits<{
   success: [citation: EntityJSONProperties<Publication>]
   reset: []
-  error: []
+  error: [msg?: string]
 }>()
 
 const doi = ref(``)
 const pending = ref(false)
 watch(doi, search)
 
-function search(doi: string) {
+async function search(doi: string) {
   if (!doi) { return }
 
   const url = doi.replace(`doi:`, `https://doi.org/`)
   if (isDoi(url)) {
-    useFetch<string>(url, {
-      headers: {
-        Accept: `text/x-bibliography`,
-      },
-    }).then((value) => {
-      pending.value = false
-      if (value?.data.value) {
-        emits(`success`, { citation: value.data.value.trim() })
-      } else {
-        emits(`error`)
-      }
-    }).catch((reason) => {
-      pending.value = false
-      emits(`error`)
-    })
-
     pending.value = true
+    try {
+      const [citation, abstract] = await Promise.all([
+        await fetchCitation(url),
+        await fetchAbstract(url),
+      ])
+
+      if (citation) {
+        emits(`success`, { citation, abstract })
+      } else {
+        emits(`error`, `DOI could not be resolved.`)
+      }
+    } catch (err: any) {
+      emits(`error`)
+    } finally {
+      pending.value = false
+    }
   }
+}
+
+async function fetchCitation(url: string) {
+  const { data: citation } = await useFetch<string>(url, {
+    headers: {
+      Accept: `text/x-bibliography`,
+    },
+  })
+  return citation.value ?? ``
+}
+
+async function fetchAbstract(url: string) {
+  const { data: blob } = await useFetch<Blob>(url, {
+    headers: {
+      Accept: `application/vnd.crossref.unixref+xml`,
+    },
+  })
+
+  if (blob.value) {
+    const xml = await blob.value.text()
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(xml, `application/xml`)
+    const abstractNode = doc.querySelector(`abstract`)
+    if (abstractNode) {
+      return abstractNode.textContent ?? ``
+    }
+  }
+
+  return ``
 }
 
 function isDoi(doi: string) {
