@@ -147,7 +147,7 @@ export default defineEntityType<SpecimenDocument>(`Specimen`, {
       },
       abstract: {
         type: EntityFieldTypes.String,
-        required: true,
+        required: false,
       },
       doi: {
         type: EntityFieldTypes.String,

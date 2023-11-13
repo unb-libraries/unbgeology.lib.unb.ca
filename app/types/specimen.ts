@@ -51,7 +51,7 @@ export interface Storage extends Entity {
 
 export interface Publication extends Entity {
   citation: string
-  abstract: string
+  abstract?: string
   doi?: string
 }
 

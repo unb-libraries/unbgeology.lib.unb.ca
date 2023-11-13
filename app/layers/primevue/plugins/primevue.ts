@@ -9,6 +9,7 @@ import InputText from "primevue/inputtext"
 import MultiSelect from "primevue/multiselect"
 import { usePassThrough } from "primevue/passthrough"
 import Tailwind from "primevue/passthrough/tailwind"
+import ProgressSpinner from "primevue/progressspinner"
 import { type DropdownContext } from "primevue/dropdown"
 
 export default defineNuxtPlugin((nuxtApp) => {
@@ -330,4 +331,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.vueApp.component(`PvInputNumber`, InputNumber)
   nuxtApp.vueApp.component(`PvMultiSelect`, MultiSelect)
   nuxtApp.vueApp.component(`PvSelect`, Dropdown)
+
+  // Misc
+  nuxtApp.vueApp.component(`PvProgressSpinner`, ProgressSpinner)
 })
