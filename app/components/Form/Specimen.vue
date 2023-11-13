@@ -164,13 +164,30 @@
         </div>
         <FormLoan v-if="displayLoanForm" :loan="newLoan" @save="loan => onSaveNewLoan(loan, body.loans)" @cancel="displayLoanForm = false" />
       </div>
+
+      <!-- Publications -->
+      <div class="group my-6 flex flex-col">
+        <label class="mb-2 w-full text-lg font-bold" for="publications">Publications</label>
+        <div class="flex w-full flex-col">
+          <div class="flex flex-row">
+            <div v-for="publication in body.publications" :key="publication" class="bg-primary-80 hover:bg-accent-light group mx-1.5 ms-0 flex w-48 flex-col overflow-hidden truncate rounded-md p-3 hover:cursor-pointer" @click="displayLoanForm = true; newLoan = publication">
+              <span>{{ publication.citation }}</span>
+            </div>
+            <button class="border-primary-60/75 text-primary-60/75 hover:bg-accent-light invisible me-0 rounded-md border p-3 text-3xl hover:text-white group-hover:visible" @click.prevent="displayPublicationForm = true">
+              +
+            </button>
+          </div>
+          <!-- <FormInputDoiResolve @success="pub => { newPublication = pub; displayPublicationForm = true }" /> -->
+          <FormPublication v-if="displayPublicationForm" :publication="newPublication" @save="pub => onSaveNewPublication(pub, body.publications)" @cancel="displayPublicationForm = false" />
+        </div>
+      </div>
     </template>
   </EntityForm>
 </template>
 
 <script setup lang="ts">
 import { EntityJSONProperties, type Image, EntityJSONBody } from 'layers/base/types/entity'
-import { type Specimen, type Loan } from 'types/specimen'
+import { type Specimen, type Loan, type Publication } from 'types/specimen'
 import { type Classification } from 'types/taxonomy'
 import { type Person } from 'types/affiliation'
 import type { Coordinate } from 'types/leaflet'
@@ -208,6 +225,9 @@ const toDate = (str: string) => {
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
 }
 
+const newPublication = ref({} as EntityJSONProperties<Publication>)
+const displayPublicationForm = ref(false)
+
 const setOrigin = function (coord: Coordinate, specimen: EntityJSONBody<Specimen>) {
   const [newLat, newLong] = coord
   specimen.origin = {
@@ -242,5 +262,16 @@ const onSaveNewLoan = (loan: EntityJSONBody<Loan>, loans?: EntityJSONBody<Loan>[
   }
   newLoan.value = { contact: {} } as EntityJSONProperties<Loan>
   displayLoanForm.value = false
+}
+
+const onSaveNewPublication = (publication: EntityJSONBody<Publication>, publications?: EntityJSONBody<Publication>[]) => {
+  if (publication.self) {
+    const index = publications?.findIndex(p => p.self === publication.self)
+    publications[index] = publication
+  } else {
+    publications?.push(publication)
+  }
+  newPublication.value = {} as EntityJSONProperties<Publication>
+  displayPublicationForm.value = false
 }
 </script>
