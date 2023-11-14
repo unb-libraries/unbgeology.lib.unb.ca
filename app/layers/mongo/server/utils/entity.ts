@@ -95,12 +95,6 @@ const EntityTypeSchema = function <
           ret.updated &&= new Date(doc.get(`updated`))
         }
 
-        if (options?.discriminatorKey) {
-          delete ret[options.discriminatorKey]
-        } else {
-          delete ret.type
-        }
-
         delete ret.uri
         delete ret.__v
         delete ret._id
@@ -173,7 +167,18 @@ export function defineEntityType <
 }
 
 export const defineEntityBundle = function<E extends EntityDocument = EntityDocument, B extends E = E> (base: ReturnType<typeof defineEntityType<E>>, name: string, definition?: SchemaDefinition<B>, options?: EntityTypeOptions<B>) {
-  const schemaOptions = defineEntityTypeOptions<B>(options ?? {}, base.schema.options)
+  const baseSchemOptions = defineEntityTypeOptions<B>({
+    toJSON: {
+      transform(doc, ret, options) {
+        if (options?.discriminatorKey) {
+          delete ret[options.discriminatorKey]
+        } else {
+          delete ret.type
+        }
+      },
+    },
+  }, base.schema.options)
+  const schemaOptions = defineEntityTypeOptions<B>(options ?? {}, baseSchemOptions)
   let schema: Schema
 
   let baseModel = base
