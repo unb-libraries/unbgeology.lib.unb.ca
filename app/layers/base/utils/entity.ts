@@ -47,11 +47,8 @@ export function getEntityPayload <E extends Entity = Entity, P extends keyof Omi
       const resolveReference = (ref: EntityJSONPropertyValue | EntityJSONPropertyValue[]): EntityJSONBodyPropertyValue | EntityJSONBodyPropertyValue[] => {
         if (Array.isArray(ref)) {
           return ref.map(r => resolveReference(r)).flat()
-        } else if (typeof ref === `object` && ref.self && baseUrl && !ref.self.startsWith(baseUrl)) {
-          return ref.self
-        } else if (typeof ref === `object` && ref.self && baseUrl && ref.self.startsWith(baseUrl)) {
-          const { self, ...embeddedPayload } = getEntityPayload(ref)
-          return embeddedPayload
+        } else if (typeof ref === `object` && ref.self && baseUrl) {
+          return !ref.self.startsWith(baseUrl) ? ref.self : getEntityPayload(ref)
         } else {
           return ref
         }
