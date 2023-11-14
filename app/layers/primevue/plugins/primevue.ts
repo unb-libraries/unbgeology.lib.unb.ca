@@ -45,6 +45,7 @@ export default defineNuxtPlugin((nuxtApp) => {
             `text-primary`,
             `dark:text-base`,
             `dark:bg-primary-80`,
+            `first:rounded-tl-md last:rounded-tr-md`,
           ],
         },
       },
