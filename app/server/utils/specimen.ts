@@ -57,13 +57,12 @@ export async function readSpecimenBody(event: H3Event) {
     }
   }
   if (collectorURI) {
-    const collector = await User.findByURI(collectorURI)
+    const collector = await Person.findByURI(collectorURI)
     if (collector) {
       body.collector = `${collector._id}`
     }
-  }
-  if (sponsorURI) {
-    const sponsor = await User.findByURI(sponsorURI)
+  } else if (sponsorURI) {
+    const sponsor = await Person.findByURI(sponsorURI)
     if (sponsor) {
       body.sponsor = `${sponsor._id}`
     }
