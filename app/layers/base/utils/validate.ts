@@ -1,12 +1,12 @@
-import { type Entity } from "~/layers/base/types/entity"
+import { type EntityJSONBody, type Entity } from "layers/base/types/entity"
 
-export const useEntityValidate = <E extends Entity = Entity> (entity: Ref<Partial<E>>) => {
+export const useEntityValidate = <E extends Entity = Entity> (entity: Ref<EntityJSONBody<E>>) => {
   const errors = ref({} as Record<PropertyKey, string>)
   return {
     validateField(field: keyof E, validator: (value: any, previousValue?: any) => void | string | Promise<void | string>) {
       if (process.client) {
         let validatorId: number | null = null
-        watch(() => entity.value[field as keyof E], (value, previousValue) => {
+        watch(() => entity.value[field as keyof EntityJSONBody<E>], (value, previousValue) => {
           if (validatorId) {
             window.clearTimeout(validatorId)
           }

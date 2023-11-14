@@ -1,11 +1,11 @@
 <template>
-  <EntityForm :entity="user" cancel-url="/dashboard/users" @created="create" @updated="update">
-    <template #default="{ entity }">
+  <EntityForm :entity="user" @save="onSave" @cancel="navigateTo(returnUrl)">
+    <template #default="{ body }">
       <div class="flex flex-col">
         <label class="mb-2 text-lg font-bold" for="label">Username</label>
         <PvInputText
           id="username"
-          v-model="entity.id"
+          v-model="body.username"
           name="username"
           :class="{ 'border-red dark:border-red text-red dark:text-red': errors.username }"
           autocomplete="off"
@@ -17,17 +17,18 @@
 </template>
 
 <script setup lang="ts">
-import { type User } from 'layers/base/types/entity'
+import { type EntityJSONBody, type EntityJSONProperties, type User } from 'layers/base/types/entity'
 
 definePageMeta({
   layout: `dashboard`,
 })
 
-const user = ref({} as User)
-const { create, update, fetchByPK } = useEntityType<User>(Symbol(`users`))
+const returnUrl = `/dashboard/users`
+const user = ref({} as EntityJSONProperties<User>)
+const { create, fetchByPK } = useEntityType<User>(Symbol(`users`))
 
-const { validateField, errors } = useEntityValidate(user)
-validateField(`id`, async (username: string) => {
+const { validateField, errors } = useEntityValidate<User>(user)
+validateField(`username`, async (username: string) => {
   if (username) {
     const { entity: user } = await fetchByPK(username)
     if (user.value) {
@@ -35,5 +36,10 @@ validateField(`id`, async (username: string) => {
     }
   }
 })
+
+async function onSave(user: EntityJSONBody<User>) {
+  await create(user)
+  navigateTo(returnUrl)
+}
 
 </script>

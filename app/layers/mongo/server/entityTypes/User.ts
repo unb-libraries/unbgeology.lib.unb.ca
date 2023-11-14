@@ -28,11 +28,4 @@ export default defineEntityType<UserDocument>(`User`, {
       required: false,
     },
   },
-}, {
-  toJSON: {
-    transform: function (doc, ret) {
-      delete ret.username
-      return ret
-    },
-  },
 })
