@@ -1,32 +1,33 @@
 <template>
-  <EntityForm :entity="term" :cancel-url="cancelUrl" @created="create" @updated="update">
-    <template #default="{ entity: term }">
-      <slot name="label" :term="term">
+  <EntityForm :entity="term">
+    <template #default="{ body }">
+      <slot name="label" :body="body">
         <div class="flex flex-col">
           <label class="mb-2 text-lg font-bold" for="label">Label</label>
-          <PvInputText id="form-input-label" v-model="term.label" name="Label" />
+          <PvInputText id="form-input-label" v-model="body.label" name="Label" />
         </div>
       </slot>
-      <slot name="parent" :term="term">
+      <slot name="parent" :body="body">
         <div class="my-6 flex flex-col">
           <label class="mb-2 text-lg font-bold" for="parent">Parent</label>
-          <PvInputSelect id="form-select-parent" v-model="term.parent" name="parent" :options="list?.entities" option-label="label" />
+          <EntityInputSelect id="form-select-parent" v-model="body.parent" name="parent" :options="terms" option-label="label" />
         </div>
       </slot>
-      <slot :term="term" />
+      <slot :body="body" />
     </template>
   </EntityForm>
 </template>
 
-<script setup lang="ts">
-import { type Taxonomy } from '~/layers/base/types/entity';
+<script setup lang="ts" generic="T extends Taxonomy = Taxonomy">
+import { type EntityJSON, type EntityJSONProperties, type Taxonomy } from 'layers/base/types/entity'
 
 const props = defineProps<{
-  term: Partial<Taxonomy>
+  term: EntityJSONProperties<Taxonomy> & Partial<EntityJSON<Taxonomy>>
   type: string
-  cancelUrl?: string
 }>()
 
-const { create, update, fetchAll } = useEntityType<Taxonomy>(Symbol(`taxonomies`), props.type)
-const { list } = await fetchAll()
+const { fetchAll } = useEntityType<T>(Symbol(`taxonomies`), props.type)
+const { list: termEntities } = await fetchAll()
+
+const terms = computed(() => termEntities.value?.entities ?? [])
 </script>

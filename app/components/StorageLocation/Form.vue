@@ -1,13 +1,13 @@
 <template>
-  <TaxonomyTermForm :type="(type as string)" :slug="slug" :success-url="`/dashboard/taxonomies/${type}`" :cancel-url="`/dashboard/taxonomies/${type}`">
-    <template #default="{ term }">
+  <TaxonomyTermForm :term="term" type="storagelocation">
+    <template #default="{ body }">
       <div class="flex flex-col">
         <label class="mb-2 text-lg font-bold" for="public">Public</label>
         <div name="public" class="flex h-full flex-row items-center">
           <div class="mr-6">
             <input
               id="public-yes"
-              v-model="(term as StorageLocation).public"
+              v-model="body.public"
               type="radio"
               name="public"
               value="true"
@@ -18,7 +18,7 @@
           <div>
             <input
               id="public-no"
-              v-model="(term as StorageLocation).public"
+              v-model="body.public"
               type="radio"
               name="public"
               value="false"
@@ -33,12 +33,10 @@
 </template>
 
 <script setup lang="ts">
-import { type StorageLocation } from "@/types/taxonomy"
+import { type StorageLocation } from "types/taxonomy"
+import type { Entity, EntityJSON, EntityJSONProperties } from "layers/base/types/entity"
 
 defineProps<{
-  type: string
-  slug?: string
-  successUrl?: string
-  cancelUrl?: string
+  term: EntityJSONProperties<StorageLocation> & Partial<EntityJSON<Entity>>
 }>()
 </script>
