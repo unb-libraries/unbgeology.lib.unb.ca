@@ -7,8 +7,8 @@
     </header>
     <div id="content" class="flex h-full grow overflow-y-hidden">
       <div class="flex w-full flex-row">
-        <div class="twa-column min-w-min list-none text-right" :class="{ 'cursor-pointer': !showNavbar }" @click="toggleNavbarIfInvisible">
-          <div class="bg-primary-80/40 flex cursor-pointer justify-end p-2" @click.stop="toggleNavbar">
+        <PvPane class="twa-column min-w-min list-none text-right" header-class="bg-primary-80/40 flex justify-end p-2" :collapsible="true">
+          <template #header>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -19,8 +19,8 @@
             >
               <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
             </svg>
-          </div>
-          <nav v-if="showNavbar">
+          </template>
+          <nav>
             <section class="twa-nav-group">
               <h2 class="twa-nav-group-heading">
                 <span class="mr-2">Specimens</span>
@@ -119,12 +119,17 @@
               </NuxtLink>
             </section>
           </nav>
-        </div>
-        <div class="twa-column grow p-6">
-          <slot />
-        </div>
-        <aside class="twa-column flex-none" :class="{ 'w-1/5': showSidebar, 'cursor-pointer': !showSidebar }" @click="toggleSidebarIfInvisible">
-          <div class="bg-primary-80/40 cursor-pointer p-2" @click.stop="toggleSidebar">
+        </PvPane>
+        <PvPane class="twa-column grow" header-class="bg-primary-80/40 px-4 py-2 flex">
+          <template #header>
+            <slot name="page-title" />
+          </template>
+          <div class="p-6">
+            <slot />
+          </div>
+        </PvPane>
+        <PvPane class="twa-column flex-none" expanded-class="w-1/5" header-class="bg-primary-80/40 p-2" :collapsible="true">
+          <template #header>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -135,13 +140,13 @@
             >
               <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
             </svg>
-          </div>
-          <div v-if="showSidebar" class="p-6">
+          </template>
+          <div class="p-6">
             <slot name="sidebar">
               Nothing selected.
             </slot>
           </div>
-        </aside>
+        </PvPane>
       </div>
     </div>
     <footer class="bg-primary-60/10 border-primary-40/10 mt-4 flex w-full flex-none border-t px-6 py-4">
@@ -159,29 +164,6 @@
 
 <script setup lang="ts">
 const { data: taxonomies } = await useFetch<{ name: string, self: string }[]>(`/api/taxonomies`)
-
-const showSidebar = ref(true)
-const showNavbar = ref(true)
-
-function toggleSidebar() {
-  showSidebar.value = !showSidebar.value
-}
-
-function toggleNavbar() {
-  showNavbar.value = !showNavbar.value
-}
-
-function toggleSidebarIfInvisible() {
-  if (!showSidebar.value) {
-    showSidebar.value = true
-  }
-}
-
-function toggleNavbarIfInvisible() {
-  if (!showNavbar.value) {
-    showNavbar.value = true
-  }
-}
 </script>
 
 <style scoped>
