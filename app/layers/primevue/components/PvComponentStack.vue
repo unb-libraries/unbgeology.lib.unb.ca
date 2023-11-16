@@ -9,6 +9,7 @@ const props = defineProps<{
 
 const stack = ref(props.stack ?? [])
 provideContext()
+provide(`unstack`, onUnstack)
 
 onBeforeUpdate(() => {
   provideContext()

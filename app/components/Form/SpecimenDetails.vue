@@ -4,7 +4,14 @@
       <!-- Workaround for removing navigation. -->
       <div />
     </template>
-    <PvEntityDetails :entity="specimen!" :fields="[`editor`, `created`, [`updated`, `Last updated`], `status`]" item-class="my-2 first:mt-0 last:mb-0" label-class="text-md text-primary-60">
+    <PvEntityDetails :entity="specimen!" :fields="[`loans`, `editor`, `created`, [`updated`, `Last updated`], `status`]" item-class="my-2 first:mt-0 last:mb-0" label-class="text-md text-primary-60">
+      <template #loans>
+        <PvEntityList :entities="loans" :label="loan => loan.contact.affiliation" item-class="hover:text-accent-mid cursor-pointer">
+          <template #default="{ entity: loan }">
+            <span @click="onSelectLoan(loan)">{{ loan.contact.affiliation }}</span>
+          </template>
+        </PvEntityList>
+      </template>
       <template #editor="{ value }">
         {{ value.username }}
       </template>
@@ -18,6 +25,21 @@
 </template>
 
 <script setup lang="ts">
+import { type Loan } from 'types/specimen'
 import { type EntityJSON } from 'layers/base/types/entity'
+import { FormSpecimenLoanDetails } from '#components'
+
+const emits = defineEmits<{
+  stack: [component: any, context: any]
+}>()
+
+const { slug } = useRoute().params
 const specimen = inject(`context`)
+
+const { list: loansList, remove: removeLoan } = await fetchEntityList<Loan>(`/api/specimens/${slug}/loans`)
+const loans = computed(() => loansList.value?.entities ?? [])
+
+function onSelectLoan(loan: EntityJSON<Loan>) {
+  emits(`stack`, FormSpecimenLoanDetails, { loan, remove: removeLoan })
+}
 </script>
