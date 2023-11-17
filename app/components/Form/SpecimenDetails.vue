@@ -4,7 +4,11 @@
       <!-- Workaround for removing navigation. -->
       <div />
     </template>
-    <PvEntityDetails :entity="specimen!" :fields="[`loans`, `publications`, `editor`, `created`, [`updated`, `Last updated`], `status`]" item-class="my-2 first:mt-0 last:mb-0" label-class="text-md text-primary-60">
+    <PvEntityDetails :entity="specimen!" :fields="[`storage`, `loans`, `publications`, `editor`, `created`, [`updated`, `Last updated`], `status`]" item-class="my-2 first:mt-0 last:mb-0" label-class="text-md text-primary-60">
+      <template #storage="{ value: storage }">
+        <div>Stored in {{ storage.at(-1).location.label }} since {{ storage.at(-1).dateIn }}.</div>
+        <span class="hover:text-accent-mid text-primary-40 cursor-pointer text-sm" @click="onViewStorageHistory(storage)">View previous storage locations</span>
+      </template>
       <template #loans>
         <PvEntityList :entities="loans" :label="loan => loan.contact.affiliation" item-class="hover:text-accent-mid cursor-pointer">
           <template #default="{ entity: loan }">
@@ -32,9 +36,9 @@
 </template>
 
 <script setup lang="ts">
-import { Publication, type Loan } from 'types/specimen'
+import { Publication, type Loan, Storage } from 'types/specimen'
 import { type EntityJSON } from 'layers/base/types/entity'
-import { FormSpecimenLoanDetails, FormSpecimenPublicationDetails } from '#components'
+import { FormSpecimenStorageHistoryDetails, FormSpecimenLoanDetails, FormSpecimenPublicationDetails } from '#components'
 
 const emits = defineEmits<{
   stack: [component: any, context: any]
@@ -48,6 +52,10 @@ const publications = computed(() => publicationsList.value?.entities ?? [])
 
 const { list: loansList, remove: removeLoan } = await fetchEntityList<Loan>(`/api/specimens/${slug}/loans`)
 const loans = computed(() => loansList.value?.entities ?? [])
+
+function onViewStorageHistory(storage: EntityJSON<Storage>[]) {
+  emits(`stack`, FormSpecimenStorageHistoryDetails, storage)
+}
 
 function onSelectPublication(publication: EntityJSON<Publication>) {
   emits(`stack`, FormSpecimenPublicationDetails, { publication, remove: removePublication })
