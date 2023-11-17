@@ -1,9 +1,26 @@
 <template>
   <div class="bg-primary flex h-screen flex-col">
     <header class="bg-primary-60/10 border-primary-40/10 mb-4 w-full flex-none border-b px-6 py-4">
-      <h1 class="text-4xl">
-        Dashboard
-      </h1>
+      <div class="flex flex-row justify-between">
+        <h1 class="text-4xl">
+          Dashboard
+        </h1>
+        <a href="/">
+          <div class="border-primary-80/40 hover:border-primary-80 inline-flex rounded-lg border px-4 py-2">
+            <span>Return to site</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="ml-2 h-6 w-6"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+            </svg>
+          </div>
+        </a>
+      </div>
     </header>
     <div id="content" class="flex h-full grow overflow-y-hidden">
       <div class="flex w-full flex-row">
