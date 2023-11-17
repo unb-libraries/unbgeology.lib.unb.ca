@@ -28,15 +28,18 @@
       </template>
     </PvEntityDetails>
     <template #actions>
-      <button class="border-red text-red hover:bg-red w-full rounded-md border p-1 hover:text-white">
+      <button class="border-red text-red hover:bg-red w-full rounded-md border p-1 hover:text-white" @click="showConfirmModal = true">
         Delete
+        <PvModalConfirm v-if="showConfirmModal" modal-class="top-1/2" content-class="text-center text-2xl" @confirm="removeSpecimen(specimen)" @cancel="showConfirmModal = false">
+          Are you sure you want to delete <span class="italic">{{ specimen.name }}</span>?
+        </PvModalConfirm>
       </button>
     </template>
   </PvDetailsPage>
 </template>
 
 <script setup lang="ts">
-import { Publication, type Loan, Storage } from 'types/specimen'
+import { Publication, type Loan, Storage, Specimen } from 'types/specimen'
 import { type EntityJSON } from 'layers/base/types/entity'
 import { FormSpecimenStorageHistoryDetails, FormSpecimenLoanDetails, FormSpecimenPublicationDetails } from '#components'
 
@@ -45,13 +48,16 @@ const emits = defineEmits<{
 }>()
 
 const { slug } = useRoute().params
-const specimen = inject(`context`)
+const { fetchByPK, remove } = useEntityType<Specimen>(Symbol(`specimens`))
+const { entity: specimen } = await fetchByPK(slug as string)
 
 const { list: publicationsList } = await fetchEntityList<Publication>(`/api/specimens/${slug}/publications`)
 const publications = computed(() => publicationsList.value?.entities ?? [])
 
 const { list: loansList } = await fetchEntityList<Loan>(`/api/specimens/${slug}/loans`)
 const loans = computed(() => loansList.value?.entities ?? [])
+
+const showConfirmModal = ref(false)
 
 function onViewStorageHistory(storage: EntityJSON<Storage>[]) {
   emits(`stack`, FormSpecimenStorageHistoryDetails)
@@ -63,5 +69,11 @@ function onSelectPublication(publication: EntityJSON<Publication>) {
 
 function onSelectLoan(loan: EntityJSON<Loan>) {
   emits(`stack`, FormSpecimenLoanDetails, loan.id)
+}
+
+async function removeSpecimen(specimen: EntityJSON<Specimen>) {
+  await remove(specimen)
+  showConfirmModal.value = false
+  navigateTo(`/dashboard/specimens`)
 }
 </script>

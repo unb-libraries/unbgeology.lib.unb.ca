@@ -14,7 +14,7 @@
       <span class="font-bold italic">{{ specimen?.name }}</span>
     </template>
     <template #sidebar>
-      <PvComponentStack :stack="[[FormSpecimenDetails, specimen]]" />
+      <PvComponentStack :stack="[[FormSpecimenDetails]]" />
     </template>
     <FormSpecimen :specimen="specimen!" @save="onSave" />
   </NuxtLayout>
