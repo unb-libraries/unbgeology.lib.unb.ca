@@ -30,7 +30,11 @@
 import { type EntityJSON } from 'layers/base/types/entity'
 import { type Loan } from 'types/specimen'
 
-const { loan, remove } = inject<{ loan: EntityJSON<Loan>, remove: typeof deleteEntity }>(`context`) as { loan: EntityJSON<Loan>, remove: typeof deleteEntity }
+const { slug } = useRoute().params
+const loanId = inject<string>(`context`)
+const { fetchByPK, remove, update } = useEntityType<Loan>(Symbol(`specimens/${slug}/loans`))
+const { entity: loan } = await fetchByPK(loanId as string)
+
 const unstack = inject<() => void>(`unstack`) as () => void
 
 function removeLoan(loan: EntityJSON<Loan>) {

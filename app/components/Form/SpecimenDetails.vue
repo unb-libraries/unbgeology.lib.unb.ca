@@ -41,27 +41,27 @@ import { type EntityJSON } from 'layers/base/types/entity'
 import { FormSpecimenStorageHistoryDetails, FormSpecimenLoanDetails, FormSpecimenPublicationDetails } from '#components'
 
 const emits = defineEmits<{
-  stack: [component: any, context: any]
+  stack: [component: any, context?: any]
 }>()
 
 const { slug } = useRoute().params
 const specimen = inject(`context`)
 
-const { list: publicationsList, remove: removePublication } = await fetchEntityList<Publication>(`/api/specimens/${slug}/publications`)
+const { list: publicationsList } = await fetchEntityList<Publication>(`/api/specimens/${slug}/publications`)
 const publications = computed(() => publicationsList.value?.entities ?? [])
 
-const { list: loansList, remove: removeLoan } = await fetchEntityList<Loan>(`/api/specimens/${slug}/loans`)
+const { list: loansList } = await fetchEntityList<Loan>(`/api/specimens/${slug}/loans`)
 const loans = computed(() => loansList.value?.entities ?? [])
 
 function onViewStorageHistory(storage: EntityJSON<Storage>[]) {
-  emits(`stack`, FormSpecimenStorageHistoryDetails, storage)
+  emits(`stack`, FormSpecimenStorageHistoryDetails)
 }
 
 function onSelectPublication(publication: EntityJSON<Publication>) {
-  emits(`stack`, FormSpecimenPublicationDetails, { publication, remove: removePublication })
+  emits(`stack`, FormSpecimenPublicationDetails, publication.id)
 }
 
 function onSelectLoan(loan: EntityJSON<Loan>) {
-  emits(`stack`, FormSpecimenLoanDetails, { loan, remove: removeLoan })
+  emits(`stack`, FormSpecimenLoanDetails, loan.id)
 }
 </script>
