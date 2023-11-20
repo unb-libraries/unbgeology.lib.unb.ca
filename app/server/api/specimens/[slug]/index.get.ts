@@ -6,10 +6,10 @@ export default defineEventHandler(async (event) => {
 
   const specimen = await Specimen.findByPK(slug)
     .select(getSelectedFields(select))
-    .populate(`images`, filterSelect({ root: `images`, default: [`_id`] }))
-    .populate(`classifications`, filterSelect({ root: `classifications`, default: [`_id`] }))
-    .populate(`collector`, filterSelect({ root: `collector`, default: [`_id`] }))
-    .populate(`sponsor`, filterSelect({ root: `sponsor`, default: [`_id`] }))
+    .populate(`images`, filterSelect({ root: `images`, default: [`_id`, `filename`, `filepath`] }))
+    .populate(`classifications`, filterSelect({ root: `classifications`, default: [`_id`, `label`] }))
+    .populate(`collector`, filterSelect({ root: `collector`, default: [`_id`, `firstName`, `lastName`] }))
+    .populate(`sponsor`, filterSelect({ root: `sponsor`, default: [`_id`, `firstName`, `lastName`] }))
     .populate(`storage.location`, filterSelect({ root: `storage.location` }))
     .populate(`editor`, filterSelect({ root: `editor`, default: [`_id`, `username`] }))
 
