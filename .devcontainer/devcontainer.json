@@ -16,9 +16,11 @@
 
 	// The optional 'workspaceFolder' property is the path VS Code should open by default when
 	// connected. This is typically a file mount in .devcontainer/docker-compose.yml
-	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}"
-
-	// Features to add to the dev container. More info: https://containers.dev/features.
+	// "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "workspaceMount": "source=${localWorkspaceFolder}/unbgeology.lib.ca, target=/workspace,type=bind",
+  "workspaceFolder": "/workspace",
+	
+  // Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
@@ -31,10 +33,20 @@
 	// "shutdownAction": "none",
 
 	// Uncomment the next line to run commands after the container is created.
-	// "postCreateCommand": "cat /etc/os-release",
+	"postCreateCommand": "apk add fish httpie shadow",
 
 	// Configure tool-specific properties.
-	// "customizations": {},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"Vue.volar",
+				"bradlc.vscode-tailwindcss",
+				"dbaeumer.vscode-eslint",
+				"Nuxtr.nuxtr-vscode",
+				"miclo.sort-typescript-imports"
+			]
+		}
+	}
 
 	// Uncomment to connect as an existing user other than the container default. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "devcontainer"
