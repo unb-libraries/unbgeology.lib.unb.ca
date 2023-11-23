@@ -56,9 +56,11 @@ const emits = defineEmits<{
 }>()
 
 function onSave(loan: EntityJSONBody<Loan>) {
-  loan.start = new Date(loan.start)
-  loan.end = new Date(loan.end)
-  emits(`save`, loan)
+  emits(`save`, {
+    ...loan,
+    start: new Date(loan.start),
+    end: new Date(loan.end),
+  })
 }
 
 function onCancel() {

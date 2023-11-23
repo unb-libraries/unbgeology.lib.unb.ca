@@ -1,15 +1,11 @@
-import { type Specimen } from "~/types/entity"
+import { type Specimen } from "types/specimen"
 
 export default defineEventHandler(async (event) => {
-  const { page, pageSize, select, sort } = getQueryOptions(event)
-
-  function getSelectedClassificationFields() {
-    const fields = getSelectedFields(select, `classifications`)
-    return fields.length > 0 ? fields : [`_id`]
-  }
+  const { page, pageSize, select, filterSelect, sort } = getQueryOptions(event)
 
   const specimens = await Specimen.find()
-    .populate(`classifications`, getSelectedClassificationFields())
+    .populate(`images`, filterSelect({ root: `images`, default: [`_id`, `filename`, `filepath`] }))
+    .populate(`classifications`, filterSelect({ root: `classifications`, default: [`_id`, `label`] }))
     .select(getSelectedFields(select))
     .sort(sort.join(` `))
     .paginate(page, pageSize)
