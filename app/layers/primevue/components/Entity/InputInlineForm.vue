@@ -53,6 +53,29 @@ function onClickEntity(entity: EntityJSONProperties<E>) {
   selectedEntity.value = entity
 }
 
+function add(entity: EntityJSONBody<E>) {
+  entity.self = entity.self.substring(2)
+  entities.value.push(entity)
+}
+provide(`add`, add)
+
+function update(entity: EntityJSONBody<E>) {
+  const index = entities.value.findIndex(e => e.self === entity.self)
+  if (index >= 0) {
+    entities.value[index] = entity
+  }
+}
+provide(`update`, update)
+
+function remove(entity: EntityJSONBody<E>) {
+  const index = entities.value.findIndex(e => e.self === entity.self)
+  if (index >= 0) {
+    entities.value.splice(index, 1)
+  }
+  showForm.value = false
+}
+provide(`remove`, remove)
+
 function onAdd() {
   const self = `n_${Math.floor(Math.random() * 100)}`
   selectedEntity.value = { self }
@@ -61,13 +84,9 @@ function onAdd() {
 
 function onSave(entity: EntityJSONBody<E>) {
   if (entity.self.startsWith(`n_`)) {
-    entity.self = entity.self.substring(2)
-    entities.value.push(entity)
+    add(entity)
   } else {
-    const index = entities.value.findIndex(e => e.self === entity.self)
-    if (index >= 0) {
-      entities.value[index] = entity
-    }
+    update(entity)
   }
   showForm.value = false
 }
