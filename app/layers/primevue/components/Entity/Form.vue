@@ -1,11 +1,14 @@
 <template>
   <form @submit.prevent="submit()">
     <slot :body="entityBody" />
-    <div class="mt-8 flex flex-row">
-      <button type="submit" class="bg-accent-dark dark:bg-accent-mid hover:bg-accent-light mr-2 rounded-md p-3 font-bold text-white">
-        Save
-      </button>
-      <span class="font-base ml-2 p-3 hover:cursor-pointer hover:underline" @click.prevent="emits(`cancel`)">
+    <div class="mt-8 flex flex-row space-x-2">
+      <slot name="actions" :body="entityBody">
+        <button type="submit" class="bg-accent-dark dark:bg-accent-mid hover:bg-accent-light rounded-md p-3 font-bold text-white">
+          Save
+        </button>
+        <slot name="more-actions" :body="entityBody" />
+      </slot>
+      <span class="font-base p-3 hover:cursor-pointer hover:underline" @click.prevent="emits(`cancel`)">
         Cancel
       </span>
     </div>
