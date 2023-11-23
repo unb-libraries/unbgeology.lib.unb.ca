@@ -15,6 +15,11 @@
         <textarea v-model="body.abstract" rows="5" class="dark:bg-primary border-primary-20 dark:border-primary-60/75 hover:border-accent-light dark:focus:border-accent-mid rounded-lg border p-2" />
       </div>
     </template>
+    <template #more-actions="{ body }">
+      <button class="border-red hover:bg-red text-red rounded-md border p-3 hover:text-white" @click.prevent="removePublication!(body)">
+        Delete
+      </button>
+    </template>
   </EntityForm>
 </template>
 
@@ -31,6 +36,8 @@ defineProps<{
 const emits = defineEmits<{
   save: [publication: EntityJSONBody<Publication>]
 }>()
+
+const removePublication: undefined | ((entity: EntityJSONBody<Publication>) => void) = inject(`remove`)
 
 function onResolve(publication: EntityJSONProperties<Publication>, body: EntityJSONBody<Publication>) {
   if (publication.citation) {
