@@ -1,7 +1,7 @@
 <template>
   <form @submit.prevent="submit()">
     <slot :body="entityBody" />
-    <div class="mt-8 flex flex-row space-x-2">
+    <div class="mt-12 flex flex-row space-x-2">
       <slot name="actions" :body="entityBody">
         <button type="submit" class="bg-accent-dark dark:bg-accent-mid hover:bg-accent-light rounded-md p-3 font-bold text-white">
           Save

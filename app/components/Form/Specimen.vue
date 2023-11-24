@@ -1,185 +1,174 @@
 <template>
-  <EntityForm :entity="specimen" cancel-url="/dashboard/specimens" @save="onSave">
+  <EntityForm :entity="specimen" @save="onSave">
     <template #default="{ body }">
-      <div class="flex flex-col md:flex-row">
-        <div class="mr-4 grow">
-          <div class="flex flex-col">
-            <label class="mb-2 text-lg font-bold" for="name">Name</label>
-            <PvInputText v-model="body.name" name="name" />
-          </div>
-          <div class="my-6 flex flex-col">
-            <label class="mb-2 text-lg font-bold" for="date">Date</label>
-            <PvInputMask v-model="body.date" name="date" mask="9999?/99/99" placeholder="YYYY/MM/DD" />
-          </div>
-          <div class="my-6 flex flex-row">
-            <div class="mr-3 flex w-1/2 flex-col">
-              <label class="mb-2 text-lg font-bold" for="age">Age</label>
-              <PvInputSelect v-model="body.age" name="age" :options="['Cretaceous', 'Eocene', 'Ordovician', 'Holocene', 'Precambrian']" />
+      <div class="flex flex-col space-y-36">
+        <section class="twa-form-column">
+          <div class="twa-form-row">
+            <div class="twa-form-column w-1/2">
+              <!-- Name -->
+              <div class="twa-form-field">
+                <label for="name">Name</label>
+                <PvInputText v-model="body.name" name="name" />
+              </div>
+
+              <!-- Description -->
+              <div class="twa-form-field">
+                <label for="description">Description</label>
+                <textarea v-model="body.description" class="dark:bg-primary border-primary-20 dark:border-primary-60/75 hover:border-accent-light dark:focus:border-accent-mid rounded-lg border p-2" name="description" rows="8" />
+              </div>
             </div>
-            <div class="ml-3 flex w-1/2 flex-col">
-              <label class="mb-2 text-lg font-bold" for="composition">Composition</label>
-              <PvInputSelect v-model="body.composition" name="composition" :options="['solid']" />
-            </div>
-          </div>
-          <div class="my-6 flex flex-row">
-            <div class="mr-3 flex w-1/2 flex-col">
-              <label class="mb-2 text-lg font-bold" for="width">Width</label>
-              <PvInputNumber v-model="body.dimensions!.width" name="width" />
-            </div>
-            <div class="ml-3 flex w-1/2 flex-col">
-              <label class="mb-2 text-lg font-bold" for="length">Length</label>
-              <PvInputNumber v-model="body.dimensions!.length" name="length" />
-            </div>
-          </div>
-          <div class="mt-6 flex flex-row">
-            <div class="mr-3 flex w-1/2 flex-col">
-              <label class="mb-2 text-lg font-bold" for="pieces">Pieces</label>
-              <PvInputNumber v-model="body.pieces" name="pieces" />
-            </div>
-            <div class="ml-3 flex w-1/2 flex-col">
-              <label class="mb-2 text-lg font-bold">Partial</label>
-              <div name="partial" class="flex h-full flex-row items-center">
-                <div class="mr-6">
-                  <input
-                    id="partial-yes"
-                    v-model="body.partial"
-                    type="radio"
-                    name="partial"
-                    value="true"
-                    class="dark:bg-primary border-primary-20 dark:border-primary-60/75 hover:border-accent-light checked:border-accent-mid focus:ring-accent-light/50 focus:ring-offset-base dark:focus:ring-offset-primary h-6 w-6 cursor-pointer appearance-none rounded-full border bg-white align-middle checked:border-8 focus:ring-2 focus:ring-offset-2"
-                  >
-                  <label class="mx-3 align-middle" for="partial-yes">Yes</label>
-                </div>
-                <div>
-                  <input
-                    id="partial-no"
-                    v-model="body.partial"
-                    type="radio"
-                    name="partial"
-                    value="false"
-                    class="dark:bg-primary border-primary-20 dark:border-primary-60/75 hover:border-accent-light checked:border-accent-mid focus:ring-accent-light/50 focus:ring-offset-base dark:focus:ring-offset-primary h-6 w-6 cursor-pointer appearance-none rounded-full border bg-white align-middle checked:border-8 focus:ring-2 focus:ring-offset-2"
-                  >
-                  <label class="mx-3 align-middle" for="partial-no">No</label>
-                </div>
+
+            <div class="twa-form-column w-1/2">
+              <!-- Images -->
+              <div class="twa-form-field h-full">
+                <label for="images">Images</label>
+                <PvInputImageGallery v-model="body.images" :images="images" name="images" class="border-primary-20 dark:border-primary-60/75 hover:border-accent-light h-full rounded-lg border p-3" />
               </div>
             </div>
           </div>
-        </div>
-        <div class="w-full md:ml-4 md:w-1/2">
-          <div class="flex h-full w-full flex-col">
-            <label class="mb-2 text-lg font-bold" for="origin">Origin</label>
-            <LeafletMap class="border-primary-20 dark:border-primary-60/75 h-full rounded-md border" name="origin" :zoom="2" :center="[body.origin?.latitude ?? 0, body.origin?.longitude ?? 0]" @click="coord => setOrigin(coord, body)">
-              <LeafletSearch @item-select="item => onSearchItemSelect(item, body)" />
-              <LeafletMarker
-                v-if="body.origin?.latitude !== undefined && body.origin?.longitude !== undefined"
-                :name="body.name"
-                :center="[body.origin.latitude, body.origin.longitude]"
-                :draggable="true"
-                @dragged="coord => setOrigin(coord, body)"
-              />
-            </LeafletMap>
-          </div>
-        </div>
-      </div>
-      <div class="mt-6 flex flex-col">
-        <label class="mb-2 w-full text-lg font-bold" for="description">Description</label>
-        <textarea v-model="body.description" class="dark:bg-primary border-primary-20 dark:border-primary-60/75 hover:border-accent-light dark:focus:border-accent-mid rounded-lg border p-2" name="description" rows="10" />
-      </div>
-      <div class="mt-6 flex flex-col">
-        <label class="mb-2 w-full text-lg font-bold" for="images">Images</label>
-        <PvInputImageGallery v-model="body.images" :images="images" name="images" />
-      </div>
-      <div class="mt-6 flex flex-col">
-        <label class="mb-2 w-full text-lg font-bold" for="classifications">Classifications</label>
-        <PvInputMultiSelect
-          v-model="body.classifications"
-          :options="classifications"
-          option-label="label"
-          option-value="self"
-          display="chip"
-          name="classifications"
-        />
-      </div>
-      <div class="my-6 flex flex-col">
-        <label class="mb-2 w-full text-lg font-bold" for="collector-sponsor">Collector / Sponsor</label>
-        <div class="flex flex-row">
-          <div name="collector-sponsor" class="flex flex-row">
-            <div class="flex flex-row rounded-l-md p-3" :class="{ 'bg-primary-80': collectorOrSponsor, 'bg-primary border-primary-60/75 border': !collectorOrSponsor }">
-              <input
-                id="collector"
-                v-model="collectorOrSponsor"
-                type="radio"
-                name="collector-sponsor"
-                :value="true"
-                class="dark:bg-primary border-primary-20 dark:border-primary-60/75 hover:border-accent-light checked:border-accent-mid focus:ring-accent-light/50 focus:ring-offset-base dark:focus:ring-offset-primary h-6 w-6 cursor-pointer appearance-none rounded-full border bg-white align-middle checked:border-8 focus:ring-2 focus:ring-offset-2"
-              >
-              <label class="mx-3 align-middle" for="collector">Collector</label>
-            </div>
-            <div class="flex flex-row p-3" :class="{ 'bg-primary-80': !collectorOrSponsor, 'bg-primary border-primary-60/75 border border-r-0': collectorOrSponsor }">
-              <input
-                id="sponsor"
-                v-model="collectorOrSponsor"
-                type="radio"
-                name="collector-sponsor"
-                :value="false"
-                class="dark:bg-primary border-primary-20 dark:border-primary-60/75 hover:border-accent-light checked:border-accent-mid focus:ring-accent-light/50 focus:ring-offset-base dark:focus:ring-offset-primary h-6 w-6 cursor-pointer appearance-none rounded-full border bg-white align-middle checked:border-8 focus:ring-2 focus:ring-offset-2"
-              >
-              <label class="mx-3 align-middle" for="sponsor">Sponsor</label>
-            </div>
-          </div>
-          <EntityInputSelect
-            v-if="collectorOrSponsor"
-            v-model="body.collector"
-            :options="people"
-            :option-label="(collector) => `${collector.firstName} ${collector.lastName}`"
-            name="sponsor"
-            class="rounded-none"
-          />
-          <EntityInputSelect
-            v-else
-            v-model="body.sponsor"
-            :options="people"
-            :option-label="(sponsor) => `${sponsor.firstName} ${sponsor.lastName}`"
-            name="sponsor"
-            class="rounded-none"
-          />
-          <button class="bg-accent-mid cursor-pointer rounded-r-md p-3" @click.prevent="displayCollectorForm = true">
-            Create
-          </button>
-        </div>
-        <FormPerson v-if="displayCollectorForm" :person="newPerson" @save="onSaveNewPerson" @cancel="displayCollectorForm = false" />
-      </div>
+        </section>
 
-      <!-- Loans -->
-      <div class="group my-6 flex flex-col">
-        <label class="mb-2 w-full text-lg font-bold">Loans</label>
-        <div class="flex flex-row">
-          <div v-for="loan in body.loans" :key="loan" class="bg-primary-80 hover:bg-accent-light group mx-1.5 ms-0 flex flex-col rounded-md p-3 hover:cursor-pointer" @click="displayLoanForm = true; newLoan = loan">
-            <span>{{ toDate(loan.start) }} - {{ toDate(loan.end) }}</span>
-            <span class="text-primary-40">{{ loan.contact.affiliation }}</span>
-          </div>
-          <button class="border-primary-60/75 text-primary-60/75 hover:bg-accent-light invisible me-0 rounded-md border p-3 text-3xl hover:text-white group-hover:visible" @click.prevent="displayLoanForm = true">
-            +
-          </button>
-        </div>
-        <FormLoan v-if="displayLoanForm" :loan="newLoan" @save="loan => onSaveNewLoan(loan, body.loans)" @cancel="displayLoanForm = false" />
-      </div>
+        <section>
+          <h2 class="twa-form-section-heading">
+            Specimen details
+          </h2>
+          <div class="twa-form-column">
+            <div class="twa-form-row">
+              <!-- Classifications -->
+              <div class="twa-form-field w-4/5">
+                <label for="classifications">Classifications</label>
+                <EntityInputSelect
+                  v-model="body.classifications"
+                  :multi="true"
+                  :options="classifications"
+                  option-label="label"
+                  display="chip"
+                  name="classifications"
+                />
+              </div>
 
-      <!-- Publications -->
-      <div class="group my-6 flex flex-col">
-        <label class="mb-2 w-full text-lg font-bold" for="publications">Publications</label>
-        <div class="flex w-full flex-col">
-          <div class="flex flex-row">
-            <div v-for="publication in body.publications" :key="publication" class="bg-primary-80 hover:bg-accent-light group mx-1.5 ms-0 flex w-48 flex-col overflow-hidden truncate rounded-md p-3 hover:cursor-pointer" @click="displayLoanForm = true; newLoan = publication">
-              <span>{{ publication.citation }}</span>
+              <!-- Pieces -->
+              <div class="twa-form-field w-1/5">
+                <label for="pieces">Pieces</label>
+                <div class="border-primary-60/75 inline-flex">
+                  <PvInputText v-model="body.pieces" class="grow rounded-r-none" name="pieces" />
+                  <div class="bg-primary-60 flex flex-row rounded-r-lg p-3">
+                    <input v-model="body.partial" type="checkbox" name="partial" class="dark:bg-primary border-primary-20 dark:border-primary-60/75 hover:border-accent-light checked:border-accent-mid focus:ring-accent-light/50 focus:ring-offset-base dark:focus:ring-offset-primary h-6 w-6 cursor-pointer appearance-none rounded-md border bg-white align-middle checked:border-8">
+                    <label for="partial" class="mx-3 align-middle">Partial</label>
+                  </div>
+                </div>
+              </div>
             </div>
-            <button class="border-primary-60/75 text-primary-60/75 hover:bg-accent-light invisible me-0 rounded-md border p-3 text-3xl hover:text-white group-hover:visible" @click.prevent="displayPublicationForm = true">
-              +
-            </button>
+            <div class="twa-form-row">
+              <!-- Age -->
+              <div class="twa-form-field w-1/2">
+                <label for="age">Age</label>
+                <PvInputSelect v-model="body.age" name="age" :options="['Cretaceous', 'Eocene', 'Ordovician', 'Holocene', 'Precambrian']" />
+              </div>
+
+              <!-- Composition -->
+              <div class="twa-form-field w-1/2">
+                <label for="composition">Composition</label>
+                <PvInputSelect v-model="body.composition" name="composition" :options="['solid']" />
+              </div>
+            </div>
+
+            <div class="twa-form-row">
+              <!-- Dimensions -->
+              <div class="twa-form-field w-1/2">
+                <label for="width">Width</label>
+                <PvInputNumber v-model="body.dimensions!.width" name="width" />
+              </div>
+              <div class="twa-form-field w-1/2">
+                <label for="length">Length</label>
+                <PvInputNumber v-model="body.dimensions!.length" name="length" />
+              </div>
+            </div>
           </div>
-          <!-- <FormInputDoiResolve @success="pub => { newPublication = pub; displayPublicationForm = true }" /> -->
-          <FormPublication v-if="displayPublicationForm" :publication="newPublication" @save="pub => onSaveNewPublication(pub, body.publications)" @cancel="displayPublicationForm = false" />
-        </div>
+        </section>
+
+        <section>
+          <h2 class="twa-form-section-heading">
+            Origin details
+          </h2>
+          <div class="twa-form-row">
+            <div class="twa-form-column w-1/2">
+              <!-- Date -->
+              <div class="twa-form-field">
+                <label for="date">Date</label>
+                <PvInputMask v-model="body.date" name="date" mask="9999?/99/99" placeholder="YYYY/MM/DD" />
+              </div>
+
+              <!-- Collector -->
+              <div class="twa-form-field">
+                <label for="collector">Collector</label>
+                <div class="inline-flex">
+                  <EntityInputSelect
+                    v-model="body.collector"
+                    :options="people"
+                    :option-label="(person) => `${person.firstName} ${person.lastName}`"
+                    name="collector"
+                    class="border-primary-60/75 rounded-r-none"
+                  />
+                  <button class="bg-accent-mid hover:bg-accent-light rounded-lg rounded-l-none px-6 py-3" @click="showPersonForm = true">
+                    Add
+                    <PvModal v-if="showPersonForm">
+                      <FormPerson v-if="showPersonForm" :person="newPerson" @save="onSaveNewPerson" @cancel="showPersonForm = false" />
+                    </PvModal>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Sponsor -->
+              <div class="twa-form-field">
+                <label for="sponsor">Sponsor</label>
+                <div class="inline-flex">
+                  <EntityInputSelect
+                    v-model="body.sponsor"
+                    :options="people"
+                    :option-label="(person) => `${person.firstName} ${person.lastName}`"
+                    name="Sponsor"
+                    class="border-primary-60/75 rounded-r-none"
+                  />
+                  <button class="bg-accent-mid hover:bg-accent-light rounded-lg rounded-l-none px-6 py-3" @click="showPersonForm = true">
+                    Add
+                    <PvModal v-if="showPersonForm">
+                      <FormPerson v-if="showPersonForm" :person="newPerson" @save="onSaveNewPerson" @cancel="showPersonForm = false" />
+                    </PvModal>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="twa-form-column w-1/2">
+              <!-- Origin -->
+              <div class="twa-form-field h-full w-full">
+                <label for="origin">Origin</label>
+                <LeafletMap class="border-primary-20 dark:border-primary-60/75 h-full rounded-md border" name="origin" :zoom="2" :center="[body.origin?.latitude ?? 0, body.origin?.longitude ?? 0]" @click="coord => setOrigin(coord, body)">
+                  <LeafletSearch @item-select="item => onSearchItemSelect(item, body)" />
+                  <LeafletMarker
+                    v-if="body.origin?.latitude !== undefined && body.origin?.longitude !== undefined"
+                    :name="body.name"
+                    :center="[body.origin.latitude, body.origin.longitude]"
+                    :draggable="true"
+                    @dragged="coord => setOrigin(coord, body)"
+                  />
+                </LeafletMap>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2 class="twa-form-section-heading">
+            Misc
+          </h2>
+          <!-- Publications -->
+          <div class="twa-form-field group">
+            <label for="publications">Publications</label>
+            <EntityInputInlineForm v-model="body.publications" :form="FormPublication" :label="({ citation: cit }: Publication) => cit.substring(0, cit.indexOf(`,`))" />
+          </div>
+        </section>
       </div>
     </template>
   </EntityForm>
@@ -187,13 +176,14 @@
 
 <script setup lang="ts">
 import { EntityJSONProperties, type Image, EntityJSONBody } from 'layers/base/types/entity'
-import { type Specimen, type Loan, type Publication } from 'types/specimen'
+import { type Specimen, type Publication } from 'types/specimen'
 import { type Classification } from 'types/taxonomy'
 import { type Person } from 'types/affiliation'
 import type { Coordinate } from 'types/leaflet'
 import type { Location } from 'types/nominatim'
+import { FormPublication } from '#components'
 
-const props = defineProps<{
+defineProps<{
   specimen: EntityJSONProperties<Specimen>
 }>()
 
@@ -211,22 +201,8 @@ const { fetchAll: fetchAllPeople, create: createPerson } = useEntityType<Person>
 const { list: peopleList, refresh: refreshPeopleList } = await fetchAllPeople()
 const people = computed(() => peopleList.value?.entities ?? [])
 
-const collectorOrSponsor = ref(props.specimen.collector ? true : props.specimen.sponsor === undefined)
-const displayCollectorForm = ref(false)
+const showPersonForm = ref(false)
 const newPerson = ref({} as EntityJSONProperties<Person>)
-
-const displayLoanForm = ref(false)
-const newLoan = ref({
-  contact: {},
-} as EntityJSONProperties<Loan>)
-
-const toDate = (str: string) => {
-  const date = new Date(str)
-  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
-}
-
-const newPublication = ref({} as EntityJSONProperties<Publication>)
-const displayPublicationForm = ref(false)
 
 const setOrigin = function (coord: Coordinate, specimen: EntityJSONBody<Specimen>) {
   const [newLat, newLong] = coord
@@ -250,28 +226,24 @@ const onSaveNewPerson = async (person: EntityJSONBody<Person>) => {
   await createPerson(person)
   refreshPeopleList()
   newPerson.value = {} as EntityJSONProperties<Person>
-  displayCollectorForm.value = false
-}
-
-const onSaveNewLoan = (loan: EntityJSONBody<Loan>, loans?: EntityJSONBody<Loan>[]) => {
-  if (loan.self) {
-    const index = loans?.findIndex(l => l.self === loan.self)
-    loans[index] = loan
-  } else {
-    loans?.push(loan)
-  }
-  newLoan.value = { contact: {} } as EntityJSONProperties<Loan>
-  displayLoanForm.value = false
-}
-
-const onSaveNewPublication = (publication: EntityJSONBody<Publication>, publications?: EntityJSONBody<Publication>[]) => {
-  if (publication.self) {
-    const index = publications?.findIndex(p => p.self === publication.self)
-    publications[index] = publication
-  } else {
-    publications?.push(publication)
-  }
-  newPublication.value = {} as EntityJSONProperties<Publication>
-  displayPublicationForm.value = false
+  showPersonForm.value = false
 }
 </script>
+
+<style scoped>
+.twa-form-row {
+  @apply flex flex-row space-x-6
+}
+.twa-form-column {
+  @apply flex flex-col space-y-6
+}
+.twa-form-field {
+  @apply flex flex-col
+}
+.twa-form-field > label {
+  @apply mb-2 text-lg font-bold
+}
+.twa-form-section-heading {
+  @apply text-primary-60/75 mb-12 uppercase before:bg-primary-60/75 after:bg-primary-60/75 flex items-center before:ml-48 before:mr-6 before:flex-1 before:pt-px after:mr-48 after:ml-6 after:flex-1 after:pt-px
+}
+</style>

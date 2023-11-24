@@ -82,7 +82,7 @@ export async function readSpecimenBody(event: H3Event) {
     body.publications = []
     for (const publication of publications) {
       const { citation, abstract, doi } = publication
-      if (citation && abstract) {
+      if (citation) {
         body.publications.push({ citation, abstract, doi })
       }
     }
