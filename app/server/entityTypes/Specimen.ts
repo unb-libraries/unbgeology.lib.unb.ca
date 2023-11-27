@@ -32,17 +32,16 @@ export default defineEntityType<SpecimenDocument>(`Specimen`, {
       required: optionalWhileInDraft,
     }],
   },
-  dimensions: {
-    type: {
-      width: {
-        type: EntityFieldTypes.Number,
-      },
-      length: {
-        type: EntityFieldTypes.Number,
-      },
+  measurements: [{
+    width: {
+      type: EntityFieldTypes.Number,
+      required: true,
     },
-    required: optionalWhileInDraft,
-  },
+    length: {
+      type: EntityFieldTypes.Number,
+      required: true,
+    },
+  }],
   date: {
     type: EntityFieldTypes.Date,
     required: false,

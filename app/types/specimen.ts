@@ -8,7 +8,7 @@ export enum Status {
   PUBLISHED = `published`,
 }
 
-export interface Dimension {
+export interface Measurement {
   width: number
   length: number
 }
@@ -62,7 +62,7 @@ export interface Specimen extends Entity {
   description: string
   images: Image[]
   classifications: Classification[]
-  dimensions: Dimension
+  measurements: Measurement[]
   date?: Date
   age: string
   origin: Place

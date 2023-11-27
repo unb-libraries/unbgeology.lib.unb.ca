@@ -10,7 +10,7 @@ export async function readSpecimenBody(event: H3Event) {
     description,
     images: imageURIs,
     classifications: classificationURIs,
-    dimensions,
+    measurements,
     date,
     age,
     origin,
@@ -44,11 +44,10 @@ export async function readSpecimenBody(event: H3Event) {
   if (classificationURIs) {
     body.classifications = await Classification.findManyByURI(classificationURIs)
   }
-  if (dimensions) {
-    const { width, length } = dimensions
-    if (width && length) {
-      body.dimensions = { width, length }
-    }
+  if (Array.isArray(measurements)) {
+    body.measurements = measurements
+      .filter(({ width, length }) => width && length)
+      .map(({ width, length }) => ({ width, length }))
   }
   if (origin) {
     const { latitude, longitude, accuracy = 0, name, description } = origin

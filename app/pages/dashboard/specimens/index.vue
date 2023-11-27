@@ -1,14 +1,14 @@
 <template>
-  <PvEntityTable uri="/api/specimens" :columns="[`name`, `dimensions`, `age`, `pieces`, `partial`, `created`, `updated`, `status`]">
+  <PvEntityTable uri="/api/specimens" :columns="[`name`, `measurements`, `age`, `pieces`, `partial`, `created`, `updated`, `status`]">
     <template #name="{ value, entity }">
       <NuxtLink :to="`/dashboard/${entity.self.substring(5)}`" class="hover:underline">
         {{ value }}
       </NuxtLink>
     </template>
-    <template #dimensions="{ value }">
-      <span v-if="value">
-        {{ value.width }}mm x {{ value.length }}mm
-      </span>
+    <template #measurements="{ value: measurements }">
+      <ul v-for="dimensions in measurements" :key="dimensions">
+        <li>{{ dimensions.width }}mm x {{ dimensions.length }}mm</li>
+      </ul>
     </template>
     <template #partial="{ value }">
       {{ value ? `Yes` : `No` }}

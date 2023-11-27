@@ -34,15 +34,17 @@
         </section>
       </div>
       <div class="w-1/3">
-        <PvEntityDetails :entity="specimen!" :fields="['classifications', `date`, `age`, `composition`, `pieces`, `dimensions`, `storage`, [`collector`, `Collector's Name`], [`sponsor`, `Sponsor's Name`]]" item-class="my-6 first:mt-0 last:mb-0" label-class="text-primary-40 uppercase">
+        <PvEntityDetails :entity="specimen!" :fields="['classifications', `date`, `age`, `composition`, `pieces`, `measurements`, `storage`, [`collector`, `Collector's Name`], [`sponsor`, `Sponsor's Name`]]" item-class="my-6 first:mt-0 last:mb-0" label-class="text-primary-40 uppercase">
           <template #classifications>
             {{ classificationLabels }}
           </template>
           <template #pieces>
-            {{ specimen?.pieces }}{{ !specimen?.partial ? ` (P)` : `` }}
+            {{ specimen?.pieces }}{{ specimen?.partial ? ` (P)` : `` }}
           </template>
-          <template #dimensions>
-            {{ specimen?.dimensions.width }}mm x {{ specimen?.dimensions.length }}mm
+          <template #measurements>
+            <ul v-for="dimensions in specimen?.measurements" :key="dimensions">
+              <li>{{ dimensions.width }}mm x {{ dimensions.length }}mm</li>
+            </ul>
           </template>
           <template #storage>
             {{ specimen?.storage.at(-1)?.location.public ? `On Display` : `In Archive` }}

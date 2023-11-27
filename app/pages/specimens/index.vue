@@ -35,17 +35,17 @@
             </a>
           </h2>
           <div class="grow">
-            <PvEntityDetails class="mr-12 flex flex-row justify-between" label-class="font-bold text-primary-40" :entity="specimen" :fields="[`classifications`, `dimensions`, `age`, `composition`, [`storage`, `Display`]]">
+            <PvEntityDetails class="mr-12 flex flex-row justify-between" label-class="font-bold text-primary-40" :entity="specimen" :fields="[`classifications`, `measurements`, `age`, `composition`, [`storage`, `Display`]]">
               <template #classifications="{ value: classifications }">
                 <template v-for="(classification, index) in classifications" :key="classification">
                   <span>{{ classification.label }}</span>
                   {{ index < specimen.classifications.length - 1 ? `, ` : `` }}
                 </template>
               </template>
-              <template #dimensions="{ value: dimensions }">
-                <template v-if="dimensions">
-                  {{ dimensions.width }}mm x {{ dimensions.length }}mm
-                </template>
+              <template #measurements="{ value: measurements }">
+                <ul v-for="dimensions in measurements" :key="dimensions">
+                  <li>{{ dimensions.width }}mm x {{ dimensions.length }}mm</li>
+                </ul>
               </template>
               <template #storage="{ value: storage }">
                 {{ storage?.at(-1)?.location.public ? `Public` : `In Archive` }}

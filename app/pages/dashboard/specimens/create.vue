@@ -11,7 +11,7 @@ definePageMeta({
 })
 
 const specimen = ref<EntityJSONProperties<Specimen>>({
-  dimensions: {},
+  measurements: [{}],
   pieces: 1,
   origin: {},
 } as EntityJSONProperties<Specimen>)
