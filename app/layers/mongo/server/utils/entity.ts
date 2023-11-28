@@ -160,15 +160,19 @@ export function defineEntityType <
       immutable: true,
       select: true,
       alias: `pk`,
-      default: function (this: Record<string, keyof E>) {
+      default: function (this: { [K in keyof EntityDocument<E>]: E[K] }) {
         let value = this.id.toString()
         if (typeof options.slug === `string`) {
-          value = this[options.slug as string].toString()
+          // TODO: Support dotted syntax for nested fields, e.g. "field.subfield"
+          const fieldValue = this[options.slug as keyof EntityDocument<E>]
+          if (typeof fieldValue === `string`) {
+            value = fieldValue
+          }
         } else if (Array.isArray(options.slug)) {
-          value = (options.slug as string[]).map(path => this[path]).join(` `)
+          value = (options.slug as (keyof EntityDocument<E>)[]).map(path => this[path]).join(` `)
           return slugify(value)
         } else if (typeof options.slug === `function`) {
-          value = options.slug()
+          value = options.slug(this)
         }
         return slugify(value, { lower: true, strict: true })
       },
