@@ -10,7 +10,12 @@ definePageMeta({
   layout: `dashboard`,
 })
 
+const defaultId = `${Math.floor(Math.random() * 1000000)}`
+
 const specimen = ref<EntityJSONProperties<Specimen>>({
+  objectID: {
+    unb: `UNB-${defaultId.padStart(8, `0`)}`,
+  },
   measurements: [{}],
   pieces: 1,
   origin: {},

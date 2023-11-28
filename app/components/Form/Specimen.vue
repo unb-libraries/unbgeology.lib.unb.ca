@@ -3,6 +3,46 @@
     <template #default="{ body }">
       <div class="flex flex-col space-y-36">
         <section class="twa-form-column">
+          <!-- IDs -->
+          <div class="twa-form-row">
+            <!-- ID -->
+            <div class="twa-form-field" :class="{ 'w-1/3': unbOwned, 'w-1/4': !unbOwned }">
+              <label for="objectId">ID</label>
+              <div class="border-primary-60/75 inline-flex">
+                <PvInputText v-model="body.objectID.unb" class="disabled:bg-primary-80 disabled:text-primary-40 grow rounded-r-none" name="objectID" disabled />
+                <div class="bg-primary-60 flex flex-row rounded-r-lg p-3">
+                  <input
+                    id="unbOwned"
+                    v-model="unbOwned"
+                    type="checkbox"
+                    name="unbOwned"
+                    class="dark:bg-primary border-primary-20 dark:border-primary-60/75 hover:border-accent-light checked:border-accent-mid focus:ring-accent-light/50 focus:ring-offset-base dark:focus:ring-offset-primary h-6 w-6 cursor-pointer appearance-none rounded-md border bg-white align-middle checked:border-8"
+                    @change="body.objectID.unb = !unbOwned ? `UNB-X${body.objectID.unb.substring(5)}` : `UNB-0${body.objectID.unb.substring(5)}`"
+                  >
+                  <label for="unbOwned" class="mx-3 cursor-pointer align-middle">Owned by UNB</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Lender ID -->
+            <div v-if="!unbOwned" class="twa-form-field w-1/4">
+              <label for="lenderId">External ID</label>
+              <PvInputText v-model="body.objectID.external" name="lenderId" />
+            </div>
+
+            <!-- International Index Number -->
+            <div class="twa-form-field" :class="{ 'w-1/3': unbOwned, 'w-1/4': !unbOwned }">
+              <label for="intId">International Index Number</label>
+              <PvInputText v-model="body.objectID.international" name="intId" />
+            </div>
+
+            <!-- Other ID -->
+            <div class="twa-form-field" :class="{ 'w-1/3': unbOwned, 'w-1/4': !unbOwned }">
+              <label for="otherId">Other ID</label>
+              <PvInputText name="otherId" />
+            </div>
+          </div>
+
           <div class="twa-form-row">
             <div class="twa-form-column w-1/2">
               <!-- Name -->
@@ -203,6 +243,8 @@ defineProps<{
 const emits = defineEmits<{
   save: [specimen: EntityJSONBody<Specimen>]
 }>()
+
+const unbOwned = ref(true)
 
 const { list: imageEntityList } = await fetchEntityList<Image>(`/api/files/image`)
 const images = computed(() => imageEntityList.value?.entities ?? [])
