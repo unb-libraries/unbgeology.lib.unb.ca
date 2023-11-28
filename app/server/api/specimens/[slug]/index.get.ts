@@ -4,7 +4,7 @@ export default defineEventHandler(async (event) => {
   const { slug } = getRouterParams(event)
   const { select, filterSelect } = getQueryOptions(event)
 
-  const specimen = await Specimen.findByPK(slug)
+  const specimen = await Specimen.findBySlug(slug)
     .select(getSelectedFields(select))
     .populate(`images`, filterSelect({ root: `images`, default: [`_id`, `filename`, `filepath`] }))
     .populate(`classifications`, filterSelect({ root: `classifications`, default: [`_id`, `label`] }))

@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
     return fields.length > 0 ? fields : [`_id`]
   }
 
-  const specimen = await Specimen.findByPK(slug)
+  const specimen = await Specimen.findBySlug(slug)
   const classifications = await Classification.find({ _id: specimen.classifications })
     .populate(`parent`, getSelectedParentFields())
     .select(getSelectedFields(select))

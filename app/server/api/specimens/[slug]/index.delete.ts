@@ -1,7 +1,7 @@
 export default defineEventHandler(async (event) => {
   const { slug } = getRouterParams(event)
 
-  const specimen = await Specimen.findOneAndDelete({ slug })
+  const specimen = await Specimen.findBySlugAndDelete(slug)
   if (specimen) {
     return sendNoContent(event)
   }

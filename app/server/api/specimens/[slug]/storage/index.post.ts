@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
     body.location = await StorageLocation.findByURI(locationURI)
   }
 
-  const specimen = await Specimen.findByPK(slug)
+  const specimen = await Specimen.findBySlug(slug)
   if (specimen) {
     const storage = specimen.storage.create(body)
     specimen.storage.push(storage)

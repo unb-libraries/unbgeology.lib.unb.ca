@@ -2,7 +2,7 @@ export default defineEventHandler(async (event) => {
   const { slug } = getRouterParams(event)
   const { select, filterSelect } = getQueryOptions(event)
 
-  const query = Specimen.findByPK(slug)
+  const query = Specimen.findBySlug(slug)
     .sort(`dateIn`)
 
   const fields = filterSelect({ prefix: `storage`, default: select.length ? [`_id`] : [] })
