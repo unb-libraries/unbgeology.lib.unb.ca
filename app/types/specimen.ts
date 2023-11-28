@@ -56,9 +56,14 @@ export interface Publication extends Entity {
 }
 
 export interface Specimen extends Entity {
-  objectId: string
-  name: string
+  objectID: {
+    unb: string
+    external?: string
+    international?: string
+    [id: string ]: string | undefined
+  }
   slug: string
+  name: string
   description: string
   images: Image[]
   classifications: Classification[]

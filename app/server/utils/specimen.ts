@@ -5,7 +5,7 @@ import { type Specimen } from "types/specimen"
 
 export async function readSpecimenBody(event: H3Event) {
   const {
-    objectId,
+    objectID,
     name,
     description,
     images: imageURIs,
@@ -27,7 +27,6 @@ export async function readSpecimenBody(event: H3Event) {
   } = await readBody<EntityJSONBody<Specimen>>(event)
 
   const body: Partial<EntityJSONBody<Specimen>> = {
-    objectId,
     name,
     description,
     date,
@@ -36,6 +35,13 @@ export async function readSpecimenBody(event: H3Event) {
     partial,
     composition,
     status,
+  }
+
+  if (objectID.unb) {
+    body.objectID = {
+      ...objectID,
+      unb: objectID.unb,
+    }
   }
 
   if (imageURIs) {

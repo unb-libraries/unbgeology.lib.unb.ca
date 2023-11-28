@@ -1,7 +1,7 @@
 import { type EntityDocument, EntityFieldTypes } from "layers/mongo/types/entity"
 import { type Specimen, Composition, type Storage, type Loan, LoanType, type Publication, Status } from "types/specimen"
 
-type SpecimenDocument = EntityDocument<Specimen>
+type SpecimenDocument = EntityDocument<Omit<Specimen, `objectID`> & { objectID: Map<`unb`, string> & Map<`external` | `international`, string | undefined> & Map<string, string | undefined> }>
 type StorageDocument = EntityDocument<Storage>
 type LoanDocument = EntityDocument<Loan>
 type PublicationDocument = EntityDocument<Publication>
@@ -12,6 +12,12 @@ const optionalWhileInDraft = function (this: Specimen) {
 }
 
 export default defineEntityType<SpecimenDocument>(`Specimen`, {
+  objectID: {
+    type: EntityFieldTypes.Map,
+    of: EntityFieldTypes.String,
+    immutable: true,
+    required: true,
+  },
   name: {
     type: EntityFieldTypes.String,
     required: true,
@@ -166,7 +172,20 @@ export default defineEntityType<SpecimenDocument>(`Specimen`, {
     required: false,
   },
 }, {
-  slug: `name`,
+  slug: (specimen: SpecimenDocument) => {
+    const externalID = specimen.objectID.get(`external`)
+    if (externalID) {
+      return externalID.toString()
+    }
+    return specimen.objectID.get(`unb`)!.toString()
+  },
+  virtuals: {
+    uri: {
+      get(this: SpecimenDocument) {
+        return `/api/specimens/${this.objectID.get(`unb`)!.toLowerCase()}`
+      },
+    },
+  },
   toJSON: {
     transform(doc, ret) {
       if (ret.origin) {
@@ -177,6 +196,8 @@ export default defineEntityType<SpecimenDocument>(`Specimen`, {
         delete ret.dimensions._id
         delete ret.dimensions.id
       }
+      ret.objectID = Object.fromEntries(doc.objectID.entries())
+      ret.id = doc.objectID.get(`unb`)
     },
   },
 })
