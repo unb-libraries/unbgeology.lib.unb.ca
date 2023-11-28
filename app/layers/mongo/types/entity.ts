@@ -1,4 +1,4 @@
-import { Schema, type SchemaOptions, type Model, type HydratedDocument, Query } from "mongoose"
+import { Schema, type SchemaOptions, type Model, type HydratedDocument, type UpdateQuery, type QueryOptions as MongooseQueryOptions, QueryWithHelpers } from "mongoose"
 import { type Entity, type EntityJSON } from "~/layers/base/types/entity"
 
 export const EntityFieldTypes = Schema.Types
@@ -10,7 +10,7 @@ export type EntityDocument<E extends Entity = Entity> = {
 } & E
 
 export interface EntityTypeOptions<E extends Entity = Entity> extends SchemaOptions<E> {
-  slug?: string | string[] | (() => string)
+  slug?: string | string[] | ((entity: E) => string)
 }
 
 export interface EntityInstanceMethods {
@@ -28,9 +28,14 @@ export interface EntityModel<
 > extends Model<E, I, Q>
 {
   baseURL(): string
-  findByPK(pk: string): Query<HydratedDocument<E, I>, HydratedDocument<E, I>, EntityQueryHelpers>
+  findByPK(pk: string): QueryWithHelpers<HydratedDocument<E, I>, HydratedDocument<E, I>, Q, EntityDocument<E>, `findOne`>
+  findByPKAndUpdate(pk: string, update: UpdateQuery<E>, options?: MongooseQueryOptions<E>): QueryWithHelpers<HydratedDocument<E, I>, HydratedDocument<E, I>, Q, EntityDocument<E>, `findOneAndUpdate`>
+  findByPKAndDelete(pk: string, options?: MongooseQueryOptions<E>): QueryWithHelpers<HydratedDocument<E, I>, HydratedDocument<E, I>, Q, EntityDocument<E>, `findOneAndDelete`>
+  findBySlug(slug: string): QueryWithHelpers<HydratedDocument<E, I>, HydratedDocument<E, I>, Q, EntityDocument<E>, `findOne`>
+  findBySlugAndUpdate(slug: string, update: UpdateQuery<E>, options?: MongooseQueryOptions<E>): QueryWithHelpers<HydratedDocument<E, I>, HydratedDocument<E, I>, Q, EntityDocument<E>, `findOneAndUpdate`>
+  findBySlugAndDelete(slug: string, options?: MongooseQueryOptions<E>): QueryWithHelpers<HydratedDocument<E, I>, HydratedDocument<E, I>, Q, EntityDocument<E>, `findOneAndDelete`>
   findByURI(uri: string): Promise<HydratedDocument<E, I> | null>
-  findManyByURI(uris: string[]): Promise<HydratedDocument<E, I>>
+  findManyByURI(uris: string[]): Promise<HydratedDocument<E, I>[]>
 }
 
 export interface EntityListOptions<E extends Entity = Entity> {

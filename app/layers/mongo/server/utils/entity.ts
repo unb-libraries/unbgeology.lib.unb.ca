@@ -5,6 +5,8 @@ import {
   model as loadModel,
   Schema,
   type SchemaDefinition,
+  type UpdateQuery,
+  type QueryOptions,
 } from "mongoose"
 import {
   EntityFieldTypes,
@@ -60,6 +62,25 @@ const EntityTypeSchema = function <
         const path = Object.values(this.schema.paths)
           .find(path => path.options.alias === `pk`)?.path ?? `_id`
         return this.findOne().where(path, pk)
+      },
+      findByPKAndUpdate(pk: string, update: UpdateQuery<E>, options?: QueryOptions<E>) {
+        const path = Object.values(this.schema.paths)
+          .find(path => path.options.alias === `pk`)?.path ?? `_id`
+        return this.findOneAndUpdate({ [path as keyof E]: pk }, update, options)
+      },
+      findByPKAndDelete(pk: string, options?: QueryOptions<E>) {
+        const path = Object.values(this.schema.paths)
+          .find(path => path.options.alias === `pk`)?.path ?? `_id`
+        return this.findOneAndDelete({ [path as keyof E]: pk }, options)
+      },
+      findBySlug(slug: string) {
+        return this.findOne().where(`slug`, slug.toLowerCase())
+      },
+      findBySlugAndUpdate(slug: string, update: UpdateQuery<E>, options?: QueryOptions<E>) {
+        return this.findOneAndUpdate({ slug: slug.toLowerCase() }, update, options)
+      },
+      findBySlugAndDelete(slug: string, options?: QueryOptions<E>) {
+        return this.findOneAndDelete({ slug: slug.toLowerCase() }, options)
       },
       async findByURI(uri: string) {
         const entities = await this.findManyByURI([uri])
