@@ -30,7 +30,6 @@ export async function readSpecimenBody(event: H3Event) {
     name,
     description,
     date,
-    age,
     pieces,
     partial,
     composition,
@@ -54,6 +53,15 @@ export async function readSpecimenBody(event: H3Event) {
     body.measurements = measurements
       .filter(({ width, length }) => width && length)
       .map(({ width, length }) => ({ width, length }))
+  }
+  if (age) {
+    const { relative: unitURI, absolute } = age
+    if (unitURI) {
+      body.age = {
+        relative: Geochronology.findByURI(unitURI),
+        absolute,
+      }
+    }
   }
   if (origin) {
     const { latitude, longitude, accuracy = 0, name, description } = origin

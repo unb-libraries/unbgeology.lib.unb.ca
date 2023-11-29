@@ -1,6 +1,6 @@
 import { type Image, type Entity, type User } from "layers/base/types/entity"
 import { type Person } from "types/affiliation"
-import { type Classification, type StorageLocation } from "types/taxonomy"
+import { GeochronologicUnit, type Classification, type StorageLocation } from "types/taxonomy"
 
 export enum Status {
   DRAFT = `draft`,
@@ -69,7 +69,10 @@ export interface Specimen extends Entity {
   classifications: Classification[]
   measurements: Measurement[]
   date?: Date
-  age: string
+  age: {
+    relative: GeochronologicUnit
+    numeric: number
+  }
   origin: Place
   pieces: number
   partial: boolean

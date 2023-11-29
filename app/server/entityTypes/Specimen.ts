@@ -53,8 +53,15 @@ export default defineEntityType<SpecimenDocument>(`Specimen`, {
     required: false,
   },
   age: {
-    type: EntityFieldTypes.String,
-    required: optionalWhileInDraft,
+    relative: {
+      type: EntityFieldTypes.ObjectId,
+      ref: `Taxonomy.Geochronology`,
+      required: optionalWhileInDraft,
+    },
+    numeric: {
+      type: EntityFieldTypes.Number,
+      required: false,
+    },
   },
   origin: {
     type: {
