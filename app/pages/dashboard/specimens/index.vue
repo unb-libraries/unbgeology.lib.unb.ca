@@ -10,6 +10,9 @@
         <li>{{ dimensions.width }}mm x {{ dimensions.length }}mm</li>
       </ul>
     </template>
+    <template #age="{ value: age }">
+      {{ age.numeric ? age.numeric : `${age.relative.boundaries.lower} - ${age.relative.boundaries.upper}` }} Ma ({{ age.relative.label }})
+    </template>
     <template #partial="{ value }">
       {{ value ? `Yes` : `No` }}
     </template>

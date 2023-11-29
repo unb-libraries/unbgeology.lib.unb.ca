@@ -8,6 +8,7 @@ export default defineEventHandler(async (event) => {
     .select(getSelectedFields(select))
     .populate(`images`, filterSelect({ root: `images`, default: [`_id`, `filename`, `filepath`] }))
     .populate(`classifications`, filterSelect({ root: `classifications`, default: [`_id`, `label`] }))
+    .populate(`age.relative`, filterSelect({ root: `age.relative`, default: [`_id`, `label`, `boundaries`] }))
     .populate(`collector`, filterSelect({ root: `collector`, default: [`_id`, `firstName`, `lastName`] }))
     .populate(`sponsor`, filterSelect({ root: `sponsor`, default: [`_id`, `firstName`, `lastName`] }))
     .populate(`storage.location`, filterSelect({ root: `storage.location` }))

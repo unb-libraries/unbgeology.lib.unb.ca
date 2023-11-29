@@ -107,13 +107,22 @@
             </div>
             <div class="twa-form-row">
               <!-- Age -->
-              <div class="twa-form-field w-1/2">
-                <label for="age">Age</label>
-                <PvInputSelect v-model="body.age" name="age" :options="['Cretaceous', 'Eocene', 'Ordovician', 'Holocene', 'Precambrian']" />
+              <div class="twa-form-field w-1/3">
+                <label for="age-relative">Age (relative)</label>
+                <EntityInputSelect v-model="body.age.relative" name="age-relative" :options="ageUnits" option-label="label" />
+              </div>
+
+              <!-- Age -->
+              <div class="twa-form-field w-1/3">
+                <label for="age-numeric">Age (numeric)</label>
+                <div class="border:primary-60/75 inline-flex">
+                  <PvInputNumber v-model="body.age.numeric" name="age-numeric" max-fraction-digits="2" min="0" :pt="{ input: { class: `rounded-r-none w-full` }}" />
+                  <span class="bg-primary-60 rounded-r-lg p-3">Ma</span>
+                </div>
               </div>
 
               <!-- Composition -->
-              <div class="twa-form-field w-1/2">
+              <div class="twa-form-field w-1/3">
                 <label for="composition">Composition</label>
                 <PvInputSelect v-model="body.composition" name="composition" :options="['solid']" />
               </div>
@@ -230,7 +239,7 @@
 <script setup lang="ts">
 import { EntityJSONProperties, type Image, EntityJSONBody } from 'layers/base/types/entity'
 import { type Specimen, type Publication, type Measurement } from 'types/specimen'
-import { type Classification } from 'types/taxonomy'
+import { type GeochronologicUnit, type Classification } from 'types/taxonomy'
 import { type Person } from 'types/affiliation'
 import type { Coordinate } from 'types/leaflet'
 import type { Location } from 'types/nominatim'
@@ -251,6 +260,9 @@ const images = computed(() => imageEntityList.value?.entities ?? [])
 
 const { list: classificationList } = await fetchEntityList<Classification>(`/api/taxonomies/classification`)
 const classifications = computed(() => classificationList.value?.entities ?? [])
+
+const { list: ageUnitList } = await fetchEntityList<GeochronologicUnit>(`/api/taxonomies/geochronology`)
+const ageUnits = computed(() => ageUnitList.value?.entities ?? [])
 
 const { fetchAll: fetchAllPeople, create: createPerson } = useEntityType<Person>(Symbol(`affiliations`), `people`)
 const { list: peopleList, refresh: refreshPeopleList } = await fetchAllPeople()

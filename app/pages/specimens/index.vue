@@ -47,6 +47,9 @@
                   <li>{{ dimensions.width }}mm x {{ dimensions.length }}mm</li>
                 </ul>
               </template>
+              <template #age="{ value: age }">
+                {{ age.numeric ? age.numeric : `${age.relative.boundaries.lower} - ${age.relative.boundaries.upper}` }} Ma ({{ age.relative.label }})
+              </template>
               <template #storage="{ value: storage }">
                 {{ storage?.at(-1)?.location.public ? `Public` : `In Archive` }}
               </template>

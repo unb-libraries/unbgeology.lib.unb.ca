@@ -18,6 +18,7 @@ const specimen = ref<EntityJSONProperties<Specimen>>({
   },
   measurements: [{}],
   pieces: 1,
+  age: {},
   origin: {},
 } as EntityJSONProperties<Specimen>)
 

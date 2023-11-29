@@ -38,6 +38,9 @@
           <template #classifications>
             {{ classificationLabels }}
           </template>
+          <template #age="{ value: age }">
+            {{ age.numeric ? age.numeric : `${age.relative.boundaries.lower} - ${age.relative.boundaries.upper}` }} Ma ({{ age.relative.label }})
+          </template>
           <template #pieces>
             {{ specimen?.pieces }}{{ specimen?.partial ? ` (P)` : `` }}
           </template>

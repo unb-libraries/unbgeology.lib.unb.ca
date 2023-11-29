@@ -55,11 +55,14 @@ export async function readSpecimenBody(event: H3Event) {
       .map(({ width, length }) => ({ width, length }))
   }
   if (age) {
-    const { relative: unitURI, absolute } = age
+    const { relative: unitURI, numeric } = age
     if (unitURI) {
-      body.age = {
-        relative: Geochronology.findByURI(unitURI),
-        absolute,
+      const unit = await Geochronology.findByURI(unitURI)
+      if (unit) {
+        body.age = {
+          relative: unit,
+          numeric,
+        }
       }
     }
   }
