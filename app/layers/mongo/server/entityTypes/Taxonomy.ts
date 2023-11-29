@@ -21,4 +21,14 @@ export default defineEntityType<Taxonomy>(`Taxonomy`, {
       },
     },
   },
+  toJSON: {
+    transform(doc, ret, options) {
+      if (ret.parent === null) {
+        delete ret.parent
+      }
+
+      ret.slug = doc._id
+      delete ret.id
+    },
+  },
 })

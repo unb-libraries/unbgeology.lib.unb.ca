@@ -8,6 +8,8 @@ export default defineEventHandler(async (event) => {
     if (parent) {
       body.parent = parent
     }
+  } else if (parentURI === null) {
+    body.parent = null
   }
 
   await Taxonomy.findOneAndUpdate({ type, slug }, body, { new: true })

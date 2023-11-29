@@ -87,7 +87,7 @@ export type JUserList = EntityJSONList<User>
 
 export interface Taxonomy extends Entity {
   label: string
-  parent: Taxonomy
+  parent?: Taxonomy
 }
 export type JTaxonomy = EntityJSON<Taxonomy>
 export type JTaxonomyList = EntityJSONList<Taxonomy>
