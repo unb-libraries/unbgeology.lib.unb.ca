@@ -9,24 +9,32 @@
     <div class="flex flex-row space-x-8">
       <div class="flex w-2/3 flex-col space-y-12">
         <section>
-          <nuxt-img :src="`/image/${specimen?.images[0].filename}`" format="webp" fit="cover" width="1024" height="731" />
+          <nuxt-img
+            v-if="(specimen?.images ?? []).length > 0"
+            :src="`/image/${specimen?.images[0].filename}`"
+            format="webp"
+            fit="cover"
+            width="1024"
+            height="731"
+          />
+          <div v-else class="bg-primary-60 aspect-7/5 w-full" />
         </section>
-        <section class="ml-64 text-justify">
+        <section v-if="specimen?.description" class="ml-64 text-justify">
           {{ specimen?.description }}
         </section>
-        <section class="ml-64 w-full">
+        <section v-if="specimen?.origin" class="ml-64 w-full">
           <h2 class="text-primary-40 mb-3 text-lg font-bold uppercase">
             Place of Origin
           </h2>
           <LeafletMap class="h-96 w-full" :zoom="7" :center="[specimen?.origin?.latitude ?? 0, specimen?.origin?.longitude ?? 0]">
             <LeafletMarker
-              v-if="specimen?.origin"
-              :name="specimen?.name"
+              v-if="specimen.origin"
+              :name="specimen.name"
               :center="[specimen?.origin.latitude, specimen?.origin.longitude]"
             />
           </LeafletMap>
         </section>
-        <section class="ml-64">
+        <section v-if="(specimen?.publications ?? []).length > 0" class="ml-64">
           <h2 class="text-primary-40 mb-3 text-lg font-bold uppercase">
             Publications
           </h2>
