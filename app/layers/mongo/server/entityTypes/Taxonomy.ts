@@ -5,7 +5,6 @@ export default defineEntityType<Taxonomy>(`Taxonomy`, {
   label: {
     type: EntityFieldTypes.String,
     required: true,
-    unique: true,
   },
   parent: {
     type: EntityFieldTypes.ObjectId,
@@ -13,7 +12,7 @@ export default defineEntityType<Taxonomy>(`Taxonomy`, {
     required: false,
   },
 }, {
-  slug: `label`,
+  slug: `_id`,
   virtuals: {
     uri: {
       get() {
