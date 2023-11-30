@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-import { EntityJSONBody, Taxonomy } from 'layers/base/types/entity'
+import { type EntityJSONBody, type Taxonomy } from 'layers/base/types/entity'
 
 definePageMeta({
   layout: `dashboard`,
