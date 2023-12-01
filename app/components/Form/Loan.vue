@@ -1,40 +1,40 @@
 <template>
   <EntityForm :entity="loan" @save="onSave" @cancel="onCancel">
     <template #default="{ body }">
-      <div class="my-6 flex flex-row">
-        <div class="mr-3 flex flex-col">
-          <label class="mb-2 text-lg font-bold" for="type">Type</label>
+      <div class="form-row form-row-3">
+        <div class="form-field">
+          <label for="type">Type</label>
           <PvInputSelect v-model="body.type" name="type" :options="[LoanType.IN, LoanType.OUT]" />
         </div>
-        <div class="mr-3 flex grow flex-col">
-          <label class="mb-2 text-lg font-bold" for="start">Start</label>
+        <div class="form-field">
+          <label for="start">Start</label>
           <PvInputMask v-model="body.start" name="start" mask="9999-99-99" placeholder="YYYY-MM-DD" />
         </div>
-        <div class="ml-3 flex grow flex-col">
-          <label class="mb-2 text-lg font-bold" for="end">End</label>
+        <div class="form-field">
+          <label for="end">End</label>
           <PvInputMask v-model="body.end" name="end" mask="9999-99-99" placeholder="YYYY-MM-DD" />
         </div>
       </div>
 
       <!-- Contact -->
-      <h3 class="text-primary-80 border-primary-80 mb-3 mt-12 w-full border-b py-2 text-sm uppercase">
+      <h3 class="form-section-heading">
         Contact
       </h3>
-      <div class="my-6 flex flex-col">
-        <label class="mb-2 text-lg font-bold" for="contact-name">Name</label>
+      <div class="form-field">
+        <label for="contact-name">Name</label>
         <PvInputText v-model="body.contact.name" />
       </div>
-      <div class="my-6 flex flex-col">
-        <label class="mb-2 text-lg font-bold" for="affiliation">Affiliation</label>
+      <div class="form-field">
+        <label for="affiliation">Affiliation</label>
         <PvInputText v-model="body.contact.affiliation" />
       </div>
-      <div class="my-6 flex flex-row">
-        <div class="mr-3 flex w-1/2 flex-col">
-          <label class="mb-2 text-lg font-bold" for="contact-phone">Phone</label>
+      <div class="form-row form-row-2">
+        <div class="form-field">
+          <label for="contact-phone">Phone</label>
           <PvInputText v-model="body.contact.phone" />
         </div>
-        <div class="ml-3 flex w-1/2 flex-col">
-          <label class="mb-2 text-lg font-bold" for="contact-email">Email</label>
+        <div class="form-field">
+          <label for="contact-email">Email</label>
           <PvInputText v-model="body.contact.email" />
         </div>
       </div>

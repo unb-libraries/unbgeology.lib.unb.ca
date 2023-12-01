@@ -1,22 +1,22 @@
 <template>
   <EntityForm :entity="publication" @save="publication => emits(`save`, publication)">
     <template #default="{ body }">
-      <div class="my-6 flex flex-col">
-        <label class="mb-2 w-full text-lg font-bold" for="citation">DOI</label>
+      <div class="form-field">
+        <label for="citation">DOI</label>
         <FormInputDoiResolve @success="pub => onResolve(pub, body)" @error="msg => doiResolveError = msg ?? ``" />
         <span v-if="doiResolveError" class="text-sm">DOI could not be resolved.</span>
       </div>
-      <div class="my-6 flex flex-col">
-        <label class="mb-2 w-full text-lg font-bold" for="citation">Citation</label>
+      <div class="form-field">
+        <label for="citation">Citation</label>
         <PvInputText v-model="body.citation" />
       </div>
-      <div class="my-6 flex flex-col">
-        <label class="mb-2 w-full text-lg font-bold" for="abstract">Abstract</label>
-        <textarea v-model="body.abstract" rows="5" class="dark:bg-primary border-primary-20 dark:border-primary-60/75 hover:border-accent-light dark:focus:border-accent-mid rounded-lg border p-2" />
+      <div class="form-field">
+        <label for="abstract">Abstract</label>
+        <textarea v-model="body.abstract" rows="5" class="form-input-textarea" />
       </div>
     </template>
     <template #more-actions="{ body }">
-      <button class="border-red hover:bg-red text-red rounded-md border p-3 hover:text-white" @click.prevent="removePublication!(body)">
+      <button class="form-action form-action-delete" @click.prevent="removePublication!(body)">
         Delete
       </button>
     </template>

@@ -2,65 +2,58 @@
   <EntityForm :entity="specimen" @save="onSave">
     <template #default="{ body }">
       <div class="flex flex-col space-y-36">
-        <section class="twa-form-column">
+        <section class="form-col">
           <!-- IDs -->
-          <div class="twa-form-row">
+          <div class="form-row" :class="{ 'form-row-3': unbOwned, 'form-row-4': !unbOwned }">
             <!-- ID -->
-            <div class="twa-form-field" :class="{ 'w-1/3': unbOwned, 'w-1/4': !unbOwned }">
+            <div class="form-field">
               <label for="objectId">ID</label>
               <div class="border-primary-60/75 inline-flex">
                 <PvInputText v-model="body.objectID.unb" class="disabled:bg-primary-80 disabled:text-primary-40 grow rounded-r-none" name="objectID" disabled />
-                <div class="bg-primary-60 flex flex-row rounded-r-lg p-3">
-                  <input
-                    id="unbOwned"
-                    v-model="unbOwned"
-                    type="checkbox"
-                    name="unbOwned"
-                    class="dark:bg-primary border-primary-20 dark:border-primary-60/75 hover:border-accent-light checked:border-accent-mid focus:ring-accent-light/50 focus:ring-offset-base dark:focus:ring-offset-primary h-6 w-6 cursor-pointer appearance-none rounded-md border bg-white align-middle checked:border-8"
-                    @change="body.objectID.unb = !unbOwned ? `UNB-X${body.objectID.unb.substring(5)}` : `UNB-0${body.objectID.unb.substring(5)}`"
-                  >
-                  <label for="unbOwned" class="mx-3 cursor-pointer align-middle">Owned by UNB</label>
+                <div class="bg-primary-60 form-input-checkbox rounded-r-lg p-3">
+                  <input id="unbOwned" v-model="unbOwned" type="checkbox" name="unbOwned" @change="body.objectID.unb = !unbOwned ? `UNB-X${body.objectID.unb.substring(5)}` : `UNB-0${body.objectID.unb.substring(5)}`">
+                  <label for="unbOwned" class="mx-3">Owned by UNB</label>
                 </div>
               </div>
             </div>
 
             <!-- Lender ID -->
-            <div v-if="!unbOwned" class="twa-form-field w-1/4">
+            <div v-if="!unbOwned" class="form-field w-1/4">
               <label for="lenderId">External ID</label>
               <PvInputText v-model="body.objectID.external" name="lenderId" />
             </div>
 
             <!-- International Index Number -->
-            <div class="twa-form-field" :class="{ 'w-1/3': unbOwned, 'w-1/4': !unbOwned }">
+            <div class="form-field">
               <label for="intId">International Index Number</label>
               <PvInputText v-model="body.objectID.international" name="intId" />
             </div>
 
             <!-- Other ID -->
-            <div class="twa-form-field" :class="{ 'w-1/3': unbOwned, 'w-1/4': !unbOwned }">
+            <div class="form-field">
               <label for="otherId">Other ID</label>
               <PvInputText name="otherId" />
             </div>
           </div>
 
-          <div class="twa-form-row">
-            <div class="twa-form-column w-1/2">
+          <div class="form-row">
+            <div class="form-col w-1/2">
               <!-- Name -->
-              <div class="twa-form-field">
+              <div class="form-field">
                 <label for="name">Name</label>
                 <PvInputText v-model="body.name" name="name" />
               </div>
 
               <!-- Description -->
-              <div class="twa-form-field">
+              <div class="form-field">
                 <label for="description">Description</label>
                 <textarea v-model="body.description" class="dark:bg-primary border-primary-20 dark:border-primary-60/75 hover:border-accent-light dark:focus:border-accent-mid rounded-lg border p-2" name="description" rows="8" />
               </div>
             </div>
 
-            <div class="twa-form-column w-1/2">
+            <div class="form-col w-1/2">
               <!-- Images -->
-              <div class="twa-form-field h-full">
+              <div class="form-field h-full">
                 <label for="images">Images</label>
                 <PvInputImageGallery v-model="body.images" :images="images" name="images" class="border-primary-20 dark:border-primary-60/75 hover:border-accent-light h-full rounded-lg border p-3" />
               </div>
@@ -69,13 +62,13 @@
         </section>
 
         <section>
-          <h2 class="twa-form-section-heading">
+          <h2 class="form-section-heading">
             Specimen details
           </h2>
-          <div class="twa-form-column">
-            <div class="twa-form-row">
+          <div class="form-col">
+            <div class="form-row">
               <!-- Classifications -->
-              <div class="twa-form-field w-4/5">
+              <div class="form-field w-4/5">
                 <label for="classifications">Classifications</label>
                 <EntityInputSelect
                   v-model="body.classifications"
@@ -88,32 +81,26 @@
               </div>
 
               <!-- Pieces -->
-              <div class="twa-form-field w-1/5">
+              <div class="form-field">
                 <label for="pieces">Pieces</label>
                 <div class="border-primary-60/75 inline-flex">
-                  <PvInputNumber v-model="body.pieces" class="grow rounded-r-none" name="pieces" :pt="{ input: { class: `rounded-r-none w-full` }}" />
-                  <div class="bg-primary-60 flex flex-row rounded-r-lg p-3">
-                    <input
-                      id="partial"
-                      v-model="body.partial"
-                      type="checkbox"
-                      name="partial"
-                      class="dark:bg-primary border-primary-20 dark:border-primary-60/75 hover:border-accent-light checked:border-accent-mid focus:ring-accent-light/50 focus:ring-offset-base dark:focus:ring-offset-primary h-6 w-6 appearance-none rounded-md border bg-white align-middle checked:border-8"
-                    >
-                    <label for="partial" class="mx-3 cursor-pointer align-middle">Partial</label>
+                  <PvInputNumber v-model="body.pieces" class="rounded-r-none" name="pieces" :pt="{ input: { class: `rounded-r-none w-full` }}" />
+                  <div class="bg-primary-60 form-input-checkbox rounded-r-lg p-3">
+                    <input id="partial" v-model="body.partial" type="checkbox" name="partial">
+                    <label for="partial" class="mx-3">Partial</label>
                   </div>
                 </div>
               </div>
             </div>
-            <div class="twa-form-row">
+            <div class="form-row form-row-3">
               <!-- Age -->
-              <div class="twa-form-field w-1/3">
+              <div class="form-field">
                 <label for="age-relative">Age (relative)</label>
                 <EntityInputSelect v-model="body.age.relative" name="age-relative" :options="ageUnits" option-label="label" />
               </div>
 
               <!-- Age -->
-              <div class="twa-form-field w-1/3">
+              <div class="form-field">
                 <label for="age-numeric">Age (numeric)</label>
                 <div class="border:primary-60/75 inline-flex">
                   <PvInputNumber v-model="body.age.numeric" name="age-numeric" max-fraction-digits="2" min="0" :pt="{ input: { class: `rounded-r-none w-full` }}" />
@@ -122,16 +109,16 @@
               </div>
 
               <!-- Composition -->
-              <div class="twa-form-field w-1/3">
+              <div class="form-field">
                 <label for="composition">Composition</label>
                 <PvInputSelect v-model="body.composition" name="composition" :options="['solid']" />
               </div>
             </div>
 
-            <div class="twa-form-field">
-              <span class="twa-label">Measurements</span>
+            <div class="form-field">
+              <span class="label">Measurements</span>
               <div class="grid gap-6" :class="`grid-cols-${Math.min(4, body.pieces)}`">
-                <div v-for="(_, index) in padMeasurements(body.measurements, body.pieces)" :key="index" class="twa-form-field">
+                <div v-for="(_, index) in padMeasurements(body.measurements, body.pieces)" :key="index" class="form-field">
                   <div class="border-primary-60/75 inline-flex">
                     <div class="bg-primary-60 inline-flex rounded-l-lg p-3 align-middle">
                       <label :for="`width-${index}`">W</label>
@@ -150,19 +137,19 @@
         </section>
 
         <section>
-          <h2 class="twa-form-section-heading">
+          <h2 class="form-section-heading">
             Origin details
           </h2>
-          <div class="twa-form-row">
-            <div class="twa-form-column w-1/2">
+          <div class="form-row">
+            <div class="form-col w-1/2">
               <!-- Date -->
-              <div class="twa-form-field">
+              <div class="form-field">
                 <label for="date">Date</label>
                 <PvInputMask v-model="body.date" name="date" mask="9999?/99/99" placeholder="YYYY/MM/DD" />
               </div>
 
               <!-- Collector -->
-              <div class="twa-form-field">
+              <div class="form-field">
                 <label for="collector">Collector</label>
                 <div class="inline-flex">
                   <EntityInputSelect
@@ -170,9 +157,9 @@
                     :options="people"
                     :option-label="(person) => `${person.firstName} ${person.lastName}`"
                     name="collector"
-                    class="border-primary-60/75 rounded-r-none"
+                    class="rounded-r-none"
                   />
-                  <button class="bg-accent-mid hover:bg-accent-light rounded-lg rounded-l-none px-6 py-3" @click="showPersonForm = true">
+                  <button class="form-action form-action-submit rounded-l-none font-normal" @click="showPersonForm = true">
                     Add
                     <PvModal v-if="showPersonForm">
                       <FormPerson v-if="showPersonForm" :person="newPerson" @save="onSaveNewPerson" @cancel="showPersonForm = false" />
@@ -182,7 +169,7 @@
               </div>
 
               <!-- Sponsor -->
-              <div class="twa-form-field">
+              <div class="form-field">
                 <label for="sponsor">Sponsor</label>
                 <div class="inline-flex">
                   <EntityInputSelect
@@ -190,9 +177,9 @@
                     :options="people"
                     :option-label="(person) => `${person.firstName} ${person.lastName}`"
                     name="Sponsor"
-                    class="border-primary-60/75 rounded-r-none"
+                    class="rounded-r-none"
                   />
-                  <button class="bg-accent-mid hover:bg-accent-light rounded-lg rounded-l-none px-6 py-3" @click="showPersonForm = true">
+                  <button class="form-action form-action-submit rounded-l-none font-normal" @click="showPersonForm = true">
                     Add
                     <PvModal v-if="showPersonForm">
                       <FormPerson v-if="showPersonForm" :person="newPerson" @save="onSaveNewPerson" @cancel="showPersonForm = false" />
@@ -202,9 +189,9 @@
               </div>
             </div>
 
-            <div class="twa-form-column w-1/2">
+            <div class="form-col w-1/2">
               <!-- Origin -->
-              <div class="twa-form-field h-full w-full">
+              <div class="form-field h-full w-full">
                 <label for="origin">Origin</label>
                 <LeafletMap class="border-primary-20 dark:border-primary-60/75 h-full rounded-md border" name="origin" :zoom="2" :center="[body.origin?.latitude ?? 0, body.origin?.longitude ?? 0]" @click="coord => setOrigin(coord, body)">
                   <LeafletSearch @item-select="item => onSearchItemSelect(item, body)" />
@@ -222,11 +209,11 @@
         </section>
 
         <section>
-          <h2 class="twa-form-section-heading">
+          <h2 class="form-section-heading">
             Misc
           </h2>
           <!-- Publications -->
-          <div class="twa-form-field group">
+          <div class="form-field group">
             <label for="publications">Publications</label>
             <EntityInputInlineForm v-model="body.publications" :form="FormPublication" :label="({ citation: cit }: Publication) => cit.substring(0, cit.indexOf(`,`))" />
           </div>
@@ -305,24 +292,3 @@ const onSaveNewPerson = async (person: EntityJSONBody<Person>) => {
   showPersonForm.value = false
 }
 </script>
-
-<style scoped>
-.twa-form-row {
-  @apply flex flex-row space-x-6
-}
-.twa-form-column {
-  @apply flex flex-col space-y-6
-}
-.twa-form-field {
-  @apply flex flex-col
-}
-.twa-label {
-  @apply mb-2 text-lg font-bold
-}
-.twa-form-field > label {
-  @apply twa-label
-}
-.twa-form-section-heading {
-  @apply text-primary-60/75 mb-12 uppercase before:bg-primary-60/75 after:bg-primary-60/75 flex items-center before:ml-48 before:mr-6 before:flex-1 before:pt-px after:mr-48 after:ml-6 after:flex-1 after:pt-px
-}
-</style>

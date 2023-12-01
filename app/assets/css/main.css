@@ -15,3 +15,86 @@
     @apply mb-12
   }
 }
+
+@layer components {
+  .form-row {
+    @apply flex flex-row space-x-6
+  }
+  .form-row-2 > .form-field {
+    @apply w-1/2
+  }
+  .form-row-3 > .form-field {
+    @apply w-1/3
+  }
+  .form-row-4 > .form-field {
+    @apply w-1/4
+  }
+  .form-row-5 > .form-field {
+    @apply w-1/5
+  }
+  
+
+  .form-col {
+    @apply flex flex-col space-y-6
+  }
+
+  
+  form {
+    @apply form-col
+  }
+  
+  
+  .form-field {
+    @apply flex flex-col
+  }
+  .form-field > label {
+    @apply mb-2 text-lg font-bold align-middle
+  }
+
+  .form-input-textarea {
+    @apply dark:bg-primary border-primary-20 dark:border-primary-60/75 hover:border-accent-light dark:focus:border-accent-mid rounded-lg border p-2
+  }
+  
+  
+  .form-input-checkbox, .form-input-radio {
+    @apply inline-flex
+  }
+  .form-input-checkbox input[type="checkbox"] {
+    @apply dark:bg-primary border-primary-20 dark:border-primary-60/75 hover:border-accent-light checked:border-accent-mid focus:ring-accent-light/50 focus:ring-offset-base dark:focus:ring-offset-primary h-6 w-6 cursor-pointer appearance-none rounded-md border bg-white align-middle checked:border-8
+  }
+  .form-input-radio input[type="radio"] {
+    @apply dark:bg-primary border-primary-20 dark:border-primary-60/75 hover:border-accent-light checked:border-accent-mid focus:ring-accent-light/50 focus:ring-offset-base dark:focus:ring-offset-primary h-6 w-6 cursor-pointer appearance-none rounded-full border bg-white align-middle checked:border-8 focus:ring-2 focus:ring-offset-2
+  }
+  .form-input-checkbox label, .form-input-radio label {
+    @apply ml-3 cursor-pointer
+  }
+  
+  
+  .form-input-colorpicker {
+    @apply h-full
+  }
+  .form-input-colorpicker input {
+    @apply border border-primary-60/75 hover:border-accent-light focus:border-accent-mid rounded-lg cursor-pointer w-full h-full
+  }
+
+  
+  .form-section-heading {
+    @apply text-primary-60/75 mb-12 uppercase before:bg-primary-60/75 after:bg-primary-60/75 flex items-center before:ml-48 before:mr-6 before:flex-1 before:pt-px after:mr-48 after:ml-6 after:flex-1 after:pt-px
+  }
+
+  .form-actions {
+    @apply flex flex-row space-x-2
+  }
+  .form-action {
+    @apply p-3 text-white font-bold
+  }
+  .form-action-submit {
+    @apply bg-accent-dark dark:bg-accent-mid hover:bg-accent-light rounded-md
+  }
+  .form-action-delete {
+    @apply border border-red hover:bg-red text-red hover:text-white rounded-md
+  }
+  .form-action-cancel {
+    @apply hover:cursor-pointer hover:underline
+  }
+}

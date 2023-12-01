@@ -2,14 +2,14 @@
   <EntityForm :entity="term">
     <template #default="{ body }">
       <slot name="label" :body="body">
-        <div class="flex flex-col">
-          <label class="mb-2 text-lg font-bold" for="label">Label</label>
+        <div class="form-field">
+          <label for="label">Label</label>
           <PvInputText id="form-input-label" v-model="body.label" name="Label" />
         </div>
       </slot>
       <slot name="parent" :body="body">
-        <div class="my-6 flex flex-col">
-          <label class="mb-2 text-lg font-bold" for="parent">Parent</label>
+        <div class="form-field">
+          <label for="parent">Parent</label>
           <EntityInputSelect id="form-select-parent" v-model="body.parent" name="parent" :options="terms" option-label="label" />
         </div>
       </slot>
