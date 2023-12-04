@@ -25,10 +25,7 @@
         <label for="affiliations">Affiliations</label>
         <PvInputMultiSelect v-model="personBody.affiliations" :options="organizations" option-label="name" option-value="self" display="chip" />
       </div>
-      <div class="form-field form-input-checkbox">
-        <input v-model="personBody.public" type="checkbox" name="public">
-        <label for="public">Public profile</label>
-      </div>
+      <PvCheckbox id="public" v-model="personBody.public" label="Public profile" name="public" />
     </template>
   </EntityForm>
 </template>
