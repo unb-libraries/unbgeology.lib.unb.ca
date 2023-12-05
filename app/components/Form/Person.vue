@@ -1,29 +1,36 @@
 <template>
   <EntityForm :entity="person" @save="onSave">
     <template #default="{ body: personBody }">
-      <div class="form-row">
+      <div class="form-row form-row-2">
         <div class="form-field">
           <label for="firstName">First name</label>
-          <PvInputText v-model="personBody.firstName" name="firstName" />
+          <PvInputText v-model="personBody.firstName" class="form-input form-input-text" name="firstName" />
         </div>
         <div class="form-field">
           <label for="lastName">Last name</label>
-          <PvInputText v-model="personBody.lastName" name="lastName" />
+          <PvInputText v-model="personBody.lastName" class="form-input form-input-text" name="lastName" />
         </div>
       </div>
-      <div class="form-row">
+      <div class="form-row form-row-2">
         <div class="form-field">
           <label for="email">Email</label>
-          <PvInputText v-model="personBody.email" name="email" />
+          <PvInputText v-model="personBody.email" class="form-input form-input-text" name="email" />
         </div>
         <div class="form-field">
           <label for="phone">Phone</label>
-          <PvInputText v-model="personBody.phone" name="phone" />
+          <PvInputText v-model="personBody.phone" class="form-input form-input-text" name="phone" />
         </div>
       </div>
       <div class="form-field">
         <label for="affiliations">Affiliations</label>
-        <PvInputMultiSelect v-model="personBody.affiliations" :options="organizations" option-label="name" option-value="self" display="chip" />
+        <EntityInputSelect
+          v-model="personBody.affiliations"
+          class="form-input form-input-pvselect"
+          :options="organizations"
+          option-label="name"
+          option-value="self"
+          display="chip"
+        />
       </div>
       <PvCheckbox id="public" v-model="personBody.public" label="Public profile" name="public" />
     </template>

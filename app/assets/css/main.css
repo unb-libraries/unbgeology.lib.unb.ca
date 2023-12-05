@@ -14,9 +14,23 @@
   p {
     @apply mb-12
   }
+
+  form {
+    @apply form-col
+  }
+  form h2 {
+    @apply mb-12
+  }
 }
 
 @layer components {
+  .divider {
+    @apply 
+      flex before:flex-1 after:flex-1 before:ml-48 before:mr-6 empty:before:mr-0 before:pt-px after:mr-48 after:ml-6 empty:after:ml-0 after:pt-px items-center
+      before:bg-primary-60/75 after:bg-primary-60/75
+      text-primary-60/75 uppercase  
+  }
+
   .form-row {
     @apply flex flex-row space-x-6
   }
@@ -39,48 +53,34 @@
   }
 
   
-  form {
-    @apply form-col
-  }
-  
-  
   .form-field {
     @apply flex flex-col
   }
-  .form-field > label {
+  .form-field-label {
     @apply mb-2 text-lg font-bold align-middle
   }
-
-  .form-input-textarea {
-    @apply dark:bg-primary border-primary-20 dark:border-primary-60/75 hover:border-accent-light dark:focus:border-accent-mid rounded-lg border p-2
-  }
-  
-  
-  .form-input-checkbox, .form-input-radio {
-    @apply inline-flex
-  }
-  .form-input-checkbox input[type="checkbox"] {
-    @apply dark:bg-primary border-primary-20 dark:border-primary-60/75 hover:border-accent-light checked:border-accent-mid focus:ring-accent-light/50 focus:ring-offset-base dark:focus:ring-offset-primary h-6 w-6 cursor-pointer appearance-none rounded-md border bg-white align-middle checked:border-8
-  }
-  .form-input-radio input[type="radio"] {
-    @apply dark:bg-primary border-primary-20 dark:border-primary-60/75 hover:border-accent-light checked:border-accent-mid focus:ring-accent-light/50 focus:ring-offset-base dark:focus:ring-offset-primary h-6 w-6 cursor-pointer appearance-none rounded-full border bg-white align-middle checked:border-8 focus:ring-2 focus:ring-offset-2
-  }
-  .form-input-checkbox label, .form-input-radio label {
-    @apply ml-3 cursor-pointer
-  }
-  
-  
-  .form-input-colorpicker {
-    @apply h-full
-  }
-  .form-input-colorpicker input {
-    @apply border border-primary-60/75 hover:border-accent-light focus:border-accent-mid rounded-lg cursor-pointer w-full h-full
+  .form-field > label {
+    @apply form-field-label
   }
 
-  
-  .form-section-heading {
-    @apply text-primary-60/75 mb-12 uppercase before:bg-primary-60/75 after:bg-primary-60/75 flex items-center before:ml-48 before:mr-6 before:flex-1 before:pt-px after:mr-48 after:ml-6 after:flex-1 after:pt-px
+
+  .form-input {
+    @apply
+      bg-base dark:bg-primary disabled:bg-primary-80
+      disabled:text-primary-40
+      border border-primary-20 dark:border-primary-60/75 hover:border-accent-light focus:border-accent-mid
   }
+  
+  .form-input-text, .form-input-textarea, .form-input-pvselect, .form-input-number {
+    @apply rounded-lg p-3
+  }
+  .form-input-number {
+    @apply w-full
+  }
+  .form-input-color {
+    @apply rounded-lg h-full cursor-pointer
+  }
+
 
   .form-actions {
     @apply flex flex-row space-x-2

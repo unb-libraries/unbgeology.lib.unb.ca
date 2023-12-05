@@ -1,5 +1,5 @@
 <template>
-  <div class="border-primary-20 hover:border-accent-mid dark:border-primary-60/75 dark:hover:border-accent-light ring-accent-mid focus:ring-accent-light dark:focus:ring-accent-mid flex flex-row rounded-lg border p-3 focus:ring-2" :class="{ 'bg-primary-80 dark:bg-primary-80': pending }">
+  <div class="inline-flex items-center py-0" :class="{ 'bg-primary-80 dark:bg-primary-80': pending }">
     <PvProgressSpinner v-if="pending" class="mr-2 h-6 w-6" stroke-width="4" />
     <svg
       v-else
@@ -12,7 +12,7 @@
     >
       <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
     </svg>
-    <input v-model="doi" class="dark:bg-primary placeholder:text-primary dark:placeholder:text-primary-20 text-primary w-full bg-white focus-visible:outline-none dark:text-base" :class="{ 'bg-primary-80 dark:bg-primary-80': pending }" :disabled="pending">
+    <input v-model="doi" class="placeholder:text-primary dark:placeholder:text-primary-20 text-primary w-full border-none bg-inherit p-3 focus-visible:outline-none dark:bg-inherit dark:text-base" :class="{ 'bg-primary-80 dark:bg-primary-80': pending }" :disabled="pending">
     <svg
       v-if="doi"
       xmlns="http://www.w3.org/2000/svg"

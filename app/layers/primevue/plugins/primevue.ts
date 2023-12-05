@@ -1,4 +1,5 @@
 import AutoComplete from "primevue/autocomplete"
+import ColorPicker from "primevue/colorpicker"
 import Column from "primevue/column"
 import PrimeVue from "primevue/config"
 import DataTable from "primevue/datatable"
@@ -16,6 +17,20 @@ export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.vueApp.use(PrimeVue, {
     unstyled: true,
     pt: usePassThrough(Tailwind, {
+      colorpicker: {
+        root: {
+          class: [
+            `w-full h-full`,
+            `p-0`,
+          ],
+        },
+        input: {
+          class: [
+            `w-full h-full`,
+            `border-0`,
+          ],
+        },
+      },
       column: {
         bodycell: {
           class: [
@@ -72,30 +87,15 @@ export default defineNuxtPlugin((nuxtApp) => {
         root: {
           class: [
             `md:w-full`,
-            `border-primary-20`,
-            `dark:border-primary-60/75`,
-            `rounded-lg`,
-            `dark:hover:border-accent-light`,
-            `dark:bg-primary`,
-
-            // defaults
             `cursor-pointer`,
             `inline-flex`,
             `relative`,
             `select-none`,
-            `bg-white`,
-            `border`,
-            // `border-gray-400`,
             `transition-colors`,
             `duration-200`,
             `ease-in-out`,
-            // `rounded-md`,
-            // md:w-56
-            // dark:bg-gray-900
-            // dark:border-blue-900/40
-            // dark:hover:border-blue-300
             `w-full`,
-            `hover:border-blue-500`,
+            `p-0`,
             `focus:outline-none`,
             `focus:outline-offset-0`,
             `focus:shadow-[0_0_0_0.2rem_rgba(191,219,254,1)]`,
@@ -126,129 +126,42 @@ export default defineNuxtPlugin((nuxtApp) => {
             `transition-shadow`,
             `duration-200`,
             `rounded-none`,
-            // `dark:text-white/80`,
-            // `dark:hover:bg-gray-800`,
-            // `hover:text-gray-700`,
-            // `hover:bg-gray-200`,
-            // `text-gray-700`,
           ],
         }),
+        trigger: {
+          class: [
+            `flex`,
+            `items-center`,
+            `justify-center`,
+            `shrink-0`,
+            `bg-transparent`,
+            `text-gray-500`,
+            `w-12`,
+          ],
+        },
       },
       inputmask: {
-        root: {
-          class: [
-            `dark:bg-primary`,
-            `text-primary`,
-            `dark:text-base`,
-            `border-primary-20`,
-            `dark:border-primary-60/75`,
-            `hover:border-accent-mid`,
-            `dark:hover:border-accent-light`,
-            `focus:ring-2`,
-            `focus:ring-accent-light`,
-            `dark:focus:ring-accent-dark`,
-            `dark:placeholder-text-primary-20`,
-
-            // defaults
-            // `font-sans`,
-            `text-base`,
-            `text-gray-700`,
-            // `dark:text-white/80`,
-            `bg-white`,
-            // `dark:bg-gray-900`,
-            `py-3`,
-            `px-3`,
-            `border`,
-            `border-gray-300`,
-            // `dark:border-blue-900/40`,
-            `hover:border-blue-500`,
-            `focus:outline-none`,
-            `focus:outline-offset-0`,
-            `focus:shadow-[0_0_0_0.2rem_rgba(191,219,254,1)]`,
-            `dark:focus:shadow-[0_0_0_0.2rem_rgba(147,197,253,0.5)]`,
-            `transition duration-200 ease-in-out`,
-            `appearance-none`,
-            `rounded-md`,
-          ],
-        },
+        root: { class: [] },
       },
       inputnumber: {
-        input: {
-          class: [
-            `w-full`,
-            `border`,
-            `border-primary-20`,
-            `dark:border-primary-60/75`,
-            `bg:white`,
-            `dark:bg-primary`,
-            `hover:border-accent-mid`,
-            `dark:hover:border-accent-light`,
-            `focus:ring-2`,
-            `fous:ring-accent-mid`,
-            `dark:focus:shadow-accent-dark`,
-          ],
-        },
+        root: { class: [] },
+        input: { class: [] },
       },
       inputtext: {
-        root: {
-          class: [
-            `dark:bg-primary`,
-            `text-primary`,
-            `dark:text-base`,
-            `border-primary-20`,
-            `dark:border-primary-60/75`,
-            `hover:border-accent-mid`,
-            `dark:hover:border-accent-light`,
-            `focus:ring-2`,
-            `focus:ring-accent-light`,
-            `dark:focus:ring-accent-mid`,
-            `placeholder:text-primary`,
-            `dark:placeholder-text-primary-20`,
-
-            // defaults
-            `m-0`,
-            // `font-sans`,
-            // `text-gray-600`,
-            // `dark:text-white/80`,
-            `bg-white`,
-            // `dark:bg-gray-900`,
-            `border`,
-            // `border-gray-300`,
-            // `dark:border-blue-900/40`,
-            // `transition-colors`,
-            `duration-200`,
-            `appearance-none`,
-            `rounded-lg`,
-            // `hover:border-blue-500`,
-            // `focus:outline-none`,
-            // `focus:outline-offset-0`,
-            // `focus:shadow-[0_0_0_0.2rem_rgba(191,219,254,1)]`,
-            // `dark:focus:shadow-[0_0_0_0.2rem_rgba(147,197,253,0.5)]`,
-            `p-3`,
-            // `text-base`,
-          ],
-        },
+        root: { class: [] },
       },
       multiselect: {
         root: {
           class: [
             `md:w-full`,
-            `border-primary-20`,
-            `dark:border-primary-60/75`,
-            `rounded-lg`,
-            `dark:hover:border-accent-light`,
-            `dark:bg-primary`,
             `cursor-pointer`,
             `inline-flex`,
             `relative`,
             `select-none`,
-            `bg-white`,
-            `border`,
             `transition-colors`,
             `duration-200`,
             `ease-in-out`,
             `w-full`,
-            `hover:border-blue-500`,
             `focus:outline-none`,
             `focus:outline-offset-0`,
             `focus:shadow-[0_0_0_0.2rem_rgba(191,219,254,1)]`,
@@ -269,6 +182,17 @@ export default defineNuxtPlugin((nuxtApp) => {
             `dark:bg-primary/30`,
             `dark:border-primary-20`,
             `dark:text-white`,
+          ],
+        },
+        label: {
+          class: [
+            `block`,
+            `overflow-hidden`,
+            `whitespace-nowrap`,
+            `cursor-pointer`,
+            `text-ellipsis text-primary dark:text-base`,
+            `transition`,
+            `duration-200`,
           ],
         },
         list: {
@@ -327,6 +251,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   // Form
   nuxtApp.vueApp.component(`PvAutoComplete`, AutoComplete)
+  nuxtApp.vueApp.component(`PvColorPicker`, ColorPicker)
   nuxtApp.vueApp.component(`PvInputText`, InputText)
   nuxtApp.vueApp.component(`PvInputMask`, InputMask)
   nuxtApp.vueApp.component(`PvInputNumber`, InputNumber)

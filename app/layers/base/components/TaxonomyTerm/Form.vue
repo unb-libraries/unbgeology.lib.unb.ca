@@ -4,13 +4,20 @@
       <slot name="label" :body="body">
         <div class="form-field">
           <label for="label">Label</label>
-          <PvInputText id="form-input-label" v-model="body.label" name="Label" />
+          <PvInputText id="form-input-label" v-model="body.label" class="form-input form-input-text" name="Label" />
         </div>
       </slot>
       <slot name="parent" :body="body">
         <div class="form-field">
           <label for="parent">Parent</label>
-          <EntityInputSelect id="form-select-parent" v-model="body.parent" name="parent" :options="terms" option-label="label" />
+          <EntityInputSelect
+            id="form-select-parent"
+            v-model="body.parent"
+            class="form-input form-input-pvselect"
+            name="parent"
+            :options="terms"
+            option-label="label"
+          />
         </div>
       </slot>
       <slot :body="body" />
@@ -22,7 +29,7 @@
 import { type EntityJSON, type EntityJSONProperties, type Taxonomy } from 'layers/base/types/entity'
 
 const props = defineProps<{
-  term: EntityJSONProperties<Taxonomy> & Partial<EntityJSON<Taxonomy>>
+  term: EntityJSONProperties<T> & Partial<EntityJSON<T>>
   type: string
 }>()
 

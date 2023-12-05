@@ -3,16 +3,16 @@
     <template #default="{ body }">
       <div class="form-field">
         <label for="citation">DOI</label>
-        <FormInputDoiResolve @success="pub => onResolve(pub, body)" @error="msg => doiResolveError = msg ?? ``" />
+        <FormInputDoiResolve class="form-input form-input-text" @success="pub => onResolve(pub, body)" @error="msg => doiResolveError = msg ?? ``" />
         <span v-if="doiResolveError" class="text-sm">DOI could not be resolved.</span>
       </div>
       <div class="form-field">
         <label for="citation">Citation</label>
-        <PvInputText v-model="body.citation" />
+        <PvInputText v-model="body.citation" class="form-input form-input-text" />
       </div>
       <div class="form-field">
         <label for="abstract">Abstract</label>
-        <textarea v-model="body.abstract" rows="5" class="form-input-textarea" />
+        <textarea v-model="body.abstract" rows="5" class="form-input form-input-textarea" />
       </div>
     </template>
     <template #more-actions="{ body }">

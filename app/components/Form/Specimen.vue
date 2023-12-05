@@ -8,11 +8,10 @@
             <!-- ID -->
             <div class="form-field">
               <label for="objectId">ID</label>
-              <div class="border-primary-60/75 inline-flex">
-                <PvInputText v-model="body.objectID.unb" class="disabled:bg-primary-80 disabled:text-primary-40 grow rounded-r-none" name="objectID" disabled />
-                <div class="bg-primary-60 form-input-checkbox rounded-r-lg p-3">
-                  <input id="unbOwned" v-model="unbOwned" type="checkbox" name="unbOwned" @change="body.objectID.unb = !unbOwned ? `UNB-X${body.objectID.unb.substring(5)}` : `UNB-0${body.objectID.unb.substring(5)}`">
-                  <label for="unbOwned" class="mx-3">Owned by UNB</label>
+              <div class="inline-flex">
+                <PvInputText v-model="body.objectID.unb" class="form-input form-input-text grow rounded-r-none" name="objectID" disabled />
+                <div class="bg-primary-60 flex h-full items-center rounded-r-lg p-3">
+                  <PvCheckbox id="unbowned" v-model="unbOwned" label="Owned by UNB" name="unbowned" @change="body.objectID.unb = !unbOwned ? `UNB-X${body.objectID.unb.substring(5)}` : `UNB-0${body.objectID.unb.substring(5)}`" />
                 </div>
               </div>
             </div>
@@ -20,19 +19,19 @@
             <!-- Lender ID -->
             <div v-if="!unbOwned" class="form-field w-1/4">
               <label for="lenderId">External ID</label>
-              <PvInputText v-model="body.objectID.external" name="lenderId" />
+              <PvInputText v-model="body.objectID.external" class="form-input form-input-text" name="lenderId" />
             </div>
 
             <!-- International Index Number -->
             <div class="form-field">
               <label for="intId">International Index Number</label>
-              <PvInputText v-model="body.objectID.international" name="intId" />
+              <PvInputText v-model="body.objectID.international" class="form-input form-input-text" name="intId" />
             </div>
 
             <!-- Other ID -->
             <div class="form-field">
               <label for="otherId">Other ID</label>
-              <PvInputText name="otherId" />
+              <PvInputText class="form-input form-input-text" name="otherId" />
             </div>
           </div>
 
@@ -41,13 +40,13 @@
               <!-- Name -->
               <div class="form-field">
                 <label for="name">Name</label>
-                <PvInputText v-model="body.name" name="name" />
+                <PvInputText v-model="body.name" class="form-input form-input-text" name="name" />
               </div>
 
               <!-- Description -->
               <div class="form-field">
                 <label for="description">Description</label>
-                <textarea v-model="body.description" class="dark:bg-primary border-primary-20 dark:border-primary-60/75 hover:border-accent-light dark:focus:border-accent-mid rounded-lg border p-2" name="description" rows="8" />
+                <textarea v-model="body.description" class="form-input form-input-textarea" name="description" rows="8" />
               </div>
             </div>
 
@@ -62,7 +61,7 @@
         </section>
 
         <section>
-          <h2 class="form-section-heading">
+          <h2 class="divider">
             Specimen details
           </h2>
           <div class="form-col">
@@ -76,6 +75,7 @@
                   :options="classifications"
                   option-label="label"
                   display="chip"
+                  class="form-input form-input-pvselect"
                   name="classifications"
                 />
               </div>
@@ -83,11 +83,10 @@
               <!-- Pieces -->
               <div class="form-field">
                 <label for="pieces">Pieces</label>
-                <div class="border-primary-60/75 inline-flex">
-                  <PvInputNumber v-model="body.pieces" class="rounded-r-none" name="pieces" :pt="{ input: { class: `rounded-r-none w-full` }}" />
-                  <div class="bg-primary-60 form-input-checkbox rounded-r-lg p-3">
-                    <input id="partial" v-model="body.partial" type="checkbox" name="partial">
-                    <label for="partial" class="mx-3">Partial</label>
+                <div class="inline-flex">
+                  <PvInputNumber v-model="body.pieces" input-class="form-input form-input-number rounded-r-none" name="pieces" />
+                  <div class="bg-primary-60 flex h-full items-center rounded-r-lg p-3">
+                    <PvCheckbox id="partial" v-model="body.partial" label="Partial" name="partial" />
                   </div>
                 </div>
               </div>
@@ -96,38 +95,57 @@
               <!-- Age -->
               <div class="form-field">
                 <label for="age-relative">Age (relative)</label>
-                <EntityInputSelect v-model="body.age.relative" name="age-relative" :options="ageUnits" option-label="label" />
+                <EntityInputSelect
+                  v-model="body.age.relative"
+                  class="form-input form-input-pvselect"
+                  name="age-relative"
+                  :options="ageUnits"
+                  option-label="label"
+                />
               </div>
 
               <!-- Age -->
               <div class="form-field">
                 <label for="age-numeric">Age (numeric)</label>
-                <div class="border:primary-60/75 inline-flex">
-                  <PvInputNumber v-model="body.age.numeric" name="age-numeric" max-fraction-digits="2" min="0" :pt="{ input: { class: `rounded-r-none w-full` }}" />
-                  <span class="bg-primary-60 rounded-r-lg p-3">Ma</span>
+                <div class="inline-flex">
+                  <PvInputNumber
+                    v-model="body.age.numeric"
+                    name="age-numeric"
+                    :max-fraction-digits="2"
+                    :min-fraction-digits="2"
+                    min="0"
+                    class="w-full"
+                    input-class="form-input form-input-number rounded-r-none"
+                  />
+                  <div class="bg-primary-60 h-full rounded-r-lg p-3">
+                    Ma
+                  </div>
                 </div>
               </div>
 
               <!-- Composition -->
               <div class="form-field">
                 <label for="composition">Composition</label>
-                <PvInputSelect v-model="body.composition" name="composition" :options="['solid']" />
+                <PvInputSelect v-model="body.composition" class="form-input form-input-pvselect" name="composition" :options="['solid']" />
               </div>
             </div>
 
             <div class="form-field">
-              <span class="label">Measurements</span>
+              <span class="form-field-label">Measurements</span>
               <div class="grid gap-6" :class="`grid-cols-${Math.min(4, body.pieces)}`">
                 <div v-for="(_, index) in padMeasurements(body.measurements, body.pieces)" :key="index" class="form-field">
-                  <div class="border-primary-60/75 inline-flex">
-                    <div class="bg-primary-60 inline-flex rounded-l-lg p-3 align-middle">
+                  <div class="inline-flex">
+                    <div class="bg-primary-60 h-full rounded-l-lg p-3">
                       <label :for="`width-${index}`">W</label>
                       <span class="mx-1">x</span>
                       <label :for="`length-${index}`">L</label>
                     </div>
-                    <div class="divide-primary-60/75 hover:divide-accent-light inline-flex flex-1 divide-x">
-                      <PvInputNumber v-model="body.measurements[index].width" :name="`width-${index}`" :pt="{ input: { class: `w-full rounded-none border-r-0` }}" />
-                      <PvInputNumber v-model="body.measurements[index].length" :name="`length-${index}`" :pt="{ input: { class: `w-full rounded-l-none border-l-0` }}" />
+                    <div class="divide-primary-60/75 hover:divide-accent-light inline-flex w-full divide-x">
+                      <PvInputNumber v-model="body.measurements[index].width" class="w-full" input-class="form-input form-input-number border-r-0 rounded-none" :name="`width-${index}`" />
+                      <PvInputNumber v-model="body.measurements[index].length" class="w-full" input-class="form-input form-input-number border-l-0 rounded-none" :name="`length-${index}`" />
+                    </div>
+                    <div class="bg-primary-60 h-full rounded-r-lg p-3">
+                      mm
                     </div>
                   </div>
                 </div>
@@ -137,7 +155,7 @@
         </section>
 
         <section>
-          <h2 class="form-section-heading">
+          <h2 class="divider">
             Origin details
           </h2>
           <div class="form-row">
@@ -145,7 +163,7 @@
               <!-- Date -->
               <div class="form-field">
                 <label for="date">Date</label>
-                <PvInputMask v-model="body.date" name="date" mask="9999?/99/99" placeholder="YYYY/MM/DD" />
+                <PvInputMask v-model="body.date" class="form-input form-input-text" name="date" mask="9999?/99/99" placeholder="YYYY/MM/DD" />
               </div>
 
               <!-- Collector -->
@@ -157,7 +175,7 @@
                     :options="people"
                     :option-label="(person) => `${person.firstName} ${person.lastName}`"
                     name="collector"
-                    class="rounded-r-none"
+                    class="form-input form-input-pvselect rounded-r-none"
                   />
                   <button class="form-action form-action-submit rounded-l-none font-normal" @click="showPersonForm = true">
                     Add
@@ -177,7 +195,7 @@
                     :options="people"
                     :option-label="(person) => `${person.firstName} ${person.lastName}`"
                     name="Sponsor"
-                    class="rounded-r-none"
+                    class="form-input form-input-pvselect rounded-r-none"
                   />
                   <button class="form-action form-action-submit rounded-l-none font-normal" @click="showPersonForm = true">
                     Add
@@ -209,13 +227,13 @@
         </section>
 
         <section>
-          <h2 class="form-section-heading">
+          <h2 class="divider">
             Misc
           </h2>
           <!-- Publications -->
           <div class="form-field group">
             <label for="publications">Publications</label>
-            <EntityInputInlineForm v-model="body.publications" :form="FormPublication" :label="({ citation: cit }: Publication) => cit.substring(0, cit.indexOf(`,`))" />
+            <EntityInputInlineForm v-model="body.publications" input-class="form-input form-input-text rounded-r-none" :form="FormPublication" :label="({ citation: cit }: Publication) => cit.substring(0, cit.indexOf(`,`))" />
           </div>
         </section>
       </div>

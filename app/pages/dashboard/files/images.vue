@@ -7,12 +7,12 @@
       class="h-full object-contain"
     />
   </div>
-  <PvImageGallery :images="list?.entities ?? []" @select="onSelect" @unselect="onUnselect" />
+  <PvImageGallery :selection="selectedImage" :images="list?.entities ?? []" @select="onSelect" @unselect="onUnselect" />
   <PvFileUpload @uploaded="refresh()" />
 </template>
 
 <script setup lang="ts">
-import { EntityJSON, type Image } from "layers/base/types/entity"
+import { type EntityJSON, type Image } from "layers/base/types/entity"
 
 definePageMeta({
   layout: `dashboard`,

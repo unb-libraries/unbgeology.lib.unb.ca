@@ -1,6 +1,6 @@
 <template>
-  <div class="dark:bg-primary flex flex-row">
-    <ul class="dark:border-primary-60/75 border-primary-20 hover:border-accent-light flex grow flex-row space-x-2 rounded-l-md border p-2">
+  <div class="inline-flex">
+    <ul class="flex grow flex-row space-x-2 p-2" :class="inputClass">
       <li v-for="entity in entities" :key="entity.self" class="bg-accent-mid hover:bg-accent-light w-fit cursor-pointer rounded px-2 py-1" @click="onClickEntity(entity)">
         {{ typeof label === `string` ? label in entity ? entity[label] : entity.self : label(entity) }}
       </li>
@@ -27,6 +27,7 @@ import { type DefineComponent } from 'nuxt/dist/app/compat/capi'
 
 const props = defineProps<{
   modelValue: EntityJSONProperties<E>[]
+  inputClass?: string
   label:((item: EntityJSONProperties<E>) => string) | string
   form?: DefineComponent | string
 }>()
