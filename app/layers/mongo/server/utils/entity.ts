@@ -10,14 +10,15 @@ import {
 } from "mongoose"
 import {
   EntityFieldTypes,
-  type EntityTypeOptions,
+  type DocumentTypeOptions,
   type EntityInstanceMethods,
   type EntityQueryHelpers,
   type EntityModel,
   type EntityDocument,
-} from "~/layers/mongo/types/entity"
+  type DocumentBundleOptions,
+} from "layers/mongo/types/entity"
 
-const defineDocumentTypeOptions = function <E extends EntityDocument = EntityDocument> (options: EntityTypeOptions<E>, defaultOptions?: EntityTypeOptions<E>) {
+const defineDocumentTypeOptions = function <E extends EntityDocument = EntityDocument> (options: DocumentTypeOptions<E>, defaultOptions?: DocumentTypeOptions<E>) {
   if (options?.toJSON?.transform && options?.toJSON?.transform !== true) {
     const customTransform = options.toJSON.transform
     if (defaultOptions?.toJSON?.transform) {
@@ -39,7 +40,7 @@ const DocumentTypeSchema = function <
   I extends EntityInstanceMethods = EntityInstanceMethods,
   Q extends EntityQueryHelpers = EntityQueryHelpers,
   M extends EntityModel<E, I, Q> = EntityModel<E, I, Q>
-> (definition: SchemaDefinition<E>, options?: EntityTypeOptions<E>) {
+> (definition: SchemaDefinition<E>, options?: DocumentTypeOptions<E>) {
   const schemaOptions = defineDocumentTypeOptions(options ?? {}, {
     discriminatorKey: `type`,
     query: {
@@ -154,7 +155,7 @@ export function defineDocumentType <
   I extends EntityInstanceMethods = EntityInstanceMethods,
   Q extends EntityQueryHelpers = EntityQueryHelpers,
   M extends EntityModel<E, I, Q> = EntityModel<E, I, Q>
->(name: string, definition: SchemaDefinition<E>, options?: EntityTypeOptions<E>) {
+>(name: string, definition: SchemaDefinition<E>, options?: DocumentTypeOptions<E>) {
   if (options?.slug) {
     definition.slug = {
       type: EntityFieldTypes.String,
@@ -193,7 +194,8 @@ export function defineDocumentType <
   return model
 }
 
-export const defineDocumentBundle = function<E extends EntityDocument = EntityDocument, B extends E = E> (parent: ReturnType<typeof defineDocumentType<E>>, name: string, definition?: SchemaDefinition<B>, options?: EntityTypeOptions<B>) {
+export const defineDocumentBundle = function<E extends EntityDocument = EntityDocument, B extends E = E> (parent: ReturnType<typeof defineDocumentType<E>>, name: string, definition?: SchemaDefinition<B>, options?: DocumentBundleOptions<B>) {
+  const { type = name, ...bundleOptions } = options ?? {}
   const baseSchemaOptions = defineDocumentTypeOptions<B>({
     toJSON: {
       transform(doc, ret, options) {
@@ -205,7 +207,7 @@ export const defineDocumentBundle = function<E extends EntityDocument = EntityDo
       },
     },
   }, parent.schema.options)
-  const schemaOptions = defineDocumentTypeOptions<B>(options ?? {}, baseSchemaOptions)
+  const schemaOptions = defineDocumentTypeOptions<B>(bundleOptions ?? {}, baseSchemaOptions)
   let schema: Schema
 
   const baseModelName = parent.modelName.split(`.`)[0]
@@ -218,10 +220,12 @@ export const defineDocumentBundle = function<E extends EntityDocument = EntityDo
     schema = new Schema(schemaDefinition, schemaOptions)
   }
 
-  return base.discriminator<B>(`${parent.modelName}.${name}`, schema, name.toLowerCase())
+  const typeValue = typeof type === `function` ? type(name, parent) : type!
+
+  return base.discriminator<B>(`${parent.modelName}.${name}`, schema, typeValue.toLowerCase())
 }
 
-export const defineEmbeddedDocumentType = function<E extends EntityDocument = EntityDocument, I extends EntityInstanceMethods = EntityInstanceMethods> (definition: SchemaDefinition<E>, options?: EntityTypeOptions<E>) {
+export const defineEmbeddedDocumentType = function<E extends EntityDocument = EntityDocument, I extends EntityInstanceMethods = EntityInstanceMethods> (definition: SchemaDefinition<E>, options?: DocumentTypeOptions<E>) {
   const schema = DocumentTypeSchema<E, I>(definition, defineDocumentTypeOptions(options ?? {}))
 
   if (!(`uri` in schema.virtuals)) {

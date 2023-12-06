@@ -9,8 +9,12 @@ export type EntityDocument<E extends Entity = Entity> = {
   uri: string
 } & E
 
-export interface EntityTypeOptions<E extends Entity = Entity> extends SchemaOptions<E> {
+export interface DocumentTypeOptions<E extends Entity = Entity> extends SchemaOptions<E> {
   slug?: string | string[] | ((entity: E) => string)
+}
+
+export type DocumentBundleOptions<E extends EntityDocument = EntityDocument> = Pick<DocumentTypeOptions<E>, `toJSON` | `toObject` | `_id` | `id` | `virtuals` | `methods`> & {
+  type?: string | ((name: string, parent: ReturnType<typeof defineDocumentType<E>>) => string)
 }
 
 export interface EntityInstanceMethods {
