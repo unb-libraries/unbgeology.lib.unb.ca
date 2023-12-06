@@ -34,7 +34,7 @@ export default defineDocumentType<SpecimenDocument>(`Specimen`, {
   classifications: {
     type: [{
       type: EntityFieldTypes.ObjectId,
-      ref: `Taxonomy.Classification`,
+      ref: `Term.TaxonomyTerm.Classification`,
       required: optionalWhileInDraft,
     }],
   },

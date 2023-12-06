@@ -8,10 +8,15 @@ export const TermBase = defineDocumentType<EntityDocument<ITerm>>(`Term`, {
   },
 }, {
   slug: `_id`,
+  statics: {
+    baseURL() {
+      return `/api/vocabularies`
+    },
+  },
   virtuals: {
     uri: {
       get(this: EntityDocument<ITerm>) {
-        return `/api/vocabularies/${this.type}/${this.slug}`
+        return `/api/vocabularies/${this.type.split(`.`).join(`/`)}/${this.slug}`
       },
     },
   },

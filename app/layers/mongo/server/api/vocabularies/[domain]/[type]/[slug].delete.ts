@@ -1,6 +1,6 @@
 export default defineEventHandler(async (event) => {
-  const { type, slug } = getRouterParams(event)
-  const term = await TermBase.findOne({ type, slug })
+  const { domain, type, slug } = getRouterParams(event)
+  const term = await TermBase.findOne({ type: `${domain}.${type}`, slug })
     .populate(`parent`, `_id`)
 
   if (!term) {
@@ -31,5 +31,5 @@ export default defineEventHandler(async (event) => {
   }
   await TermBase.deleteMany({ _id: ids })
 
-  return $fetch(`${TermBase.baseURL()}/${type}`)
+  return $fetch(`${TermBase.baseURL()}/${domain}/${type}`)
 })

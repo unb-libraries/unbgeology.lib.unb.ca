@@ -1,6 +1,6 @@
 export default defineEventHandler(async (event) => {
   const { pathname } = getRequestURL(event)
-  const { type, slug } = getRouterParams(event)
+  const { domain, type, slug } = getRouterParams(event)
 
   const { parent: parentURI, ...body } = await readBody(event)
   if (parentURI) {
@@ -12,6 +12,6 @@ export default defineEventHandler(async (event) => {
     body.parent = null
   }
 
-  await TermBase.findOneAndUpdate({ type, slug }, body, { new: true })
+  await TermBase.findOneAndUpdate({ type: `${domain}.${type}`, slug }, body, { new: true })
   return await $fetch(pathname)
 })

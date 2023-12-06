@@ -1,5 +1,5 @@
 export default defineEventHandler(async (event) => {
-  const { type } = getRouterParams(event)
+  const { domain, type } = getRouterParams(event)
 
   const { parent: parentURI, ...body } = await readBody(event)
   if (parentURI) {
@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const term = await TermBase.create({ ...body, type })
+  const term = await TermBase.create({ ...body, type: `${domain}.${type}` })
   if (term) {
     return $fetch(term.uri)
   }

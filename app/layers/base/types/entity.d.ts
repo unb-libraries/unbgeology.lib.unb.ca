@@ -4,6 +4,10 @@ export interface Entity {
   readonly updated: string
 }
 
+export interface EntityBundle extends Entity {
+  type: string
+}
+
 export interface EntityJSONReference {
   readonly self: string
   readonly id: string

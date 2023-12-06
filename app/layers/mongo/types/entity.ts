@@ -17,6 +17,11 @@ export type DocumentBundleOptions<E extends EntityDocument = EntityDocument> = P
   type?: string | ((name: string, parent: ReturnType<typeof defineDocumentType<E>>) => string)
 }
 
+export interface TermListOptions {
+  domain?: string
+}
+export type TaxonomyOptions = TermListOptions
+
 export interface EntityInstanceMethods {
   url(): string
 }
