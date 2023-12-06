@@ -11,7 +11,7 @@ const optionalWhileInDraft = function (this: Specimen) {
   return this.status !== Status.DRAFT
 }
 
-export default defineEntityType<SpecimenDocument>(`Specimen`, {
+export default defineDocumentType<SpecimenDocument>(`Specimen`, {
   objectID: {
     type: EntityFieldTypes.Map,
     of: EntityFieldTypes.String,
@@ -100,7 +100,7 @@ export default defineEntityType<SpecimenDocument>(`Specimen`, {
     required: false,
   },
   loans: {
-    type: [defineEmbeddedEntityType<LoanDocument>({
+    type: [defineEmbeddedDocumentType<LoanDocument>({
       type: {
         type: EntityFieldTypes.String,
         enum: LoanType,
@@ -135,7 +135,7 @@ export default defineEntityType<SpecimenDocument>(`Specimen`, {
     })],
   },
   storage: {
-    type: [defineEmbeddedEntityType<StorageDocument>({
+    type: [defineEmbeddedDocumentType<StorageDocument>({
       location: {
         type: EntityFieldTypes.ObjectId,
         ref: `Taxonomy.StorageLocation`,
@@ -152,7 +152,7 @@ export default defineEntityType<SpecimenDocument>(`Specimen`, {
     })],
   },
   publications: {
-    type: [defineEmbeddedEntityType<PublicationDocument>({
+    type: [defineEmbeddedDocumentType<PublicationDocument>({
       citation: {
         type: EntityFieldTypes.String,
         required: true,

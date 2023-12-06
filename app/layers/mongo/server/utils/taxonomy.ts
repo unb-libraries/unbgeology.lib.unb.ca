@@ -4,5 +4,5 @@ import { type EntityDocument } from "layers/mongo/types/entity"
 
 export const defineTaxonomyType = function<T extends EntityDocument<Taxonomy> = EntityDocument<Taxonomy>> (name: string, definition?: SchemaDefinition<T>, options?: SchemaOptions<T>) {
   // @ts-ignore
-  return defineEntityBundle<T, Taxonomy>(Taxonomy, name, definition, options)
+  return defineDocumentBundle<T, Taxonomy>(Taxonomy, name, definition, options)
 }

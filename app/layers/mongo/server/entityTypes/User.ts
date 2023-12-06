@@ -3,7 +3,7 @@ import { type User } from "layers/base/types/entity"
 
 type UserDocument = EntityDocument<User>
 
-export default defineEntityType<UserDocument>(`User`, {
+export default defineDocumentType<UserDocument>(`User`, {
   username: {
     type: EntityFieldTypes.String,
     required: true,

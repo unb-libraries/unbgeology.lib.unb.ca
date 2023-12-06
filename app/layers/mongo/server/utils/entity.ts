@@ -17,7 +17,7 @@ import {
   type EntityDocument,
 } from "~/layers/mongo/types/entity"
 
-const defineEntityTypeOptions = function <E extends EntityDocument = EntityDocument> (options: EntityTypeOptions<E>, defaultOptions?: EntityTypeOptions<E>) {
+const defineDocumentTypeOptions = function <E extends EntityDocument = EntityDocument> (options: EntityTypeOptions<E>, defaultOptions?: EntityTypeOptions<E>) {
   if (options?.toJSON?.transform && options?.toJSON?.transform !== true) {
     const customTransform = options.toJSON.transform
     if (defaultOptions?.toJSON?.transform) {
@@ -34,13 +34,13 @@ const defineEntityTypeOptions = function <E extends EntityDocument = EntityDocum
   return defu(options, defaultOptions)
 }
 
-const EntityTypeSchema = function <
+const DocumentTypeSchema = function <
   E extends EntityDocument = EntityDocument,
   I extends EntityInstanceMethods = EntityInstanceMethods,
   Q extends EntityQueryHelpers = EntityQueryHelpers,
   M extends EntityModel<E, I, Q> = EntityModel<E, I, Q>
 > (definition: SchemaDefinition<E>, options?: EntityTypeOptions<E>) {
-  const schemaOptions = defineEntityTypeOptions(options ?? {}, {
+  const schemaOptions = defineDocumentTypeOptions(options ?? {}, {
     discriminatorKey: `type`,
     query: {
       paginate(page: number, pageSize: number) {
@@ -145,11 +145,11 @@ const EntityTypeSchema = function <
   return schema
 }
 
-export const useEntityType = function<E extends EntityDocument = EntityDocument, M extends EntityModel = EntityModel> (name: string) {
+export const useDocumentType = function<E extends EntityDocument = EntityDocument, M extends EntityModel = EntityModel> (name: string) {
   return loadModel<E, M>(name)
 }
 
-export function defineEntityType <
+export function defineDocumentType <
   E extends EntityDocument = EntityDocument,
   I extends EntityInstanceMethods = EntityInstanceMethods,
   Q extends EntityQueryHelpers = EntityQueryHelpers,
@@ -181,7 +181,7 @@ export function defineEntityType <
     }
   }
 
-  const schema = EntityTypeSchema<E, I, Q, M>(definition, options)
+  const schema = DocumentTypeSchema<E, I, Q, M>(definition, options)
   const model = defineModel<E, M, Q>(name, schema)
 
   if (!(`uri` in model.schema.virtuals)) {
@@ -193,8 +193,8 @@ export function defineEntityType <
   return model
 }
 
-export const defineEntityBundle = function<E extends EntityDocument = EntityDocument, B extends E = E> (base: ReturnType<typeof defineEntityType<E>>, name: string, definition?: SchemaDefinition<B>, options?: EntityTypeOptions<B>) {
-  const baseSchemOptions = defineEntityTypeOptions<B>({
+export const defineDocumentBundle = function<E extends EntityDocument = EntityDocument, B extends E = E> (base: ReturnType<typeof defineDocumentType<E>>, name: string, definition?: SchemaDefinition<B>, options?: EntityTypeOptions<B>) {
+  const baseSchemaOptions = defineDocumentTypeOptions<B>({
     toJSON: {
       transform(doc, ret, options) {
         if (options?.discriminatorKey) {
@@ -205,7 +205,7 @@ export const defineEntityBundle = function<E extends EntityDocument = EntityDocu
       },
     },
   }, base.schema.options)
-  const schemaOptions = defineEntityTypeOptions<B>(options ?? {}, baseSchemOptions)
+  const schemaOptions = defineDocumentTypeOptions<B>(options ?? {}, baseSchemaOptions)
   let schema: Schema
 
   let baseModel = base
@@ -223,8 +223,8 @@ export const defineEntityBundle = function<E extends EntityDocument = EntityDocu
   return baseModel.discriminator<B>(`${base.modelName}.${name}`, schema, name.toLowerCase())
 }
 
-export const defineEmbeddedEntityType = function<E extends EntityDocument = EntityDocument, I extends EntityInstanceMethods = EntityInstanceMethods> (definition: SchemaDefinition<E>, options?: EntityTypeOptions<E>) {
-  const schema = EntityTypeSchema<E, I>(definition, defineEntityTypeOptions(options ?? {}))
+export const defineEmbeddedDocumentType = function<E extends EntityDocument = EntityDocument, I extends EntityInstanceMethods = EntityInstanceMethods> (definition: SchemaDefinition<E>, options?: EntityTypeOptions<E>) {
+  const schema = DocumentTypeSchema<E, I>(definition, defineDocumentTypeOptions(options ?? {}))
 
   if (!(`uri` in schema.virtuals)) {
     schema.virtual(`uri`).get(function () {

@@ -5,7 +5,7 @@ type FileDocument = EntityDocument<IFile>
 type ImageDocument = EntityDocument<IImage>
 type DocumentDocument = EntityDocument<IDocument>
 
-export const File = defineEntityType<FileDocument>(`File`, {
+export const File = defineDocumentType<FileDocument>(`File`, {
   filename: {
     type: EntityFieldTypes.String,
     required: true,
@@ -45,7 +45,7 @@ export const File = defineEntityType<FileDocument>(`File`, {
   },
 })
 
-export const Image = defineEntityBundle<FileDocument, ImageDocument>(File, `Image`, {
+export const Image = defineDocumentBundle<FileDocument, ImageDocument>(File, `Image`, {
   alt: {
     type: EntityFieldTypes.String,
     required: false,
@@ -56,5 +56,5 @@ export const Image = defineEntityBundle<FileDocument, ImageDocument>(File, `Imag
   },
 })
 
-export const Document = defineEntityBundle<FileDocument, DocumentDocument>(File, `Document`, {
+export const Document = defineDocumentBundle<FileDocument, DocumentDocument>(File, `Document`, {
 })

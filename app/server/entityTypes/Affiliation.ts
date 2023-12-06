@@ -5,7 +5,7 @@ type AffiliationDocument = EntityDocument<IAffiliation>
 type OrganizationDocument = EntityDocument<IOrganization>
 type PersonDocument = EntityDocument<IPerson>
 
-export const Affiliation = defineEntityType<AffiliationDocument>(`Affiliation`, {}, {
+export const Affiliation = defineDocumentType<AffiliationDocument>(`Affiliation`, {}, {
   virtuals: {
     uri: {
       get() {
@@ -15,7 +15,7 @@ export const Affiliation = defineEntityType<AffiliationDocument>(`Affiliation`, 
   },
 })
 
-export const Organization = defineEntityBundle<AffiliationDocument, OrganizationDocument>(Affiliation, `Organization`, {
+export const Organization = defineDocumentBundle<AffiliationDocument, OrganizationDocument>(Affiliation, `Organization`, {
   name: {
     type: EntityFieldTypes.String,
     required: true,
@@ -56,7 +56,7 @@ export const Organization = defineEntityBundle<AffiliationDocument, Organization
   },
 })
 
-export const Person = defineEntityBundle<AffiliationDocument, PersonDocument>(Affiliation, `Person`, {
+export const Person = defineDocumentBundle<AffiliationDocument, PersonDocument>(Affiliation, `Person`, {
   firstName: {
     type: EntityFieldTypes.String,
     required: true,

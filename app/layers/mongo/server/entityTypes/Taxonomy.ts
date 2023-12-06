@@ -1,7 +1,7 @@
 import { EntityFieldTypes } from "~/layers/mongo/types/entity"
 import { type Taxonomy } from "~/layers/mongo/types/taxonomy"
 
-export default defineEntityType<Taxonomy>(`Taxonomy`, {
+export default defineDocumentType<EntityDocument<Taxonomy>>(`Taxonomy`, {
   label: {
     type: EntityFieldTypes.String,
     required: true,
