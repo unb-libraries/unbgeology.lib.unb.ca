@@ -193,7 +193,7 @@ export function defineDocumentType <
   return model
 }
 
-export const defineDocumentBundle = function<E extends EntityDocument = EntityDocument, B extends E = E> (base: ReturnType<typeof defineDocumentType<E>>, name: string, definition?: SchemaDefinition<B>, options?: EntityTypeOptions<B>) {
+export const defineDocumentBundle = function<E extends EntityDocument = EntityDocument, B extends E = E> (parent: ReturnType<typeof defineDocumentType<E>>, name: string, definition?: SchemaDefinition<B>, options?: EntityTypeOptions<B>) {
   const baseSchemaOptions = defineDocumentTypeOptions<B>({
     toJSON: {
       transform(doc, ret, options) {
@@ -204,23 +204,21 @@ export const defineDocumentBundle = function<E extends EntityDocument = EntityDo
         }
       },
     },
-  }, base.schema.options)
+  }, parent.schema.options)
   const schemaOptions = defineDocumentTypeOptions<B>(options ?? {}, baseSchemaOptions)
   let schema: Schema
 
-  let baseModel = base
-  while (baseModel.baseModelName) {
-    baseModel = useEntityType(baseModel.modelName)
-  }
+  const baseModelName = parent.modelName.split(`.`)[0]
+  const base = useDocumentType<E>(baseModelName)
 
-  if (baseModel === base) {
+  if (base === parent) {
     schema = new Schema(definition || {}, schemaOptions)
   } else {
-    const schemaDefinition = defu(definition ?? {}, base.schema.obj)
+    const schemaDefinition = defu(definition ?? {}, parent.schema.obj)
     schema = new Schema(schemaDefinition, schemaOptions)
   }
 
-  return baseModel.discriminator<B>(`${base.modelName}.${name}`, schema, name.toLowerCase())
+  return base.discriminator<B>(`${parent.modelName}.${name}`, schema, name.toLowerCase())
 }
 
 export const defineEmbeddedDocumentType = function<E extends EntityDocument = EntityDocument, I extends EntityInstanceMethods = EntityInstanceMethods> (definition: SchemaDefinition<E>, options?: EntityTypeOptions<E>) {
