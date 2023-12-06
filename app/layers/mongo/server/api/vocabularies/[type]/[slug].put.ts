@@ -4,7 +4,7 @@ export default defineEventHandler(async (event) => {
 
   const { parent: parentURI, ...body } = await readBody(event)
   if (parentURI) {
-    const parent = await Taxonomy.findByURI(parentURI)
+    const parent = await TermBase.findByURI(parentURI)
     if (parent) {
       body.parent = parent
     }
@@ -12,6 +12,6 @@ export default defineEventHandler(async (event) => {
     body.parent = null
   }
 
-  await Taxonomy.findOneAndUpdate({ type, slug }, body, { new: true })
+  await TermBase.findOneAndUpdate({ type, slug }, body, { new: true })
   return await $fetch(pathname)
 })

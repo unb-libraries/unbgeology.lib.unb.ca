@@ -1,4 +1,4 @@
-import { type Classification } from "~/server/taxonomies/Classification"
+import { type Classification } from "types/vocabularies"
 
 export default defineEventHandler(async (event) => {
   const { slug } = getRouterParams(event)

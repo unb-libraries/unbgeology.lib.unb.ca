@@ -12,7 +12,7 @@ export default defineNuxtConfig({
   ],
   alias: {
     "entity-types": url.fileURLToPath(new URL(`./server/entityTypes`, import.meta.url)),
-    "taxonomies": url.fileURLToPath(new URL(`./server/taxonomies`, import.meta.url)),
+    "vocabularies": url.fileURLToPath(new URL(`./server/vocabularies`, import.meta.url)),
     "layers": url.fileURLToPath(new URL(`./layers`, import.meta.url)),
     "types": url.fileURLToPath(new URL(`./types`, import.meta.url)),
   },
@@ -21,7 +21,7 @@ export default defineNuxtConfig({
       dirs: [
         `./server/entityTypes/*`,
         `./layers/*/server/entityTypes/*`,
-        `./server/taxonomies/*`,
+        `./server/vocabularies/*`,
       ],
     },
   },

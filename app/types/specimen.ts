@@ -1,6 +1,6 @@
 import { type Image, type Entity, type User } from "layers/base/types/entity"
 import { type Person } from "types/affiliation"
-import { GeochronologicUnit, type Classification, type StorageLocation } from "types/taxonomy"
+import { GeochronologicUnit, type Classification, type StorageLocation } from "types/vocabularies"
 
 export enum Status {
   DRAFT = `draft`,

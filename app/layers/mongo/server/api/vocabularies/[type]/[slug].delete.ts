@@ -1,6 +1,6 @@
 export default defineEventHandler(async (event) => {
   const { type, slug } = getRouterParams(event)
-  const term = await Taxonomy.findOne({ type, slug })
+  const term = await TermBase.findOne({ type, slug })
     .populate(`parent`, `_id`)
 
   if (!term) {
@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const ids = [term._id]
-  const childDocs = await Taxonomy.aggregate()
+  const childDocs = await TermBase.aggregate()
     // Explicitly cast "id" to ObjectId as regular, implicit mongoose
     // casting is not supported in aggregation pipelines.
     // See: https://github.com/Automattic/mongoose/issues/1399
@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
   if (childDocs.length > 0) {
     ids.push(...childDocs[0].child.map((child: { _id: string }) => child._id))
   }
-  await Taxonomy.deleteMany({ _id: ids })
+  await TermBase.deleteMany({ _id: ids })
 
-  return $fetch(`${Taxonomy.baseURL()}/${type}`)
+  return $fetch(`${TermBase.baseURL()}/${type}`)
 })

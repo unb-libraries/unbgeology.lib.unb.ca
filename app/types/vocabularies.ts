@@ -1,6 +1,6 @@
-import { type Taxonomy } from "layers/base/types/entity"
+import { type TaxonomyTerm } from "layers/base/types/entity"
 
-export interface Classification extends Taxonomy {
+export interface Classification extends TaxonomyTerm {
 }
 
 export enum Division {
@@ -11,7 +11,7 @@ export enum Division {
   EON = `eon`,
 }
 
-export interface GeochronologicUnit extends Taxonomy {
+export interface GeochronologicUnit extends TaxonomyTerm {
   division: Division
   boundaries: {
     lower: number
@@ -21,6 +21,6 @@ export interface GeochronologicUnit extends Taxonomy {
   uncertainty?: number
 }
 
-export interface StorageLocation extends Taxonomy {
+export interface StorageLocation extends TaxonomyTerm {
   public: boolean
 }

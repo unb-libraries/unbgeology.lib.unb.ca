@@ -55,7 +55,7 @@ export default defineDocumentType<SpecimenDocument>(`Specimen`, {
   age: {
     relative: {
       type: EntityFieldTypes.ObjectId,
-      ref: `Taxonomy.Geochronology`,
+      ref: `Term.TaxonomyTerm.Geochronology`,
       required: optionalWhileInDraft,
     },
     numeric: {
@@ -138,7 +138,7 @@ export default defineDocumentType<SpecimenDocument>(`Specimen`, {
     type: [defineEmbeddedDocumentType<StorageDocument>({
       location: {
         type: EntityFieldTypes.ObjectId,
-        ref: `Taxonomy.StorageLocation`,
+        ref: `Term.TaxonomyTerm.StorageLocation`,
         required: true,
       },
       dateIn: {

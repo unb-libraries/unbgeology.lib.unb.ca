@@ -85,12 +85,19 @@ export interface User extends Entity {
 export type JUser = EntityJSON<User>
 export type JUserList = EntityJSONList<User>
 
-export interface Taxonomy extends Entity {
+export interface Term extends EntityBundle {
+  type: `term`
   label: string
-  parent?: Taxonomy
 }
-export type JTaxonomy = EntityJSON<Taxonomy>
-export type JTaxonomyList = EntityJSONList<Taxonomy>
+export type JTerm = EntityJSON<Term>
+export type JTermList = EntityJSONList<Term>
+
+export interface TaxonomyTerm extends Term {
+  type: `taxonomyterm`
+  parent?: TaxonomyTerm
+}
+export type JTaxonomy = EntityJSON<TaxonomyTerm>
+export type JTaxonomyList = EntityJSONList<TaxonomyTerm>
 
 export interface File extends Entity {
   filename: string
