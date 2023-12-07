@@ -1,3 +1,5 @@
+import { type AppConfigInput, type AppConfig } from "nuxt/schema"
+
 export interface Entity {
   readonly id: string
   readonly created: string
@@ -6,6 +8,14 @@ export interface Entity {
 
 export interface EntityBundle extends Entity {
   type: string
+}
+
+interface EntityType<E extends Entity = Entity> {
+  name: string
+  abstract?: boolean
+  baseURI: string
+  uri: (entity: E) => string,
+  extends?: keyof AppConfigInput<E>[`entityTypes`]
 }
 
 export interface EntityJSONReference {
