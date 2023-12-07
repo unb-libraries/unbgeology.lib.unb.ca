@@ -4,30 +4,30 @@ export default defineAppConfig({
   entityTypes: {
     TermBase: {
       name: `TermBase`,
-      baseURI: `/api/vocabularies`,
+      baseURI: `/api/terms`,
       uri(term: Term) {
         const [domain, type] = term.type.split(`.`)
-        return `/api/vocabularies/${domain}/${type}/${term.id}`
+        return `/api/terms/${domain}/${type}/${term.id}`
       },
       abstract: true,
     },
 
     Term: {
       name: `Term`,
-      baseURI: `/api/vocabularies`,
+      baseURI: `/api/terms`,
       uri(term: Term) {
         const [domain, type] = term.type.split(`.`)
-        return `/api/vocabularies/${domain}/${type}/${term.id}`
+        return `/api/terms/${domain}/${type}/${term.id}`
       },
       extends: `TermBase`,
     },
 
     TaxonomyTerm: {
       name: `TaxonomyTerm`,
-      baseURI: `/api/vocabularies`,
+      baseURI: `/api/terms`,
       uri(term: Term) {
         const [domain, type] = term.type.split(`.`)
-        return `/api/vocabularies/${domain}/${type}/${term.id}`
+        return `/api/terms/${domain}/${type}/${term.id}`
       },
       extends: `TermBase`,
     },

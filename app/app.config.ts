@@ -41,27 +41,27 @@ export default defineAppConfig({
 
     Classification: {
       name: `Classification`,
-      baseURI: `/api/vocabularies/default/classification`,
+      baseURI: `/api/terms/default/classification`,
       uri(classification: Classification) {
-        return `/api/vocabularies/default/classification/${classification.id}`
+        return `/api/terms/default/classification/${classification.id}`
       },
       extends: `TaxonomyTerm`,
     },
 
     Geochronology: {
       name: `Geochronology`,
-      baseURI: `/api/vocabularies/default/geochronology`,
+      baseURI: `/api/terms/geochronology/unit`,
       uri(unit: GeochronologicUnit) {
-        return `/api/vocabularies/default/geochronology/${unit.id}`
+        return `/api/terms/geochronology/unit/${unit.id}`
       },
       extends: `TaxonomyTerm`,
     },
 
     StorageLocation: {
       name: `StorageLocation`,
-      baseURI: `/api/vocabularies/default/storagelocation`,
+      baseURI: `/api/terms/default/storagelocation`,
       uri(location: StorageLocation) {
-        return `/api/vocabularies/default/storagelocation/${location.id}`
+        return `/api/terms/default/storagelocation/${location.id}`
       },
       extends: `TaxonomyTerm`,
     },
