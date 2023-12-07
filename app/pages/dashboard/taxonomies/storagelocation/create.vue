@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import { StorageLocation } from 'types/taxonomy'
+import { StorageLocation } from 'types/vocabularies'
 import { type EntityJSONBody, type EntityJSONProperties } from 'layers/base/types/entity'
 
 definePageMeta({
@@ -15,7 +15,7 @@ definePageMeta({
 })
 
 const cancelUrl = `/dashboard/taxonomies/storagelocation`
-const { create } = useEntityType<StorageLocation>(Symbol(`taxonomies`), `storagelocation`)
+const { create } = useEntityType<StorageLocation>(`StorageLocation`)
 const term = ref({} as EntityJSONProperties<StorageLocation>)
 
 if (!term.value) {

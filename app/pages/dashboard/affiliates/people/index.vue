@@ -1,5 +1,5 @@
 <template>
-  <PvEntityTable uri="/api/affiliations/people" :columns="[[`public`, ``], `name`, `email`, `phone`, `affiliations`]">
+  <PvEntityTable entity-type-id="People" :columns="[[`public`, ``], `name`, `email`, `phone`, `affiliations`]">
     <template #public="{ entity: person }">
       <svg
         v-if="!person.public"

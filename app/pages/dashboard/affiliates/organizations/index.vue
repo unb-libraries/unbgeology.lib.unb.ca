@@ -1,5 +1,5 @@
 <template>
-  <PvEntityTable uri="/api/affiliations/org" :columns="[`name`, `address`]">
+  <PvEntityTable entity-type-id="Organization" :columns="[`name`, `address`]">
     <template #name="{ entity: org }">
       <NuxtLink :to="`/dashboard/affiliates/organizations/${org.id}`" class="hover:underline">
         {{ org.name }}

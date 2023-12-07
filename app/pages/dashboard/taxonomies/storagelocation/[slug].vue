@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import { StorageLocation } from 'types/taxonomy'
+import { StorageLocation } from 'types/vocabularies'
 import { EntityJSONBody } from 'layers/base/types/entity'
 
 definePageMeta({
@@ -15,7 +15,7 @@ definePageMeta({
 })
 
 const { slug } = useRoute().params
-const { fetchByPK, update } = useEntityType<StorageLocation>(Symbol(`taxonomies`), `storagelocation`)
+const { fetchByPK, update } = useEntityType<StorageLocation>(`StorageLocation`)
 const { entity: term } = await fetchByPK(slug as string)
 
 if (!term.value) {

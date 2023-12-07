@@ -20,7 +20,7 @@ definePageMeta({
 })
 
 function onCreate(person: EntityJSONBody<Person>) {
-  const { create } = useEntityType(Symbol(`affiliations`), `people`)
+  const { create } = useEntityType(`People`)
   create(person)
   navigateTo(`/dashboard/affiliates/people`)
 }

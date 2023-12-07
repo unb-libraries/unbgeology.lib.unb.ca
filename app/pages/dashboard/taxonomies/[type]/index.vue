@@ -1,5 +1,5 @@
 <template>
-  <PvEntityTable :uri="`/api/taxonomies/${type}`" :columns="[`label`]" />
+  <PvEntityTable :entity-type-id="entityTypeId!" :columns="[`label`]" />
 </template>
 
 <script setup lang="ts">
@@ -8,4 +8,9 @@ definePageMeta({
 })
 
 const { type } = useRoute().params
+const entityTypeId = Object.keys(useAppConfig().entityTypes).find(key => key.toLowerCase() === type)
+if (!entityTypeId) {
+  showError({ statusCode: 404 })
+}
+
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <PvEntityTable uri="/api/specimens" :columns="[`name`, `measurements`, `age`, `pieces`, `partial`, `created`, `updated`, `status`]">
+  <PvEntityTable entity-type-id="Specimen" :columns="[`name`, `measurements`, `age`, `pieces`, `partial`, `created`, `updated`, `status`]">
     <template #name="{ value, entity }">
       <NuxtLink :to="`/dashboard/${entity.self.substring(5)}`" class="hover:underline">
         {{ value }}

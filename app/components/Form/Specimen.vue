@@ -244,7 +244,7 @@
 <script setup lang="ts">
 import { EntityJSONProperties, type Image, EntityJSONBody } from 'layers/base/types/entity'
 import { type Specimen, type Publication, type Measurement } from 'types/specimen'
-import { type GeochronologicUnit, type Classification } from 'types/taxonomy'
+import { type GeochronologicUnit, type Classification } from 'types/vocabularies'
 import { type Person } from 'types/affiliation'
 import type { Coordinate } from 'types/leaflet'
 import type { Location } from 'types/nominatim'
@@ -260,16 +260,16 @@ const emits = defineEmits<{
 
 const unbOwned = ref(true)
 
-const { list: imageEntityList } = await fetchEntityList<Image>(`/api/files/image`)
+const { list: imageEntityList } = await fetchEntityList<Image>(`Image`)
 const images = computed(() => imageEntityList.value?.entities ?? [])
 
-const { list: classificationList } = await fetchEntityList<Classification>(`/api/taxonomies/classification`)
+const { list: classificationList } = await fetchEntityList<Classification>(`Classification`)
 const classifications = computed(() => classificationList.value?.entities ?? [])
 
-const { list: ageUnitList } = await fetchEntityList<GeochronologicUnit>(`/api/taxonomies/geochronology`)
+const { list: ageUnitList } = await fetchEntityList<GeochronologicUnit>(`Geochronology`)
 const ageUnits = computed(() => ageUnitList.value?.entities ?? [])
 
-const { fetchAll: fetchAllPeople, create: createPerson } = useEntityType<Person>(Symbol(`affiliations`), `people`)
+const { fetchAll: fetchAllPeople, create: createPerson } = useEntityType<Person>(`People`)
 const { list: peopleList, refresh: refreshPeopleList } = await fetchAllPeople()
 const people = computed(() => peopleList.value?.entities ?? [])
 

@@ -25,7 +25,7 @@ definePageMeta({
 
 const returnUrl = `/dashboard/users`
 const user = ref({} as EntityJSONProperties<User>)
-const { create, fetchByPK } = useEntityType<User>(Symbol(`users`))
+const { create, fetchByPK } = useEntityType<User>(`User`)
 
 const { validateField, errors } = useEntityValidate<User>(user)
 validateField(`username`, async (username: string) => {

@@ -47,12 +47,12 @@
 import { type Entity } from 'layers/base/types/entity'
 
 const props = defineProps<{
-  uri: string
+  entityTypeId: string
   columns:(string | [string, string])[]
   label?: string | ((entity: E) => string)
 }>()
 
-const { list, remove } = await fetchEntityList(props.uri)
+const { list, remove } = await fetchEntityList(props.entityTypeId)
 const columns = computed(() => Object.values(props.columns).map(col => Array.isArray(col) ? col : [col, col.substring(0, 1).toUpperCase() + col.substring(1).toLowerCase()]))
 const label = computed(() => (entity: E) => {
   if (typeof props.label === `string` && props.label in entity) {

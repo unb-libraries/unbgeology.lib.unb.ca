@@ -80,8 +80,9 @@ definePageMeta({
 })
 
 const { slug } = useRoute().params
-const { data: specimen, error } = await useFetch<Specimen>(`/api/specimens/${slug}`)
-if (error.value) {
+const { fetchByPK } = useEntityType<Specimen>(`Specimen`)
+const { entity: specimen } = await fetchByPK(slug as string)
+if (!specimen.value) {
   showError({ statusCode: 404 })
 }
 

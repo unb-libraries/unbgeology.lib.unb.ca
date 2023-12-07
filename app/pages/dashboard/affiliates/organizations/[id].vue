@@ -11,7 +11,7 @@ definePageMeta({
 })
 
 const { id } = useRoute().params
-const { fetchByPK, update } = useEntityType<Organization>(Symbol(`affiliations`), `org`)
+const { fetchByPK, update } = useEntityType<Organization>(`Organization`)
 const { entity: organization } = await fetchByPK(id as string)
 
 function onUpdate(organization: EntityJSONBody<Organization>) {

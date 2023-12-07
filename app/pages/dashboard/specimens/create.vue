@@ -23,7 +23,7 @@ const specimen = ref<EntityJSONProperties<Specimen>>({
 } as EntityJSONProperties<Specimen>)
 
 const onSave = async (specimen: EntityJSONBody<Specimen>) => {
-  const { create } = useEntityType(Symbol(`specimens`))
+  const { create } = useEntityType<Specimen>(`Specimen`)
   await create(specimen)
   await navigateTo(`/dashboard/specimens`)
 }

@@ -16,7 +16,7 @@ const organization = ref<EntityJSONProperties<Organization>>({
 })
 
 function onCreate(organization: EntityJSONBody<Organization>) {
-  const { create } = useEntityType<Organization>(Symbol(`affiliations`), `org`)
+  const { create } = useEntityType<Organization>(`Organization`)
   create(organization)
   navigateTo(`/dashboard/affiliates/organizations`)
 }

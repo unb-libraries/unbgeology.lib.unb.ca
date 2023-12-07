@@ -41,10 +41,10 @@ const emits = defineEmits<{
 }>()
 
 const { slug } = useRoute().params
-const { fetchByPK, remove } = useEntityType<Specimen>(Symbol(`specimens`))
+const { fetchByPK, remove } = useEntityType<Specimen>(`Specimen`)
 const { entity: specimen } = await fetchByPK(slug as string)
 
-const { list: loansList } = await fetchEntityList<Loan>(`/api/specimens/${slug}/loans`)
+const { list: loansList } = await fetchEntityList<Loan>(`${specimen.value?.self}/loans`)
 const loans = computed(() => loansList.value?.entities ?? [])
 
 const showConfirmModal = ref(false)

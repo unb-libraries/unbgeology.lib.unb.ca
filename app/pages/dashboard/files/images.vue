@@ -28,5 +28,5 @@ function onUnselect() {
   selectedImage.value = undefined
 }
 
-const { list, refresh } = await fetchEntityList<Image>(`/api/files`)
+const { list, refresh } = await fetchEntityList<Image>(`Image`)
 </script>

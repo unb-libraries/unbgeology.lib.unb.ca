@@ -8,17 +8,22 @@
 </template>
 
 <script setup lang="ts">
-import { type EntityJSONBody, type EntityJSONProperties, type Taxonomy } from 'layers/base/types/entity'
+import { type EntityJSONBody, type EntityJSONProperties, type Term } from 'layers/base/types/entity'
 
 definePageMeta({
   layout: `dashboard`,
 })
 
 const { type } = useRoute().params
-const { create } = useEntityType<Taxonomy>(Symbol(`taxonomies`), type as string)
-const term = ref({} as EntityJSONProperties<Taxonomy>)
+const entityTypeId = Object.keys(useAppConfig().entityTypes).find(key => key.toLowerCase() === type)
+if (!entityTypeId) {
+  showError({ statusCode: 404 })
+}
 
-async function onSave(term: EntityJSONBody<Taxonomy>) {
+const { create } = useEntityType<Term>(entityTypeId!)
+const term = ref({} as EntityJSONProperties<Term>)
+
+async function onSave(term: EntityJSONBody<Term>) {
   await create(term)
   navigateTo(`/dashboard/taxonomies/${type}`)
 }

@@ -72,8 +72,7 @@ definePageMeta({
   name: `Specimens`,
 })
 
-const { fetchAll } = useEntityType<Specimen>(Symbol(`specimens`))
-const { list } = await fetchAll()
+const { list } = await fetchEntityList<Specimen>(`Specimen`)
 const specimens = computed(() => list.value?.entities ?? [])
 
 const markers = computed(() => (specimens.value ?? [])
