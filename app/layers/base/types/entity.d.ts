@@ -113,7 +113,7 @@ export interface TaxonomyTerm extends Term {
 export type JTaxonomy = EntityJSON<TaxonomyTerm>
 export type JTaxonomyList = EntityJSONList<TaxonomyTerm>
 
-export interface File extends Entity {
+export interface File extends EntityBundle {
   filename: string
   filepath: string
   filesize: number

@@ -1,6 +1,6 @@
-import { type Entity } from "layers/base/types/entity"
+import { type EntityBundle } from "layers/base/types/entity"
 
-export interface Affiliation extends Entity {}
+export interface Affiliation extends EntityBundle {}
 
 export interface Address {
   address1: string
