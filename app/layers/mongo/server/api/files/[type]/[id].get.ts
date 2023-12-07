@@ -1,4 +1,4 @@
-import { Image as ImageEntity } from "layers/mongo/server/entityTypes/File"
+import { Image as ImageEntity } from "layers/mongo/server/documentTypes/File"
 import { type Image } from "layers/base/types/entity"
 
 export default defineEventHandler(async (event) => {

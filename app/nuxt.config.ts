@@ -11,7 +11,7 @@ export default defineNuxtConfig({
     `./layers/base`,
   ],
   alias: {
-    "entity-types": url.fileURLToPath(new URL(`./server/entityTypes`, import.meta.url)),
+    "document-types": url.fileURLToPath(new URL(`./server/documentTypes`, import.meta.url)),
     "vocabularies": url.fileURLToPath(new URL(`./server/vocabularies`, import.meta.url)),
     "layers": url.fileURLToPath(new URL(`./layers`, import.meta.url)),
     "types": url.fileURLToPath(new URL(`./types`, import.meta.url)),
@@ -19,8 +19,8 @@ export default defineNuxtConfig({
   nitro: {
     imports: {
       dirs: [
-        `./server/entityTypes/*`,
-        `./layers/*/server/entityTypes/*`,
+        `./server/documentTypes/*`,
+        `./layers/*/server/documentTypes/*`,
         `./server/vocabularies/*`,
       ],
     },

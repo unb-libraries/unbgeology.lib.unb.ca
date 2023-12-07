@@ -1,6 +1,6 @@
 import fs from "fs/promises"
 import { readFiles } from "h3-formidable"
-import { File as FileEntity } from "layers/mongo/server/entityTypes/File"
+import { File as FileEntity } from "layers/mongo/server/documentTypes/File"
 import { type File } from "layers/base/types/entity"
 
 const { APP_ROOT } = process.env

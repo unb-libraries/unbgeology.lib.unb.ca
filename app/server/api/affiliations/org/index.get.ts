@@ -1,4 +1,4 @@
-import { Organization, type Organization as IOrganization } from "entity-types/Affiliation"
+import { Organization, type Organization as IOrganization } from "document-types/Affiliation"
 
 export default defineEventHandler(async (event) => {
   const { select, sort, page, pageSize } = getQueryOptions(event)

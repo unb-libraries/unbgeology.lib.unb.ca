@@ -1,5 +1,5 @@
 import { EntityJSONBody } from "layers/base/types/entity"
-import { Image as ImageEntity } from "layers/mongo/server/entityTypes/File"
+import { Image as ImageEntity } from "layers/mongo/server/documentTypes/File"
 import { type H3Event } from "h3"
 import { type Specimen } from "types/specimen"
 

@@ -1,4 +1,4 @@
-import { type Publication } from "entity-types/Specimen"
+import { type Publication } from "document-types/Specimen"
 
 export default defineEventHandler(async (event) => {
   const { slug } = getRouterParams(event)

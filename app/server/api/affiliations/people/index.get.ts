@@ -1,4 +1,4 @@
-import { type Person } from "entity-types/Affiliation"
+import { type Person } from "document-types/Affiliation"
 
 export default defineEventHandler(async (event) => {
   const { select, sort, page, pageSize } = getQueryOptions(event)

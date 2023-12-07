@@ -1,4 +1,4 @@
-import { Image as ImageEntity } from "layers/mongo/server/entityTypes/File"
+import { Image as ImageEntity } from "layers/mongo/server/documentTypes/File"
 
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
