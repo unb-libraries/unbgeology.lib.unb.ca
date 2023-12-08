@@ -82,7 +82,7 @@
             </section>
             <section class="twa-nav-group">
               <h2 class="twa-nav-group-heading">
-                <span class="mr-2">Taxonomies</span>
+                <span class="mr-2">Terms</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -95,8 +95,8 @@
                   <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z" />
                 </svg>
               </h2>
-              <NuxtLink v-for="taxonomy in taxonomies" :key="taxonomy.self" :to="`/dashboard/${taxonomy.self.substring(5)}`" class="twa-nav-item" active-class="twa-nav-item-active">
-                {{ taxonomy.name }}
+              <NuxtLink to="/dashboard/terms" class="twa-nav-item" active-class="twa-nav-item-active">
+                View all
               </NuxtLink>
             </section>
             <section class="twa-nav-group">
@@ -178,10 +178,6 @@
     </footer>
   </div>
 </template>
-
-<script setup lang="ts">
-const { data: taxonomies } = await useFetch<{ name: string, self: string }[]>(`/api/taxonomies`)
-</script>
 
 <style scoped>
   .twa-column {
