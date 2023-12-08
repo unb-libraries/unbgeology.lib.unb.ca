@@ -1,7 +1,7 @@
-import { type GeochronologicUnit, Division } from "types/vocabularies"
+import { type Unit, Division } from "types/vocabularies/geochronology"
 import { type EntityDocument, EntityFieldTypes } from "layers/mongo/types/entity"
 
-export default defineTaxonomy<EntityDocument<GeochronologicUnit>>(`Geochronology`, {
+export default defineTaxonomy<EntityDocument<Unit>>(`Unit`, {
   division: {
     type: EntityFieldTypes.String,
     enum: Division,
@@ -26,4 +26,8 @@ export default defineTaxonomy<EntityDocument<GeochronologicUnit>>(`Geochronology
     required: false,
     default: 0,
   },
-})
+  color: {
+    type: EntityFieldTypes.String,
+    required: true,
+  },
+}, { domain: `Geochronology` })
