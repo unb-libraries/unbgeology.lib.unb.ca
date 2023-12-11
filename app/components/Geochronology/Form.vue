@@ -1,5 +1,5 @@
 <template>
-  <TaxonomyTermForm :term="term" :parents="units">
+  <TaxonomyTermForm :entity="entity" :parents="units">
     <template #default="{ body }">
       <div class="form-row">
         <div class="form-field grow">
@@ -39,9 +39,9 @@ import { type Unit, Division } from "types/vocabularies/geochronology"
 import { type EntityJSONProperties } from "layers/base/types/entity"
 
 defineProps<{
-  term: EntityJSONProperties<Unit>
+  entity: EntityJSONProperties<Unit>
 }>()
 
-const { entities: units } = await fetchEntityListItems<Unit>(`Geochronology`)
+const { entities: units } = await fetchEntityList<Unit>(`Geochronology`)
 const divisions = Object.entries(Division).map(([value, label]) => [value.toLowerCase(), label.at(0)!.toUpperCase() + label.substring(1)])
 </script>

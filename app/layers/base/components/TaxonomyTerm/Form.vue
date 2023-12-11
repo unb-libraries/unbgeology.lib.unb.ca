@@ -1,5 +1,5 @@
 <template>
-  <TermForm :entity="term">
+  <TermForm :entity="entity">
     <template #default="{ body }">
       <slot name="parent" :body="body">
         <div class="form-field">
@@ -23,7 +23,7 @@
 import { type EntityJSON, type EntityJSONProperties, type TaxonomyTerm } from 'layers/base/types/entity'
 
 defineProps<{
-  term: EntityJSONProperties<T> & Partial<EntityJSON<T>>
+  entity: EntityJSONProperties<T> & Partial<EntityJSON<T>>
   parents: EntityJSON<T>[]
 }>()
 </script>
