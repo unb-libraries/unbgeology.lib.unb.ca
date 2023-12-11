@@ -81,8 +81,10 @@ export interface EntityDeleteResponse {
 
 export interface EntityListResponse<E extends Entity = Entity> {
   list: Ref<EntityJSONList<E> | null>
+  entities: ComputedRef<EntityJSONList<E>[`entities`]>
   refresh: () => void
   add: typeof createEntity<E>
+  update: typeof updateEntity<E>
   remove: typeof deleteEntity<E>
   errors: any[]
 }

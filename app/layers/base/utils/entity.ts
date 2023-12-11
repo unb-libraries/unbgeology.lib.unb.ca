@@ -151,7 +151,7 @@ export async function deleteEntity(entityReferenceOrPk: EntityJSONReference | st
 
 export async function fetchEntityList <E extends Entity = Entity> (entityTypeId: string): Promise<EntityListResponse<E>>
 export async function fetchEntityList <E extends Entity = Entity> (entityType: EntityType<E>): Promise<EntityListResponse<E>>
-export async function fetchEntityList <E extends Entity = Entity>(entityTypeOrId: string | EntityType<E>, bundle: string = ``) {
+export async function fetchEntityList <E extends Entity = Entity>(entityTypeOrId: string | EntityType<E>) {
   const url = typeof entityTypeOrId === `string`
     ? useEntityType<E>(entityTypeOrId).definition.baseURI
     : entityTypeOrId.baseURI
@@ -159,11 +159,17 @@ export async function fetchEntityList <E extends Entity = Entity>(entityTypeOrId
   const { data: list, refresh } = await useFetch<EntityJSONList<E>>(url)
   return {
     list: list as Ref<EntityJSONList<E> | null>,
+    entities: computed(() => list.value?.entities ?? []),
     refresh,
     async add(entity: EntityJSONCreateBody<E>) {
       const response = typeof entityTypeOrId === `string`
         ? await createEntity(entity, entityTypeOrId)
         : await createEntity(entity, entityTypeOrId)
+      refresh()
+      return response
+    },
+    async update(entity: EntityJSONBody<E>) {
+      const response = await updateEntity(entity)
       refresh()
       return response
     },
