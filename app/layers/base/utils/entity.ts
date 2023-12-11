@@ -67,7 +67,7 @@ export function getEntityPayload <E extends Entity = Entity, P extends keyof Omi
           return ref
         }
       }
-      return [key, resolveReference(value as EntityJSONPropertyValue)]
+      return [key, value ? resolveReference(value as EntityJSONPropertyValue) : undefined]
     })) as EntityJSONBody<E>
 }
 
