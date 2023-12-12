@@ -1,5 +1,5 @@
 <template>
-  <PvTable :value="entities" :row-class="() => `group hover:bg-accent-light`">
+  <PvTable :value="entities" :row-class="() => `group`">
     <template #empty>
       <slot name="empty">
         No items found.
