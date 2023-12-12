@@ -9,7 +9,15 @@
           {{ division.substring(0, 1).toUpperCase() + division.substring(1).toLowerCase() }}
         </template>
         <template #actions="{ entity: term }">
-          <PvDefaultEntityTableActions :entity="term" :form="GeochronologyForm" :update="updateUnit" :remove="removeUnit" class="invisible group-hover:visible group-focus:visible" />
+          <PvDefaultEntityTableActions
+            :entity="term"
+            label="label"
+            :form="GeochronologyForm"
+            :form-props="{ parents: units }"
+            :update="updateUnit"
+            :remove="removeUnit"
+            class="invisible group-hover:visible group-focus:visible"
+          />
         </template>
         <template #footer>
           <span class="italic">{{ pluralize(unitList?.total, `unit`, `units`) }}</span>
@@ -25,6 +33,7 @@
         <template #actions="{ entity: term }">
           <PvDefaultEntityTableActions
             :entity="term"
+            label="label"
             :form="TaxonomyTermForm"
             :form-props="{ parents: classifications }"
             :update="updateClassification"
@@ -46,6 +55,7 @@
         <template #actions="{ entity: term }">
           <PvDefaultEntityTableActions
             :entity="term"
+            label="label"
             :form="StorageLocationForm"
             :form-props="{ parents: locations }"
             :update="updateLocation"

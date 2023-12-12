@@ -1,22 +1,24 @@
 <template>
-  <PvModal :modal-class="modalClass">
-    <p :class="contentClass">
-      <slot />
-    </p>
+  <div>
+    <h1 class="mb-12 text-2xl" :class="contentClass">
+      <slot>
+        {{ question }}
+      </slot>
+    </h1>
     <div class="text-center" :class="actionsClass">
-      <button class="bg-red mr-2 w-24 rounded-md p-2" :class="confirmClass" @click="emits(`confirm`)">
+      <button class="bg-red hover:bg-red-light mr-2 w-24 rounded-md p-2" :class="confirmClass" @click="emits(`confirm`)">
         {{ confirmLabel ?? `Yes` }}
       </button>
-      <button class="bg-accent-mid mr-2 w-24 rounded-md p-2" :class="cancelClass" @click="emits(`cancel`)">
+      <button class="bg-accent-mid hover:bg-accent-light mr-2 w-24 rounded-md p-2" :class="cancelClass" @click="emits(`cancel`)">
         {{ cancelLabel ?? `No` }}
       </button>
     </div>
-  </PvModal>
+  </div>
 </template>
 
 <script setup lang="ts">
 defineProps<{
-  modalClass?: string
+  question?: string
   contentClass?: string
   confirmLabel?: string
   confirmClass?: string
