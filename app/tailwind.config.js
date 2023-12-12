@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+import colors from "tailwindcss/colors"
+
 module.exports = {
   content: [
     `./components/**/*.{js,vue,ts}`,
@@ -29,9 +31,21 @@ module.exports = {
           mid: `#3FA085`,
           dark: `#00695D`,
         },
-        blue: `#3B82F6`,
-        red: `#EF4444`,
-        yellow: `#EAB308`,
+        blue: {
+          light: colors.blue[500],
+          DEFAULT: colors.blue[600],
+          dark: colors.blue[700],
+        },
+        red: {
+          light: colors.red[500],
+          DEFAULT: colors.red[600],
+          dark: colors.red[700],
+        },
+        yellow: {
+          light: colors.amber[300],
+          DEFAULT: colors.amber[400],
+          dark: colors.amber[500],
+        },
       },
     },
   },

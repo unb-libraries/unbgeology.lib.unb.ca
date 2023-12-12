@@ -1,9 +1,9 @@
 <template>
   <div class="flex flex-row justify-end space-x-2">
-    <button class="bg-yellow rounded-md px-2 py-1 hover:cursor-pointer" @click.prevent="content = modalContent">
+    <button class="bg-yellow hover:bg-yellow-light rounded-md px-2 py-1 hover:cursor-pointer" @click.prevent="content = modalContent">
       Edit
     </button>
-    <button class="bg-red rounded-md px-2 py-1 hover:cursor-pointer">
+    <button class="bg-red hover:bg-red-light rounded-md px-2 py-1 hover:cursor-pointer">
       Remove
     </button>
   </div>
