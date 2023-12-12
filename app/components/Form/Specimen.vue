@@ -177,11 +177,8 @@
                     name="collector"
                     class="form-input form-input-pvselect rounded-r-none"
                   />
-                  <button class="form-action form-action-submit rounded-l-none font-normal" @click="showPersonForm = true">
+                  <button class="form-action form-action-submit rounded-l-none font-normal" @click.prevent="content = { component: FormPerson, props: { entity: {}}, eventHandlers: { save: onSavePerson, cancel: closeModal }}">
                     Add
-                    <PvModal v-if="showPersonForm">
-                      <FormPerson v-if="showPersonForm" :person="newPerson" @save="onSaveNewPerson" @cancel="showPersonForm = false" />
-                    </PvModal>
                   </button>
                 </div>
               </div>
@@ -197,11 +194,8 @@
                     name="Sponsor"
                     class="form-input form-input-pvselect rounded-r-none"
                   />
-                  <button class="form-action form-action-submit rounded-l-none font-normal" @click="showPersonForm = true">
+                  <button class="form-action form-action-submit rounded-l-none font-normal" @click.prevent="content = { component: FormPerson, props: { entity: {}}, eventHandlers: { save: onSavePerson, cancel: closeModal }}">
                     Add
-                    <PvModal v-if="showPersonForm">
-                      <FormPerson v-if="showPersonForm" :person="newPerson" @save="onSaveNewPerson" @cancel="showPersonForm = false" />
-                    </PvModal>
                   </button>
                 </div>
               </div>
@@ -244,11 +238,12 @@
 <script setup lang="ts">
 import { EntityJSONProperties, type Image, EntityJSONBody } from 'layers/base/types/entity'
 import { type Specimen, type Publication, type Measurement } from 'types/specimen'
-import { type GeochronologicUnit, type Classification } from 'types/vocabularies'
+import { type Classification } from 'types/vocabularies'
+import { type Unit } from 'types/vocabularies/geochronology'
 import { type Person } from 'types/affiliation'
 import type { Coordinate } from 'types/leaflet'
 import type { Location } from 'types/nominatim'
-import { FormPublication } from '#components'
+import { FormPublication, FormPerson } from '#components'
 
 defineProps<{
   specimen: EntityJSONProperties<Specimen>
@@ -258,6 +253,8 @@ const emits = defineEmits<{
   save: [specimen: EntityJSONBody<Specimen>]
 }>()
 
+const { content, close: closeModal } = useModal()
+
 const unbOwned = ref(true)
 
 const { list: imageEntityList } = await fetchEntityList<Image>(`Image`)
@@ -266,15 +263,14 @@ const images = computed(() => imageEntityList.value?.entities ?? [])
 const { list: classificationList } = await fetchEntityList<Classification>(`Classification`)
 const classifications = computed(() => classificationList.value?.entities ?? [])
 
-const { list: ageUnitList } = await fetchEntityList<GeochronologicUnit>(`Geochronology`)
+const { list: ageUnitList } = await fetchEntityList<Unit>(`Geochronology`)
 const ageUnits = computed(() => ageUnitList.value?.entities ?? [])
 
-const { fetchAll: fetchAllPeople, create: createPerson } = useEntityType<Person>(`People`)
-const { list: peopleList, refresh: refreshPeopleList } = await fetchAllPeople()
-const people = computed(() => peopleList.value?.entities ?? [])
-
-const showPersonForm = ref(false)
-const newPerson = ref({} as EntityJSONProperties<Person>)
+const { entities: people, add: addPerson } = await fetchEntityList<Person>(`People`)
+async function onSavePerson(person: EntityJSONBody<Person>) {
+  await addPerson(person)
+  closeModal()
+}
 
 function padMeasurements(measurements: Measurement[], length: number) {
   if (measurements.length < length) {
@@ -301,12 +297,5 @@ const onSearchItemSelect = function (item: Location, specimen: EntityJSONBody<Sp
 
 const onSave = (specimen: EntityJSONBody<Specimen>) => {
   emits(`save`, specimen)
-}
-
-const onSaveNewPerson = async (person: EntityJSONBody<Person>) => {
-  await createPerson(person)
-  refreshPeopleList()
-  newPerson.value = {} as EntityJSONProperties<Person>
-  showPersonForm.value = false
 }
 </script>

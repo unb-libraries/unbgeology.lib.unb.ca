@@ -8,28 +8,20 @@
     <button class="bg-accent-mid hover:bg-accent-light flex-none rounded-r-md px-4 py-2" @click.prevent="onAdd">
       Add
     </button>
-    <PvModal v-if="showForm">
-      <slot name="form" :entity="selectedEntity">
-        <component :is="form" v-if="form" :entity="selectedEntity" @save="onSave" @cancel="onCancel" />
-        <EntityForm v-else :entity="selectedEntity" @save="onSave" @cancel="onCancel">
-          <template #default="{ body }">
-            <slot name="entity-form" :body="body" />
-          </template>
-        </EntityForm>
-      </slot>
-    </PvModal>
   </div>
 </template>
 
 <script setup lang="ts" generic="E extends Entity = Entity">
 import { type EntityJSONBody, type Entity, EntityJSONProperties } from 'layers/base/types/entity'
-import { type DefineComponent } from 'nuxt/dist/app/compat/capi'
+import { type DynamicContent } from 'layers/primevue/types'
 
 const props = defineProps<{
   modelValue: EntityJSONProperties<E>[]
   inputClass?: string
   label:((item: EntityJSONProperties<E>) => string) | string
-  form?: DefineComponent | string
+  form: DynamicContent[`component`]
+  formProps?: DynamicContent[`props`]
+  formEventHandlers?: DynamicContent[`eventHandlers`]
 }>()
 
 const emits = defineEmits<{
@@ -39,26 +31,40 @@ const emits = defineEmits<{
 
 const entities = computed({
   get() {
-    return props.modelValue
+    return props.modelValue ?? []
   },
   set(value: EntityJSONProperties<E>[]) {
     emits(`update:modelValue`, value)
   },
 })
 
-const showForm = ref<false | string>(false)
+const { content, close: closeModal } = useModal()
+
+const modal = computed<DynamicContent>(() => ({
+  component: props.form,
+  props: {
+    entity: selectedEntity,
+    ...props.formProps,
+  },
+  eventHandlers: {
+    save: onSave,
+    delete: () => remove(selectedEntity.value),
+    cancel: onCancel,
+    ...props.formEventHandlers,
+  },
+}))
+
 const selectedEntity = ref()
 
 function onClickEntity(entity: EntityJSONProperties<E>) {
-  showForm.value = entity.self
+  content.value = modal.value
   selectedEntity.value = entity
 }
 
 function add(entity: EntityJSONBody<E>) {
   entity.self = entity.self.substring(2)
-  entities.value.push(entity)
+  entities.value = [...entities.value, entity]
 }
-provide(`add`, add)
 
 function update(entity: EntityJSONBody<E>) {
   const index = entities.value.findIndex(e => e.self === entity.self)
@@ -66,21 +72,19 @@ function update(entity: EntityJSONBody<E>) {
     entities.value[index] = entity
   }
 }
-provide(`update`, update)
 
 function remove(entity: EntityJSONBody<E>) {
   const index = entities.value.findIndex(e => e.self === entity.self)
   if (index >= 0) {
     entities.value.splice(index, 1)
   }
-  showForm.value = false
+  closeModal()
 }
-provide(`remove`, remove)
 
 function onAdd() {
   const self = `n_${Math.floor(Math.random() * 100)}`
   selectedEntity.value = { self }
-  showForm.value = self
+  content.value = modal.value
 }
 
 function onSave(entity: EntityJSONBody<E>) {
@@ -89,12 +93,12 @@ function onSave(entity: EntityJSONBody<E>) {
   } else {
     update(entity)
   }
-  showForm.value = false
+  closeModal()
 }
 
 function onCancel() {
-  showForm.value = false
   selectedEntity.value = undefined
+  closeModal()
 }
 
 </script>

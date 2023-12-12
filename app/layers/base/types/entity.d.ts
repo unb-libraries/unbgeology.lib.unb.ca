@@ -83,9 +83,9 @@ export interface EntityListResponse<E extends Entity = Entity> {
   list: Ref<EntityJSONList<E> | null>
   entities: ComputedRef<EntityJSONList<E>[`entities`]>
   refresh: () => void
-  add: typeof createEntity<E>
-  update: typeof updateEntity<E>
-  remove: typeof deleteEntity<E>
+  add: (entity: EntityJSONCreateBody<E>) => Promise<void>
+  update: (entity: EntityJSONBody<E>) => Promise<void>
+  remove: (entity: EntityJSON<E>) => Promise<void>
   errors: any[]
 }
 

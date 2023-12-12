@@ -15,8 +15,8 @@
         <textarea v-model="body.abstract" rows="5" class="form-input form-input-textarea" />
       </div>
     </template>
-    <template #more-actions="{ body }">
-      <button class="form-action form-action-delete" @click.prevent="removePublication!(body)">
+    <template #more-actions>
+      <button class="form-action form-action-delete" @click.prevent="emits(`delete`)">
         Delete
       </button>
     </template>
@@ -35,9 +35,8 @@ defineProps<{
 
 const emits = defineEmits<{
   save: [publication: EntityJSONBody<Publication>]
+  delete: []
 }>()
-
-const removePublication: undefined | ((entity: EntityJSONBody<Publication>) => void) = inject(`remove`)
 
 function onResolve(publication: EntityJSONProperties<Publication>, body: EntityJSONBody<Publication>) {
   if (publication.citation) {

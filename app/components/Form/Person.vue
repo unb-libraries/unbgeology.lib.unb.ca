@@ -1,5 +1,5 @@
 <template>
-  <EntityForm :entity="person" @save="onSave">
+  <EntityForm :entity="entity" @save="onSave">
     <template #default="{ body: personBody }">
       <div class="form-row form-row-2">
         <div class="form-field">
@@ -42,18 +42,17 @@ import { type Person, type Organization } from "types/affiliation"
 import { EntityJSONProperties, type EntityJSONBody } from "layers/base/types/entity"
 
 defineProps<{
-  person: EntityJSONProperties<Person>
+  entity: EntityJSONProperties<Person>
 }>()
 
 const emits = defineEmits<{
-  save: [person: EntityJSONBody<Person>]
+  save: [entity: EntityJSONBody<Person>]
 }>()
 
-const { list: orgList } = await fetchEntityList<Organization>(Symbol(`affiliations`), `org`)
-const organizations = computed(() => orgList.value?.entities ?? [])
+const { entities: organizations } = await fetchEntityList<Organization>(`Organization`)
 
-function onSave(person: EntityJSONBody<Person>) {
-  emits(`save`, person)
+function onSave(entity: EntityJSONBody<Person>) {
+  emits(`save`, entity)
 }
 
 </script>

@@ -176,6 +176,8 @@
         </nav>
       </div>
     </footer>
+
+    <PvModal />
   </div>
 </template>
 
