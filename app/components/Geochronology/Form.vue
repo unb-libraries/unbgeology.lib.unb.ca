@@ -7,10 +7,10 @@
           <PvInputSelect v-model="body.division" class="form-input form-input-pvselect" :options="divisions" option-value="0" option-label="1" />
         </div>
 
-        <div class="form-field">
+        <!-- <div class="form-field">
           <label for="color">Color code</label>
           <PvColorPicker v-model="body.color" name="color" :pt="{ input: { class: `form-input form-input-color` }}" />
-        </div>
+        </div> -->
       </div>
 
       <div class="form-row form-row-3">

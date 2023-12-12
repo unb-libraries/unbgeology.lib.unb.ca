@@ -28,6 +28,6 @@ export default defineTaxonomy<EntityDocument<Unit>>(`Unit`, {
   },
   color: {
     type: EntityFieldTypes.String,
-    required: true,
+    required: false,
   },
 }, { domain: `Geochronology` })
