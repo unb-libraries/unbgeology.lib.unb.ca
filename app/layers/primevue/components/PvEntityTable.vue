@@ -12,6 +12,9 @@
         </slot>
       </template>
     </PvTableColumn>
+    <template #footer>
+      <slot name="footer" />
+    </template>
   </PvTable>
 </template>
 
@@ -21,7 +24,6 @@ import { type Entity, type EntityJSON } from 'layers/base/types/entity'
 const props = defineProps<{
   entities: EntityJSON<E>[]
   columns:(string | [string, string])[]
-  label?: string | ((entity: E) => string)
 }>()
 
 const columns = computed(() => Object.values(props.columns).map(col => Array.isArray(col) ? col : [col, col.substring(0, 1).toUpperCase() + col.substring(1).toLowerCase()]))

@@ -11,6 +11,9 @@
         <template #actions="{ entity: term }">
           <PvDefaultEntityTableActions :entity="term" :form="GeochronologyForm" :update="updateUnit" :remove="removeUnit" class="invisible group-hover:visible" />
         </template>
+        <template #footer>
+          <span class="italic">{{ pluralize(unitList?.total, `unit`, `units`) }}</span>
+        </template>
       </PvEntityTable>
     </section>
 
@@ -28,6 +31,9 @@
             :remove="removeClassification"
             class="invisible group-hover:visible"
           />
+        </template>
+        <template #footer>
+          <span class="italic">{{ pluralize(classificationList?.total, `classification`, `classifications`) }}</span>
         </template>
       </PvEntityTable>
     </section>
@@ -47,6 +53,9 @@
             class="invisible group-hover:visible"
           />
         </template>
+        <template #footer>
+          <span class="italic">{{ pluralize(locationList?.total, `location`, `locations`) }}</span>
+        </template>
       </PvEntityTable>
     </section>
   </div>
@@ -61,7 +70,7 @@ definePageMeta({
   layout: `dashboard`,
 })
 
-const { entities: units, update: updateUnit, remove: removeUnit } = await fetchEntityList<Unit>(`Geochronology`)
-const { entities: classifications, update: updateClassification, remove: removeClassification } = await fetchEntityList<Classification>(`Classification`)
-const { entities: locations, update: updateLocation, remove: removeLocation } = await fetchEntityList<StorageLocation>(`StorageLocation`)
+const { list: unitList, entities: units, update: updateUnit, remove: removeUnit } = await fetchEntityList<Unit>(`Geochronology`)
+const { list: classificationList, entities: classifications, update: updateClassification, remove: removeClassification } = await fetchEntityList<Classification>(`Classification`)
+const { list: locationList, entities: locations, update: updateLocation, remove: removeLocation } = await fetchEntityList<StorageLocation>(`StorageLocation`)
 </script>
