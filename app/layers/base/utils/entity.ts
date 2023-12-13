@@ -18,17 +18,13 @@ import {
   type EntityJSONProperties,
 } from "layers/base/types/entity"
 
-const useBaseUrl = function (entityType: symbol, bundle: string = ``) {
-  return `/api/${entityType.description}${bundle ? `/${bundle}` : ``}`
-}
-
 export function defineEntityType<E extends Entity = Entity>(name: string, definition: Omit<EntityType<E>, `name`>): EntityType<E> {
   const baseURI = `/api/${name.toLowerCase()}`
-  return defu({
+  return defu(definition, {
     name,
     baseURI,
-    uri: (entity: E) => `${baseURI}/${entity.id}`,
-  }, definition)
+    uri: (entity: Partial<E>) => `${baseURI}/${entity.id}`,
+  })
 }
 
 export function useEntityType<E extends Entity = Entity>(name: keyof AppConfig<E>[`entityTypes`]) {
@@ -89,7 +85,8 @@ export async function createEntity <E extends Entity = Entity>(entity: EntityJSO
 export async function fetchEntity <E extends Entity = Entity> (pk: string, entityType: EntityType<E>): Promise<EntityFetchResponse<E>>
 export async function fetchEntity <E extends Entity = Entity> (uri: string): Promise<EntityFetchResponse<E>>
 export async function fetchEntity <E extends Entity = Entity>(pkOrUri: string, entityType?: EntityType<E>): Promise<EntityFetchResponse<E>> {
-  const url = entityType?.baseURI ?? pkOrUri
+  // REFACTOR: fetch by filtering on PK, e.g. /api/terms/?filter=slug_eq_an-example
+  const url = entityType ? `${entityType?.baseURI}/${pkOrUri}` : pkOrUri
 
   const { data, refresh } = await useFetch<EntityJSON<E>>(url)
   const entity: Ref<EntityJSON<E> | null> = data as Ref<EntityJSON<E> | null>
