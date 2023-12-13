@@ -20,8 +20,8 @@ const props = defineProps<{
   form: DynamicContent[`component`]
   formProps?: DynamicContent[`props`]
   formEventHandlers?: DynamicContent[`eventHandlers`]
-  update: typeof updateEntity<E> | ReturnType<typeof useEntityType<E>>[`update`]
-  remove: typeof deleteEntity | ReturnType<typeof useEntityType<E>>[`remove`]
+  update: typeof updateEntity<E> | ReturnType<typeof useEntityType<E>>[`update`] | ReturnType<typeof fetchEntityList<E>>[`update`]
+  remove: typeof deleteEntity | ReturnType<typeof useEntityType<E>>[`remove`] | ReturnType<typeof fetchEntityList<E>>[`remove`]
 }>()
 
 const modalUpdate = computed<DynamicContent>(() => ({

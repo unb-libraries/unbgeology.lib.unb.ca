@@ -27,7 +27,7 @@
           />
         </template>
         <template #footer>
-          <span class="italic">{{ pluralize(unitList?.total, `unit`, `units`) }}</span>
+          <span v-if="unitList?.total" class="italic">{{ pluralize(unitList?.total, `unit`, `units`) }}</span>
         </template>
       </PvEntityTable>
     </section>
@@ -35,28 +35,86 @@
     <section>
       <header class="flex flex-row justify-between">
         <h2 class="mb-6 text-2xl">
-          Classifications
+          Rock
         </h2>
         <div class="space-x-1">
-          <button class="form-action form-action-submit p-2 font-normal" @click.prevent="content = { component: TaxonomyTermForm, props: { entity: {}, parents: classifications }, eventHandlers: { save: onCreateClassification, cancel: () => closeModal()}}">
+          <button class="form-action form-action-submit p-2 font-normal" @click.prevent="content = { component: TaxonomyTermForm, props: { entity: {}, parents: rocks }, eventHandlers: { save: onCreateRock, cancel: () => closeModal()}}">
             Create
           </button>
         </div>
       </header>
-      <PvEntityTable :entities="classifications" :columns="[`label`, [`actions`, ``]]">
+      <PvEntityTable :entities="rocks" :columns="[`label`, [`actions`, ``]]">
         <template #actions="{ entity: term }">
           <PvDefaultEntityTableActions
             :entity="term"
             label="label"
             :form="TaxonomyTermForm"
-            :form-props="{ parents: classifications }"
-            :update="updateClassification"
-            :remove="removeClassification"
+            :form-props="{ parents: rocks }"
+            :update="updateRock"
+            :remove="removeRock"
             class="invisible group-hover:visible group-focus:visible"
           />
         </template>
         <template #footer>
-          <span class="italic">{{ pluralize(classificationList?.total, `classification`, `classifications`) }}</span>
+          <span v-if="rockList?.total" class="italic">{{ pluralize(rockList?.total, `term`, `terms`) }}</span>
+        </template>
+      </PvEntityTable>
+    </section>
+
+    <section>
+      <header class="flex flex-row justify-between">
+        <h2 class="mb-6 text-2xl">
+          Mineral
+        </h2>
+        <div class="space-x-1">
+          <button class="form-action form-action-submit p-2 font-normal" @click.prevent="content = { component: TaxonomyTermForm, props: { entity: {}, parents: minerals }, eventHandlers: { save: onCreateMineral, cancel: () => closeModal()}}">
+            Create
+          </button>
+        </div>
+      </header>
+      <PvEntityTable :entities="minerals" :columns="[`label`, [`actions`, ``]]">
+        <template #actions="{ entity: term }">
+          <PvDefaultEntityTableActions
+            :entity="term"
+            label="label"
+            :form="TaxonomyTermForm"
+            :form-props="{ parents: minerals }"
+            :update="updateMineral"
+            :remove="removeMineral"
+            class="invisible group-hover:visible group-focus:visible"
+          />
+        </template>
+        <template #footer>
+          <span v-if="mineralList?.total" class="italic">{{ pluralize(mineralList?.total, `term`, `terms`) }}</span>
+        </template>
+      </PvEntityTable>
+    </section>
+
+    <section>
+      <header class="flex flex-row justify-between">
+        <h2 class="mb-6 text-2xl">
+          Fossil
+        </h2>
+        <div class="space-x-1">
+          <button class="form-action form-action-submit p-2 font-normal" @click.prevent="content = { component: TaxonomyTermForm, props: { entity: {}, parents: minerals }, eventHandlers: { save: onCreateFossil, cancel: () => closeModal()}}">
+            Create
+          </button>
+        </div>
+      </header>
+      <PvEntityTable :entities="fossils" :columns="[`label`, [`actions`, ``]]">
+        <template #actions="{ entity: term }">
+          <PvDefaultEntityTableActions
+            :entity="term"
+            label="label"
+            :form="TaxonomyTermForm"
+            :form-props="{ parents: fossils }"
+            :update="updateFossil"
+            :remove="removeFossil"
+            class="invisible group-hover:visible group-focus:visible"
+          />
+        </template>
+        <template #footer>
+          <span v-if="fossilList?.total" class="italic">{{ pluralize(fossilList?.total, `term`, `terms`) }}</span>
         </template>
       </PvEntityTable>
     </section>
@@ -85,7 +143,7 @@
           />
         </template>
         <template #footer>
-          <span class="italic">{{ pluralize(locationList?.total, `location`, `locations`) }}</span>
+          <span v-if="locationList?.total" class="italic">{{ pluralize(locationList?.total, `location`, `locations`) }}</span>
         </template>
       </PvEntityTable>
     </section>
@@ -94,7 +152,8 @@
 
 <script setup lang="ts">
 import { type Unit } from 'types/vocabularies/geochronology'
-import { type Classification, type StorageLocation } from 'types/vocabularies'
+import { type StorageLocation } from 'types/vocabularies'
+import { type Rock, type Mineral, type Fossil } from 'types/vocabularies/classification'
 import { type EntityJSONBody } from 'layers/base/types/entity'
 import { GeochronologyForm, TaxonomyTermForm, StorageLocationForm } from '#components'
 
@@ -105,7 +164,6 @@ definePageMeta({
 const { content, close: closeModal } = useModal()
 
 const { list: unitList, entities: units, add: addUnit, update: updateUnit, remove: removeUnit } = await fetchEntityList<Unit>(`Geochronology`)
-const { list: classificationList, entities: classifications, add: addClassification, update: updateClassification, remove: removeClassification } = await fetchEntityList<Classification>(`Classification`)
 const { list: locationList, entities: locations, add: addLocation, update: updateLocation, remove: removeLocation } = await fetchEntityList<StorageLocation>(`StorageLocation`)
 
 async function onCreateUnit(unit: EntityJSONBody<Unit>) {
@@ -113,8 +171,21 @@ async function onCreateUnit(unit: EntityJSONBody<Unit>) {
   closeModal()
 }
 
-async function onCreateClassification(classification: EntityJSONBody<Classification>) {
-  await addClassification(classification)
+const { list: rockList, entities: rocks, add: addRock, update: updateRock, remove: removeRock } = await fetchEntityList<Rock>(`Rock`)
+async function onCreateRock(rock: EntityJSONBody<Rock>) {
+  await addRock(rock)
+  closeModal()
+}
+
+const { list: mineralList, entities: minerals, add: addMineral, update: updateMineral, remove: removeMineral } = await fetchEntityList<Mineral>(`Mineral`)
+async function onCreateMineral(mineral: EntityJSONBody<Mineral>) {
+  await addMineral(mineral)
+  closeModal()
+}
+
+const { list: fossilList, entities: fossils, add: addFossil, update: updateFossil, remove: removeFossil } = await fetchEntityList<Fossil>(`Fossil`)
+async function onCreateFossil(fossil: EntityJSONBody<Fossil>) {
+  await addFossil(fossil)
   closeModal()
 }
 

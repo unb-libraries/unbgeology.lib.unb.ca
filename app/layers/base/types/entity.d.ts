@@ -10,7 +10,7 @@ export interface EntityBundle extends Entity {
   type: string
 }
 
-interface EntityType<E extends Entity = Entity> {
+export interface EntityType<E extends Entity = Entity> {
   name: string
   abstract?: boolean
   baseURI: string
@@ -46,7 +46,7 @@ export interface EntityJSONList<E extends Entity = Entity> {
   page: number
   pageSize: number
   self: string
-  totalItems: number
+  total: number
 }
 
 export type EntityJSONBodyPropertyValue = Exclude<EntityJSONPropertyType, EntityJSONReference>
@@ -83,9 +83,9 @@ export interface EntityListResponse<E extends Entity = Entity> {
   list: Ref<EntityJSONList<E> | null>
   entities: ComputedRef<EntityJSONList<E>[`entities`]>
   refresh: () => void
-  add: (entity: EntityJSONCreateBody<E>) => Promise<void>
-  update: (entity: EntityJSONBody<E>) => Promise<void>
-  remove: (entity: EntityJSON<E>) => Promise<void>
+  add: (entity: EntityJSONCreateBody<E>) => Promise<EntityCreateResponse<E>>
+  update: (entity: EntityJSONBody<E>) => Promise<EntityResponse<E>>
+  remove: (entity: EntityJSON) => Promise<EntityDeleteResponse>
   errors: any[]
 }
 
