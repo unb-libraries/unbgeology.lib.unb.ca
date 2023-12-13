@@ -24,7 +24,7 @@
           />
         </template>
         <template #footer>
-          <span v-if="locationList?.total" class="italic">{{ pluralize(locationList?.total, `location`, `locations`) }}</span>
+          <span v-if="locationList?.total" class="italic">{{ pluralize(locationList?.total, `term`, `terms`) }}</span>
         </template>
       </PvEntityTable>
     </section>

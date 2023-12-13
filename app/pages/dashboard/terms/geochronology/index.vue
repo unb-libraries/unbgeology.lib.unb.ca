@@ -27,7 +27,7 @@
           />
         </template>
         <template #footer>
-          <span v-if="unitList?.total" class="italic">{{ pluralize(unitList?.total, `unit`, `units`) }}</span>
+          <span v-if="unitList?.total" class="italic">{{ pluralize(unitList?.total, `term`, `terms`) }}</span>
         </template>
       </PvEntityTable>
     </section>
