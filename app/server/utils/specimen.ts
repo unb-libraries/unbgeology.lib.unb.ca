@@ -3,19 +3,20 @@ import { Image as ImageEntity } from "layers/mongo/server/documentTypes/File"
 import { type H3Event } from "h3"
 import { type Specimen } from "types/specimen"
 
-export async function readSpecimenBody(event: H3Event) {
+async function readBodyBase(event: H3Event) {
   const {
+    type,
     objectID,
-    name,
     description,
     images: imageURIs,
-    classifications: classificationURIs,
+    classification,
     measurements,
     date,
     age,
     origin,
     pieces,
     partial,
+    portion,
     composition,
     collector: collectorURI,
     sponsor: sponsorURI,
@@ -27,16 +28,18 @@ export async function readSpecimenBody(event: H3Event) {
   } = await readBody<EntityJSONBody<Specimen>>(event)
 
   const body: Partial<EntityJSONBody<Specimen>> = {
-    name,
+    type,
     description,
+    classification,
     date,
     pieces,
     partial,
+    portion,
     composition,
     status,
   }
 
-  if (objectID.unb) {
+  if (objectID && objectID.unb) {
     body.objectID = {
       ...objectID,
       unb: objectID.unb,
@@ -45,9 +48,6 @@ export async function readSpecimenBody(event: H3Event) {
 
   if (imageURIs) {
     body.images = await ImageEntity.findManyByURI(imageURIs)
-  }
-  if (classificationURIs) {
-    body.classifications = await Classification.findManyByURI(classificationURIs)
   }
   if (Array.isArray(measurements)) {
     body.measurements = measurements
@@ -107,6 +107,79 @@ export async function readSpecimenBody(event: H3Event) {
     const editor = await User.findByURI(userURI)
     if (editor) {
       body.editor = `${editor._id}`
+    }
+  }
+
+  return body
+}
+
+export async function readSpecimenBody(event: H3Event) {
+  const { type } = await readBody(event)
+  switch (type) {
+    case `fossil`: return await readFossilBody(event)
+    case `mineral`: return await readMineralBody(event)
+    case `rock`: return await readRockBody(event)
+    default: return null
+  }
+}
+
+export async function readFossilBody(event: H3Event) {
+  const body = await readBodyBase(event)
+  const { classification: classificationURI, portion: portionURI } = body
+
+  if (classificationURI) {
+    const classification = Fossilogy.Classification.findByURI(classificationURI)
+    if (classification) {
+      body.classification = classification
+    }
+  }
+
+  if (portionURI) {
+    const portion = Fossilogy.Portion.findByURI(portionURI)
+    if (portion) {
+      body.portion = portion
+    }
+  }
+
+  return body
+}
+
+export async function readMineralBody(event: H3Event) {
+  const body = await readBodyBase(event)
+  const { classification: classificationURI, portion: portionURI } = body
+
+  if (classificationURI) {
+    const classification = Mineralogy.Classification.findByURI(classificationURI)
+    if (classification) {
+      body.classification = classification
+    }
+  }
+
+  if (portionURI) {
+    const portion = Mineralogy.Portion.findByURI(portionURI)
+    if (portion) {
+      body.portion = portion
+    }
+  }
+
+  return body
+}
+
+export async function readRockBody(event: H3Event) {
+  const body = await readBodyBase(event)
+  const { classification: classificationURI, portion: portionURI } = body
+
+  if (classificationURI) {
+    const classification = Petrology.Classification.findByURI(classificationURI)
+    if (classification) {
+      body.classification = classification
+    }
+  }
+
+  if (portionURI) {
+    const portion = Petrology.Portion.findByURI(portionURI)
+    if (portion) {
+      body.portion = portion
     }
   }
 

@@ -1,26 +1,25 @@
 import { type EntityDocument, EntityFieldTypes } from "layers/mongo/types/entity"
-import { type Specimen, Composition, type Storage, type Loan, LoanType, type Publication, Status } from "types/specimen"
+import { type Specimen as SpecimenBase, type Fossil as FossilSpecimen, type Mineral as MineralSpecimen, type Rock as RockSpecimen, Composition, type Storage, type Loan, LoanType, type Publication, Status } from "types/specimen"
 
-type SpecimenDocument = EntityDocument<Omit<Specimen, `objectID`> & { objectID: Map<`unb`, string> & Map<`external` | `international`, string | undefined> & Map<string, string | undefined> }>
+type SpecimenDocument = EntityDocument<Omit<SpecimenBase, `objectID`> & { objectID: Map<`unb`, string> & Map<`external` | `international`, string | undefined> & Map<string, string | undefined> }>
 type StorageDocument = EntityDocument<Storage>
 type LoanDocument = EntityDocument<Loan>
 type PublicationDocument = EntityDocument<Publication>
 
-export type SpecimenDraft = Partial<Specimen> & { status: Status.DRAFT }
-const optionalWhileInDraft = function (this: Specimen) {
+export type SpecimenDraft = Partial<SpecimenBase> & { status: Status.DRAFT }
+const optionalWhileInDraft = function (this: SpecimenBase) {
   return this.status !== Status.DRAFT
 }
 
-export default defineDocumentType<SpecimenDocument>(`Specimen`, {
+export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
   objectID: {
     type: EntityFieldTypes.Map,
     of: EntityFieldTypes.String,
     immutable: true,
     required: true,
-  },
-  name: {
-    type: EntityFieldTypes.String,
-    required: true,
+    default: {
+      unb: `UNB-${`${Math.floor(Math.random() * 1000000)}`.padStart(8, `0`)}`,
+    },
   },
   description: {
     type: EntityFieldTypes.String,
@@ -31,13 +30,6 @@ export default defineDocumentType<SpecimenDocument>(`Specimen`, {
     ref: `File.Image`,
     required: false,
   }],
-  classifications: {
-    type: [{
-      type: EntityFieldTypes.ObjectId,
-      ref: `Term.TaxonomyTerm.Classification`,
-      required: optionalWhileInDraft,
-    }],
-  },
   measurements: [{
     width: {
       type: EntityFieldTypes.Number,
@@ -206,5 +198,47 @@ export default defineDocumentType<SpecimenDocument>(`Specimen`, {
       ret.objectID = Object.fromEntries(doc.objectID.entries())
       ret.id = doc.objectID.get(`unb`)
     },
+  },
+})
+
+type FossilDocument = EntityDocument<FossilSpecimen>
+export const Fossil = defineDocumentBundle<SpecimenDocument, FossilDocument>(Specimen, `Fossil`, {
+  classification: {
+    type: EntityFieldTypes.ObjectId,
+    required: optionalWhileInDraft,
+    ref: Fossilogy.Classification,
+  },
+  portion: {
+    type: EntityFieldTypes.ObjectId,
+    required: false,
+    ref: Fossilogy.Portion,
+  },
+})
+
+type MineralDocument = EntityDocument<MineralSpecimen>
+export const Mineral = defineDocumentBundle<SpecimenDocument, MineralDocument>(Specimen, `Mineral`, {
+  classification: {
+    type: EntityFieldTypes.ObjectId,
+    required: optionalWhileInDraft,
+    ref: Mineralogy.Classification,
+  },
+  portion: {
+    type: EntityFieldTypes.ObjectId,
+    required: false,
+    ref: Mineralogy.Portion,
+  },
+})
+
+type RockDocument = EntityDocument<RockSpecimen>
+export const Rock = defineDocumentBundle<SpecimenDocument, RockDocument>(Specimen, `Rock`, {
+  classification: {
+    type: EntityFieldTypes.ObjectId,
+    required: optionalWhileInDraft,
+    ref: Petrology.Classification,
+  },
+  portion: {
+    type: EntityFieldTypes.ObjectId,
+    required: false,
+    ref: Petrology.Portion,
   },
 })
