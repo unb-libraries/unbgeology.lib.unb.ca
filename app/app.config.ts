@@ -1,12 +1,14 @@
 import { type Specimen } from "types/specimen"
 import { type StorageLocation } from "types/vocabularies"
 import { type Unit } from "types/vocabularies/geochronology"
-import { type Rock, type Mineral, type Fossil } from "types/vocabularies/classification"
+import { type Classification as RockClassification, type Portion as RockPortion } from "types/vocabularies/rock"
+import { type Classification as MineralClassification, type Portion as MineralPortion } from "types/vocabularies/mineral"
+import { type Classification as FossilClassification, type Portion as FossilPortion } from "types/vocabularies/fossil"
 import { type Affiliation, type Organization, type Person } from "types/affiliation"
 
 export default defineAppConfig({
   entityTypes: {
-    Specimen: {
+    "Specimen": {
       name: `Specimen`,
       baseURI: `/api/specimens`,
       uri(specimen) {
@@ -14,7 +16,7 @@ export default defineAppConfig({
       },
     },
 
-    Affiliation: {
+    "Affiliation": {
       name: `Affiliation`,
       baseURI: `/api/affiliations`,
       uri(affiliation: Affiliation) {
@@ -23,7 +25,7 @@ export default defineAppConfig({
       abstract: true,
     },
 
-    Organization: {
+    "Organization": {
       name: `Organization`,
       baseURI: `/api/affiliations/org`,
       uri(org: Organization) {
@@ -32,7 +34,7 @@ export default defineAppConfig({
       extends: `Affiliation`,
     },
 
-    People: {
+    "People": {
       name: `People`,
       baseURI: `/api/affiliations/people`,
       uri(person: Person) {
@@ -41,34 +43,61 @@ export default defineAppConfig({
       extends: `Affiliation`,
     },
 
-    Rock: {
-      name: `Rock`,
-      baseURI: `/api/terms/default/rock`,
-      uri(rock: Rock) {
-        return `/api/terms/default/rock/${rock.id}`
+    "Rock.Classification": {
+      name: `Rock.Classification`,
+      baseURI: `/api/terms/rock/classification`,
+      uri(classification: RockClassification) {
+        return `/api/terms/rock/classification/${classification.id}`
       },
       extends: `TaxonomyTerm`,
     },
 
-    Mineral: {
-      name: `Mineral`,
-      baseURI: `/api/terms/default/mineral`,
-      uri(mineral: Mineral) {
-        return `/api/terms/default/mineral/${mineral.id}`
+    "Rock.Portion": {
+      name: `Rock.Portion`,
+      baseURI: `/api/terms/rock/portion`,
+      uri(portion: RockPortion) {
+        return `/api/terms/rock/portion/${portion.id}`
+      },
+      extends: `Term`,
+    },
+
+    "Mineral.Classification": {
+      name: `Mineral.Classification`,
+      baseURI: `/api/terms/mineral/classification`,
+      uri(classification: MineralClassification) {
+        return `/api/terms/mineral/classification/${classification.id}`
       },
       extends: `TaxonomyTerm`,
     },
 
-    Fossil: {
+    "Mineral.Portion": {
+      name: `Mineral.Portion`,
+      baseURI: `/api/terms/mineral/portion`,
+      uri(portion: MineralPortion) {
+        return `/api/terms/mineral/portion/${portion.id}`
+      },
+      extends: `Term`,
+    },
+
+    "Fossil.Classification": {
       name: `Fossil`,
-      baseURI: `/api/terms/default/fossil`,
-      uri(fossil: Fossil) {
-        return `/api/terms/default/fossil/${fossil.id}`
+      baseURI: `/api/terms/fossil/classification`,
+      uri(classification: FossilClassification) {
+        return `/api/terms/fossil/classification/${classification.id}`
       },
       extends: `TaxonomyTerm`,
     },
 
-    Geochronology: {
+    "Fossil.Portion": {
+      name: `Fossil`,
+      baseURI: `/api/terms/fossil/portion`,
+      uri(portion: FossilPortion) {
+        return `/api/terms/fossil/portion/${portion.id}`
+      },
+      extends: `Term`,
+    },
+
+    "Geochronology": {
       name: `Geochronology`,
       baseURI: `/api/terms/geochronology/unit`,
       uri(unit: Unit) {
@@ -77,7 +106,7 @@ export default defineAppConfig({
       extends: `TaxonomyTerm`,
     },
 
-    StorageLocation: {
+    "StorageLocation": {
       name: `StorageLocation`,
       baseURI: `/api/terms/default/storagelocation`,
       uri(location: StorageLocation) {
