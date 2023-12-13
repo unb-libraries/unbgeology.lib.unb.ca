@@ -98,6 +98,21 @@
               <NuxtLink to="/dashboard/terms" class="twa-nav-item" active-class="twa-nav-item-active">
                 View all
               </NuxtLink>
+              <NuxtLink :to="`/dashboard/terms/fossil`" class="twa-nav-item" active-class="twa-nav-item-active">
+                Fossil
+              </NuxtLink>
+              <NuxtLink :to="`/dashboard/terms/geochronology`" class="twa-nav-item" active-class="twa-nav-item-active">
+                Geochronology
+              </NuxtLink>
+              <NuxtLink :to="`/dashboard/terms/location`" class="twa-nav-item" active-class="twa-nav-item-active">
+                Location
+              </NuxtLink>
+              <NuxtLink :to="`/dashboard/terms/mineral`" class="twa-nav-item" active-class="twa-nav-item-active">
+                Mineral
+              </NuxtLink>
+              <NuxtLink :to="`/dashboard/terms/rock`" class="twa-nav-item" active-class="twa-nav-item-active">
+                Rock
+              </NuxtLink>
             </section>
             <section class="twa-nav-group">
               <h2 class="twa-nav-group-heading">
