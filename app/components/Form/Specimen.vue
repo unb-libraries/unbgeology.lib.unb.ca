@@ -37,10 +37,16 @@
 
           <div class="form-row">
             <div class="form-col w-1/2">
-              <!-- Name -->
+              <!-- Classification -->
               <div class="form-field">
-                <label for="name">Name</label>
-                <PvInputText v-model="body.name" class="form-input form-input-text" name="name" />
+                <label for="classification">Classification</label>
+                <EntityInputSelect
+                  v-model="body.classification"
+                  :options="classifications"
+                  option-label="label"
+                  class="form-input form-input-pvselect"
+                  name="classification"
+                />
               </div>
 
               <!-- Description -->
@@ -66,17 +72,15 @@
           </h2>
           <div class="form-col">
             <div class="form-row">
-              <!-- Classifications -->
+              <!-- Portion -->
               <div class="form-field w-4/5">
-                <label for="classifications">Classifications</label>
+                <label for="portion">Portion</label>
                 <EntityInputSelect
-                  v-model="body.classifications"
-                  :multi="true"
-                  :options="classifications"
+                  v-model="body.portion"
+                  :options="portions"
                   option-label="label"
-                  display="chip"
                   class="form-input form-input-pvselect"
-                  name="classifications"
+                  name="portion"
                 />
               </div>
 
@@ -236,16 +240,15 @@
 </template>
 
 <script setup lang="ts">
-import { EntityJSONProperties, type Image, EntityJSONBody } from 'layers/base/types/entity'
+import { type EntityJSONProperties, type Image, type EntityJSONBody, type TaxonomyTerm, type Term } from 'layers/base/types/entity'
 import { type Specimen, type Publication, type Measurement } from 'types/specimen'
-import { type Classification } from 'types/vocabularies'
 import { type Unit } from 'types/vocabularies/geochronology'
 import { type Person } from 'types/affiliation'
 import type { Coordinate } from 'types/leaflet'
 import type { Location } from 'types/nominatim'
 import { FormPublication, FormPerson } from '#components'
 
-defineProps<{
+const props = defineProps<{
   specimen: EntityJSONProperties<Specimen>
 }>()
 
@@ -260,8 +263,9 @@ const unbOwned = ref(true)
 const { list: imageEntityList } = await fetchEntityList<Image>(`Image`)
 const images = computed(() => imageEntityList.value?.entities ?? [])
 
-const { list: classificationList } = await fetchEntityList<Classification>(`Classification`)
-const classifications = computed(() => classificationList.value?.entities ?? [])
+const specimenType = props.specimen.type.substring(0, 1).toUpperCase() + props.specimen.type.substring(1)
+const { entities: classifications } = await fetchEntityList<TaxonomyTerm>(`${specimenType}.Classification`)
+const { entities: portions } = await fetchEntityList<Term>(`${specimenType}.Portion`)
 
 const { list: ageUnitList } = await fetchEntityList<Unit>(`Geochronology`)
 const ageUnits = computed(() => ageUnitList.value?.entities ?? [])

@@ -213,6 +213,13 @@ export const Fossil = defineDocumentBundle<SpecimenDocument, FossilDocument>(Spe
     required: false,
     ref: Fossilogy.Portion,
   },
+}, {
+  toJSON: {
+    transform(doc, ret) {
+      ret.type = `fossil`
+      return ret
+    },
+  },
 })
 
 type MineralDocument = EntityDocument<MineralSpecimen>
@@ -227,6 +234,13 @@ export const Mineral = defineDocumentBundle<SpecimenDocument, MineralDocument>(S
     required: false,
     ref: Mineralogy.Portion,
   },
+}, {
+  toJSON: {
+    transform(doc, ret) {
+      ret.type = `mineral`
+      return ret
+    },
+  },
 })
 
 type RockDocument = EntityDocument<RockSpecimen>
@@ -240,5 +254,12 @@ export const Rock = defineDocumentBundle<SpecimenDocument, RockDocument>(Specime
     type: EntityFieldTypes.ObjectId,
     required: false,
     ref: Petrology.Portion,
+  },
+}, {
+  toJSON: {
+    transform(doc, ret) {
+      ret.type = `rock`
+      return ret
+    },
   },
 })
