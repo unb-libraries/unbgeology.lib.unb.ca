@@ -1,6 +1,6 @@
-import { EntityDocument } from "layers/mongo/types/entity"
-import { type Classification } from "types/vocabularies"
+import { type Classification as IClassification, type Rock as IRock, type Mineral as IMineral, type Fossil as IFossil } from "types/vocabularies/classification"
 
-type ClassificationTaxonomy = EntityDocument<Classification>
-
-export default defineTaxonomy<ClassificationTaxonomy>(`Classification`)
+export const Classification = defineTaxonomy<IClassification>(`Classification`)
+export const Rock = defineTaxonomy<IRock>(`Rock`)
+export const Mineral = defineTaxonomy<IMineral>(`Mineral`)
+export const Fossil = defineTaxonomy<IFossil>(`Fossil`)

@@ -1,5 +1,7 @@
 import { type Specimen } from "types/specimen"
-import { type Classification, type GeochronologicUnit, type StorageLocation } from "types/vocabularies"
+import { type StorageLocation } from "types/vocabularies"
+import { type Unit } from "types/vocabularies/geochronology"
+import { type Rock, type Mineral, type Fossil } from "types/vocabularies/classification"
 import { type Affiliation, type Organization, type Person } from "types/affiliation"
 
 export default defineAppConfig({
@@ -39,11 +41,29 @@ export default defineAppConfig({
       extends: `Affiliation`,
     },
 
-    Classification: {
-      name: `Classification`,
-      baseURI: `/api/terms/default/classification`,
-      uri(classification: Classification) {
-        return `/api/terms/default/classification/${classification.id}`
+    Rock: {
+      name: `Rock`,
+      baseURI: `/api/terms/default/rock`,
+      uri(rock: Rock) {
+        return `/api/terms/default/rock/${rock.id}`
+      },
+      extends: `TaxonomyTerm`,
+    },
+
+    Mineral: {
+      name: `Mineral`,
+      baseURI: `/api/terms/default/mineral`,
+      uri(mineral: Mineral) {
+        return `/api/terms/default/mineral/${mineral.id}`
+      },
+      extends: `TaxonomyTerm`,
+    },
+
+    Fossil: {
+      name: `Fossil`,
+      baseURI: `/api/terms/default/fossil`,
+      uri(fossil: Fossil) {
+        return `/api/terms/default/fossil/${fossil.id}`
       },
       extends: `TaxonomyTerm`,
     },
@@ -51,7 +71,7 @@ export default defineAppConfig({
     Geochronology: {
       name: `Geochronology`,
       baseURI: `/api/terms/geochronology/unit`,
-      uri(unit: GeochronologicUnit) {
+      uri(unit: Unit) {
         return `/api/terms/geochronology/unit/${unit.id}`
       },
       extends: `TaxonomyTerm`,
