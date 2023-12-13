@@ -6,18 +6,26 @@
     </template>
     <PvEntityDetails :entity="specimen!" :fields="[`storage`, `loans`, `editor`, `created`, [`updated`, `Last updated`], `status`]" item-class="my-2 first:mt-0 last:mb-0" label-class="text-md text-primary-60">
       <template #storage="{ value: storage }">
-        <div>Stored in {{ storage.at(-1).location.label }} since {{ storage.at(-1).dateIn }}.</div>
-        <span class="hover:text-accent-mid text-primary-40 cursor-pointer text-sm" @click="onViewStorageHistory(storage)">View previous storage locations</span>
+        <template v-if="Array.isArray(storage) && storage.length > 0">
+          <div>Stored in {{ storage.at(-1).location.label }} since {{ storage.at(-1).dateIn }}.</div>
+          <span class="hover:text-accent-mid text-primary-40 cursor-pointer text-sm" @click="onViewStorageHistory(storage)">View previous storage locations</span>
+        </template>
+        <template v-else>
+          Unknown
+        </template>
       </template>
       <template #loans>
-        <PvEntityList :entities="loans" :label="loan => loan.contact.affiliation" item-class="hover:text-accent-mid cursor-pointer">
+        <PvEntityList v-if="Array.isArray(loans) && loans.length > 0" :entities="loans" :label="loan => loan.contact.affiliation" item-class="hover:text-accent-mid cursor-pointer">
           <template #default="{ entity: loan }">
             <span @click="onSelectLoan(loan)">{{ loan.contact.affiliation }}</span>
           </template>
         </PvEntityList>
+        <template v-else>
+          None
+        </template>
       </template>
-      <template #editor="{ value }">
-        {{ value.username }}
+      <template #editor="{ value: editor }">
+        {{ editor ? editor.username : `Unknown` }}
       </template>
     </PvEntityDetails>
     <template #actions>
@@ -44,8 +52,8 @@ const { slug } = useRoute().params
 const { fetchByPK, remove } = useEntityType<Specimen>(`Specimen`)
 const { entity: specimen } = await fetchByPK(slug as string)
 
-const { list: loansList } = await fetchEntityList<Loan>(`${specimen.value?.self}/loans`)
-const loans = computed(() => loansList.value?.entities ?? [])
+// REFACTOR: use entity list handler
+const { entities: loans } = await fetchEntityList<Loan>(`${specimen.value!.self}/loans`)
 
 const showConfirmModal = ref(false)
 
