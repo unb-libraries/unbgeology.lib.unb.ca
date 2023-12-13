@@ -249,7 +249,8 @@ import type { Location } from 'types/nominatim'
 import { FormPublication, FormPerson } from '#components'
 
 const props = defineProps<{
-  specimen: EntityJSONProperties<Specimen>
+  specimen?: Partial<EntityJSONProperties<Specimen>>
+  type: string
 }>()
 
 const emits = defineEmits<{
@@ -260,10 +261,23 @@ const { content, close: closeModal } = useModal()
 
 const unbOwned = ref(true)
 
+const defaultId = `${Math.floor(Math.random() * 1000000)}`
+const specimen = computed(() => ({
+  type: props.type,
+  objectID: {
+    unb: `UNB-${defaultId.padStart(8, `0`)}`,
+  },
+  age: {},
+  origin: {},
+  pieces: 1,
+  measurements: [{}],
+  ...props.specimen,
+}))
+
 const { list: imageEntityList } = await fetchEntityList<Image>(`Image`)
 const images = computed(() => imageEntityList.value?.entities ?? [])
 
-const specimenType = props.specimen.type.substring(0, 1).toUpperCase() + props.specimen.type.substring(1)
+const specimenType = specimen.value.type.substring(0, 1).toUpperCase() + specimen.value.type.substring(1)
 const { entities: classifications } = await fetchEntityList<TaxonomyTerm>(`${specimenType}.Classification`)
 const { entities: portions } = await fetchEntityList<Term>(`${specimenType}.Portion`)
 

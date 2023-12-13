@@ -1,26 +1,16 @@
 <template>
-  <FormSpecimen :specimen="specimen" @save="onSave" />
+  <FormSpecimen :type="type" @save="onSave" />
 </template>
 
 <script setup lang="ts">
-import { type EntityJSONBody, type EntityJSONProperties } from 'layers/base/types/entity'
+import { type EntityJSONBody } from 'layers/base/types/entity'
 import { type Specimen } from 'types/specimen'
 
 definePageMeta({
   layout: `dashboard`,
 })
 
-const defaultId = `${Math.floor(Math.random() * 1000000)}`
-
-const specimen = ref<EntityJSONProperties<Specimen>>({
-  objectID: {
-    unb: `UNB-${defaultId.padStart(8, `0`)}`,
-  },
-  measurements: [{}],
-  pieces: 1,
-  age: {},
-  origin: {},
-} as EntityJSONProperties<Specimen>)
+const type = useRoute().query.type as string ?? `fossil`
 
 const onSave = async (specimen: EntityJSONBody<Specimen>) => {
   const { create } = useEntityType<Specimen>(`Specimen`)
