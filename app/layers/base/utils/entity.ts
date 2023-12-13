@@ -146,12 +146,15 @@ export async function deleteEntity(entityReferenceOrPk: EntityJSONReference | st
   throw createError(`Entity ${entityReferenceOrPk} not found.`)
 }
 
+export async function fetchEntityList <E extends Entity = Entity> (uri: string): Promise<EntityListResponse<E>>
 export async function fetchEntityList <E extends Entity = Entity> (entityTypeId: string): Promise<EntityListResponse<E>>
 export async function fetchEntityList <E extends Entity = Entity> (entityType: EntityType<E>): Promise<EntityListResponse<E>>
-export async function fetchEntityList <E extends Entity = Entity>(entityTypeOrId: string | EntityType<E>) {
-  const url = typeof entityTypeOrId === `string`
-    ? useEntityType<E>(entityTypeOrId).definition.baseURI
-    : entityTypeOrId.baseURI
+export async function fetchEntityList <E extends Entity = Entity>(entityTypeOrIdOrURI: string | EntityType<E>) {
+  const url = typeof entityTypeOrIdOrURI === `string`
+    ? entityTypeOrIdOrURI.startsWith(`/`)
+      ? entityTypeOrIdOrURI
+      : useEntityType<E>(entityTypeOrIdOrURI)?.definition.baseURI
+    : entityTypeOrIdOrURI.baseURI
 
   const { data: list, refresh } = await useFetch<EntityJSONList<E>>(url)
   return {
@@ -159,9 +162,9 @@ export async function fetchEntityList <E extends Entity = Entity>(entityTypeOrId
     entities: computed(() => list.value?.entities ?? []),
     refresh,
     async add(entity: EntityJSONCreateBody<E>) {
-      const response = typeof entityTypeOrId === `string`
-        ? await createEntity(entity, entityTypeOrId)
-        : await createEntity(entity, entityTypeOrId)
+      const response = typeof entityTypeOrIdOrURI === `string`
+        ? await createEntity(entity, entityTypeOrIdOrURI)
+        : await createEntity(entity, entityTypeOrIdOrURI)
       refresh()
       return response
     },
