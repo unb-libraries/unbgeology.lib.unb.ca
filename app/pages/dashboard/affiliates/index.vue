@@ -2,7 +2,7 @@
 definePageMeta({
   middleware: [
     function () {
-      return navigateTo(`/dashboard/terms/fossil`)
+      return navigateTo(`/dashboard/affiliates/people`)
     },
   ],
 })

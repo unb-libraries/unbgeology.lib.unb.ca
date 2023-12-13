@@ -95,9 +95,6 @@
                   <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z" />
                 </svg>
               </h2>
-              <NuxtLink to="/dashboard/terms" class="twa-nav-item" active-class="twa-nav-item-active">
-                View all
-              </NuxtLink>
               <NuxtLink :to="`/dashboard/terms/fossil`" class="twa-nav-item" active-class="twa-nav-item-active">
                 Fossil
               </NuxtLink>
