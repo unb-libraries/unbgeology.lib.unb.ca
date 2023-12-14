@@ -250,7 +250,7 @@ import { FormPublication, FormPerson } from '#components'
 
 const props = defineProps<{
   specimen?: Partial<EntityJSONProperties<Specimen>>
-  type: string
+  category: string
 }>()
 
 const emits = defineEmits<{
@@ -263,7 +263,7 @@ const unbOwned = ref(true)
 
 const defaultId = `${Math.floor(Math.random() * 1000000)}`
 const specimen = computed(() => ({
-  type: props.type,
+  category: props.category,
   objectID: {
     unb: `UNB-${defaultId.padStart(8, `0`)}`,
   },
@@ -274,17 +274,13 @@ const specimen = computed(() => ({
   ...props.specimen,
 }))
 
-const { list: imageEntityList } = await fetchEntityList<Image>(`Image`)
-const images = computed(() => imageEntityList.value?.entities ?? [])
-
-const specimenType = specimen.value.type.substring(0, 1).toUpperCase() + specimen.value.type.substring(1)
+const specimenType = props.category.substring(0, 1).toUpperCase() + props.category.substring(1)
 const { entities: classifications } = await fetchEntityList<TaxonomyTerm>(`${specimenType}.Classification`)
+const { entities: images } = await fetchEntityList<Image>(`Image`)
 const { entities: portions } = await fetchEntityList<Term>(`${specimenType}.Portion`)
-
-const { list: ageUnitList } = await fetchEntityList<Unit>(`Geochronology`)
-const ageUnits = computed(() => ageUnitList.value?.entities ?? [])
-
+const { entities: ageUnits } = await fetchEntityList<Unit>(`Geochronology`)
 const { entities: people, add: addPerson } = await fetchEntityList<Person>(`People`)
+
 async function onSavePerson(person: EntityJSONBody<Person>) {
   await addPerson(person)
   closeModal()

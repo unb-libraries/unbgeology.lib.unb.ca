@@ -1,5 +1,5 @@
 <template>
-  <FormSpecimen :type="type" @save="onSave" />
+  <FormSpecimen :category="category" @save="onSave" />
 </template>
 
 <script setup lang="ts">
@@ -10,7 +10,7 @@ definePageMeta({
   layout: `dashboard`,
 })
 
-const type = useRoute().query.type as string ?? `fossil`
+const category = useRoute().query.category as string ?? `fossil`
 
 const onSave = async (specimen: EntityJSONBody<Specimen>) => {
   const { create } = useEntityType<Specimen>(`Specimen`)

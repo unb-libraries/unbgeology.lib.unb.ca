@@ -1,22 +1,22 @@
 import { EntityJSONBody } from "layers/base/types/entity"
 import { Image as ImageEntity } from "layers/mongo/server/documentTypes/File"
 import { type H3Event } from "h3"
-import { type Specimen } from "types/specimen"
+import { type Specimen, Category } from "types/specimen"
 
-async function readBodyBase(event: H3Event) {
+export async function readSpecimenBody(event: H3Event) {
   const {
-    type,
+    category,
     objectID,
     description,
     images: imageURIs,
-    classification,
+    classification: classificationURI,
     measurements,
     date,
     age,
     origin,
     pieces,
     partial,
-    portion,
+    portion: portionURI,
     composition,
     collector: collectorURI,
     sponsor: sponsorURI,
@@ -28,13 +28,11 @@ async function readBodyBase(event: H3Event) {
   } = await readBody<EntityJSONBody<Specimen>>(event)
 
   const body: Partial<EntityJSONBody<Specimen>> = {
-    type,
+    category,
     description,
-    classification,
     date,
     pieces,
     partial,
-    portion,
     composition,
     status,
   }
@@ -43,6 +41,14 @@ async function readBodyBase(event: H3Event) {
     body.objectID = {
       ...objectID,
       unb: objectID.unb,
+    }
+  }
+
+  if (classificationURI) {
+    const classification = await getClassificationModel(category)
+      .findByURI(classificationURI)
+    if (classification) {
+      body.classification = classification
     }
   }
 
@@ -70,6 +76,13 @@ async function readBodyBase(event: H3Event) {
     const { latitude, longitude, accuracy = 0, name, description } = origin
     if (latitude && longitude) {
       body.origin = { latitude, longitude, accuracy, name, description }
+    }
+  }
+  if (portionURI) {
+    const portion = await getPortionModel(category)
+      .findByURI(portionURI)
+    if (portion) {
+      body.portion = portion
     }
   }
   if (collectorURI) {
@@ -113,75 +126,18 @@ async function readBodyBase(event: H3Event) {
   return body
 }
 
-export async function readSpecimenBody(event: H3Event) {
-  const { type } = await readBody(event)
-  switch (type) {
-    case `fossil`: return await readFossilBody(event)
-    case `mineral`: return await readMineralBody(event)
-    case `rock`: return await readRockBody(event)
-    default: return null
+export function getClassificationModel(category: Category) {
+  switch (category) {
+    case Category.FOSSIL: return Fossilogy.Classification
+    case Category.MINERAL: return Mineralogy.Classification
+    case Category.ROCK: return Petrology.Classification
   }
 }
 
-export async function readFossilBody(event: H3Event) {
-  const body = await readBodyBase(event)
-  const { classification: classificationURI, portion: portionURI } = body
-
-  if (classificationURI) {
-    const classification = Fossilogy.Classification.findByURI(classificationURI)
-    if (classification) {
-      body.classification = classification
-    }
+export function getPortionModel(category: Category) {
+  switch (category) {
+    case Category.FOSSIL: return Fossilogy.Portion
+    case Category.MINERAL: return Mineralogy.Portion
+    case Category.ROCK: return Petrology.Portion
   }
-
-  if (portionURI) {
-    const portion = Fossilogy.Portion.findByURI(portionURI)
-    if (portion) {
-      body.portion = portion
-    }
-  }
-
-  return body
-}
-
-export async function readMineralBody(event: H3Event) {
-  const body = await readBodyBase(event)
-  const { classification: classificationURI, portion: portionURI } = body
-
-  if (classificationURI) {
-    const classification = Mineralogy.Classification.findByURI(classificationURI)
-    if (classification) {
-      body.classification = classification
-    }
-  }
-
-  if (portionURI) {
-    const portion = Mineralogy.Portion.findByURI(portionURI)
-    if (portion) {
-      body.portion = portion
-    }
-  }
-
-  return body
-}
-
-export async function readRockBody(event: H3Event) {
-  const body = await readBodyBase(event)
-  const { classification: classificationURI, portion: portionURI } = body
-
-  if (classificationURI) {
-    const classification = Petrology.Classification.findByURI(classificationURI)
-    if (classification) {
-      body.classification = classification
-    }
-  }
-
-  if (portionURI) {
-    const portion = Petrology.Portion.findByURI(portionURI)
-    if (portion) {
-      body.portion = portion
-    }
-  }
-
-  return body
 }

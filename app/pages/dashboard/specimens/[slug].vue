@@ -16,7 +16,7 @@
     <template #sidebar>
       <PvComponentStack :stack="[[FormSpecimenDetails]]" />
     </template>
-    <FormSpecimen :specimen="specimen!" :type="specimen!.type" @save="onSave" />
+    <FormSpecimen :specimen="specimen!" :category="specimen!.category" @save="onSave" />
   </NuxtLayout>
 </template>
 

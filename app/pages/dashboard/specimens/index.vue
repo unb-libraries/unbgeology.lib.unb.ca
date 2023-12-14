@@ -4,25 +4,25 @@
       Specimens
     </h1>
     <div class="space-x-2">
-      <NuxtLink to="/dashboard/specimens/create/?type=fossil" class="form-action form-action-submit p-2 font-normal">
+      <NuxtLink to="/dashboard/specimens/create/?category=fossil" class="form-action form-action-submit p-2 font-normal">
         Create Fossil
       </NuxtLink>
-      <NuxtLink to="/dashboard/specimens/create/?type=mineral" class="form-action form-action-submit p-2 font-normal">
+      <NuxtLink to="/dashboard/specimens/create/?category=mineral" class="form-action form-action-submit p-2 font-normal">
         Create Mineral
       </NuxtLink>
-      <NuxtLink to="/dashboard/specimens/create/?type=rock" class="form-action form-action-submit p-2 font-normal">
+      <NuxtLink to="/dashboard/specimens/create/?category=rock" class="form-action form-action-submit p-2 font-normal">
         Create Rock
       </NuxtLink>
     </div>
   </div>
-  <PvEntityTable :entities="specimens" :columns="[[`objectID`, `ID`], `type`, `classification`, `measurements`, `age`, `portion`, `pieces`, `partial`]">
+  <PvEntityTable :entities="specimens" :columns="[[`objectID`, `ID`], `category`, `classification`, `measurements`, `age`, `portion`, `pieces`, `partial`]">
     <template #objectID="{ value: objectID }">
       <NuxtLink :to="`/dashboard/specimens/${objectID.unb.toLowerCase()}`" class="hover:underline">
         {{ objectID.unb }}
       </NuxtLink>
     </template>
-    <template #type="{ value: type }">
-      {{ type.substring(0, 1).toUpperCase() + type.substring(1).toLowerCase() }}
+    <template #category="{ value: category }">
+      {{ category.substring(0, 1).toUpperCase() + category.substring(1).toLowerCase() }}
     </template>
     <template #classification="{ value: classification }">
       <span v-if="classification">{{ classification.label }}</span>

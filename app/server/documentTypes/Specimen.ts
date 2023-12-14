@@ -1,5 +1,5 @@
 import { type EntityDocument, EntityFieldTypes } from "layers/mongo/types/entity"
-import { type Specimen as SpecimenBase, type Fossil as FossilSpecimen, type Mineral as MineralSpecimen, type Rock as RockSpecimen, Composition, type Storage, type Loan, LoanType, type Publication, Status } from "types/specimen"
+import { type Specimen as SpecimenBase, Category, Composition, type Storage, type Loan, LoanType, type Publication, Status, Fossil } from "types/specimen"
 
 type SpecimenDocument = EntityDocument<Omit<SpecimenBase, `objectID`> & { objectID: Map<`unb`, string> & Map<`external` | `international`, string | undefined> & Map<string, string | undefined> }>
 type StorageDocument = EntityDocument<Storage>
@@ -12,6 +12,11 @@ const optionalWhileInDraft = function (this: SpecimenBase) {
 }
 
 export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
+  category: {
+    type: EntityFieldTypes.String,
+    enum: Category,
+    required: true,
+  },
   objectID: {
     type: EntityFieldTypes.Map,
     of: EntityFieldTypes.String,
@@ -19,6 +24,23 @@ export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
     required: true,
     default: {
       unb: `UNB-${`${Math.floor(Math.random() * 1000000)}`.padStart(8, `0`)}`,
+    },
+  },
+  classification: {
+    type: EntityFieldTypes.ObjectId,
+    required: optionalWhileInDraft,
+    refPath: `classificationModel`,
+  },
+  classificationModel: {
+    type: EntityFieldTypes.String,
+    enum: [
+      Fossilogy.Classification.modelName,
+      Mineralogy.Classification.modelName,
+      Petrology.Classification.modelName,
+    ],
+    required: true,
+    default: function (this: SpecimenDocument) {
+      return getClassificationModel(this.category).modelName
     },
   },
   description: {
@@ -67,6 +89,23 @@ export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
       },
     },
     required: optionalWhileInDraft,
+  },
+  portion: {
+    type: EntityFieldTypes.ObjectId,
+    refPath: `portionModel`,
+    required: false,
+  },
+  portionModel: {
+    type: EntityFieldTypes.String,
+    enum: [
+      Fossilogy.Portion.modelName,
+      Mineralogy.Portion.modelName,
+      Petrology.Portion.modelName,
+    ],
+    required: false,
+    default: function (this: SpecimenDocument) {
+      return getPortionModel(this.category)
+    },
   },
   pieces: {
     type: EntityFieldTypes.Number,
@@ -197,69 +236,9 @@ export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
       }
       ret.objectID = Object.fromEntries(doc.objectID.entries())
       ret.id = doc.objectID.get(`unb`)
-    },
-  },
-})
 
-type FossilDocument = EntityDocument<FossilSpecimen>
-export const Fossil = defineDocumentBundle<SpecimenDocument, FossilDocument>(Specimen, `Fossil`, {
-  classification: {
-    type: EntityFieldTypes.ObjectId,
-    required: optionalWhileInDraft,
-    ref: Fossilogy.Classification,
-  },
-  portion: {
-    type: EntityFieldTypes.ObjectId,
-    required: false,
-    ref: Fossilogy.Portion,
-  },
-}, {
-  toJSON: {
-    transform(doc, ret) {
-      ret.type = `fossil`
-      return ret
-    },
-  },
-})
-
-type MineralDocument = EntityDocument<MineralSpecimen>
-export const Mineral = defineDocumentBundle<SpecimenDocument, MineralDocument>(Specimen, `Mineral`, {
-  classification: {
-    type: EntityFieldTypes.ObjectId,
-    required: optionalWhileInDraft,
-    ref: Mineralogy.Classification,
-  },
-  portion: {
-    type: EntityFieldTypes.ObjectId,
-    required: false,
-    ref: Mineralogy.Portion,
-  },
-}, {
-  toJSON: {
-    transform(doc, ret) {
-      ret.type = `mineral`
-      return ret
-    },
-  },
-})
-
-type RockDocument = EntityDocument<RockSpecimen>
-export const Rock = defineDocumentBundle<SpecimenDocument, RockDocument>(Specimen, `Rock`, {
-  classification: {
-    type: EntityFieldTypes.ObjectId,
-    required: optionalWhileInDraft,
-    ref: Petrology.Classification,
-  },
-  portion: {
-    type: EntityFieldTypes.ObjectId,
-    required: false,
-    ref: Petrology.Portion,
-  },
-}, {
-  toJSON: {
-    transform(doc, ret) {
-      ret.type = `rock`
-      return ret
+      delete ret.classificationModel
+      delete ret.portionModel
     },
   },
 })
