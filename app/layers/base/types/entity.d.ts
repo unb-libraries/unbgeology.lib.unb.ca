@@ -50,13 +50,15 @@ export interface EntityJSONList<E extends Entity = Entity> {
 }
 
 export type EntityJSONBodyPropertyValue = Exclude<EntityJSONPropertyType, EntityJSONReference>
-export type EntityJSONBody<E extends Entity = Entity, P extends keyof Omit<E, keyof Entity> = keyof Omit<E, keyof Entity>> = {
+export type EntityJSONBody<E extends object = object, P extends keyof Omit<E, keyof Entity> = keyof Omit<E, keyof Entity>> = {
   [K in P]:
     E[K] extends Entity[] ? string[] :
       E[K] extends Entity[] | undefined ? string[] | undefined :
         E[K] extends Entity ? string :
           E[K] extends Entity | undefined ? string | undefined :
-            E[K]
+            E[K] extends object ? EntityJSONBody<E[K]> :
+              E[K] extends object | undefined ? EntityJSONBody<E[K]> | undefined :
+                E[K]
 }
 
 export type EntityJSONCreateBody<E extends Entity = Entity> = Omit<EntityJSONBody<E>, "self">

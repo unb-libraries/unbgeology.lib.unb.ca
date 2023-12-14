@@ -59,6 +59,8 @@ export function getEntityPayload <E extends Entity = Entity, P extends keyof Omi
           return ref.map(r => resolveReference(r)).flat()
         } else if (typeof ref === `object` && ref.self && baseUrl) {
           return !ref.self.startsWith(baseUrl) ? ref.self : getEntityPayload(ref)
+        } else if (typeof ref === `object`) {
+          return Object.fromEntries(Object.entries(ref).map(([key, value]) => [key, resolveReference(value)]))
         } else {
           return ref
         }
