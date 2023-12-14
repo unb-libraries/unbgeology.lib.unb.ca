@@ -29,11 +29,8 @@
       </template>
     </PvEntityDetails>
     <template #actions>
-      <button class="border-red text-red hover:bg-red w-full rounded-md border p-1 hover:text-white" @click="showConfirmModal = true">
+      <button class="form-action form-action-delete w-full" @click.prevent="content = { component: PvEntityDeleteConfirm, props: { entity: specimen, label: (s: EntityJSON<Specimen>) => s.objectID.unb }, eventHandlers: { confirm: () => removeSpecimen(specimen!), cancel: closeModal }}">
         Delete
-        <PvModalConfirm v-if="showConfirmModal" modal-class="top-1/2" content-class="text-center text-2xl" @confirm="removeSpecimen(specimen)" @cancel="showConfirmModal = false">
-          Are you sure you want to delete <span class="italic">{{ specimen.name }}</span>?
-        </PvModalConfirm>
       </button>
     </template>
   </PvDetailsPage>
@@ -42,20 +39,18 @@
 <script setup lang="ts">
 import { type Loan, type Storage, type Specimen } from 'types/specimen'
 import { type EntityJSON } from 'layers/base/types/entity'
-import { FormSpecimenStorageHistoryDetails, FormSpecimenLoanDetails } from '#components'
+import { FormSpecimenStorageHistoryDetails, FormSpecimenLoanDetails, PvEntityDeleteConfirm } from '#components'
 
 const emits = defineEmits<{
   stack: [component: any, context?: any]
 }>()
 
+const { content, close: closeModal } = useModal()
+
 const { slug } = useRoute().params
 const { fetchByPK, remove } = useEntityType<Specimen>(`Specimen`)
 const { entity: specimen } = await fetchByPK(slug as string)
-
-// REFACTOR: use entity list handler
 const { entities: loans } = await fetchEntityList<Loan>(`${specimen.value!.self}/loans`)
-
-const showConfirmModal = ref(false)
 
 function onViewStorageHistory(storage: EntityJSON<Storage>[]) {
   emits(`stack`, FormSpecimenStorageHistoryDetails)
@@ -67,7 +62,7 @@ function onSelectLoan(loan: EntityJSON<Loan>) {
 
 async function removeSpecimen(specimen: EntityJSON<Specimen>) {
   await remove(specimen)
-  showConfirmModal.value = false
+  closeModal()
   navigateTo(`/dashboard/specimens`)
 }
 </script>
