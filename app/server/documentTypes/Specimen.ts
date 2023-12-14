@@ -69,7 +69,7 @@ export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
   age: {
     relative: {
       type: EntityFieldTypes.ObjectId,
-      ref: `Term.TaxonomyTerm.Geochronology`,
+      ref: Geochronology,
       required: optionalWhileInDraft,
     },
     numeric: {
@@ -104,7 +104,7 @@ export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
     ],
     required: false,
     default: function (this: SpecimenDocument) {
-      return getPortionModel(this.category)
+      return getPortionModel(this.category).modelName
     },
   },
   pieces: {
@@ -122,12 +122,12 @@ export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
   },
   collector: {
     type: EntityFieldTypes.ObjectId,
-    ref: `Affiliation.Person`,
+    ref: Person,
     required: false,
   },
   sponsor: {
     type: EntityFieldTypes.ObjectId,
-    ref: `Affiliation.Person`,
+    ref: Person,
     required: false,
   },
   loans: {
@@ -169,7 +169,7 @@ export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
     type: [defineEmbeddedDocumentType<StorageDocument>({
       location: {
         type: EntityFieldTypes.ObjectId,
-        ref: `Term.TaxonomyTerm.StorageLocation`,
+        ref: StorageLocation,
         required: true,
       },
       dateIn: {
@@ -206,7 +206,7 @@ export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
   },
   editor: {
     type: EntityFieldTypes.ObjectId,
-    ref: `User`,
+    ref: User,
     required: false,
   },
 }, {
