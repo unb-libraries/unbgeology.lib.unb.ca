@@ -1,5 +1,5 @@
 import { defu } from "defu"
-import { EntityBodyCardinality } from "layers/mongo/types/api"
+import { EntityBodyCardinality, type EntityBodyReaderOptions } from "layers/mongo/types/api"
 import { type Document, type Types } from "mongoose"
 import { type H3Event } from "h3"
 import { type QueryOptions, type EntityListOptions } from "layers/mongo/types/entity"
