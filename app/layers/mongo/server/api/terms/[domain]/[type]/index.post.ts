@@ -1,16 +1,9 @@
 export default defineEventHandler(async (event) => {
-  const { domain, type } = getRouterParams(event)
+  const body = await readEntityBody(event, termBodyReader)
 
-  const { parent: parentURI, ...body } = await readBody(event)
-  if (parentURI) {
-    const parent = await TermBase.findByURI(parentURI)
-    if (parent) {
-      body.parent = parent
-    }
-  }
-
-  const term = await TermBase.create({ ...body, type: domain === `default` ? type : `${domain}.${type}` })
-  if (term) {
-    return $fetch(term.uri)
+  if (Array.isArray(body)) {
+    return await TermBase.insertMany(body)
+  } else {
+    return await TermBase.create(body)
   }
 })
