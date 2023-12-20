@@ -12,6 +12,6 @@ export default defineEventHandler(async (event) => {
     body.parent = null
   }
 
-  await TermBase.findOneAndUpdate({ type: `${domain}.${type}`, slug }, body, { new: true })
+  await TermBase.findOneAndUpdate({ type: domain === `default` ? type : `${domain}.${type}`, slug }, body, { new: true })
   return await $fetch(pathname)
 })

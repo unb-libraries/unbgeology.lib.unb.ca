@@ -16,7 +16,11 @@ export const TermBase = defineDocumentType<EntityDocument<ITerm>>(`Term`, {
   virtuals: {
     uri: {
       get(this: EntityDocument<ITerm>) {
-        return `/api/terms/${this.type.split(`.`).join(`/`)}/${this.slug}`
+        const chunks = this.type.split(`.`)
+        if (chunks.length < 2) {
+          chunks.splice(0, 0, `default`)
+        }
+        return `/api/terms/${chunks.join(`/`)}/${this.slug}`
       },
     },
   },

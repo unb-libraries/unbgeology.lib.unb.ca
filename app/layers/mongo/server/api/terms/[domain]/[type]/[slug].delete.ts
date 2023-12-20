@@ -1,6 +1,6 @@
 export default defineEventHandler(async (event) => {
   const { domain, type, slug } = getRouterParams(event)
-  const term = await TermBase.findOne({ type: `${domain}.${type}`, slug })
+  const term = await TermBase.findOne({ type: domain === `default` ? type : `${domain}.${type}`, slug })
     .populate(`parent`, `_id`)
 
   if (!term) {

@@ -4,7 +4,7 @@ export default defineEventHandler(async (event) => {
   const { domain, type } = getRouterParams(event)
   const { page, pageSize, select, sort } = getQueryOptions(event)
 
-  const terms = await TermBase.find({ type: `${domain}.${type}` })
+  const terms = await TermBase.find({ type: domain === `default` ? type : `${domain}.${type}` })
     .populate(`parent`, getSelectedFields(select, `parent`))
     .select(getSelectedFields(select))
     .sort(sort.join(` `))

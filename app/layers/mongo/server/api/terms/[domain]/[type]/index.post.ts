@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const term = await TermBase.create({ ...body, type: `${domain}.${type}` })
+  const term = await TermBase.create({ ...body, type: domain === `default` ? type : `${domain}.${type}` })
   if (term) {
     return $fetch(term.uri)
   }
