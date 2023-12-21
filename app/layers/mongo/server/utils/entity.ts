@@ -26,7 +26,7 @@ const defineDocumentTypeOptions = function <E extends EntityDocument = EntityDoc
       options.toJSON.transform = function (doc, ret, transformOptions) {
         // @ts-ignore
         let _ret = originalTransform(doc, ret, transformOptions)
-        _ret = customTransform(doc, ret, transformOptions)
+        _ret = customTransform(doc, _ret, transformOptions)
         return _ret
       }
     }
@@ -119,6 +119,12 @@ const DocumentTypeSchema = function <
           ret.updated &&= new Date(doc.get(`updated`))
         }
 
+        if (options?.discriminatorKey) {
+          delete ret[options.discriminatorKey]
+        } else {
+          delete ret.type
+        }
+
         delete ret.uri
         delete ret.__v
         delete ret._id
@@ -196,18 +202,7 @@ export function defineDocumentType <
 
 export const defineDocumentBundle = function<E extends EntityDocument = EntityDocument, B extends E = E> (parent: ReturnType<typeof defineDocumentType<E>>, name: string, definition?: SchemaDefinition<B>, options?: DocumentBundleOptions<B>) {
   const { type = name, ...bundleOptions } = options ?? {}
-  const baseSchemaOptions = defineDocumentTypeOptions<B>({
-    toJSON: {
-      transform(doc, ret, options) {
-        if (options?.discriminatorKey) {
-          delete ret[options.discriminatorKey]
-        } else {
-          delete ret.type
-        }
-      },
-    },
-  }, parent.schema.options)
-  const schemaOptions = defineDocumentTypeOptions<B>(bundleOptions ?? {}, baseSchemaOptions)
+  const schemaOptions = defineDocumentTypeOptions<B>(bundleOptions ?? {}, parent.schema.options)
   let schema: Schema
 
   const baseModelName = parent.modelName.split(`.`)[0]
