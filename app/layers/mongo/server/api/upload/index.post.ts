@@ -1,22 +1,27 @@
 import fs from "fs/promises"
-import { readFiles } from "h3-formidable"
-import { File as FileEntity } from "layers/mongo/server/documentTypes/File"
-import { type File } from "layers/base/types/entity"
+import { Document as DocumentEntity, File as FileEntity, Image as ImageEntity } from "layers/mongo/server/documentTypes/File"
+import { type Files, type File as FFile, type Fields } from "formidable"
+import { type File as IFile } from "layers/base/types/entity"
 
 const { APP_ROOT } = process.env
 
 export default defineEventHandler(async (event) => {
-  const upload = await readFiles(event, {
-    includeFields: true,
-    keepExtensions: true,
-  })
+  const formData = event.context.files
+  const fields = formData.fields as Fields
+  const files = (formData.files as Files).files ?? [] as FFile[]
 
-  const { fields } = upload
   const persisted = fields.persisted && Array.isArray(fields.persisted) && Boolean(fields.persisted[0])
-  const files = await Promise.all(Object.values(upload.files).map(files => files?.map(async (file) => {
-    const { originalFilename, mimetype, size } = file
+  const type = fields.type && Array.isArray(fields.type) && String(fields.type[0])
+
+  const File = type === `image`
+    ? ImageEntity
+    : type === `document`
+      ? DocumentEntity
+      : FileEntity
+
+  const entities = await Promise.all(files.map(async (file) => {
+    const { originalFilename, size } = file
     let { filepath, newFilename } = file
-    const type = mimetype?.split(`/`)[0] ?? `file`
 
     if (persisted) {
       const dir = `${APP_ROOT}/public/${type !== `file` ? type : ``}`
@@ -36,18 +41,17 @@ export default defineEventHandler(async (event) => {
       newFilename = originalFilename ?? newFilename
     }
 
-    return await FileEntity.create({
+    return await File.create({
       uploadName: originalFilename,
       filename: originalFilename,
       filepath,
       persisted,
       filetype: originalFilename?.split(`.`).at(-1),
       filesize: size,
-      type: mimetype?.split(`/`).at(0),
     })
-  })).flat())
+  }))
 
-  return files.length > 1
-    ? sendEntityList<File>(event, files)
-    : sendEntity<File>(event, files[0])
+  return entities.length > 1
+    ? sendEntityList<IFile>(event, entities)
+    : sendEntity<IFile>(event, entities[0])
 })
