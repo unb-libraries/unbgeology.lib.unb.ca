@@ -10,20 +10,23 @@ export default defineEventHandler(async (event) => {
   const files = (formData.files as Files).files ?? [] as FFile[]
 
   const persisted = fields.persisted && Array.isArray(fields.persisted) && Boolean(fields.persisted[0])
-  const type = fields.type && Array.isArray(fields.type) && String(fields.type[0])
-
-  const File = type === `image`
-    ? ImageFile
-    : type === `document`
-      ? DocumentFile
-      : FileBase
+  let type = Array.isArray(fields.type) && fields.type.length > 0 ? fields.type[0] : null
 
   const entities = await Promise.all(files.map(async (file) => {
     const { originalFilename, size } = file
     let { filepath, newFilename } = file
 
+    if (!type) {
+      const ext = originalFilename?.split(`.`).at(-1)
+      if (ext && [`jpg`, `jpeg`, `png`].includes(ext)) {
+        type = `image`
+      } else if (ext && [`pdf`].includes(ext)) {
+        type = `document`
+      }
+    }
+
     if (persisted) {
-      const dir = `${APP_ROOT}/public/${type !== `file` ? type : ``}`
+      const dir = type ? `${APP_ROOT}/public/${type}` : `${APP_ROOT}/public/`
       try {
         await fs.mkdir(dir)
       } catch (err: any) {
@@ -39,6 +42,12 @@ export default defineEventHandler(async (event) => {
       filepath = newFilepath
       newFilename = originalFilename ?? newFilename
     }
+
+    const File = type === `image`
+      ? ImageFile
+      : type === `document`
+        ? DocumentFile
+        : FileBase
 
     return await File.create({
       uploadName: originalFilename,
