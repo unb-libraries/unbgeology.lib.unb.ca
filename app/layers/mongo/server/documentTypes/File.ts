@@ -44,6 +44,12 @@ export const FileBase = defineDocumentType<FileDocument>(`File`, {
       },
     },
   },
+  toJSON: {
+    transform(doc, ret) {
+      ret.type = doc.type
+      return ret
+    },
+  },
 })
 
 export const ImageFile = defineDocumentBundle<FileDocument, ImageDocument>(FileBase, `Image`, {

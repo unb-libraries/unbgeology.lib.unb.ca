@@ -1,9 +1,20 @@
+<template>
+  <PvEntityTable :entities="files" :columns="[`filename`, `type`, `filesize`, `uploadName`]" />
+  <PvFileUpload @accepted="onAccepted" />
+</template>
+
 <script setup lang="ts">
+import { type File, type EntityJSONList } from 'layers/base/types/entity'
+
 definePageMeta({
-  middleware: [
-    function () {
-      return navigateTo(`/dashboard/files/images`)
-    },
-  ],
+  layout: `dashboard`,
 })
+
+const { entities: files, refresh } = await fetchEntityList<File>(`File`)
+
+async function onAccepted(formData: FormData, upload: (formData: FormData) => Promise<EntityJSONList<File> | null>) {
+  formData.append(`persisted`, `${true}`)
+  await upload(formData)
+  refresh()
+}
 </script>
