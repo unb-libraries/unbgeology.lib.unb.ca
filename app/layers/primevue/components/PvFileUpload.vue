@@ -4,8 +4,8 @@
   </div>
 </template>
 
-<script setup lang="ts" generic="T extends FileEntity">
-import { type File as FileEntity, type EntityJSON, type EntityJSONList } from 'layers/base/types/entity'
+<script setup lang="ts" generic="T extends IFile = IFile">
+import { type File as IFile, type EntityJSON, type EntityJSONList } from 'layers/base/types/entity'
 
 const props = defineProps<{
   types?: string[]
@@ -14,10 +14,13 @@ const props = defineProps<{
 }>()
 
 const emits = defineEmits<{
+  accepted: [formData: FormData, upload:(formData: FormData) => Promise<EntityJSONList<T> | null>],
   uploaded: [file: EntityJSON<T>[]],
 }>()
 
-const onDrop = async function ({ dataTransfer }: DragEvent) {
+const onDrop = function ({ dataTransfer }: DragEvent) {
+  const formData = new FormData()
+
   const accepted = (file: File) => {
     const types = props.types ?? []
     const maxSize = props.maxFileSize ?? 100000000
@@ -25,32 +28,27 @@ const onDrop = async function ({ dataTransfer }: DragEvent) {
       maxSize >= file.size
   }
 
+  const upload = async (formData: FormData) => {
+    const { data: entities } = await useFetch<EntityJSONList<T>>(`/api/upload`, {
+      method: `POST`,
+      body: formData,
+    })
+    return entities.value
+  }
+
+  let acceptedFiles: File[] = []
   if (dataTransfer?.items) {
-    for (const item of dataTransfer.items) {
-      const file = item.getAsFile()
-      if (file && accepted(file)) {
-        formData.append(`files`, file)
-      }
-    }
+    acceptedFiles = Object.values(dataTransfer.items)
+      .map(item => item.getAsFile())
+      .filter(file => file)
+      .filter((file) => {
+        return accepted(file!)
+      }) as File[]
   } else if (dataTransfer?.files) {
-    for (const file of dataTransfer.files) {
-      if (accepted(file)) {
-        formData.append(`files`, file)
-      }
-    }
+    acceptedFiles = Object.values(dataTransfer.files).filter(file => accepted(file))
   }
 
-  const { data: uploadedFiles } = await useFetch<EntityJSONList<FileEntity>>(`/api/upload`, {
-    method: `POST`,
-    body: formData,
-  })
-
-  if (uploadedFiles.value) {
-    formData.delete(`files`)
-    emits(`uploaded`, uploadedFiles.value.entities)
-  }
+  acceptedFiles.forEach(file => formData.append(`files`, file))
+  emits(`accepted`, formData, upload)
 }
-
-const formData = new FormData()
-formData.append(`persisted`, `${props.persist ?? true}`)
 </script>
