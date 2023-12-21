@@ -1,5 +1,4 @@
 import fs from "fs/promises"
-import { Document as DocumentEntity, File as FileEntity, Image as ImageEntity } from "layers/mongo/server/documentTypes/File"
 import { type Files, type File as FFile, type Fields } from "formidable"
 import { type File as IFile } from "layers/base/types/entity"
 
@@ -14,10 +13,10 @@ export default defineEventHandler(async (event) => {
   const type = fields.type && Array.isArray(fields.type) && String(fields.type[0])
 
   const File = type === `image`
-    ? ImageEntity
+    ? ImageFile
     : type === `document`
-      ? DocumentEntity
-      : FileEntity
+      ? DocumentFile
+      : FileBase
 
   const entities = await Promise.all(files.map(async (file) => {
     const { originalFilename, size } = file

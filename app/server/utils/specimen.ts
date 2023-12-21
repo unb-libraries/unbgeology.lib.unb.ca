@@ -1,5 +1,4 @@
 import { EntityJSONBody } from "layers/base/types/entity"
-import { Image as ImageEntity } from "layers/mongo/server/documentTypes/File"
 import { type H3Event } from "h3"
 import { type Specimen, Category } from "types/specimen"
 
@@ -53,7 +52,7 @@ export async function readSpecimenBody(event: H3Event) {
   }
 
   if (imageURIs) {
-    body.images = await ImageEntity.findManyByURI(imageURIs)
+    body.images = await ImageFile.findManyByURI(imageURIs)
   }
   if (Array.isArray(measurements)) {
     body.measurements = measurements

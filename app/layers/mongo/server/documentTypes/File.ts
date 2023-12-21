@@ -1,11 +1,12 @@
 import { EntityFieldTypes, type EntityDocument } from "layers/mongo/types/entity"
-import { type File as IFile, type Image as IImage, type Document as IDocument } from "layers/base/types/entity"
+import { type File as IFile, type Image as IImage, type Document as IDocument, type Data as IDataSource } from "layers/base/types/entity"
 
 type FileDocument = EntityDocument<IFile>
 type ImageDocument = EntityDocument<IImage>
 type DocumentDocument = EntityDocument<IDocument>
+type DataSourceDocument = EntityDocument<IDataSource>
 
-export const File = defineDocumentType<FileDocument>(`File`, {
+export const FileBase = defineDocumentType<FileDocument>(`File`, {
   filename: {
     type: EntityFieldTypes.String,
     required: true,
@@ -21,7 +22,7 @@ export const File = defineDocumentType<FileDocument>(`File`, {
   filetype: {
     type: EntityFieldTypes.String,
     required: true,
-    enum: [`jpg`, `jpeg`, `png`, `pdf`],
+    enum: [`jpg`, `jpeg`, `png`, `pdf`, `json`],
   },
   persisted: {
     type: EntityFieldTypes.Boolean,
@@ -45,7 +46,7 @@ export const File = defineDocumentType<FileDocument>(`File`, {
   },
 })
 
-export const Image = defineDocumentBundle<FileDocument, ImageDocument>(File, `Image`, {
+export const ImageFile = defineDocumentBundle<FileDocument, ImageDocument>(FileBase, `Image`, {
   alt: {
     type: EntityFieldTypes.String,
     required: false,
@@ -56,5 +57,6 @@ export const Image = defineDocumentBundle<FileDocument, ImageDocument>(File, `Im
   },
 })
 
-export const Document = defineDocumentBundle<FileDocument, DocumentDocument>(File, `Document`, {
+export const DocumentFile = defineDocumentBundle<FileDocument, DocumentDocument>(FileBase, `Document`, {
+})
 })
