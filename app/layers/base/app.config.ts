@@ -1,4 +1,5 @@
 import { type Term, type File, type User } from "layers/base/types/entity"
+import { type Migration } from "layers/base/types/migrate"
 
 export default defineAppConfig({
   entityTypes: {
@@ -57,6 +58,14 @@ export default defineAppConfig({
         return `/api/files/document/${file.id}`
       },
       extends: `File`,
+    },
+
+    Migration: {
+      name: `Migration`,
+      baseURI: `/api/migrations`,
+      uri(migration: Migration) {
+        return `/api/migrations/${migration.id}`
+      },
     },
 
     User: {
