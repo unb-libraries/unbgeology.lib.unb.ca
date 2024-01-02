@@ -9,7 +9,7 @@
       </button>
     </div>
   </header>
-  <PvEntityTable :entities="migrations" :columns="['name', ['total', 'Records'], 'status', ['actions', '']]">
+  <PvEntityTable :entities="migrations" :columns="['name', ['entityType', 'Type'], ['total', 'Records'], 'status', ['actions', '']]">
     <template #actions="{ entity: migration }">
       <PvDefaultEntityTableActions
         :entity="migration"

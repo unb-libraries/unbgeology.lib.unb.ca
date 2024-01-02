@@ -7,6 +7,11 @@ export default defineDocumentType<EntityDocument<Migration>>(`Migration`, {
     required: true,
     unique: true,
   },
+  entityType: {
+    type: EntityFieldTypes.String,
+    enum: Object.keys(useAppConfig().entityTypes),
+    required: true,
+  },
   source: {
     type: EntityFieldTypes.ObjectId,
     ref: FileBase,
