@@ -1,5 +1,9 @@
 <template>
-  <PvEntityTable :entities="files" :columns="[`filename`, `type`, `filesize`, `uploadName`]" />
+  <PvEntityTable :entities="files" :columns="[`filename`, `type`, `filesize`, `uploadName`]">
+    <template #type="{ value: type }">
+      {{ type ?? `other` }}
+    </template>
+  </PvEntityTable>
   <PvFileUpload @accepted="onAccepted" />
 </template>
 

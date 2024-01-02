@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
     }
 
     if (persisted) {
-      const dir = type ? `${APP_ROOT}/public/${type}` : `${APP_ROOT}/public/`
+      const dir = `${APP_ROOT}/public/${type ?? `other`}`
       try {
         await fs.mkdir(dir)
       } catch (err: any) {

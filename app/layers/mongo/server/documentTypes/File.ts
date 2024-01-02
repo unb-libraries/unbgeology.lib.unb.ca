@@ -65,4 +65,3 @@ export const ImageFile = defineDocumentBundle<FileDocument, ImageDocument>(FileB
 
 export const DocumentFile = defineDocumentBundle<FileDocument, DocumentDocument>(FileBase, `Document`, {
 })
-})

@@ -16,3 +16,5 @@ tests/e2e/videos
 vendor
 **/saml/metadata.xml
 app/public/image
+app/public/document
+app/public/other
