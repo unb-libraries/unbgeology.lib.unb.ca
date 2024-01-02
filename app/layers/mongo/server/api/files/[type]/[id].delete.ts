@@ -1,6 +1,7 @@
 export default defineEventHandler(async (event) => {
-  const { id } = getRouterParams(event)
+  const { type, id } = getRouterParams(event)
 
-  await ImageFile.deleteOne({ _id: id })
+  const File = useFileDocumentType(type ?? `file`)
+  const file = await File.findOneAndDelete({ _id: id })
   return sendNoContent(event)
 })

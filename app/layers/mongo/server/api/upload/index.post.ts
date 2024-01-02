@@ -43,12 +43,7 @@ export default defineEventHandler(async (event) => {
       newFilename = originalFilename ?? newFilename
     }
 
-    const File = type === `image`
-      ? ImageFile
-      : type === `document`
-        ? DocumentFile
-        : FileBase
-
+    const File = useFileDocumentType(type ?? `file`)
     return await File.create({
       uploadName: originalFilename,
       filename: originalFilename,
