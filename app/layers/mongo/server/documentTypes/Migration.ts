@@ -1,5 +1,5 @@
 import { type EntityDocument, EntityFieldTypes } from "layers/mongo/types/entity"
-import { type Migration, Status } from "layers/mongo/types/migrate"
+import { type Migration, Status } from "layers/base/types/migrate"
 
 export default defineDocumentType<EntityDocument<Migration>>(`Migration`, {
   name: {
