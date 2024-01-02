@@ -40,7 +40,7 @@ export const FileBase = defineDocumentType<FileDocument>(`File`, {
   virtuals: {
     uri: {
       get() {
-        return `/api/files/${this.type}/${this.pk}`
+        return `/api/files/${this.type ?? `other`}/${this.pk}`
       },
     },
   },

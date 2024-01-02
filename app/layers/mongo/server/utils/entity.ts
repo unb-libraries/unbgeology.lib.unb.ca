@@ -92,7 +92,7 @@ const DocumentTypeSchema = function <
       async findManyByURI(uris: string[]) {
         const entities = await Promise.all(uris.map(async (uri) => {
           const pkPath = Object.values(this.schema.paths)
-            .find(path => path.options.alias === `pk`)?.path ?? `_id` as keyof EntityDocument<E>
+            .find(path => path.options.alias === `pk`)?.path ?? `id` as keyof EntityDocument<E>
           const { [pkPath]: pk } = await $fetch<E>(uri)
           return pk
             ? await this.findByPK(pk)

@@ -36,7 +36,7 @@ export default defineAppConfig({
       name: `File`,
       baseURI: `/api/files`,
       uri(file: File) {
-        return `/api/files/${file.type}/${file.id}`
+        return `/api/files/${file.type ?? `other`}/${file.id}`
       },
       abstract: true,
     },
