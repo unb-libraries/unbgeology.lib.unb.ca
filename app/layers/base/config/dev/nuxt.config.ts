@@ -2,7 +2,7 @@ export default defineNuxtConfig({
   extends: [
     `../prod`,
   ],
-  modules: [
-    `@nuxt/devtools`,
-  ],
+  devtools: {
+    enabled: true,
+  },
 })
