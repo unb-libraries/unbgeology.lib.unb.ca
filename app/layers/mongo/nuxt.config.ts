@@ -2,8 +2,8 @@
 
 export default defineNuxtConfig({
   buildDir: `./.build/.nuxt`,
-  nitro: {
-    runtimeConfig: {
+  runtimeConfig: {
+    nitro: {
       mongodb: {
         uri: ``,
         host: `localhost`,
