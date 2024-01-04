@@ -1,8 +1,7 @@
 import mongoose, { type ConnectOptions } from "mongoose"
-import { type NitroApp } from "nitropack"
 
-export default defineNitroPlugin(async (nitroApp: NitroApp) => {
-  const { uri, user, pass, host, port, db, authSource } = useRuntimeConfig().mongodb
+export default defineNitroPlugin(async (nitroApp) => {
+  const { uri, user, pass, host, port, db, authSource } = useRuntimeConfig().nitro.mongodb
 
   const connectOptions: ConnectOptions = {}
   if (authSource) {

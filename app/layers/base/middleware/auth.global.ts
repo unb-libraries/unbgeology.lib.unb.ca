@@ -1,5 +1,5 @@
 import { sendRedirect } from "h3"
-import type { RouteLocationNormalized, RouteMeta } from "vue-router"
+import type { RouteMeta } from "vue-router"
 
 interface AuthMeta {
   public: boolean
@@ -10,7 +10,7 @@ interface RouteAuthMeta extends RouteMeta {
   auth?: AuthMeta
 }
 
-export default defineNuxtRouteMiddleware(async (from: RouteLocationNormalized, to: RouteLocationNormalized) => {
+export default defineNuxtRouteMiddleware(async (from, to) => {
   if (process.client) { return }
 
   const event = useRequestEvent()

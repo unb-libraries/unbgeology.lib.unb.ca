@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { type RouteLocationNormalized } from 'vue-router'
 import { sendRedirect } from "h3"
 
 definePageMeta({
   middleware: [
-    async function (from: RouteLocationNormalized, to: RouteLocationNormalized) {
+    async function (from, to) {
       if (process.client) { return }
 
       const { $saml } = useNuxtApp()
