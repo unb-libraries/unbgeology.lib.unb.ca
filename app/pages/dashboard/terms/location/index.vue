@@ -33,7 +33,7 @@
 
 <script setup lang="ts">
 import { type StorageLocation } from 'types/vocabularies'
-import { type EntityJSONBody } from 'layers/base/types/entity'
+import { type EntityJSONBody } from "@unb-libraries/nuxt-layer-entity"
 import { StorageLocationForm } from '#components'
 
 definePageMeta({

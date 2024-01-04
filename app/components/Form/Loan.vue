@@ -43,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { type EntityJSONBody, type EntityJSONProperties } from 'layers/base/types/entity'
+import { type EntityJSONBody, type EntityJSONProperties } from "@unb-libraries/nuxt-layer-entity"
 import { type Loan, LoanType } from 'types/specimen'
 
 defineProps<{

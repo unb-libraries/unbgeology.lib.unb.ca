@@ -1,5 +1,4 @@
-import { type Term, type File, type User } from "layers/base/types/entity"
-import { type Migration } from "layers/base/types/migrate"
+import { type Term, type File, type User, type Migration } from "@unb-libraries/nuxt-layer-entity"
 
 export default defineAppConfig({
   entityTypes: {

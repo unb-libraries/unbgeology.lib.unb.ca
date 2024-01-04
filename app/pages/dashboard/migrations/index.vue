@@ -24,8 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import { type EntityJSONBody } from 'layers/base/types/entity'
-import { type Migration } from 'layers/base/types/migrate'
+import { type EntityJSONBody, type Migration } from "@unb-libraries/nuxt-layer-entity"
 import { MigrationForm } from "#components"
 
 definePageMeta({

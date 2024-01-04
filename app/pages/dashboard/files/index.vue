@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-import { type File, type EntityJSONList } from 'layers/base/types/entity'
+import { type File, type EntityJSONList } from "@unb-libraries/nuxt-layer-entity"
 
 definePageMeta({
   layout: `dashboard`,

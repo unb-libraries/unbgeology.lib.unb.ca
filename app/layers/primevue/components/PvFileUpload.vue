@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts" generic="T extends IFile = IFile">
-import { type File as IFile, type EntityJSON, type EntityJSONList } from 'layers/base/types/entity'
+import { type File as IFile, type EntityJSON, type EntityJSONList } from "@unb-libraries/nuxt-layer-entity"
 
 const props = defineProps<{
   types?: string[]

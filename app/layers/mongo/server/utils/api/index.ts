@@ -1,9 +1,9 @@
 import { defu } from "defu"
-import { EntityBodyCardinality, type EntityBodyReaderOptions } from "layers/mongo/types/api"
 import { type Document, type Types } from "mongoose"
 import { type H3Event } from "h3"
-import { type QueryOptions, type EntityListOptions } from "layers/mongo/types/entity"
-import { type EntityJSON, type Entity, type EntityJSONBody } from "layers/base/types/entity"
+import { type EntityJSON, type Entity, type EntityJSONBody } from "@unb-libraries/nuxt-layer-entity"
+import { type QueryOptions, type EntityListOptions } from "../../../types/entity"
+import { EntityBodyCardinality, type EntityBodyReaderOptions } from "../../../types/api"
 
 export function getSelectedFields(fields: string[], prefix?: string) {
   if (prefix) {

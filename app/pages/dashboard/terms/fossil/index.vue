@@ -61,7 +61,7 @@
 </template>
 
 <script setup lang="ts">
-import { type EntityJSONBody } from "layers/base/types/entity"
+import { type EntityJSONBody } from "@unb-libraries/nuxt-layer-entity"
 import { type Classification, type Portion } from "types/vocabularies/mineral"
 import { TermForm, TaxonomyTermForm } from "#components"
 

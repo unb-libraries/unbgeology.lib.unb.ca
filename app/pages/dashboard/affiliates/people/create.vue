@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 import { type Person } from 'types/affiliation'
-import { EntityJSONBody, type EntityJSONProperties } from 'layers/base/types/entity'
+import { type EntityJSONBody, type EntityJSONProperties } from "@unb-libraries/nuxt-layer-entity"
 
 const person = ref<EntityJSONProperties<Person>>({
   firstName: ``,

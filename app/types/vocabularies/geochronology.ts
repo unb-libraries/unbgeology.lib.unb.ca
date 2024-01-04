@@ -1,4 +1,4 @@
-import { type TaxonomyTerm } from "layers/base/types/entity"
+import { type TaxonomyTerm } from "@unb-libraries/nuxt-layer-entity"
 
 export enum Division {
   AGE = `age`,

@@ -1,4 +1,4 @@
-import { type EntityJSONBody, type Entity } from "layers/base/types/entity"
+import { type EntityJSONBody, type Entity } from "@unb-libraries/nuxt-layer-entity"
 
 export const useEntityValidate = <E extends Entity = Entity> (entity: Ref<EntityJSONBody<E>>) => {
   const errors = ref({} as Record<PropertyKey, string>)

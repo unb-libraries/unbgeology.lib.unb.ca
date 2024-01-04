@@ -1,5 +1,5 @@
-import { type EntityDocument, EntityFieldTypes } from "layers/mongo/types/entity"
-import { type Migration, Status } from "layers/base/types/migrate"
+import { type Migration, MigrationStatus } from "@unb-libraries/nuxt-layer-entity"
+import { type EntityDocument, EntityFieldTypes } from "../../types/entity"
 
 export default defineDocumentType<EntityDocument<Migration>>(`Migration`, {
   name: {
@@ -24,7 +24,7 @@ export default defineDocumentType<EntityDocument<Migration>>(`Migration`, {
   },
   status: {
     type: EntityFieldTypes.String,
-    enum: Status,
-    default: Status.CREATED,
+    enum: MigrationStatus,
+    default: MigrationStatus.CREATED,
   },
 })

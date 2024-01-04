@@ -1,4 +1,4 @@
-import { type EntityBundle } from "layers/base/types/entity"
+import { type EntityBundle } from "@unb-libraries/nuxt-layer-entity"
 
 export interface Affiliation extends EntityBundle {}
 

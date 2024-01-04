@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    // "declarationDir": "./src/types",
+    "target": "ESNext",
+    "moduleResolution": "Node",
+    "skipLibCheck": true,
+    "strict": true,
+    // "outDir": "./src",
+  },
+  "include": [
+    "./src/**/*",
+  ],
+}

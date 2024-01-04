@@ -16,7 +16,7 @@ import {
   type EntityModel,
   type EntityDocument,
   type DocumentBundleOptions,
-} from "layers/mongo/types/entity"
+} from "../../types/entity"
 
 const defineDocumentTypeOptions = function <E extends EntityDocument = EntityDocument> (options: DocumentTypeOptions<E>, defaultOptions?: DocumentTypeOptions<E>) {
   if (options?.toJSON?.transform && options?.toJSON?.transform !== true) {

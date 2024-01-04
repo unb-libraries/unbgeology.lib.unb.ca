@@ -1,4 +1,4 @@
-import { type TaxonomyTerm, type Term } from "layers/base/types/entity"
+import { type TaxonomyTerm, type Term } from "@unb-libraries/nuxt-layer-entity"
 
 export interface Classification extends TaxonomyTerm {
 }

@@ -1,4 +1,4 @@
-import { type User } from "layers/base/types/entity"
+import { type User } from "@unb-libraries/nuxt-layer-entity"
 
 export default defineEventHandler(async (event) => {
   const { username } = getRouterParams(event)

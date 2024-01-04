@@ -1,4 +1,4 @@
-import { type DynamicContent } from "layers/primevue/types"
+import { type DynamicContent } from "../types"
 
 export default function () {
   const state = useState<DynamicContent | null>(`modal`, () => null)

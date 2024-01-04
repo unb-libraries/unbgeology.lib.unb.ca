@@ -1,5 +1,5 @@
-import { EntityFieldTypes, type EntityDocument } from "layers/mongo/types/entity"
-import { type User } from "layers/base/types/entity"
+import { type User } from "@unb-libraries/nuxt-layer-entity"
+import { EntityFieldTypes, type EntityDocument } from "../../types/entity"
 
 type UserDocument = EntityDocument<User>
 

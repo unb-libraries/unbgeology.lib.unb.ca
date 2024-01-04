@@ -10,8 +10,8 @@
 </template>
 
 <script setup lang="ts" generic="E extends Entity = Entity">
-import { type EntityJSON, type Entity, type EntityJSONBody, type EntityJSONReference } from 'layers/base/types/entity'
-import { type DynamicContent } from "layers/primevue/types"
+import { type EntityJSON, type Entity, type EntityJSONBody, type EntityJSONReference } from "@unb-libraries/nuxt-layer-entity"
+import { type DynamicContent } from "../types"
 import { PvEntityDeleteConfirm } from '#components'
 
 const props = defineProps<{

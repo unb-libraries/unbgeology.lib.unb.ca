@@ -36,7 +36,7 @@
 
 <script setup lang="ts">
 import { type Unit, Division } from "types/vocabularies/geochronology"
-import { type EntityJSONProperties } from "layers/base/types/entity"
+import { type EntityJSONProperties } from "@unb-libraries/nuxt-layer-entity"
 
 defineProps<{
   entity: EntityJSONProperties<Unit>

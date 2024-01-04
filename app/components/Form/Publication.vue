@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import { EntityJSONBody, type EntityJSONProperties } from 'layers/base/types/entity'
+import { type EntityJSONBody, type EntityJSONProperties } from "@unb-libraries/nuxt-layer-entity"
 import { type Publication } from 'types/specimen'
 
 const doiResolveError = ref(``)

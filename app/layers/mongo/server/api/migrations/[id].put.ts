@@ -1,5 +1,5 @@
 import { readFile } from "fs/promises"
-import { Status } from "layers/base/types/migrate"
+import { MigrationStatus } from "@unb-libraries/nuxt-layer-entity"
 
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
     .findByPKAndUpdate(id, body, { new: true })
     .populate(`source`)
 
-  if (original.status !== updated.status && updated.status === Status.RUNNING) {
+  if (original.status !== updated.status && updated.status === MigrationStatus.RUNNING) {
     const data = JSON.parse(await readFile(updated.source.filepath, { encoding: `utf8` }))
     if (Array.isArray(data)) {
       await Promise.all(data.map(async (record) => {
@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
       }))
 
       updated = await Migration
-        .findByPKAndUpdate(id, { status: Status.SUCCEDED }, { new: true })
+        .findByPKAndUpdate(id, { status: MigrationStatus.SUCCEDED }, { new: true })
         .populate(`source`)
     }
   }

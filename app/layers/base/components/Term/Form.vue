@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts" generic="T extends Term = Term">
-import { type EntityJSON, type EntityJSONProperties, type Term } from 'layers/base/types/entity'
+import { type EntityJSON, type EntityJSONProperties, type Term } from "@unb-libraries/nuxt-layer-entity"
 
 defineProps<{
   entity: EntityJSONProperties<T> & Partial<EntityJSON<T>>

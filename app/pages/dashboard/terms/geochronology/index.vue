@@ -36,7 +36,7 @@
 
 <script setup lang="ts">
 import { type Unit } from 'types/vocabularies/geochronology'
-import { type EntityJSONBody } from 'layers/base/types/entity'
+import { type EntityJSONBody } from "@unb-libraries/nuxt-layer-entity"
 import { GeochronologyForm } from '#components'
 
 definePageMeta({

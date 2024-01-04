@@ -1,4 +1,4 @@
-import { EntityJSONBody } from "layers/base/types/entity"
+import { type EntityJSONBody } from "@unb-libraries/nuxt-layer-entity"
 import { type H3Event } from "h3"
 import { type Specimen, Category } from "types/specimen"
 

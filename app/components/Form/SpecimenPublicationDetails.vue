@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { EntityJSONBody, type EntityJSON } from 'layers/base/types/entity'
+import { type EntityJSONBody, type EntityJSON } from "@unb-libraries/nuxt-layer-entity"
 import { type Publication } from 'types/specimen'
 
 const { slug } = useRoute().params

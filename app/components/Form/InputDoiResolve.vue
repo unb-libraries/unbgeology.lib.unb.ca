@@ -30,7 +30,7 @@
 
 <script setup lang="ts">
 import doiRegex from "doi-regex"
-import { type EntityJSONProperties } from "layers/base/types/entity"
+import { type EntityJSONProperties } from "@unb-libraries/nuxt-layer-entity"
 import { type Publication } from "types/specimen"
 
 const emits = defineEmits<{

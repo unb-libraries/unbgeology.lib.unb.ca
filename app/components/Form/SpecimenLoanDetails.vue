@@ -33,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import { type EntityJSONBody, type EntityJSONReference } from 'layers/base/types/entity'
+import { type EntityJSONBody, type EntityJSONReference } from "@unb-libraries/nuxt-layer-entity"
 import { type Loan } from 'types/specimen'
 
 const { slug } = useRoute().params

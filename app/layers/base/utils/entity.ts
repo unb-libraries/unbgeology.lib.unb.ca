@@ -16,7 +16,7 @@ import {
   type EntityListResponse,
   type EntityJSONBodyPropertyValue,
   type EntityJSONProperties,
-} from "layers/base/types/entity"
+} from "@unb-libraries/nuxt-layer-entity"
 
 export function defineEntityType<E extends Entity = Entity>(name: string, definition: Omit<EntityType<E>, `name`>): EntityType<E> {
   const baseURI = `/api/${name.toLowerCase()}`

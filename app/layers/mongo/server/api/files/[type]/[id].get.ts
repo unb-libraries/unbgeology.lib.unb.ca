@@ -1,11 +1,11 @@
-import { type Image } from "layers/base/types/entity"
+import { type File as IFile } from "@unb-libraries/nuxt-layer-entity"
 
 export default defineEventHandler(async (event) => {
   const { type, id } = getRouterParams(event)
   const { select } = getQueryOptions(event)
 
   const File = useFileDocumentType(type ?? `file`)
-  const image = await File.findById(id)
+  const file = await File.findById(id)
     .select(select)
-  return sendEntityOr404<Image>(event, image)
+  return sendEntityOr404<IFile>(event, file)
 })

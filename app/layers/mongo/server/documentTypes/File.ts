@@ -1,10 +1,9 @@
 import { EntityFieldTypes, type EntityDocument } from "layers/mongo/types/entity"
-import { type File as IFile, type Image as IImage, type Document as IDocument, type Data as IDataSource } from "layers/base/types/entity"
+import { type File as IFile, type Image as IImage, type Document as IDocument } from "@unb-libraries/nuxt-layer-entity"
 
 type FileDocument = EntityDocument<IFile>
 type ImageDocument = EntityDocument<IImage>
 type DocumentDocument = EntityDocument<IDocument>
-type DataSourceDocument = EntityDocument<IDataSource>
 
 export const FileBase = defineDocumentType<FileDocument>(`File`, {
   filename: {

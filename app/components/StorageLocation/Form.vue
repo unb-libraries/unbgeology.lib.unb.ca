@@ -7,8 +7,8 @@
 </template>
 
 <script setup lang="ts">
-import { type StorageLocation } from "types/taxonomy"
-import type { Entity, EntityJSON, EntityJSONProperties } from "layers/base/types/entity"
+import { type StorageLocation } from "types/vocabularies"
+import type { Entity, EntityJSON, EntityJSONProperties } from "@unb-libraries/nuxt-layer-entity"
 
 defineProps<{
   entity: EntityJSONProperties<StorageLocation> & Partial<EntityJSON<Entity>>

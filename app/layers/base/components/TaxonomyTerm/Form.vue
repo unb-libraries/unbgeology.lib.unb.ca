@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts" generic="T extends TaxonomyTerm = TaxonomyTerm">
-import { type EntityJSON, type EntityJSONProperties, type TaxonomyTerm } from 'layers/base/types/entity'
+import { type EntityJSON, type EntityJSONProperties, type TaxonomyTerm } from "@unb-libraries/nuxt-layer-entity"
 
 defineProps<{
   entity: EntityJSONProperties<T> & Partial<EntityJSON<T>>

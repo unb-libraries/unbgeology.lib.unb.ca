@@ -1,5 +1,5 @@
-import { Schema, type SchemaOptions, type Model, type HydratedDocument, type UpdateQuery, type QueryOptions as MongooseQueryOptions, QueryWithHelpers } from "mongoose"
-import { type Entity, type EntityJSON } from "~/layers/base/types/entity"
+import { Schema, type SchemaOptions, type Model, type HydratedDocument, type UpdateQuery, type QueryOptions as MongooseQueryOptions, type QueryWithHelpers } from "mongoose"
+import { type Entity, type EntityJSON } from "@unb-libraries/nuxt-layer-entity"
 
 export const EntityFieldTypes = Schema.Types
 

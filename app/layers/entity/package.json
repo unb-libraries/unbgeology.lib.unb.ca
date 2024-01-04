@@ -1,0 +1,17 @@
+{
+  "name": "@unb-libraries/nuxt-layer-entity",
+  "version": "0.1.0",
+  "description": "Nuxt layer including composables and utils to fetch, create, update, delete data entities.",
+  "main": "./src/types/index.js",
+  "types": "./src/types/index.d.ts",
+  "keywords": [],
+  "author": {
+    "name": "Patrick Schilf",
+    "email": "pschilf@unb.ca"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "nuxt": "^3",
+    "typescript": "^5"
+  }
+}

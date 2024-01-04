@@ -1,7 +1,7 @@
-import type { H3Event, EventHandler } from "h3"
-import { type User } from "~~/types/user"
+import type { H3Event, EventHandler, EventHandlerRequest } from "h3"
+import { type User } from "@unb-libraries/nuxt-layer-entity"
 
-export function requireAuthentication<T>(handler: EventHandler<T>): EventHandler<T> {
+export function requireAuthentication<T extends EventHandlerRequest = EventHandlerRequest>(handler: EventHandler<T>): EventHandler<T> {
   return async (event) => {
     const { data } = await useCurrentServerSession(event)
     if (!data.user) {

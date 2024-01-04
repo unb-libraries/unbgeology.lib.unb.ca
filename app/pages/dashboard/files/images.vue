@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import { type EntityJSON, type EntityJSONList, type File as IFile, type Image as IImage } from "layers/base/types/entity"
+import { type EntityJSON, type EntityJSONList, type File as IFile, type Image as IImage } from "@unb-libraries/nuxt-layer-entity"
 
 definePageMeta({
   layout: `dashboard`,

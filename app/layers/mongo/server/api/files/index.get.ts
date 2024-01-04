@@ -1,4 +1,4 @@
-import { type File } from "layers/base/types/entity"
+import { type File } from "@unb-libraries/nuxt-layer-entity"
 
 export default defineEventHandler(async (event) => {
   const { select, sort, page, pageSize } = getQueryOptions(event)

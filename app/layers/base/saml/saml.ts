@@ -1,6 +1,6 @@
 import { SAML } from "@node-saml/node-saml"
 import type { AuthorizeOptions } from "@node-saml/node-saml/lib/passport-saml-types"
-import type { SAMLOptions, SAMLProfile } from "~/types/saml"
+import type { SAMLOptions, SAMLProfile } from "../types/saml"
 
 let saml: SAML
 

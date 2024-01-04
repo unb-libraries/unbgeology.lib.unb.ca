@@ -31,8 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { type EntityJSON, type EntityJSONProperties } from 'layers/base/types/entity'
-import { type Migration } from 'layers/base/types/migrate'
+import { type EntityJSON, type EntityJSONProperties, type Migration } from "@unb-libraries/nuxt-layer-entity"
 
 defineProps<{
   entity: EntityJSONProperties<Migration> & Partial<EntityJSON<Migration>>

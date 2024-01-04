@@ -1,6 +1,6 @@
 import fs from "fs/promises"
 import { type Files, type File as FFile, type Fields } from "formidable"
-import { type File as IFile } from "layers/base/types/entity"
+import { type File as IFile } from "@unb-libraries/nuxt-layer-entity"
 
 const { APP_ROOT } = process.env
 

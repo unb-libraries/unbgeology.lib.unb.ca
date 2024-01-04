@@ -1,5 +1,5 @@
 import { type H3Event } from "h3"
-import type { PaginateOptions, Navigator, PaginatorOptions } from "~/layers/mongo/types/paginate"
+import type { PaginateOptions, Navigator, PaginatorOptions } from "../../types/paginate"
 
 const buildQuery = (...params: [string, string | number][]) => {
   return new URLSearchParams(params.map(([p, v]) => [p, `${v}`])).toString()

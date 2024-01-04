@@ -1,4 +1,4 @@
-import { type EntityType } from "layers/base/types/entity"
+import { type EntityType } from "@unb-libraries/nuxt-layer-entity"
 
 declare module "nuxt/schema" {
   interface AppConfigInput<E extends Entity = Entity> {

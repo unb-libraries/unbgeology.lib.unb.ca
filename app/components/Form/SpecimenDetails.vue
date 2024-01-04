@@ -38,7 +38,7 @@
 
 <script setup lang="ts">
 import { type Loan, type Storage, type Specimen } from 'types/specimen'
-import { type EntityJSON } from 'layers/base/types/entity'
+import { type EntityJSON } from "@unb-libraries/nuxt-layer-entity"
 import { FormSpecimenStorageHistoryDetails, FormSpecimenLoanDetails, PvEntityDeleteConfirm } from '#components'
 
 const emits = defineEmits<{

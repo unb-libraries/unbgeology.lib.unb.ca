@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 import { type Address, type Organization } from 'types/affiliation'
-import { EntityJSONProperties, type EntityJSONBody } from 'layers/base/types/entity'
+import { type EntityJSONProperties, type EntityJSONBody } from "@unb-libraries/nuxt-layer-entity"
 
 definePageMeta({
   layout: `dashboard`,

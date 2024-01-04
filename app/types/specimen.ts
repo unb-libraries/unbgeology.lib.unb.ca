@@ -1,4 +1,4 @@
-import { type Image, type Entity, type User } from "layers/base/types/entity"
+import { type Image, type Entity, type User } from "@unb-libraries/nuxt-layer-entity"
 import { type Person } from "types/affiliation"
 import { type StorageLocation } from "types/vocabularies"
 import { type Unit } from "types/vocabularies/geochronology"

@@ -4,6 +4,9 @@
     "@nuxtjs/eslint-config-typescript",
     "plugin:tailwindcss/recommended"
   ],
+  "ignorePatterns": [
+    "app/**/*.js"
+  ],
   "rules": {
     "comma-dangle": ["error", "always-multiline"],
     "quote-props": ["warn", "consistent-as-needed"],

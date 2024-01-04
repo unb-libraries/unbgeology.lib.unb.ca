@@ -1,7 +1,7 @@
 import { defu } from "defu"
 import { type SchemaDefinition } from "mongoose"
-import { type Term, type TaxonomyTerm } from "layers/base/types/entity"
-import { type EntityDocument, type TermListOptions, type TaxonomyOptions } from "layers/mongo/types/entity"
+import { type Term, type TaxonomyTerm } from "@unb-libraries/nuxt-layer-entity"
+import { type EntityDocument, type TermListOptions, type TaxonomyOptions } from "../../types/entity"
 
 export const defineTermList = function<T extends Term = Term> (name: string, definition?: SchemaDefinition<EntityDocument<T>>, options?: TermListOptions) {
   const { domain } = defu(options ?? {}, { domain: `default` })

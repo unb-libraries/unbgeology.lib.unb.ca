@@ -240,7 +240,7 @@
 </template>
 
 <script setup lang="ts">
-import { type EntityJSONProperties, type Image, type EntityJSONBody, type TaxonomyTerm, type Term } from 'layers/base/types/entity'
+import { type EntityJSONProperties, type Image, type EntityJSONBody, type TaxonomyTerm, type Term } from "@unb-libraries/nuxt-layer-entity"
 import { type Specimen, type Publication, type Measurement } from 'types/specimen'
 import { type Unit } from 'types/vocabularies/geochronology'
 import { type Person } from 'types/affiliation'

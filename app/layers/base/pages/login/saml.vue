@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { sendRedirect, readBody, createError, useSession, deleteCookie } from "h3"
-import type { SAMLProfile } from "~/types/saml"
+import type { SAMLProfile } from "../../types/saml"
 
 definePageMeta({
   middleware: [

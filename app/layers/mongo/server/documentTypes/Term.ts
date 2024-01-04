@@ -1,5 +1,5 @@
-import { type EntityDocument, EntityFieldTypes } from "layers/mongo/types/entity"
-import { type Term as ITerm, type TaxonomyTerm as ITaxonomyTerm } from "layers/base/types/entity"
+import { type Term as ITerm, type TaxonomyTerm as ITaxonomyTerm } from "@unb-libraries/nuxt-layer-entity"
+import { type EntityDocument, EntityFieldTypes } from "../../types/entity"
 
 export const TermBase = defineDocumentType<EntityDocument<ITerm>>(`Term`, {
   label: {

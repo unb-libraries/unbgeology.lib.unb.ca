@@ -1,4 +1,4 @@
-import { EntityBodyCardinality } from "~/layers/mongo/types/api"
+import { EntityBodyCardinality } from "../../../../../types/api"
 
 export default defineEventHandler(async (event) => {
   const { pathname } = getRequestURL(event)

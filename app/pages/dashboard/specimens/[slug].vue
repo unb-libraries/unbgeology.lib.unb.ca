@@ -22,7 +22,7 @@
 
 <script setup lang="ts">
 import { type Specimen } from 'types/specimen'
-import { type EntityJSONBody } from 'layers/base/types/entity'
+import { type EntityJSONBody } from "@unb-libraries/nuxt-layer-entity"
 import { FormSpecimenDetails } from "#components"
 
 definePageMeta({

@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts" generic="E extends Entity = Entity, P extends keyof Omit<E, keyof Entity> = keyof Omit<E, keyof Entity>">
-import { type Entity, type EntityJSON, type EntityJSONBody, type EntityJSONProperties } from "layers/base/types/entity"
+import { type Entity, type EntityJSON, type EntityJSONBody, type EntityJSONProperties } from "@unb-libraries/nuxt-layer-entity"
 
 const props = defineProps<{
   entity: EntityJSONProperties<E, P> & Partial<EntityJSON<Entity>>

@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts" generic="M extends boolean = false">
-import { type JImage } from 'layers/base/types/entity'
+import { type JImage } from "@unb-libraries/nuxt-layer-entity"
 
 const props = defineProps<{
   images: JImage[]

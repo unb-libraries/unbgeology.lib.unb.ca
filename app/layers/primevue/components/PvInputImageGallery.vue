@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { type JImage } from 'layers/base/types/entity'
+import { type JImage } from "@unb-libraries/nuxt-layer-entity"
 
 const props = defineProps<{
   images: JImage[]

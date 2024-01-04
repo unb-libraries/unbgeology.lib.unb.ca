@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import { type EntityJSONBody, type EntityJSONProperties, type User } from 'layers/base/types/entity'
+import { type EntityJSONBody, type EntityJSONProperties, type User } from "@unb-libraries/nuxt-layer-entity"
 
 definePageMeta({
   layout: `dashboard`,

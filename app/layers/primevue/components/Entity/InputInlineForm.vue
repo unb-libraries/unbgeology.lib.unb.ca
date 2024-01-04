@@ -12,8 +12,8 @@
 </template>
 
 <script setup lang="ts" generic="E extends Entity = Entity">
-import { type EntityJSONBody, type Entity, EntityJSONProperties } from 'layers/base/types/entity'
-import { type DynamicContent } from 'layers/primevue/types'
+import { type EntityJSONBody, type Entity, type EntityJSONProperties } from "@unb-libraries/nuxt-layer-entity"
+import { type DynamicContent } from '../../types'
 
 const props = defineProps<{
   modelValue: EntityJSONProperties<E>[]

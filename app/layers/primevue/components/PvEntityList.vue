@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts" generic="E extends Entity = Entity">
-import { type EntityJSON, type Entity } from 'layers/base/types/entity'
+import { type EntityJSON, type Entity } from "@unb-libraries/nuxt-layer-entity"
 
 defineProps<{
   entities: EntityJSON<E>[]

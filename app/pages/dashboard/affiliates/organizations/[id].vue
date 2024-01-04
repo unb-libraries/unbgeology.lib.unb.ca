@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 import { type Organization } from 'types/affiliation'
-import { type EntityJSONBody } from 'layers/base/types/entity'
+import { type EntityJSONBody } from "@unb-libraries/nuxt-layer-entity"
 
 definePageMeta({
   layout: `dashboard`,

@@ -1,4 +1,4 @@
-import { type Term } from "layers/base/types/entity"
+import { type Term } from "@unb-libraries/nuxt-layer-entity"
 
 export default defineEventHandler(async (event) => {
   const { domain, type } = getRouterParams(event)

@@ -1,4 +1,5 @@
 import { type AppConfigInput, type AppConfig } from "nuxt/schema"
+import { type Ref, type ComputedRef } from "vue"
 
 export interface Entity {
   readonly id: string
@@ -15,7 +16,7 @@ export interface EntityType<E extends Entity = Entity> {
   abstract?: boolean
   baseURI: string
   uri: (entity: E) => string,
-  extends?: keyof AppConfigInput<E>[`entityTypes`]
+  extends?: keyof AppConfigInput[`entityTypes`]
 }
 
 export interface EntityJSONReference {
@@ -26,10 +27,10 @@ export interface EntityJSONReference {
 export type EntityJSONPropertyValue = string | number | boolean | EntityJSONReference
 export type EntityJSON<E extends Entity = Entity> = {
   [P in keyof E]:
-    E[P] extends Entity[] ? EntityJSON<Partial<E[P][number]>>[] :
-      E[P] extends Entity[] | undefined ? EntityJSON<Partial<E[P][number]>>[] | undefined :
-        E[P] extends Entity ? EntityJSON<Partial<E[P]>> :
-          E[P] extends Entity | undefined ? EntityJSON<Partial<E[P]>> | undefined :
+    E[P] extends Entity[] ? EntityJSON<E[P][number]>[] :
+      E[P] extends Entity[] | undefined ? EntityJSON<E[P][number]>[] | undefined :
+        E[P] extends Entity ? EntityJSON<E[P]> :
+          E[P] extends Entity | undefined ? EntityJSON<E[P]> | undefined :
             E[P]
 } & EntityJSONReference
 
@@ -49,7 +50,7 @@ export interface EntityJSONList<E extends Entity = Entity> {
   total: number
 }
 
-export type EntityJSONBodyPropertyValue = Exclude<EntityJSONPropertyType, EntityJSONReference>
+export type EntityJSONBodyPropertyValue = Exclude<EntityJSONPropertyValue, EntityJSONReference>
 export type EntityJSONBody<E extends object = object, P extends keyof Omit<E, keyof Entity> = keyof Omit<E, keyof Entity>> = {
   [K in P]:
     E[K] extends Entity[] ? string[] :
@@ -61,10 +62,10 @@ export type EntityJSONBody<E extends object = object, P extends keyof Omit<E, ke
                 E[K]
 }
 
-export type EntityJSONCreateBody<E extends Entity = Entity> = Omit<EntityJSONBody<E>, "self">
+export type EntityJSONCreateBody<E extends Entity = Entity> = Omit<EntityJSONBody<E>, `self`>
 export type EntityJSONUpdateBody<E extends Entity = Entity> = EntityJSONBody<E> & { [K in `self`]-?: EntityJSONBody<E>[K] }
 
-export interface EntityResponse<E> {
+export interface EntityResponse<E extends Entity = Entity> {
   entity: Ref<EntityJSON<E> | null>
   errors: any[]
 }
@@ -104,14 +105,12 @@ export type JUser = EntityJSON<User>
 export type JUserList = EntityJSONList<User>
 
 export interface Term extends EntityBundle {
-  type: `term`
   label: string
 }
 export type JTerm = EntityJSON<Term>
 export type JTermList = EntityJSONList<Term>
 
 export interface TaxonomyTerm extends Term {
-  type: `taxonomyterm`
   parent?: TaxonomyTerm
 }
 export type JTaxonomy = EntityJSON<TaxonomyTerm>
@@ -125,7 +124,7 @@ export interface File extends EntityBundle {
   persisted: boolean
   uploadName: string
 }
-export type JFile = EntityJSON<Image>
+export type JFile = EntityJSON<File>
 export type JFileList = EntityJSONList<File>
 
 export interface Image extends File {
@@ -143,3 +142,20 @@ export interface Document extends File {
 }
 export type JDocument = EntityJSON<Document>
 export type JDocumentList = EntityJSONList<Document>
+
+export enum MigrationStatus {
+  CREATED = `created`,
+  RUNNING = `running`,
+  SUCCEDED = `succeded`,
+  FAILED = `failed`,
+}
+
+export interface Migration extends Entity {
+  name: string
+  entityType: keyof AppConfig[`entityTypes`]
+  source: File
+  total: number
+  status: MigrationStatus
+}
+export type JMigration = EntityJSON<Migration>
+export type JMigrationList = EntityJSONList<Migration>
