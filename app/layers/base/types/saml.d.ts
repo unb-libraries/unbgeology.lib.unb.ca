@@ -8,7 +8,7 @@ export type SamlOptions = {
   validateInResponseTo: ValidateInResponseTo
   disableRequestedAuthnContext: boolean
 }
-interface SAMLProfile {
+export interface SAMLProfile {
   uid: string
   mail: string
   telephoneNumber: string
@@ -19,5 +19,3 @@ interface SAMLProfile {
   givenName: string
   title: string
 }
-
-export { SAMLOptions, SAMLProfile }

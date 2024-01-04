@@ -1,4 +1,4 @@
-import { SessionData } from "h3"
+import { type SessionData } from "h3"
 
 export async function useCurrentSession() {
   const { name } = useSessionConfig()
