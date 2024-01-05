@@ -159,3 +159,19 @@ export interface Migration extends Entity {
 }
 export type JMigration = EntityJSON<Migration>
 export type JMigrationList = EntityJSONList<Migration>
+
+export enum MigrationItemStatus {
+  CREATED = `created`,
+  WAITING = `waiting`,
+  IMPORTED = `imported`,
+  FAILED = `failed`,
+}
+export interface MigrationItem extends Entity {
+  sourceID: number
+  item: string
+  destinationID?: string
+  migration: Migration
+  dependants: MigrationItem[]
+  error?: string
+  status: `created` | `waiting` | `imported` | `failed`
+}
