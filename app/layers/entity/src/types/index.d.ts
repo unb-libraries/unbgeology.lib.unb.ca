@@ -137,7 +137,7 @@ export interface MigrationItem extends Entity {
     sourceID: number;
     destinationID?: string;
     migration: Migration;
-    item?: string;
+    data: any;
     dependants: MigrationItem[];
     error?: string;
     status: `created` | `waiting` | `imported` | `failed`;

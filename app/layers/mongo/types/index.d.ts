@@ -1,5 +1,6 @@
-import type { Migration } from "@unb-libraries/nuxt-layer-entity"
+import type { Entity, EntityJSONBody, Migration } from "@unb-libraries/nuxt-layer-entity"
 import type { EntityDocument } from "./entity"
+import type { SourceItem } from "./migrate"
 
 export declare module "nuxt/schema" {
   interface RuntimeConfig {
@@ -20,8 +21,7 @@ export declare module "nuxt/schema" {
 export declare module "nitropack" {
   interface NitroRuntimeHooks {
     migrate: (migrationID: string) => void | Promise<void>
-    "migrate:item": (item: unknown, migration: EntityDocument<Migration>, emits: {
-      success: (item: any) => void | Promise<void>
+    "migrate:init": (migration: Migration, items: SourceItem[]) => void | Promise<void>
       error: (errorMessage: string) => void | Promise<void>
     }) => void | Promise<void>
   }

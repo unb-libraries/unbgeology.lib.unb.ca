@@ -10,8 +10,8 @@ export default defineDocumentType<EntityDocument<MigrationItem>>(`MigrationItem`
     type: EntityFieldTypes.String,
     required: false,
   },
-  item: {
-    type: EntityFieldTypes.String,
+  data: {
+    type: EntityFieldTypes.Mixed,
     required: true,
   },
   migration: {

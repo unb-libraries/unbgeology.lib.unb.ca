@@ -168,7 +168,7 @@ export enum MigrationItemStatus {
 }
 export interface MigrationItem extends Entity {
   sourceID: number
-  item: string
+  data: any
   destinationID?: string
   migration: Migration
   dependants: MigrationItem[]

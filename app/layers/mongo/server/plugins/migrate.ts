@@ -2,6 +2,17 @@ import { readFile } from "fs/promises"
 import { MigrationStatus } from "@unb-libraries/nuxt-layer-entity"
 
 export default defineNitroPlugin((nitroApp) => {
+  nitroApp.hooks.hook(`migrate:init`, async (migration: Migration, items: SourceItem[]) => {
+    await Promise.all(items.map(async (item) => {
+      const { id: sourceID, ...data } = item
+      return await MigrationItem.create({
+        sourceID,
+        migration: migration.id,
+        data,
+      })
+    }))
+  })
+
   nitroApp.hooks.hook(`migrate`, async (migrationID: string) => {
     const migration = await Migration
       .findById(migrationID)
@@ -19,11 +30,7 @@ export default defineNitroPlugin((nitroApp) => {
 
     await Promise.all(items.map(async (item: any) => {
       const { id: sourceID, ...data } = item
-      const migrationItem = await MigrationItem.create({
-        sourceID,
-        item: JSON.stringify(data),
-        migration,
-      })
+      const migrationItem = await MigrationItem.findOne({ migration, sourceID })
 
       async function success(item: any) {
         const { baseURI: uri } = useAppConfig().entityTypes[migration.entityType]
