@@ -17,6 +17,10 @@ export default defineDocumentType<EntityDocument<Migration>>(`Migration`, {
     ref: FileBase,
     required: true,
   },
+  dependencies: [{
+    type: EntityFieldTypes.ObjectId,
+    ref: `Migration`,
+  }],
   total: {
     type: EntityFieldTypes.Number,
     min: 0,

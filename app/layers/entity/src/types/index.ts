@@ -157,6 +157,7 @@ export interface Migration extends Entity {
   name: string
   entityType: keyof AppConfig[`entityTypes`]
   source: File
+  dependencies: Migration[]
   total: number
   imported: number
   skipped: number
