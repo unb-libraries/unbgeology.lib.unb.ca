@@ -47,5 +47,18 @@ export default defineNitroPlugin((nitroApp) => {
       nitroApp.hooks.callHook(`migrate:import:item`, item.data, item.migration, { ready, require, error })
     })
   })
+
+  // REFACTOR "migrate:rollback" hook to be implemented as nitro task (once feature becomes available)
+  nitroApp.hooks.hook(`migrate:rollback`, async (items) => {
+    const itemIDs = items.map(item => item.id)
+    await Promise.all(items.map(async (item) => {
+      if (item.entityURI) {
+        await $fetch(item.entityURI, { method: `DELETE` })
+      }
+    }))
+
+    await MigrationItem.updateMany(
+      { _id: { $in: itemIDs } },
+      { $set: { status: `created` }, $unset: { requires: 1, entityURI: 1 } })
   })
 })

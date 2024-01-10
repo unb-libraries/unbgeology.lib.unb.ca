@@ -28,5 +28,6 @@ export declare module "nitropack" {
       require: (sourceID: number, migration: Migration) => void | Promise<void>
       error: (errorMessage: string) => void | Promise<void>
     }) => void | Promise<void>
+    "migrate:rollback": (items: MigrationItem[]) => void | Promise<void>
   }
 }
