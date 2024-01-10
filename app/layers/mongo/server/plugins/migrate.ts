@@ -1,4 +1,4 @@
-import { MigrationStatus, type Migration, type MigrationItem } from "@unb-libraries/nuxt-layer-entity"
+import { MigrationStatus, type Migration, type MigrationItem, type EntityJSON } from "@unb-libraries/nuxt-layer-entity"
 import { type SourceItem } from "../../types/migrate"
 
 export default defineNitroPlugin((nitroApp) => {
@@ -23,11 +23,16 @@ export default defineNitroPlugin((nitroApp) => {
       async function ready(data: any) {
         const { baseURI: uri } = useAppConfig().entityTypes[item.migration.entityType]
 
-        const { self } = await $fetch<{ self: string }>(uri, { method: `POST`, body: data })
-        await MigrationItem.updateOne({ _id: item.id }, { entityURI: self, status: `imported` })
+        const entity = await $fetch<EntityJSON>(uri, { method: `POST`, body: data })
+        await MigrationItem.updateOne(
+          { _id: item.id },
+          { entityURI: entity.self, status: MigrationStatus.IMPORTED })
+        nitroApp.hooks.callHook(`migrate:import:item:imported`, item, entity)
 
         const dependantIDs = (await MigrationItem.find({ requires: item.id })).map(item => item.id)
-        await MigrationItem.updateMany({ requires: item.id }, { $pull: { requires: item.id } })
+        await MigrationItem.updateMany(
+          { requires: item.id },
+          { $pull: { requires: item.id } })
         const dependants = await MigrationItem
           .find({ _id: { $in: dependantIDs } })
           .populate(`migration`)
@@ -37,28 +42,77 @@ export default defineNitroPlugin((nitroApp) => {
 
       async function require(sourceID: number, migration: Migration) {
         const dependency = await MigrationItem.findOne({ migration, sourceID })
-        await MigrationItem.updateOne({ _id: item.id }, { $push: { requires: dependency }, $set: { status: `waiting` } })
+        await MigrationItem.updateOne(
+          { _id: item.id },
+          {
+            $push: { requires: dependency },
+            $set: { status: MigrationStatus.PENDING },
+          })
+      }
+
+      async function skip() {
+        await MigrationItem.updateOne(
+          { _id: item.id },
+          { status: MigrationStatus.SKIPPED })
+        nitroApp.hooks.callHook(`migrate:import:item:skipped`, item)
       }
 
       async function error(errorMessage: string) {
-        await MigrationItem.updateOne({ _id: item.id }, { error: errorMessage, status: `failed` })
+        await MigrationItem.updateOne(
+          { _id: item.id },
+          { error: errorMessage, status: MigrationStatus.ERRORED })
+        nitroApp.hooks.callHook(`migrate:import:item:error`, item, errorMessage)
       }
 
-      nitroApp.hooks.callHook(`migrate:import:item`, item.data, item.migration, { ready, require, error })
+      nitroApp.hooks.callHook(`migrate:import:item`, item.data, item.migration, { ready, require, error, skip })
     })
+  })
+
+  nitroApp.hooks.hook(`migrate:import:item:imported`, async (item, entity) => {
+    const { _id, total, imported, skipped, errored } = await Migration
+      .findOneAndUpdate({ _id: item.migration }, { $inc: { imported: 1 } }, { new: true })
+    if (total === imported + skipped + errored) {
+      await Migration.updateOne({ _id }, { status: MigrationStatus.IDLE })
+    }
+  })
+
+  nitroApp.hooks.hook(`migrate:import:item:error`, async (item, error) => {
+    const { _id, total, imported, skipped, errored } = await Migration
+      .findOneAndUpdate({ _id: item.migration }, { $inc: { errored: 1 } }, { new: true })
+    if (total === imported + skipped + errored) {
+      await Migration.updateOne({ _id }, { status: MigrationStatus.IDLE })
+    }
+  })
+
+  nitroApp.hooks.hook(`migrate:import:item:skipped`, async (item) => {
+    const { _id, total, imported, skipped, errored } = await Migration
+      .findOneAndUpdate({ _id: item.migration }, { $inc: { skipped: 1 } }, { new: true })
+    if (total === imported + skipped + errored) {
+      await Migration.updateOne({ _id }, { status: MigrationStatus.IDLE })
+    }
   })
 
   // REFACTOR "migrate:rollback" hook to be implemented as nitro task (once feature becomes available)
   nitroApp.hooks.hook(`migrate:rollback`, async (items) => {
     const itemIDs = items.map(item => item.id)
     await Promise.all(items.map(async (item) => {
-      if (item.entityURI) {
-        await $fetch(item.entityURI, { method: `DELETE` })
+      if (item.status === MigrationStatus.IMPORTED) {
+        await Migration.updateOne({ _id: item.migration }, { $inc: { imported: -1 } })
+        if (item.entityURI) {
+          await $fetch(item.entityURI, { method: `DELETE` })
+        }
+      } else if (item.status === MigrationStatus.SKIPPED) {
+        await Migration.updateOne({ _id: item.migration }, { $inc: { skipped: -1 } })
+      } else if (item.status === MigrationStatus.ERRORED) {
+        await Migration.updateOne({ _id: item.migration }, { $inc: { errored: -1 } })
       }
     }))
 
     await MigrationItem.updateMany(
       { _id: { $in: itemIDs } },
-      { $set: { status: `created` }, $unset: { requires: 1, entityURI: 1 } })
+      {
+        $set: { status: MigrationStatus.INITIAL },
+        $unset: { requires: 1, entityURI: 1, error: 1 },
+      })
   })
 })

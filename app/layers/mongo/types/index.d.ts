@@ -29,6 +29,9 @@ export declare module "nitropack" {
       error: (errorMessage: string) => void | Promise<void>
       skip: () => void | Promise<void>
     }) => void | Promise<void>
+    "migrate:import:item:imported": (item: MigrationItem, entity: EntityJSON) => void | Promise<void>
+    "migrate:import:item:error": (item: MigrationItem, error: string) => void | Promise<void>
+    "migrate:import:item:skipped": (item: MigrationItem) => void | Promise<void>
     "migrate:rollback": (items: MigrationItem[]) => void | Promise<void>
   }
 }
