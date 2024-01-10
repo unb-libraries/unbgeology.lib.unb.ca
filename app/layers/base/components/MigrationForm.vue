@@ -8,7 +8,6 @@
       <div class="form-field">
         <label for="type">Type</label>
         <PvInputSelect
-          id="form-select-parent"
           v-model="body.entityType"
           class="form-input form-input-pvselect"
           name="type"
@@ -18,12 +17,22 @@
       <div class="form-field">
         <label for="source">Source</label>
         <EntityInputSelect
-          id="form-select-parent"
           v-model="body.source"
           class="form-input form-input-pvselect"
           name="parent"
           :options="files"
           option-label="filename"
+        />
+      </div>
+      <div class="form-field">
+        <label for="dependencies">Dependencies</label>
+        <EntityInputSelect
+          v-model="body.dependencies"
+          class="form-input form-input-pvselect"
+          :multi="true"
+          name="dependencies"
+          :options="migrations"
+          option-label="name"
         />
       </div>
     </template>
@@ -40,4 +49,5 @@ defineProps<{
 // TODO: filter json,csv files
 const { entities: files } = await fetchEntityList(`File`)
 const entityTypes = Object.keys(useAppConfig().entityTypes)
+const { entities: migrations } = await fetchEntityList(`Migration`)
 </script>
