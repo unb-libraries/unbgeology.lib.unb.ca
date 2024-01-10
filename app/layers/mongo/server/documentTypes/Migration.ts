@@ -22,9 +22,27 @@ export default defineDocumentType<EntityDocument<Migration>>(`Migration`, {
     min: 0,
     required: true,
   },
+  imported: {
+    type: EntityFieldTypes.Number,
+    min: 0,
+    required: true,
+    default: 0,
+  },
+  skipped: {
+    type: EntityFieldTypes.Number,
+    min: 0,
+    required: true,
+    default: 0,
+  },
+  errored: {
+    type: EntityFieldTypes.Number,
+    min: 0,
+    required: 0,
+    default: 0,
+  },
   status: {
-    type: EntityFieldTypes.String,
-    enum: MigrationStatus,
-    default: MigrationStatus.CREATED,
+    type: EntityFieldTypes.Number,
+    enum: [MigrationStatus.IDLE, MigrationStatus.RUNNING],
+    default: MigrationStatus.IDLE,
   },
 })

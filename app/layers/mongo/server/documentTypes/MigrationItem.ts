@@ -1,4 +1,4 @@
-import { type MigrationItem } from "@unb-libraries/nuxt-layer-entity"
+import { type MigrationItem, MigrationStatus } from "@unb-libraries/nuxt-layer-entity"
 import { EntityFieldTypes, type EntityDocument } from "../../types/entity"
 
 export default defineDocumentType<EntityDocument<MigrationItem>>(`MigrationItem`, {
@@ -28,8 +28,8 @@ export default defineDocumentType<EntityDocument<MigrationItem>>(`MigrationItem`
     required: false,
   },
   status: {
-    type: EntityFieldTypes.String,
-    enum: [`created`, `waiting`, `imported`, `failed`],
-    default: `created`,
+    type: EntityFieldTypes.Number,
+    enum: [MigrationStatus.INITIAL, MigrationStatus.PENDING, MigrationStatus.IMPORTED, MigrationStatus.SKIPPED, MigrationStatus.ERRORED],
+    default: MigrationStatus.INITIAL,
   },
 })

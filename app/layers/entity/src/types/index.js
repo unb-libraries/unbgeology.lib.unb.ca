@@ -1,14 +1,10 @@
 export var MigrationStatus;
 (function (MigrationStatus) {
-    MigrationStatus["CREATED"] = "created";
-    MigrationStatus["RUNNING"] = "running";
-    MigrationStatus["SUCCEDED"] = "succeded";
-    MigrationStatus["FAILED"] = "failed";
+    MigrationStatus[MigrationStatus["INITIAL"] = 1] = "INITIAL";
+    MigrationStatus[MigrationStatus["IDLE"] = 2] = "IDLE";
+    MigrationStatus[MigrationStatus["PENDING"] = 4] = "PENDING";
+    MigrationStatus[MigrationStatus["RUNNING"] = 8] = "RUNNING";
+    MigrationStatus[MigrationStatus["IMPORTED"] = 16] = "IMPORTED";
+    MigrationStatus[MigrationStatus["ERRORED"] = 32] = "ERRORED";
+    MigrationStatus[MigrationStatus["SKIPPED"] = 64] = "SKIPPED";
 })(MigrationStatus || (MigrationStatus = {}));
-export var MigrationItemStatus;
-(function (MigrationItemStatus) {
-    MigrationItemStatus["CREATED"] = "created";
-    MigrationItemStatus["WAITING"] = "waiting";
-    MigrationItemStatus["IMPORTED"] = "imported";
-    MigrationItemStatus["FAILED"] = "failed";
-})(MigrationItemStatus || (MigrationItemStatus = {}));

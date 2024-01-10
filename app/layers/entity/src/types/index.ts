@@ -144,10 +144,13 @@ export type JDocument = EntityJSON<Document>
 export type JDocumentList = EntityJSONList<Document>
 
 export enum MigrationStatus {
-  CREATED = `created`,
-  RUNNING = `running`,
-  SUCCEDED = `succeded`,
-  FAILED = `failed`,
+  INITIAL = 1,
+  IDLE = 2,
+  PENDING = 4,
+  RUNNING = 8,
+  IMPORTED = 16,
+  ERRORED = 32,
+  SKIPPED = 64,
 }
 
 export interface Migration extends Entity {
@@ -155,17 +158,14 @@ export interface Migration extends Entity {
   entityType: keyof AppConfig[`entityTypes`]
   source: File
   total: number
-  status: MigrationStatus
+  imported: number
+  skipped: number
+  errored: number
+  status: MigrationStatus.IDLE | MigrationStatus.RUNNING
 }
 export type JMigration = EntityJSON<Migration>
 export type JMigrationList = EntityJSONList<Migration>
 
-export enum MigrationItemStatus {
-  CREATED = `created`,
-  WAITING = `waiting`,
-  IMPORTED = `imported`,
-  FAILED = `failed`,
-}
 export interface MigrationItem extends Entity {
   sourceID: number
   data: any
@@ -173,5 +173,5 @@ export interface MigrationItem extends Entity {
   migration: Migration
   requires: MigrationItem[]
   error?: string
-  status: `created` | `waiting` | `imported` | `failed`
+  status: MigrationStatus.INITIAL | MigrationStatus.PENDING | MigrationStatus.IMPORTED | MigrationStatus.SKIPPED | MigrationStatus.ERRORED
 }

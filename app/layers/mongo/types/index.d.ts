@@ -1,4 +1,4 @@
-import type { Entity, EntityJSONBody, Migration, MigrationItem } from "@unb-libraries/nuxt-layer-entity"
+import type { EntityJSON, EntityJSONBody, Migration, MigrationItem, MigrationStatus } from "@unb-libraries/nuxt-layer-entity"
 import type { EntityDocument } from "./entity"
 import type { SourceItem } from "./migrate"
 
@@ -27,6 +27,7 @@ export declare module "nitropack" {
       ready: <E extends Entity = Entity>(item: EntityJSONBody<E>) => void | Promise<void>
       require: (sourceID: number, migration: Migration) => void | Promise<void>
       error: (errorMessage: string) => void | Promise<void>
+      skip: () => void | Promise<void>
     }) => void | Promise<void>
     "migrate:rollback": (items: MigrationItem[]) => void | Promise<void>
   }
