@@ -5,6 +5,7 @@ export default defineEventHandler(async (event) => {
 
   const migration = await Migration.create(body)
   await migration.populate(`source`)
+  await migration.populate(`dependencies`, `name entityType`)
 
   const json = await readFile(migration.source.filepath, { encoding: `utf8` })
   const items = JSON.parse(json)

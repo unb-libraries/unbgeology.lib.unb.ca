@@ -1,5 +1,9 @@
 import type { Migration } from "@unb-libraries/nuxt-layer-entity"
 
+export function getMigrationDependency(migration: Migration, entityType: string) {
+  return migration.dependencies.find(d => d.entityType === entityType)
+}
+
 export async function useMigrationLookup(migration: Migration, sourceID: number): Promise<string | null> {
   const item = await MigrationItem.findOne({ migration, sourceID })
   if (item && item.entityURI) {

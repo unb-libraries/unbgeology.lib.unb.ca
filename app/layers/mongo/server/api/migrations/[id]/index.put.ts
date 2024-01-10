@@ -5,6 +5,7 @@ export default defineEventHandler(async (event) => {
   const migration = await Migration
     .findByPKAndUpdate(id, body, { new: true })
     .populate(`source`)
+    .populate(`dependencies`, `name entityType`)
 
   return sendEntityOr404(event, migration)
 })

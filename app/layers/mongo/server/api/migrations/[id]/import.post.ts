@@ -3,7 +3,8 @@ export default defineEventHandler(async (event) => {
 
   const items = await MigrationItem
     .find({ migration: id })
-    .populate(`migration`)
+    .populate({ path: `migration`, populate: { path: `dependencies` } })
+
   useNitroApp().hooks.callHook(`migrate:import`, items)
 
   return sendNoContent(event, 202)

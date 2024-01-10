@@ -2,7 +2,8 @@ import { readFile } from "fs/promises"
 import { type H3Event } from "h3"
 
 export async function migrationBodyReader(body: any, event: H3Event) {
-  const { source: fileURI, ...migrationBody } = body
+  const { source: fileURI, dependencies: migrationURIs, ...migrationBody } = body
+
   if (fileURI) {
     const source = await FileBase.findByURI(fileURI)
     if (source) {
@@ -11,6 +12,13 @@ export async function migrationBodyReader(body: any, event: H3Event) {
       if (Array.isArray(data)) {
         migrationBody.total = data.length
       }
+    }
+  }
+
+  if (Array.isArray(migrationURIs)) {
+    const dependencies = await Migration.findManyByURI(migrationURIs)
+    if (dependencies.length > 0) {
+      migrationBody.dependencies = dependencies
     }
   }
 
