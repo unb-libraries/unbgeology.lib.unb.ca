@@ -1,7 +1,8 @@
-import { readFile } from "fs/promises"
-import { MigrationStatus } from "@unb-libraries/nuxt-layer-entity"
+import { MigrationStatus, type Migration, type MigrationItem } from "@unb-libraries/nuxt-layer-entity"
+import { type SourceItem } from "../../types/migrate"
 
 export default defineNitroPlugin((nitroApp) => {
+  // REFACTOR "migrate:init" hook to be implemented as nitro task (once feature becomes available)
   nitroApp.hooks.hook(`migrate:init`, async (migration: Migration, items: SourceItem[]) => {
     await Promise.all(items.map(async (item) => {
       const { id: sourceID, ...data } = item
@@ -13,43 +14,38 @@ export default defineNitroPlugin((nitroApp) => {
     }))
   })
 
-  nitroApp.hooks.hook(`migrate`, async (migrationID: string) => {
-    const migration = await Migration
-      .findById(migrationID)
-      .populate(`source`)
+  // REFACTOR "migrate:import" hook to be implemented as nitro task (once feature becomes available)
+  nitroApp.hooks.hook(`migrate:import`, async (items: MigrationItem[]) => {
+    const migrationIDs = items.map(item => item.migration.id).filter((id, index, arr) => arr.indexOf(id) === index)
+    await Migration.updateMany({ _id: migrationIDs }, { status: MigrationStatus.RUNNING })
 
-    if (!migration) {
-      throw createError(`No migration with ID ${migrationID} found.`)
-    }
+    items.forEach((item) => {
+      async function ready(data: any) {
+        const { baseURI: uri } = useAppConfig().entityTypes[item.migration.entityType]
 
-    migration.status = MigrationStatus.RUNNING
-    await migration.save()
+        const { self } = await $fetch<{ self: string }>(uri, { method: `POST`, body: data })
+        await MigrationItem.updateOne({ _id: item.id }, { entityURI: self, status: `imported` })
 
-    const json = await readFile(migration.source.filepath, { encoding: `utf8` })
-    const items = JSON.parse(json)
+        const dependantIDs = (await MigrationItem.find({ requires: item.id })).map(item => item.id)
+        await MigrationItem.updateMany({ requires: item.id }, { $pull: { requires: item.id } })
+        const dependants = await MigrationItem
+          .find({ _id: { $in: dependantIDs } })
+          .populate(`migration`)
 
-    await Promise.all(items.map(async (item: any) => {
-      const { id: sourceID, ...data } = item
-      const migrationItem = await MigrationItem.findOne({ migration, sourceID })
+        nitroApp.hooks.callHook(`migrate:import`, dependants)
+      }
 
-      async function success(item: any) {
-        const { baseURI: uri } = useAppConfig().entityTypes[migration.entityType]
-        const { self } = await $fetch<{ self: string }>(uri, { method: `POST`, body: item })
-        migrationItem.destinationID = self
-        migrationItem.status = `imported`
-        await migrationItem.save()
+      async function require(sourceID: number, migration: Migration) {
+        const dependency = await MigrationItem.findOne({ migration, sourceID })
+        await MigrationItem.updateOne({ _id: item.id }, { $push: { requires: dependency }, $set: { status: `waiting` } })
       }
 
       async function error(errorMessage: string) {
-        migrationItem.error = errorMessage
-        migrationItem.status = `failed`
-        await migrationItem.save()
+        await MigrationItem.updateOne({ _id: item.id }, { error: errorMessage, status: `failed` })
       }
 
-      nitroApp.hooks.callHook(`migrate:item`, data, migration, { success, error })
-    }))
-
-    migration.status = MigrationStatus.SUCCEDED
-    await migration.save()
+      nitroApp.hooks.callHook(`migrate:import:item`, item.data, item.migration, { ready, require, error })
+    })
+  })
   })
 })

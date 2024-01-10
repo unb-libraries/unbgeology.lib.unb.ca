@@ -6,7 +6,7 @@ export default defineDocumentType<EntityDocument<MigrationItem>>(`MigrationItem`
     type: EntityFieldTypes.Number,
     required: true,
   },
-  destinationID: {
+  entityURI: {
     type: EntityFieldTypes.String,
     required: false,
   },
@@ -19,7 +19,7 @@ export default defineDocumentType<EntityDocument<MigrationItem>>(`MigrationItem`
     ref: Migration,
     required: true,
   },
-  dependants: [{
+  requires: [{
     type: EntityFieldTypes.ObjectId,
     ref: `MigrationItem`,
   }],

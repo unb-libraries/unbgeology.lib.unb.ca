@@ -169,9 +169,9 @@ export enum MigrationItemStatus {
 export interface MigrationItem extends Entity {
   sourceID: number
   data: any
-  destinationID?: string
+  entityURI?: string
   migration: Migration
-  dependants: MigrationItem[]
+  requires: MigrationItem[]
   error?: string
   status: `created` | `waiting` | `imported` | `failed`
 }
