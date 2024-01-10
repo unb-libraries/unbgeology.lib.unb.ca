@@ -1,11 +1,13 @@
 <template>
   <div class="flex flex-row justify-end space-x-2">
+    <slot name="before" />
     <button class="bg-yellow hover:bg-yellow-light rounded-md px-2 py-1 hover:cursor-pointer" @click.prevent="content = modalUpdate">
       Edit
     </button>
     <button class="bg-red hover:bg-red-light rounded-md px-2 py-1 hover:cursor-pointer" @click.prevent="content = modalConfirmDelete">
       Remove
     </button>
+    <slot name="after" />
   </div>
 </template>
 

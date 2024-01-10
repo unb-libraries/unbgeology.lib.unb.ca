@@ -9,7 +9,11 @@
       </button>
     </div>
   </header>
-  <PvEntityTable :entities="migrations" :columns="['name', ['entityType', 'Type'], ['total', 'Records'], 'status', ['actions', '']]">
+  <PvEntityTable :entities="migrations" :columns="['name', ['entityType', 'Type'], ['total', 'Records'], 'imported', 'skipped', 'errored', 'status', ['actions', '']]">
+    <template #status="{ entity: migration }">
+      <span v-if="migration.status === MigrationStatus.IDLE">Idle</span>
+      <span v-if="migration.status === MigrationStatus.RUNNING">Running</span>
+    </template>
     <template #actions="{ entity: migration }">
       <PvDefaultEntityTableActions
         :entity="migration"
@@ -18,25 +22,50 @@
         :update="updateMigration"
         :remove="removeMigration"
         class="invisible group-hover:visible group-focus:visible"
-      />
+      >
+        <template #before>
+          <button v-if="canImport(migration)" class="bg-accent-mid hover:bg-accent-light rounded-md px-2 py-1 hover:cursor-pointer" @click.prevent="onImportMigration(migration)">
+            Import
+          </button>
+          <button v-if="canRollback(migration)" class="bg-blue hover:bg-blue-light rounded-md px-2 py-1 hover:cursor-pointer" @click.prevent="onRollbackMigration(migration)">
+            Rollback
+          </button>
+        </template>
+      </PvDefaultEntityTableActions>
     </template>
   </PvEntityTable>
 </template>
 
 <script setup lang="ts">
-import { type EntityJSONBody, type Migration } from "@unb-libraries/nuxt-layer-entity"
-import { MigrationForm } from "#components"
+import { type EntityJSONBody, type Migration, MigrationStatus, type EntityJSON } from "@unb-libraries/nuxt-layer-entity"
+import { MigrationForm, PvDefaultEntityTableActions } from "#components"
 
 definePageMeta({
   layout: `dashboard`,
 })
 
 const { content, close: closeModal } = useModal()
-
-const { entities: migrations, add: addMigration, update: updateMigration, remove: removeMigration } = await fetchEntityList<Migration>(`Migration`)
+const { entities: migrations, add: addMigration, update: updateMigration, remove: removeMigration, refresh } = await fetchEntityList<Migration>(`Migration`)
 async function onCreateMigration(migration: EntityJSONBody<Migration>) {
   await addMigration(migration)
   closeModal()
 }
 
+function canImport({ status, total, imported, skipped, errored }: EntityJSON<Migration>) {
+  return status === MigrationStatus.IDLE && total > imported + skipped + errored
+}
+
+function canRollback({ status, total, imported, skipped, errored }: EntityJSON<Migration>) {
+  return status === MigrationStatus.IDLE && total === imported + skipped + errored
+}
+
+async function onImportMigration(migration: EntityJSON<Migration>) {
+  await useFetch(`/api/migrations/${migration.id}/import`, { method: `POST` })
+  refresh()
+}
+
+async function onRollbackMigration(migration: EntityJSON<Migration>) {
+  await useFetch(`/api/migrations/${migration.id}/rollback`, { method: `POST` })
+  refresh()
+}
 </script>
