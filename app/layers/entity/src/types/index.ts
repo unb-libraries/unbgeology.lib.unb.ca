@@ -156,7 +156,7 @@ export enum MigrationStatus {
 export interface Migration extends Entity {
   name: string
   entityType: keyof AppConfig[`entityTypes`]
-  source: File
+  source: File[]
   dependencies: Migration[]
   total: number
   imported: number

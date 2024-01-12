@@ -19,6 +19,7 @@
         <EntityInputSelect
           v-model="body.source"
           class="form-input form-input-pvselect"
+          :multi="true"
           name="parent"
           :options="files"
           option-label="filename"

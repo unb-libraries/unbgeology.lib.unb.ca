@@ -12,11 +12,11 @@ export default defineDocumentType<EntityDocument<Migration>>(`Migration`, {
     enum: Object.keys(useAppConfig().entityTypes),
     required: true,
   },
-  source: {
+  source: [{
     type: EntityFieldTypes.ObjectId,
     ref: FileBase,
     required: true,
-  },
+  }],
   dependencies: [{
     type: EntityFieldTypes.ObjectId,
     ref: `Migration`,
@@ -25,6 +25,7 @@ export default defineDocumentType<EntityDocument<Migration>>(`Migration`, {
     type: EntityFieldTypes.Number,
     min: 0,
     required: true,
+    default: 0,
   },
   imported: {
     type: EntityFieldTypes.Number,

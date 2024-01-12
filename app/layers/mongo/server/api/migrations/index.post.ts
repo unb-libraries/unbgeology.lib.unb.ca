@@ -7,9 +7,11 @@ export default defineEventHandler(async (event) => {
   await migration.populate(`source`)
   await migration.populate(`dependencies`, `name entityType`)
 
-  const json = await readFile(migration.source.filepath, { encoding: `utf8` })
-  const items = JSON.parse(json)
-  useNitroApp().hooks.callHook(`migrate:init`, migration, items)
+  migration.source.forEach(async (source) => {
+    const json = await readFile(source.filepath, { encoding: `utf8` })
+    const items = JSON.parse(json)
+    useNitroApp().hooks.callHook(`migrate:init`, migration, items)
+  })
 
   return sendEntity(event, migration)
 })
