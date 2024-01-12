@@ -136,7 +136,7 @@ export type JMigration = EntityJSON<Migration>;
 export type JMigrationList = EntityJSONList<Migration>;
 export interface MigrationItem extends Entity {
     sourceID: number;
-    data: any;
+    data: any[];
     entityURI?: string;
     migration: Migration;
     requires: MigrationItem[];

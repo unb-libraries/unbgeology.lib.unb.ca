@@ -1,3 +1,4 @@
+import { defu } from "defu"
 import { MigrationStatus, type Migration, type MigrationItem, type EntityJSON } from "@unb-libraries/nuxt-layer-entity"
 import { type SourceItem } from "../../types/migrate"
 
@@ -6,12 +7,15 @@ export default defineNitroPlugin((nitroApp) => {
   nitroApp.hooks.hook(`migrate:init`, async (migration: Migration, items: SourceItem[]) => {
     await Promise.all(items.map(async (item) => {
       const { id: sourceID, ...data } = item
-      return await MigrationItem.create({
-        sourceID,
-        migration: migration.id,
-        data,
-      })
+      if (!sourceID) {
+        throw new Error(`Invalid source. No "sourceID" found.`)
+      }
+
+      await MigrationItem.findOneAndUpdate({ sourceID, migration }, { $set: { sourceID, migration }, $push: { data } }, { upsert: true })
     }))
+
+    const total = await MigrationItem.find({ migration }).count()
+    await Migration.updateOne({ _id: migration }, { total })
   })
 
   // REFACTOR "migrate:import" hook to be implemented as nitro task (once feature becomes available)
@@ -64,7 +68,7 @@ export default defineNitroPlugin((nitroApp) => {
         nitroApp.hooks.callHook(`migrate:import:item:error`, item, errorMessage)
       }
 
-      nitroApp.hooks.callHook(`migrate:import:item`, item.data, item.migration, { ready, require, error, skip })
+      nitroApp.hooks.callHook(`migrate:import:item`, defu(...item.data), item.migration, { ready, require, error, skip })
     })
   })
 
