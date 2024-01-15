@@ -41,7 +41,8 @@ export const Term = defineDocumentBundle<EntityDocument<ITerm>>(TermBase, `Term`
 export const TaxonomyTerm = defineDocumentBundle<EntityDocument<ITaxonomyTerm>>(TermBase, `TaxonomyTerm`, {
   parent: {
     type: EntityFieldTypes.ObjectId,
-    ref: `Term.TaxonomyTerm`,
+    // FIX: allow only references to terms of same type
+    ref: TermBase,
     required: false,
   },
 })
