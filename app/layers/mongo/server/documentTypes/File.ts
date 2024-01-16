@@ -21,7 +21,7 @@ export const FileBase = defineDocumentType<FileDocument>(`File`, {
   filetype: {
     type: EntityFieldTypes.String,
     required: true,
-    enum: [`jpg`, `jpeg`, `png`, `pdf`, `json`],
+    enum: [`jpg`, `jpeg`, `png`, `pdf`, `csv`, `json`],
   },
   persisted: {
     type: EntityFieldTypes.Boolean,

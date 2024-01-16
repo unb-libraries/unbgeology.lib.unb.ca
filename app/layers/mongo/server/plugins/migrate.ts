@@ -8,7 +8,7 @@ export default defineNitroPlugin((nitroApp) => {
     await Promise.all(items.map(async (item) => {
       const { id: sourceID, ...data } = item
       if (!sourceID) {
-        throw new Error(`Invalid source. No "sourceID" found.`)
+        throw new Error(`Invalid source. No "id" found.`)
       }
 
       await MigrationItem.findOneAndUpdate({ sourceID, migration }, { $set: { sourceID, migration }, $push: { data } }, { upsert: true })
