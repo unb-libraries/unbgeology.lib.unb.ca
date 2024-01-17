@@ -55,8 +55,8 @@ function canImport({ status, total, imported, skipped, errored }: EntityJSON<Mig
   return status === MigrationStatus.IDLE && total > imported + skipped + errored
 }
 
-function canRollback({ status, total, imported, skipped, errored }: EntityJSON<Migration>) {
-  return status === MigrationStatus.IDLE && total === imported + skipped + errored
+function canRollback({ status, imported, skipped, errored }: EntityJSON<Migration>) {
+  return status === MigrationStatus.IDLE && imported + skipped + errored > 0
 }
 
 async function onImportMigration(migration: EntityJSON<Migration>) {
