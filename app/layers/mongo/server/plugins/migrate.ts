@@ -27,48 +27,35 @@ export default defineNitroPlugin((nitroApp) => {
       async function ready(data: any) {
         const { baseURI: uri } = useAppConfig().entityTypes[item.migration.entityType]
 
-        const entity = await $fetch<EntityJSON>(uri, { method: `POST`, body: data })
-        await MigrationItem.updateOne(
-          { _id: item.id },
-          { entityURI: entity.self, status: MigrationStatus.IMPORTED })
-        nitroApp.hooks.callHook(`migrate:import:item:imported`, item, entity)
-
-        const dependantIDs = (await MigrationItem.find({ requires: item.id })).map(item => item.id)
-        await MigrationItem.updateMany(
-          { requires: item.id },
-          { $pull: { requires: item.id } })
-        const dependants = await MigrationItem
-          .find({ _id: { $in: dependantIDs } })
-          .populate(`migration`)
-
-        nitroApp.hooks.callHook(`migrate:import`, dependants)
-      }
-
-      async function require(sourceID: number, migration: Migration) {
-        const dependency = await MigrationItem.findOne({ migration, sourceID })
-        await MigrationItem.updateOne(
-          { _id: item.id },
-          {
-            $push: { requires: dependency },
-            $set: { status: MigrationStatus.PENDING },
-          })
+        try {
+          const entity = await $fetch<EntityJSON>(uri, { method: `POST`, body: data })
+          const updatedItem = await MigrationItem.findOneAndUpdate(
+            { _id: item.id },
+            { entityURI: entity.self, status: MigrationStatus.IMPORTED }, { new: true })
+          await updatedItem.populate(`migration`)
+          nitroApp.hooks.callHook(`migrate:import:item:imported`, updatedItem, entity)
+        } catch (err: any) {
+          error((err as Error).message)
+        }
       }
 
       async function skip() {
-        await MigrationItem.updateOne(
+        const updatedItem = await MigrationItem.findOneAndUpdate(
           { _id: item.id },
-          { status: MigrationStatus.SKIPPED })
+          { status: MigrationStatus.SKIPPED }, { new: true })
+        await updatedItem.populate(`migration`)
         nitroApp.hooks.callHook(`migrate:import:item:skipped`, item)
       }
 
       async function error(errorMessage: string) {
-        await MigrationItem.updateOne(
+        const updatedItem = await MigrationItem.updateOne(
           { _id: item.id },
           { error: errorMessage, status: MigrationStatus.ERRORED })
+        await updatedItem.populate(`migration`)
         nitroApp.hooks.callHook(`migrate:import:item:error`, item, errorMessage)
       }
 
-      nitroApp.hooks.callHook(`migrate:import:item`, defu(...item.data), item.migration, { ready, require, error, skip })
+      nitroApp.hooks.callHook(`migrate:import:item`, defu(...item.data), item.migration, { ready, error, skip })
     })
   })
 

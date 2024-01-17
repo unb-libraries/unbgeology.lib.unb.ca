@@ -139,7 +139,6 @@ export interface MigrationItem extends Entity {
     data: any[];
     entityURI?: string;
     migration: Migration;
-    requires: MigrationItem[];
     error?: string;
     status: MigrationStatus.INITIAL | MigrationStatus.PENDING | MigrationStatus.IMPORTED | MigrationStatus.SKIPPED | MigrationStatus.ERRORED;
 }

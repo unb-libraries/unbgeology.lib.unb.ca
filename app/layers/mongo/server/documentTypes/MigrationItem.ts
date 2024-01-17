@@ -19,10 +19,6 @@ export default defineDocumentType<EntityDocument<MigrationItem>>(`MigrationItem`
     ref: Migration,
     required: true,
   },
-  requires: [{
-    type: EntityFieldTypes.ObjectId,
-    ref: `MigrationItem`,
-  }],
   error: {
     type: EntityFieldTypes.String,
     required: false,

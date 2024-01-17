@@ -20,7 +20,6 @@ export declare module "nuxt/schema" {
 
 export type MigrateHandler = (data: any, migration: Migration, emits: {
   ready: <E extends Entity = Entity>(item: EntityJSONBody<E>) => void | Promise<void>
-  require: (sourceID: number, migration: Migration) => void | Promise<void>
   error: (errorMessage: string) => void | Promise<void>
   skip: () => void | Promise<void>
 }) => void | Promise<void>
