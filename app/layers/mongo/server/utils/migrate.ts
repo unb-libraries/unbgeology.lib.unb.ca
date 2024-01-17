@@ -6,7 +6,7 @@ export function getMigrationDependency(migration: Migration, entityType: string)
   return migration.dependencies.find(d => d.entityType === entityType)
 }
 
-export function useMigrationLookup(migration: Migration, sourceID: number): Promise<string | null> {
+export function useMigrationLookup(migration: Migration, sourceID: number): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     MigrationItem
       .findOne({ migration, sourceID })
@@ -37,24 +37,23 @@ export function useMigrationLookup(migration: Migration, sourceID: number): Prom
   })
 }
 
-export function useMigrateHandler<T, E extends Entity = Entity>(entityType: string, handler: (data: T, lookups: Record<string, (sourceID: number) => ReturnType<typeof useMigrationLookup>>) => EntityJSONBody<E> | Promise<EntityJSONBody<E>>): MigrateHandler {
+export function useMigrateHandler<T, E extends Entity = Entity>(entityType: string, handler: (data: T, lookup: (sourceID: number, entityType?: string) => Promise<string>) => EntityJSONBody<E> | Promise<EntityJSONBody<E>>): MigrateHandler {
   return async (data, migration, { ready, skip, error }) => {
-    const lookupMapper = (migration: Migration) => [migration.entityType, async (sourceID: number) => {
-      try {
+    const lookup = async (sourceID: number, entityType?: string): Promise<string> => {
+      if (!entityType || entityType === migration.entityType) {
         return await useMigrationLookup(migration, sourceID)
-      } catch (err: any) {
-        throw new Error(`Lookup of item ${sourceID} failed: ${(err as Error).message}`)
+      } else {
+        const dependency = migration.dependencies.find(d => d.entityType === entityType)
+        if (dependency) {
+          return await useMigrationLookup(dependency, sourceID)
+        }
       }
-    }]
-
-    const lookups = Object.fromEntries([
-      lookupMapper(migration),
-      ...migration.dependencies.map(lookupMapper),
-    ])
+      throw new Error(`No ${entityType} migration available for lookup.`)
+    }
 
     if (migration.entityType === entityType) {
       try {
-        const body = await handler(data, lookups)
+        const body = await handler(data, lookup)
         if (body) {
           ready(body)
         } else {

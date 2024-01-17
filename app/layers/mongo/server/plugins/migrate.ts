@@ -48,7 +48,7 @@ export default defineNitroPlugin((nitroApp) => {
       }
 
       async function error(errorMessage: string) {
-        const updatedItem = await MigrationItem.updateOne(
+        const updatedItem = await MigrationItem.findOneAndUpdate(
           { _id: item.id },
           { error: errorMessage, status: MigrationStatus.ERRORED })
         await updatedItem.populate(`migration`)
