@@ -9,7 +9,7 @@
       </button>
     </div>
   </header>
-  <PvEntityTable :entities="migrations" :columns="['name', ['entityType', 'Type'], ['total', 'Records'], 'imported', 'skipped', 'errored', 'status', ['actions', '']]">
+  <PvEntityTable :entities="migrations" :columns="['name', ['total', 'Records'], 'imported', 'skipped', 'errored', 'status', ['actions', '']]">
     <template #status="{ entity: migration }">
       <span v-if="migration.status === MigrationStatus.IDLE">Idle</span>
       <span v-if="migration.status === MigrationStatus.RUNNING">Running</span>
@@ -29,6 +29,9 @@
           </button>
           <button v-if="canRollback(migration)" class="bg-blue hover:bg-blue-light rounded-md px-2 py-1 hover:cursor-pointer" @click.prevent="onRollbackMigration(migration)">
             Rollback
+          </button>
+          <button v-if="canPause(migration)" class="bg-yellow hover:bg-yellow-light rounded-md px-2 py-1 hover:cursor-pointer" @click.prevent="onPauseMigration(migration)">
+            Pause
           </button>
         </template>
       </PvDefaultEntityTableActions>
@@ -59,6 +62,10 @@ function canRollback({ status, imported, skipped, errored }: EntityJSON<Migratio
   return status === MigrationStatus.IDLE && imported + skipped + errored > 0
 }
 
+function canPause({ status }: EntityJSONBody<Migration>) {
+  return status === MigrationStatus.RUNNING
+}
+
 async function onImportMigration(migration: EntityJSON<Migration>) {
   await useFetch(`/api/migrations/${migration.id}/import`, { method: `POST` })
   refresh()
@@ -66,6 +73,11 @@ async function onImportMigration(migration: EntityJSON<Migration>) {
 
 async function onRollbackMigration(migration: EntityJSON<Migration>) {
   await useFetch(`/api/migrations/${migration.id}/rollback`, { method: `POST` })
+  refresh()
+}
+
+async function onPauseMigration(migration: EntityJSON<Migration>) {
+  await useFetch(`/api/migrations/${migration.id}/pause`, { method: `POST` })
   refresh()
 }
 </script>
