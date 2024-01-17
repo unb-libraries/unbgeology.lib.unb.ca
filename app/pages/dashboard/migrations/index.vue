@@ -54,6 +54,18 @@ async function onCreateMigration(migration: EntityJSONBody<Migration>) {
   closeModal()
 }
 
+if (process.client) {
+  const idle = computed(() => migrations.value.every(({ status }) => status === MigrationStatus.IDLE))
+  let intervalId: ReturnType<typeof setInterval>
+  watch(idle, (isIdle) => {
+    if (!isIdle) {
+      intervalId = setInterval(refresh, 1000)
+    } else if (isIdle && intervalId) {
+      clearInterval(intervalId)
+    }
+  }, { immediate: true })
+}
+
 function canImport({ status, total, imported, skipped, errored }: EntityJSON<Migration>) {
   return status === MigrationStatus.IDLE && total > imported + skipped + errored
 }
