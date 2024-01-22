@@ -1,7 +1,7 @@
 services:
-  mongodb-unbgeology-lib-unb-ca:
+  unbgeology-mongodb-lib-unb-ca:
     image: mongo:4
-    container_name: mongo-unbgeology-lib-unb-ca
+    container_name: unbgeology-mongodb-lib-unb-ca
     restart: unless-stopped
     expose:
       - 27017
@@ -16,7 +16,7 @@ services:
     build:
       context: .
     depends_on:
-      - mongodb-unbgeology-lib-unb-ca
+      - unbgeology-mongodb-lib-unb-ca
       - idp-saml-unbgeology-lib-unb-ca
     restart: unless-stopped
     container_name: unbgeology-lib-unb-ca

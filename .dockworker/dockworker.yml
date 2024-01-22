@@ -35,6 +35,9 @@ dockworker:
         default: true
         managed: true
         name: unbgeology-lib-unb-ca
+      unbgeology-mongodb-lib-unb-ca:
+        managed: false
+        name: mongodb
   workflows:
     vcs:
       type: github
