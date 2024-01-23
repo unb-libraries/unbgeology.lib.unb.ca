@@ -1,5 +1,5 @@
 import { defu } from "defu"
-import { MigrationStatus, type Migration, type MigrationItem, type EntityJSON } from "@unb-libraries/nuxt-layer-entity"
+import { MigrationStatus, type Migration, type MigrationItem, type EntityJSON, Status } from "@unb-libraries/nuxt-layer-entity"
 import { type SourceItem } from "../../types/migrate"
 
 export default defineNitroPlugin((nitroApp) => {
@@ -28,7 +28,7 @@ export default defineNitroPlugin((nitroApp) => {
         const { baseURI: uri } = useAppConfig().entityTypes[item.migration.entityType]
 
         try {
-          const entity = await $fetch<EntityJSON>(uri, { method: `POST`, body: data })
+          const entity = await $fetch<EntityJSON>(uri, { method: `POST`, body: { status: Status.IMPORTED, ...data } })
           const updatedItem = await MigrationItem.findOneAndUpdate(
             { _id: item.id },
             { entityURI: entity.self, status: MigrationStatus.IMPORTED }, { new: true })
