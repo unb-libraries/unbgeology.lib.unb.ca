@@ -1,12 +1,8 @@
-import { type Person } from "document-types/Affiliation"
+import { type Person } from "~/types/affiliation"
 
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
-  const { affiliations: affiliationURIs, ...body } = await readBody(event)
-  if (affiliationURIs) {
-    body.affiliations = await Organization.findManyByURI(affiliationURIs)
-  }
-
+  const body = await readPersonBody(event)
   const person = await Person.findOneAndUpdate({ _id: id }, body, { new: true })
-  return sendEntity<Person>(event, person)
+  return sendEntityOr404<Person>(event, person)
 })

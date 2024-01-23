@@ -1,16 +1,8 @@
-import { type Person } from "document-types/Affiliation"
+import { type Person } from "~/types/affiliation"
 
 export default defineEventHandler(async (event) => {
-  const { select, sort, page, pageSize } = getQueryOptions(event)
-
-  function getAffilationFields() {
-    const fields = getSelectedFields(select, `affiliations`)
-    return fields.length > 0 ? fields : [`_id`]
-  }
-
+  const { sort, page, pageSize } = getQueryOptions(event)
   const people = await Person.find()
-    .populate(`affiliations`, getAffilationFields())
-    .select(getSelectedFields(select))
     .sort(sort.join(` `))
     .paginate(page, pageSize)
 
