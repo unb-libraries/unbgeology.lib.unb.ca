@@ -47,8 +47,42 @@ export function getQueryOptions(event: H3Event): QueryOptions {
   }
 }
 
+export function defineEntityBodyReader<E extends Entity = Entity>(reader: (body: EntityJSONBody<E>) => EntityJSONBody<E> | Promise<EntityJSONBody<E>>) {
+  return async (event: H3Event, options?: EntityBodyReaderOptions): Promise<EntityJSONBody<E> | EntityJSONBody<E>[]> => {
+    options = defu(options, { cardinality: EntityBodyCardinality.MANY | EntityBodyCardinality.ONE } as const)
+    const body = await readBody(event)
+
+    async function readOne(body: any) {
+      return await reader(body)
+    }
+
+    async function readMany(body: any[]) {
+      return await Promise.all(body.map(async body => await reader(body)))
+    }
+
+    switch (options.cardinality) {
+      case EntityBodyCardinality.ONE: {
+        if (Array.isArray(body)) {
+          throw new TypeError(`Body must be of type object.`)
+        }
+        return readOne(body)
+      }
+      case EntityBodyCardinality.MANY: {
+        if (!Array.isArray(body)) {
+          throw new TypeError(`Body must be of type array.`)
+        }
+        return readMany(body)
+      }
+      case EntityBodyCardinality.ONE | EntityBodyCardinality.MANY:
+      default: {
+        return !Array.isArray(body) ? await readOne(body) : await readMany(body)
+      }
+    }
+  }
+}
+
 export async function readEntityBody<E extends Entity = Entity>(event: H3Event, reader: (body: any, event: H3Event) => EntityJSONBody<E> | Promise<EntityJSONBody<E>>, options?: EntityBodyReaderOptions) {
-  options = defu(options, { accept: EntityBodyCardinality.MANY | EntityBodyCardinality.ONE } as const)
+  options = defu(options, { cardinality: EntityBodyCardinality.MANY | EntityBodyCardinality.ONE } as const)
   const body = await readBody(event)
 
   async function readOne(body: any) {
@@ -59,7 +93,7 @@ export async function readEntityBody<E extends Entity = Entity>(event: H3Event, 
     return await Promise.all(body.map(async body => await reader(body, event)))
   }
 
-  switch (options.accept) {
+  switch (options.cardinality) {
     case EntityBodyCardinality.ONE: {
       if (Array.isArray(body)) {
         throw new TypeError(`Body must be of type object.`)

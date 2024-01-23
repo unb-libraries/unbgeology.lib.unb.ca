@@ -4,5 +4,5 @@ export enum EntityBodyCardinality {
 }
 
 export interface EntityBodyReaderOptions {
-  accept?: EntityBodyCardinality
+  cardinality: EntityBodyCardinality
 }
