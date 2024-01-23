@@ -10,6 +10,11 @@
     </div>
   </header>
   <PvEntityTable :entities="migrations" :columns="['name', ['total', 'Records'], 'imported', 'skipped', 'errored', 'status', ['actions', '']]">
+    <template #name="{ entity: migration }">
+      <NuxtLink :to="`/dashboard/migrations/${migration.id}`" class="hover:underline">
+        {{ migration.name }}
+      </NuxtLink>
+    </template>
     <template #status="{ entity: migration }">
       <span v-if="migration.status === MigrationStatus.IDLE">Idle</span>
       <span v-if="migration.status === MigrationStatus.RUNNING">Running</span>
