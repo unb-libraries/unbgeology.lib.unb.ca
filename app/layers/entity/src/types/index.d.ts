@@ -1,7 +1,13 @@
 import { type AppConfigInput, type AppConfig } from "nuxt/schema";
 import { type Ref, type ComputedRef } from "vue";
+export declare enum Status {
+    DRAFT = 1,
+    IMPORTED = 2,
+    PUBLISHED = 4
+}
 export interface Entity {
     readonly id: string;
+    status: number;
     readonly created: string;
     readonly updated: string;
 }

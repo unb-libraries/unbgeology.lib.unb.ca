@@ -1,3 +1,9 @@
+export var Status;
+(function (Status) {
+    Status[Status["DRAFT"] = 1] = "DRAFT";
+    Status[Status["IMPORTED"] = 2] = "IMPORTED";
+    Status[Status["PUBLISHED"] = 4] = "PUBLISHED";
+})(Status || (Status = {}));
 export var MigrationStatus;
 (function (MigrationStatus) {
     MigrationStatus[MigrationStatus["INITIAL"] = 1] = "INITIAL";
