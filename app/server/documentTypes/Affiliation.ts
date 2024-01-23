@@ -65,17 +65,39 @@ export const Person = defineDocumentBundle<AffiliationDocument, PersonDocument>(
     type: EntityFieldTypes.String,
     required: true,
   },
-  affiliations: [{
-    type: EntityFieldTypes.ObjectId,
-    ref: `Affiliation.Organization`,
-    required: false,
-  }],
-  email: {
+  pronouns: {
     type: EntityFieldTypes.String,
+    enum: Pronouns,
     required: true,
   },
-  phone: {
+  title: {
     type: EntityFieldTypes.String,
+    enum: [Title.NONE, Title.MR, Title.MS, Title.MRS, Title.DR, Title.PROF, Title.PROF | Title.DR],
+    required: true,
+  },
+  occupation: {
+    type: EntityFieldTypes.String,
+    required: false,
+  },
+  position: {
+    type: EntityFieldTypes.String,
+    required: false,
+  },
+  contact: {
+    email: {
+      type: EntityFieldTypes.String,
+      required: false,
+    },
+    phone: {
+      type: EntityFieldTypes.String,
+      required: false,
+    },
+    web: [{
+      type: EntityFieldTypes.String,
+    }],
+  },
+  active: {
+    type: EntityFieldTypes.Boolean,
     required: false,
   },
   public: {

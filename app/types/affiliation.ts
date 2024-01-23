@@ -11,16 +11,39 @@ export interface Address {
   country: string
 }
 
+export interface Contact {
+  email?: string
+  phone?: string
+  web?: string[]
+}
+
 export interface Organization extends Affiliation {
   name: string
   address: Address
+export enum Pronouns {
+  HE = 1,
+  SHE = 2,
+  THEY = 4,
+}
+
+export enum Title {
+  NONE = 1,
+  MR = 2,
+  MS = 4,
+  MRS = 8,
+  DR = 16,
+  PROF = 32,
 }
 
 export interface Person extends Affiliation {
   firstName: string
   lastName: string
-  affiliations?: Organization[]
-  email: string
-  phone: string
-  public: boolean
+  pronouns: Pronouns
+  title?: Title
+  occupation?: string
+  position?: string
+  contact: Contact
+  bio?: string
+  image?: Image
+  active?: boolean
 }
