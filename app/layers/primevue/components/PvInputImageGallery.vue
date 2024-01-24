@@ -1,5 +1,5 @@
 <template>
-  <PvImageGallery :images="images" :multi="Array.isArray(modelValue)" :selection="defaultSelection" @select="onSelect" @unselect="onUnselect" />
+  <PvImageGallery :images="images" :multi="multi" :selection="defaultSelection" @select="onSelect" @unselect="onUnselect" />
 </template>
 
 <script setup lang="ts">
@@ -7,12 +7,13 @@ import { type JImage } from "@unb-libraries/nuxt-layer-entity"
 
 const props = defineProps<{
   images: JImage[]
-  modelValue: string | string[]
+  multi: boolean
+  modelValue: string | string[] | undefined
 }>()
 
 const emits = defineEmits<{
   // eslint-disable-next-line
-  "update:modelValue": [value: string | string[]]
+  "update:modelValue": [value: string | string[] | undefined]
 }>()
 
 const defaultSelection = computed(() => {
@@ -32,16 +33,16 @@ const selection = computed({
   },
 })
 
-function onSelect(image: JImage, newSelection: JImage | JImage[]) {
-  selection.value = Array.isArray(newSelection)
+function onSelect(image: JImage, newSelection: JImage[]) {
+  selection.value = props.multi
     ? newSelection.map(img => img.self)
-    : newSelection.self
+    : newSelection.length > 0
+      ? newSelection[0].self
+      : undefined
 }
 
-function onUnselect(image: JImage, newSelection: JImage | JImage[]) {
-  selection.value = Array.isArray(newSelection)
-    ? newSelection.map(img => img.self)
-    : newSelection.self
+function onUnselect(image: JImage, newSelection: JImage[]) {
+  onSelect(image, newSelection)
 }
 
 </script>
