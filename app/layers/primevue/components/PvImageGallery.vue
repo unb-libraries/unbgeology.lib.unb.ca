@@ -1,5 +1,5 @@
 <template>
-  <div class="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12">
+  <div v-if="images.length > 0" class="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12">
     <div
       v-for="image in images"
       :key="image.self"
@@ -14,12 +14,17 @@
         :class="{ 'opacity-30': isSelected(image) }"
         format="webp"
         fit="cover"
-        sizes="sm:180px md:90px lg:60px xl:100px"
+        sizes="sm:120px md:90px lg:96px xl:184px"
         width="600"
         height="600"
         @click.stop="onClick(image)"
       />
     </div>
+  </div>
+  <div v-else>
+    <slot name="empty">
+      No images have been added yet.
+    </slot>
   </div>
 </template>
 
