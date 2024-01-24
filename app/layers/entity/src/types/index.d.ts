@@ -7,7 +7,6 @@ export declare enum Status {
 }
 export interface Entity {
     readonly id: string;
-    status: number;
     readonly created: string;
     readonly updated: string;
 }

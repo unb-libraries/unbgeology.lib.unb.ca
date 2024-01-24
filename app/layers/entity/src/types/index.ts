@@ -9,8 +9,6 @@ export enum Status {
 
 export interface Entity {
   readonly id: string
-  // REFACTOR: use extensible enum
-  status: number
   readonly created: string
   readonly updated: string
 }

@@ -1,4 +1,3 @@
-import { Status } from "@unb-libraries/nuxt-layer-entity"
 import { defu } from "defu"
 import slugify from "slugify"
 import {
@@ -140,12 +139,6 @@ const DocumentTypeSchema = function <
 
   const schema = new Schema<E, M, I, Q>({
     ...definition,
-    status: {
-      type: Schema.Types.Number,
-      enum: Status,
-      default: Status.DRAFT,
-      required: true,
-    },
     created: Schema.Types.Number,
     updated: Schema.Types.Number,
   }, schemaOptions)

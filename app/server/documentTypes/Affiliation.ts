@@ -10,7 +10,14 @@ function optionalOnImport(this: IAffiliation) {
   return this.status > Status.IMPORTED
 }
 
-export const Affiliation = defineDocumentType<AffiliationDocument>(`Affiliation`, {}, {
+export const Affiliation = defineDocumentType<AffiliationDocument>(`Affiliation`, {
+  status: {
+    type: EntityFieldTypes.Number,
+    enum: Status,
+    default: Status.DRAFT,
+    required: true,
+  },
+}, {
   virtuals: {
     uri: {
       get() {
