@@ -12,11 +12,16 @@
         </div>
       </header>
       <PvEntityTable :entities="classifications" :columns="[`label`, [`actions`, ``]]">
+        <template #label="{ value: label, entity }">
+          <NuxtLink :to="`/dashboard/terms/mineral/${entity.slug}`" class="hover:underline">
+            {{ label }}
+          </NuxtLink>
+        </template>
         <template #actions="{ entity: term }">
           <PvDefaultEntityTableActions
             :entity="term"
             label="label"
-            :form="TaxonomyTermForm"
+            :form="FormMineralClassification"
             :form-props="{ parents: classifications }"
             :update="updateClassification"
             :remove="removeClassification"
@@ -63,7 +68,7 @@
 <script setup lang="ts">
 import { type EntityJSONBody } from "@unb-libraries/nuxt-layer-entity"
 import { type Classification, type Portion } from "types/vocabularies/mineral"
-import { TermForm, TaxonomyTermForm } from "#components"
+import { TermForm, TaxonomyTermForm, FormMineralClassification } from "#components"
 
 definePageMeta({
   layout: `dashboard`,
