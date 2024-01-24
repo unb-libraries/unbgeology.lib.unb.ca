@@ -1,4 +1,4 @@
-import type { Organization } from "~/types/affiliation"
+import { type Organization } from "~/types/affiliation"
 
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)

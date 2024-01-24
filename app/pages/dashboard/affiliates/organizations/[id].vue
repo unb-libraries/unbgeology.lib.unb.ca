@@ -1,5 +1,5 @@
 <template>
-  <FormOrganization v-if="organization" :organization="organization" @save="onUpdate" />
+  <FormOrganization v-if="organization" :entity="organization" @save="onUpdate" @cancel="navigateTo(`/dashboard/affiliates/organizations`)" />
 </template>
 
 <script setup lang="ts">
