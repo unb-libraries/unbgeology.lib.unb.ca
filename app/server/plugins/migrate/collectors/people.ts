@@ -1,7 +1,7 @@
 import type { EntityJSONBody } from "@unb-libraries/nuxt-layer-entity"
 import { type Person, Pronouns, Title } from "~/types/affiliation"
 
-interface PersonItem {
+interface Collector {
   name: string
   first_name: string
   last_name: string
@@ -13,7 +13,7 @@ interface PersonItem {
 }
 
 export default defineNitroPlugin((nitro) => {
-  nitro.hooks.hook(`migrate:import:item`, useMigrateHandler<PersonItem, Person>(`People`, (data) => {
+  nitro.hooks.hook(`migrate:import:item`, useMigrateHandler<Collector, Person>(`People`, (data) => {
     let { first_name: firstName, last_name: lastName } = data
     const { name, gender, titles, occupation, bio, website } = data
     if (gender === `N` && (!firstName || firstName === `Unknown`)) {
@@ -43,9 +43,7 @@ export default defineNitroPlugin((nitro) => {
     }
 
     if (website) {
-      body.contact = {
-        web: website,
-      }
+      body.web = [website]
     }
 
     return body
