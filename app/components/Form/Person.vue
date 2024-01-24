@@ -43,6 +43,16 @@
         <label for="image">Image</label>
         <PvInputImageGallery v-model="personBody.image" :images="images" :multi="false" class="border-primary-20 dark:border-primary-60/75 hover:border-accent-light h-full rounded-lg border p-3" />
       </div>
+      <div class="form-row form-row-2">
+        <div class="form-field">
+          <label for="occupation">Occupation</label>
+          <PvInputText v-model="personBody.occupation" class="form-input form-input-text" name="occupation" />
+        </div>
+        <div class="form-field">
+          <label for="position">Position</label>
+          <PvInputText v-model="personBody.position" class="form-input form-input-text" name="position" />
+        </div>
+      </div>
       <div class="form-field">
         <label for="bio">Bio</label>
         <textarea v-model="personBody.bio" class="form-input form-input-textarea" name="bio" rows="10" />
