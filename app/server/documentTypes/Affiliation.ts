@@ -98,7 +98,7 @@ export const Person = defineDocumentBundle<AffiliationDocument, PersonDocument>(
   title: {
     type: EntityFieldTypes.String,
     enum: [Title.NONE, Title.MR, Title.MS, Title.MRS, Title.DR, Title.PROF, Title.PROF | Title.DR],
-    required: true,
+    required: false,
   },
   occupation: {
     type: EntityFieldTypes.String,
@@ -107,6 +107,11 @@ export const Person = defineDocumentBundle<AffiliationDocument, PersonDocument>(
   position: {
     type: EntityFieldTypes.String,
     required: optionalOnImport,
+  },
+  image: {
+    type: EntityFieldTypes.ObjectId,
+    ref: ImageFile,
+    required: false,
   },
   bio: {
     type: EntityFieldTypes.String,

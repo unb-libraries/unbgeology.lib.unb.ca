@@ -11,6 +11,7 @@
             :options="titleOptions"
             option-value="0"
             option-label="1"
+            :show-clear="true"
           />
         </div>
         <div class="form-field">
@@ -23,6 +24,7 @@
               :options="pronounOptions"
               option-value="0"
               option-label="1"
+              :show-clear="true"
             />
           </div>
         </div>
@@ -36,6 +38,10 @@
           <label for="lastName">Last name</label>
           <PvInputText v-model="personBody.lastName" class="form-input form-input-text" name="lastName" />
         </div>
+      </div>
+      <div class="form-field">
+        <label for="image">Image</label>
+        <PvInputImageGallery v-model="personBody.image" :images="images" :multi="false" class="border-primary-20 dark:border-primary-60/75 hover:border-accent-light h-full rounded-lg border p-3" />
       </div>
       <div class="form-field">
         <label for="bio">Bio</label>
@@ -62,14 +68,15 @@
 
 <script setup lang="ts">
 import { type Person, Title, Pronouns } from "types/affiliation"
-import { type EntityJSONProperties } from "@unb-libraries/nuxt-layer-entity"
+import { type EntityJSONProperties, type Image } from "@unb-libraries/nuxt-layer-entity"
 
 defineProps<{
   entity: EntityJSONProperties<Person>
 }>()
 
+const { entities: images } = await fetchEntityList<Image>(`Image`)
+
 const titleOptions = [
-  [undefined, undefined],
   [`${Title.MR}`, `Mr.`],
   [`${Title.MS}`, `Ms.`],
   [`${Title.MRS}`, `Mrs.`],

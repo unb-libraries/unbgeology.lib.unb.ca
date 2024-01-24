@@ -4,6 +4,7 @@ export default defineEventHandler(async (event) => {
   const { sort, page, pageSize } = getQueryOptions(event)
   const people = await Person.find()
     .sort(sort.join(` `))
+    .populate(`image`)
     .paginate(page, pageSize)
 
   return sendEntityList<Person>(event, people, { total: await Person.countDocuments() })
