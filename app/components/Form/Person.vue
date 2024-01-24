@@ -1,6 +1,32 @@
 <template>
-  <EntityForm :entity="entity" @save="onSave">
+  <EntityForm :entity="entity">
     <template #default="{ body: personBody }">
+      <div class="form-row form-row-2">
+        <div class="form-field">
+          <label for="title">Title</label>
+          <PvInputSelect
+            v-model="personBody.title"
+            class="form-input form-input-pvselect"
+            name="title"
+            :options="titleOptions"
+            option-value="0"
+            option-label="1"
+          />
+        </div>
+        <div class="form-field">
+          <div class="form-field">
+            <label for="pronouns">Pronouns</label>
+            <PvInputSelect
+              v-model="personBody.pronouns"
+              class="form-input form-input-pvselect"
+              name="pronouns"
+              :options="pronounOptions"
+              option-value="0"
+              option-label="1"
+            />
+          </div>
+        </div>
+      </div>
       <div class="form-row form-row-2">
         <div class="form-field">
           <label for="firstName">First name</label>
@@ -10,6 +36,10 @@
           <label for="lastName">Last name</label>
           <PvInputText v-model="personBody.lastName" class="form-input form-input-text" name="lastName" />
         </div>
+      </div>
+      <div class="form-field">
+        <label for="bio">Bio</label>
+        <textarea v-model="personBody.bio" class="form-input form-input-textarea" name="bio" rows="10" />
       </div>
       <div class="form-row form-row-2">
         <div class="form-field">
@@ -22,37 +52,35 @@
         </div>
       </div>
       <div class="form-field">
-        <label for="affiliations">Affiliations</label>
-        <EntityInputSelect
-          v-model="personBody.affiliations"
-          class="form-input form-input-pvselect"
-          :options="organizations"
-          option-label="name"
-          option-value="self"
-          display="chip"
-        />
+        <label for="website">Website</label>
+        <PvInputText v-model="personBody.web" class="form-input form-input-text" name="website" />
       </div>
-      <PvCheckbox id="public" v-model="personBody.public" label="Public profile" name="public" />
+      <PvCheckbox id="active" v-model="personBody.active" label="Active" name="active" />
     </template>
   </EntityForm>
 </template>
 
 <script setup lang="ts">
-import { type Person, type Organization } from "types/affiliation"
-import { type EntityJSONProperties, type EntityJSONBody } from "@unb-libraries/nuxt-layer-entity"
+import { type Person, Title, Pronouns } from "types/affiliation"
+import { type EntityJSONProperties } from "@unb-libraries/nuxt-layer-entity"
 
 defineProps<{
   entity: EntityJSONProperties<Person>
 }>()
 
-const emits = defineEmits<{
-  save: [entity: EntityJSONBody<Person>]
-}>()
+const titleOptions = [
+  [undefined, undefined],
+  [`${Title.MR}`, `Mr.`],
+  [`${Title.MS}`, `Ms.`],
+  [`${Title.MRS}`, `Mrs.`],
+  [`${Title.DR}`, `Dr.`],
+  [`${Title.PROF}`, `Prof.`],
+  [`${Title.DR | Title.PROF}`, `Prof. Dr.`],
+]
 
-const { entities: organizations } = await fetchEntityList<Organization>(`Organization`)
-
-function onSave(entity: EntityJSONBody<Person>) {
-  emits(`save`, entity)
-}
-
+const pronounOptions = [
+  [`${Pronouns.HE}`, `He/Him`],
+  [`${Pronouns.SHE}`, `She/Her`],
+  [`${Pronouns.THEY}`, `They/Them`],
+]
 </script>

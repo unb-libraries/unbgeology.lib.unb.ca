@@ -1,5 +1,5 @@
 <template>
-  <FormPerson v-if="person" :person="person" @save="onUpdate" />
+  <FormPerson v-if="person" :entity="person" @save="onUpdate" @cancel="navigateTo(`/dashboard/affiliates/people`)" />
 </template>
 
 <script setup lang="ts">

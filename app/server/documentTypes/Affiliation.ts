@@ -108,6 +108,10 @@ export const Person = defineDocumentBundle<AffiliationDocument, PersonDocument>(
     type: EntityFieldTypes.String,
     required: optionalOnImport,
   },
+  bio: {
+    type: EntityFieldTypes.String,
+    required: false,
+  },
   contact: {
     email: {
       type: EntityFieldTypes.String,

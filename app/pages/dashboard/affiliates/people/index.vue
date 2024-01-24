@@ -1,5 +1,5 @@
 <template>
-  <PvEntityTable :entities="people" :columns="[[`lastName`, `Last name`], [`firstName`, `First name`], `title`, `email`, `phone`]">
+  <PvEntityTable :entities="people" :columns="[`name`, `title`, `email`, `phone`]">
     <template #name="{ entity: person }">
       <NuxtLink :to="`/dashboard/affiliates/people/${person.id}`" class="hover:underline">
         {{ person.lastName }}, {{ person.firstName }}
