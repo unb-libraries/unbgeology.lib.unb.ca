@@ -1,4 +1,4 @@
-import { type Organization } from "document-types/Organization"
+import { type Organization } from "~/types/affiliation"
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)

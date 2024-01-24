@@ -1,9 +1,14 @@
-import { type Affiliation as IAffiliation, type Organization as IOrganization, type Person as IPerson } from "types/affiliation"
+import { Status } from "@unb-libraries/nuxt-layer-entity"
+import { type Affiliation as IAffiliation, type Organization as IOrganization, type Person as IPerson, Pronouns, Title } from "types/affiliation"
 import { type EntityDocument, EntityFieldTypes } from "~/layers/mongo/types/entity"
 
 type AffiliationDocument = EntityDocument<IAffiliation>
 type OrganizationDocument = EntityDocument<IOrganization>
 type PersonDocument = EntityDocument<IPerson>
+
+function optionalOnImport(this: IAffiliation) {
+  return this.status > Status.IMPORTED
+}
 
 export const Affiliation = defineDocumentType<AffiliationDocument>(`Affiliation`, {}, {
   virtuals: {
@@ -21,31 +26,51 @@ export const Organization = defineDocumentBundle<AffiliationDocument, Organizati
     required: true,
   },
   address: {
-    address1: {
-      type: EntityFieldTypes.String,
-      required: true,
+    type: {
+      line1: {
+        type: EntityFieldTypes.String,
+        required: true,
+      },
+      line2: {
+        type: EntityFieldTypes.String,
+        required: false,
+      },
+      city: {
+        type: EntityFieldTypes.String,
+        required: true,
+      },
+      state: {
+        type: EntityFieldTypes.String,
+        required: false,
+      },
+      postalCode: {
+        type: EntityFieldTypes.String,
+        required: true,
+      },
+      country: {
+        type: EntityFieldTypes.String,
+        required: true,
+      },
     },
-    address2: {
+    required: false,
+  },
+  contact: {
+    name: {
       type: EntityFieldTypes.String,
-      required: false,
+      required: optionalOnImport,
     },
-    city: {
+    email: {
       type: EntityFieldTypes.String,
-      required: true,
+      required: optionalOnImport,
     },
-    state: {
+    phone: {
       type: EntityFieldTypes.String,
-      required: false,
-    },
-    postalCode: {
-      type: EntityFieldTypes.String,
-      required: true,
-    },
-    country: {
-      type: EntityFieldTypes.String,
-      required: true,
+      required: optionalOnImport,
     },
   },
+  web: [{
+    type: EntityFieldTypes.String,
+  }],
 }, {
   virtuals: {
     uri: {
@@ -77,25 +102,25 @@ export const Person = defineDocumentBundle<AffiliationDocument, PersonDocument>(
   },
   occupation: {
     type: EntityFieldTypes.String,
-    required: false,
+    required: optionalOnImport,
   },
   position: {
     type: EntityFieldTypes.String,
-    required: false,
+    required: optionalOnImport,
   },
   contact: {
     email: {
       type: EntityFieldTypes.String,
-      required: false,
+      required: optionalOnImport,
     },
     phone: {
       type: EntityFieldTypes.String,
-      required: false,
+      required: optionalOnImport,
     },
-    web: [{
-      type: EntityFieldTypes.String,
-    }],
   },
+  web: [{
+    type: EntityFieldTypes.String,
+  }],
   active: {
     type: EntityFieldTypes.Boolean,
     required: false,

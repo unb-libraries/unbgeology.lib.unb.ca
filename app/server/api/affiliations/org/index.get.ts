@@ -1,4 +1,4 @@
-import { Organization, type Organization as IOrganization } from "document-types/Affiliation"
+import { type Organization } from "~/types/affiliation"
 
 export default defineEventHandler(async (event) => {
   const { select, sort, page, pageSize } = getQueryOptions(event)
@@ -8,5 +8,5 @@ export default defineEventHandler(async (event) => {
     .sort(sort.join(` `))
     .paginate(page, pageSize)
 
-  return sendEntityList<IOrganization>(event, organizations, { total: await Organization.countDocuments() })
+  return sendEntityList<Organization>(event, organizations, { total: await Organization.countDocuments() })
 })

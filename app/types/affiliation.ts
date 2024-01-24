@@ -1,10 +1,10 @@
-import { type EntityBundle } from "@unb-libraries/nuxt-layer-entity"
+import { type EntityBundle, type Image } from "@unb-libraries/nuxt-layer-entity"
 
 export interface Affiliation extends EntityBundle {}
 
 export interface Address {
-  address1: string
-  address2?: string
+  line1: string
+  line2?: string
   city: string
   state?: string
   postalCode: string
@@ -14,12 +14,17 @@ export interface Address {
 export interface Contact {
   email?: string
   phone?: string
-  web?: string[]
 }
 
 export interface Organization extends Affiliation {
   name: string
-  address: Address
+  address?: Address
+  contact: {
+    name: string
+  } & Contact
+  web?: string[]
+}
+
 export enum Pronouns {
   HE = 1,
   SHE = 2,
@@ -44,6 +49,7 @@ export interface Person extends Affiliation {
   position?: string
   contact: Contact
   bio?: string
+  web?: string[]
   image?: Image
   active?: boolean
 }
