@@ -13,4 +13,5 @@ export var MigrationStatus;
     MigrationStatus[MigrationStatus["IMPORTED"] = 16] = "IMPORTED";
     MigrationStatus[MigrationStatus["ERRORED"] = 32] = "ERRORED";
     MigrationStatus[MigrationStatus["SKIPPED"] = 64] = "SKIPPED";
+    MigrationStatus[MigrationStatus["QUEUED"] = 128] = "QUEUED";
 })(MigrationStatus || (MigrationStatus = {}));

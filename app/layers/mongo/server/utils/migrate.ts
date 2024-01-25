@@ -1,4 +1,4 @@
-import type { Migration, Entity, EntityJSONBody, MigrationItem as IMigrationItem, EntityJSON, Status } from "@unb-libraries/nuxt-layer-entity"
+import { type Migration, type Entity, type EntityJSONBody, type MigrationItem as IMigrationItem, type EntityJSON, type Status, MigrationStatus } from "@unb-libraries/nuxt-layer-entity"
 import MigrationItem from "../documentTypes/MigrationItem"
 import type { MigrateHandler } from "../../types"
 import type { EntityMatcher, LookupHandlers } from "../../types/migrate"
@@ -20,10 +20,13 @@ export function useMigrationLookup<E extends Entity = Entity>(migration: Migrati
       MigrationItem
         .findOne({ migration, sourceID })
         .exec()
-        .then((item: IMigrationItem) => {
+        .then((item: IMigrationItem | null) => {
           if (item && item.entityURI) {
             unregister()
             resolve(item.entityURI)
+          } else if (item && !item.entityURI && item.status === MigrationStatus.INITIAL) {
+            unregister()
+            reject(new Error(`Item ${sourceID} will not be imported.`))
           } else if (!item) {
             unregister()
             reject(new Error(`Item ${sourceID} does not exist.`))
@@ -72,7 +75,7 @@ export function useMigrationLookup<E extends Entity = Entity>(migration: Migrati
   })
 }
 
-export function useMigrateHandler<T, E extends Entity = Entity>(entityType: string, handler: (data: T, lookups: LookupHandlers) => EntityJSONBody<E> | Promise<EntityJSONBody<E>>): MigrateHandler {
+export function useMigrateHandler<T, E extends Entity = Entity>(entityType: string, handler: (data: T, lookups: LookupHandlers) => EntityJSONBody<Omit<E & { status: Status.IMPORTED }, `type`>> | null | Promise<EntityJSONBody<E> | null>): MigrateHandler {
   return async (data, migration, { ready, skip, error }) => {
     const sourceIDLookup = async (sourceID: number, entityType?: string) => {
       if (!entityType || entityType === migration.entityType) {

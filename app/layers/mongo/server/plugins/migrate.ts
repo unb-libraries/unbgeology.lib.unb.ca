@@ -1,6 +1,7 @@
 import { defu } from "defu"
 import { MigrationStatus, type Migration, type MigrationItem, type EntityJSON, Status } from "@unb-libraries/nuxt-layer-entity"
 import { type SourceItem } from "../../types/migrate"
+import { type MigrateOptions } from "../../types"
 
 export default defineNitroPlugin((nitroApp) => {
   // REFACTOR "migrate:init" hook to be implemented as nitro task (once feature becomes available)
@@ -19,9 +20,30 @@ export default defineNitroPlugin((nitroApp) => {
   })
 
   // REFACTOR "migrate:import" hook to be implemented as nitro task (once feature becomes available)
-  nitroApp.hooks.hook(`migrate:import`, async (items: MigrationItem[]) => {
-    const migrationIDs = items.map(item => item.migration.id).filter((id, index, arr) => arr.indexOf(id) === index)
-    await Migration.updateMany({ _id: migrationIDs }, { status: MigrationStatus.RUNNING })
+  nitroApp.hooks.hook(`migrate:import`, async (migration: Migration, config?: MigrateOptions) => {
+    const options = defu(config ?? {}, { chunkSize: 100 })
+
+    if (migration.status !== MigrationStatus.RUNNING) {
+      migration.status = MigrationStatus.RUNNING
+      await migration.save()
+    }
+
+    let pendingCount = 0
+    function start() {
+      pendingCount++
+    }
+
+    function done() {
+      if (--pendingCount === 0) {
+        nitroApp.hooks.callHook(`migrate:import`, migration)
+      }
+    }
+
+    const items = await MigrationItem
+      .find({ migration, status: MigrationStatus.QUEUED })
+      .sort(`sourceID`)
+      .populate({ path: `migration`, populate: { path: `dependencies` } })
+      .limit(options.chunkSize)
 
     items.forEach((item) => {
       async function ready(data: any) {
@@ -34,6 +56,8 @@ export default defineNitroPlugin((nitroApp) => {
             { entityURI: entity.self, status: MigrationStatus.IMPORTED }, { new: true })
           await updatedItem.populate(`migration`)
           nitroApp.hooks.callHook(`migrate:import:item:imported`, updatedItem, entity)
+          nitroApp.hooks.callHook(`migrate:import:item:done`, updatedItem, entity)
+          done()
         } catch (err: any) {
           error((err as Error).message)
         }
@@ -45,6 +69,8 @@ export default defineNitroPlugin((nitroApp) => {
           { status: MigrationStatus.SKIPPED }, { new: true })
         await updatedItem.populate(`migration`)
         nitroApp.hooks.callHook(`migrate:import:item:skipped`, item)
+        nitroApp.hooks.callHook(`migrate:import:item:done`, item)
+        done()
       }
 
       async function error(errorMessage: string) {
@@ -53,33 +79,36 @@ export default defineNitroPlugin((nitroApp) => {
           { error: errorMessage, status: MigrationStatus.ERRORED })
         await updatedItem.populate(`migration`)
         nitroApp.hooks.callHook(`migrate:import:item:error`, item, errorMessage)
+        nitroApp.hooks.callHook(`migrate:import:item:done`, item, null, errorMessage)
+        done()
       }
 
+      item.status = MigrationStatus.PENDING
+      item.save()
+      start()
       nitroApp.hooks.callHook(`migrate:import:item`, defu(...item.data), item.migration, { ready, error, skip })
     })
   })
 
-  nitroApp.hooks.hook(`migrate:import:item:imported`, async (item, entity) => {
-    const { _id, total, imported, skipped, errored } = await Migration
-      .findOneAndUpdate({ _id: item.migration }, { $inc: { imported: 1 } }, { new: true })
-    if (total === imported + skipped + errored) {
-      await Migration.updateOne({ _id }, { status: MigrationStatus.IDLE })
-    }
+  nitroApp.hooks.hook(`migrate:import:item:imported`, async (item) => {
+    await Migration.findOneAndUpdate({ _id: item.migration }, { $inc: { imported: 1 } }, { new: true })
   })
 
-  nitroApp.hooks.hook(`migrate:import:item:error`, async (item, error) => {
-    const { _id, total, imported, skipped, errored } = await Migration
-      .findOneAndUpdate({ _id: item.migration }, { $inc: { errored: 1 } }, { new: true })
-    if (total === imported + skipped + errored) {
-      await Migration.updateOne({ _id }, { status: MigrationStatus.IDLE })
-    }
+  nitroApp.hooks.hook(`migrate:import:item:error`, async (item) => {
+    await Migration.findOneAndUpdate({ _id: item.migration }, { $inc: { errored: 1 } }, { new: true })
   })
 
   nitroApp.hooks.hook(`migrate:import:item:skipped`, async (item) => {
-    const { _id, total, imported, skipped, errored } = await Migration
-      .findOneAndUpdate({ _id: item.migration }, { $inc: { skipped: 1 } }, { new: true })
-    if (total === imported + skipped + errored) {
-      await Migration.updateOne({ _id }, { status: MigrationStatus.IDLE })
+    await Migration.findOneAndUpdate({ _id: item.migration }, { $inc: { skipped: 1 } }, { new: true })
+  })
+
+  nitroApp.hooks.hook(`migrate:import:item:done`, async (item) => {
+    const pendingCount = await MigrationItem
+      .where(`migration`).equals(item.migration)
+      .where(`status`).in([MigrationStatus.QUEUED, MigrationStatus.PENDING])
+      .countDocuments()
+    if (pendingCount === 0) {
+      await Migration.updateOne({ _id: item.migration }, { status: MigrationStatus.IDLE })
     }
   })
 

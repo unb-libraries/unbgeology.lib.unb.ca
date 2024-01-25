@@ -25,7 +25,7 @@ export default defineDocumentType<EntityDocument<MigrationItem>>(`MigrationItem`
   },
   status: {
     type: EntityFieldTypes.Number,
-    enum: [MigrationStatus.INITIAL, MigrationStatus.PENDING, MigrationStatus.IMPORTED, MigrationStatus.SKIPPED, MigrationStatus.ERRORED],
+    enum: [MigrationStatus.INITIAL, MigrationStatus.QUEUED, MigrationStatus.PENDING, MigrationStatus.IMPORTED, MigrationStatus.SKIPPED, MigrationStatus.ERRORED],
     default: MigrationStatus.INITIAL,
   },
 })

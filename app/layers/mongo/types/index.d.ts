@@ -24,12 +24,18 @@ export type MigrateHandler = (data: any, migration: Migration, emits: {
   skip: () => void | Promise<void>
 }) => void | Promise<void>
 
+export interface MigrateOptions {
+  limit?: number
+  chunkSize?: number
+}
+
 export declare module "nitropack" {
   interface NitroRuntimeHooks {
     migrate: (migrationID: string) => void | Promise<void>
     "migrate:init": (migration: Migration, items: SourceItem[]) => void | Promise<void>
-    "migrate:import": (items: MigrationItem[]) => void | Promise<void>
+    "migrate:import": (migration: Migration, options?: MigrateOptions) => void | Promise<void>
     "migrate:import:item": MigrateHandler
+    "migrate:import:item:done": (item: MigrationItem, entity?: EntityJSON<E>, error?: string) => void | Promise<void>
     "migrate:import:item:imported": <E extends Entity = Entity>(item: MigrationItem, entity: EntityJSON<E>) => void | Promise<void>
     "migrate:import:item:error": (item: MigrationItem, error: string) => void | Promise<void>
     "migrate:import:item:skipped": (item: MigrationItem) => void | Promise<void>

@@ -124,7 +124,8 @@ export declare enum MigrationStatus {
     RUNNING = 8,
     IMPORTED = 16,
     ERRORED = 32,
-    SKIPPED = 64
+    SKIPPED = 64,
+    QUEUED = 128
 }
 export interface Migration extends Entity {
     name: string;
@@ -145,5 +146,5 @@ export interface MigrationItem extends Entity {
     entityURI?: string;
     migration: Migration;
     error?: string;
-    status: MigrationStatus.INITIAL | MigrationStatus.PENDING | MigrationStatus.IMPORTED | MigrationStatus.SKIPPED | MigrationStatus.ERRORED;
+    status: MigrationStatus.INITIAL | MigrationStatus.QUEUED | MigrationStatus.PENDING | MigrationStatus.IMPORTED | MigrationStatus.SKIPPED | MigrationStatus.ERRORED;
 }
