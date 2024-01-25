@@ -54,15 +54,18 @@ export function useMigrationLookup<E extends Entity = Entity>(migration: Migrati
     } else {
       const matcher = sourceIDOrMatcher
       MigrationItem.find({ migration, entityURI: { $exists: 1 } }).select(`entityURI`)
-        .then((items) => {
-          items.forEach(async (item) => {
+        .then(async (items) => {
+          return await Promise.all(items.map(async (item) => {
             const entity = await $fetch<EntityJSON<E>>(item.entityURI)
-
-            if (matcher(entity)) {
-              unregister()
-              resolve(entity.self)
-            }
-          })
+            return matcher(entity) ? entity.self : false
+          }))
+        })
+        .then((uris: (string | false)[]) => {
+          const uri = uris.find(uri => uri !== false)
+          if (uri || migration.status === MigrationStatus.IDLE) {
+            unregister()
+            uri ? resolve(uri) : reject(new Error(`No ${migration.entityType} entity matches the lookup condition.`))
+          }
         })
 
       register(useNitroApp().hooks.hook(`migrate:import:item:imported`, (item, entity) => {
