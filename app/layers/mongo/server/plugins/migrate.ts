@@ -21,7 +21,7 @@ export default defineNitroPlugin((nitroApp) => {
 
   // REFACTOR "migrate:import" hook to be implemented as nitro task (once feature becomes available)
   nitroApp.hooks.hook(`migrate:import`, async (migration: Migration, config?: MigrateOptions) => {
-    const options = defu(config ?? {}, { chunkSize: 100 })
+    const options = defu(config ?? {}, { chunkSize: 20 })
 
     if (migration.status !== MigrationStatus.RUNNING) {
       migration.status = MigrationStatus.RUNNING
@@ -113,26 +113,14 @@ export default defineNitroPlugin((nitroApp) => {
   })
 
   // REFACTOR "migrate:rollback" hook to be implemented as nitro task (once feature becomes available)
-  nitroApp.hooks.hook(`migrate:rollback`, async (items) => {
-    const itemIDs = items.map(item => item.id)
-    await Promise.all(items.map(async (item) => {
-      if (item.status === MigrationStatus.IMPORTED) {
-        await Migration.updateOne({ _id: item.migration }, { $inc: { imported: -1 } })
-        if (item.entityURI) {
-          await $fetch(item.entityURI, { method: `DELETE` })
-        }
-      } else if (item.status === MigrationStatus.SKIPPED) {
-        await Migration.updateOne({ _id: item.migration }, { $inc: { skipped: -1 } })
-      } else if (item.status === MigrationStatus.ERRORED) {
-        await Migration.updateOne({ _id: item.migration }, { $inc: { errored: -1 } })
-      }
-    }))
+  nitroApp.hooks.hook(`migrate:rollback`, async (migration) => {
+    await Migration.updateOne({ _id: migration }, { status: MigrationStatus.RUNNING })
+    const items = await MigrationItem
+      .find({ migration })
+      .select(`_id entityURI`)
 
-    await MigrationItem.updateMany(
-      { _id: { $in: itemIDs } },
-      {
-        $set: { status: MigrationStatus.INITIAL },
-        $unset: { requires: 1, entityURI: 1, error: 1 },
-      })
+    await Promise.all(items.map(async item => item.entityURI ? await $fetch(item.entityURI, { method: `DELETE` }) : null))
+    await MigrationItem.updateMany({ migration }, { $set: { status: MigrationStatus.INITIAL }, $unset: { entityURI: 1, error: 1 } })
+    await Migration.updateOne({ _id: migration }, { imported: 0, errored: 0, skipped: 0, status: MigrationStatus.IDLE })
   })
 })

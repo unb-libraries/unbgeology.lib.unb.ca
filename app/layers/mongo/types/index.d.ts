@@ -39,6 +39,6 @@ export declare module "nitropack" {
     "migrate:import:item:imported": <E extends Entity = Entity>(item: MigrationItem, entity: EntityJSON<E>) => void | Promise<void>
     "migrate:import:item:error": (item: MigrationItem, error: string) => void | Promise<void>
     "migrate:import:item:skipped": (item: MigrationItem) => void | Promise<void>
-    "migrate:rollback": (items: MigrationItem[]) => void | Promise<void>
+    "migrate:rollback": (migration: Migration) => void | Promise<void>
   }
 }

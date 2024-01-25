@@ -1,10 +1,7 @@
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
-
-  const items = await MigrationItem
-    .find({ migration: id })
-    .populate(`migration`)
-  useNitroApp().hooks.callHook(`migrate:rollback`, items)
+  const migration = await Migration.findOne({ _id: id })
+  useNitroApp().hooks.callHook(`migrate:rollback`, migration)
 
   return sendNoContent(event, 202)
 })
