@@ -1,4 +1,4 @@
-import type { Migration, Entity, EntityJSONBody, MigrationItem as IMigrationItem, EntityJSON } from "@unb-libraries/nuxt-layer-entity"
+import type { Migration, Entity, EntityJSONBody, MigrationItem as IMigrationItem, EntityJSON, Status } from "@unb-libraries/nuxt-layer-entity"
 import MigrationItem from "../documentTypes/MigrationItem"
 import type { MigrateHandler } from "../../types"
 import type { EntityMatcher, LookupHandlers } from "../../types/migrate"
@@ -11,6 +11,10 @@ export function useMigrationLookup(migration: Migration, sourceID: number): Prom
 export function useMigrationLookup<E extends Entity = Entity>(migration: Migration, matcher: EntityMatcher<E>): Promise<string>
 export function useMigrationLookup<E extends Entity = Entity>(migration: Migration, sourceIDOrMatcher: number | EntityMatcher<E>): Promise<string> {
   return new Promise<string>((resolve, reject) => {
+    const registry: (() => void)[] = []
+    const register = (unregister: () => void) => registry.push(unregister)
+    const unregister = () => registry.forEach(unregister => unregister())
+
     if (typeof sourceIDOrMatcher === `number`) {
       const sourceID = sourceIDOrMatcher
       MigrationItem
@@ -18,27 +22,32 @@ export function useMigrationLookup<E extends Entity = Entity>(migration: Migrati
         .exec()
         .then((item: IMigrationItem) => {
           if (item && item.entityURI) {
+            unregister()
             resolve(item.entityURI)
           } else if (!item) {
+            unregister()
             reject(new Error(`Item ${sourceID} does not exist.`))
           }
         })
 
-      useNitroApp().hooks.hook(`migrate:import:item:imported`, (item) => {
+      register(useNitroApp().hooks.hook(`migrate:import:item:imported`, (item) => {
         if (item.sourceID === sourceID && item.migration.id === migration.id) {
+          unregister()
           resolve(item.entityURI!)
         }
-      })
-      useNitroApp().hooks.hook(`migrate:import:item:error`, (item) => {
+      }))
+      register(useNitroApp().hooks.hook(`migrate:import:item:error`, (item) => {
         if (item.sourceID === sourceID && item.migration.id === migration.id) {
+          unregister()
           reject(new Error(`Item ${sourceID} errored during migration.`))
         }
-      })
-      useNitroApp().hooks.hook(`migrate:import:item:skipped`, (item) => {
+      }))
+      register(useNitroApp().hooks.hook(`migrate:import:item:skipped`, (item) => {
         if (item.sourceID === sourceID && item.migration.id === migration.id) {
+          unregister()
           reject(new Error(`Item ${sourceID} was skipped during migration.`))
         }
-      })
+      }))
     } else {
       const matcher = sourceIDOrMatcher
       MigrationItem.find({ migration, entityURI: { $exists: 1 } }).select(`entityURI`)
@@ -47,16 +56,18 @@ export function useMigrationLookup<E extends Entity = Entity>(migration: Migrati
             const entity = await $fetch<EntityJSON<E>>(item.entityURI)
 
             if (matcher(entity)) {
+              unregister()
               resolve(entity.self)
             }
           })
         })
 
-      useNitroApp().hooks.hook(`migrate:import:item:imported`, (item, entity) => {
+      register(useNitroApp().hooks.hook(`migrate:import:item:imported`, (item, entity) => {
         if (matcher(entity)) {
+          unregister()
           resolve(entity.self)
         }
-      })
+      }))
     }
   })
 }
