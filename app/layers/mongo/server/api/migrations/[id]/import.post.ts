@@ -4,7 +4,7 @@ export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
   const body = await readBody(event)
 
-  if (body.limit) {
+  if (body && body.limit) {
     const query = MigrationItem
       .find({ migration: id, status: MigrationStatus.INITIAL })
       .limit(body.limit)
