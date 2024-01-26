@@ -8,9 +8,9 @@ export function getMigrationDependency(migration: Migration, entityType: string)
 }
 
 export function useMigrationLookup(migration: Migration, sourceID: number): Promise<string>
-export function useMigrationLookup<E extends Entity = Entity>(migration: Migration, matcher: EntityMatcher<E>): Promise<string>
-export function useMigrationLookup<E extends Entity = Entity>(migration: Migration, sourceIDOrMatcher: number | EntityMatcher<E>): Promise<string> {
-  return new Promise<string>((resolve, reject) => {
+export function useMigrationLookup<E extends Entity = Entity>(migration: Migration, matcher: EntityMatcher<E>): Promise<string | null>
+export function useMigrationLookup<E extends Entity = Entity>(migration: Migration, sourceIDOrMatcher: number | EntityMatcher<E>): Promise<string | null> {
+  return new Promise<string | null>((resolve, reject) => {
     const registry: (() => void)[] = []
     const register = (unregister: () => void) => registry.push(unregister)
     const unregister = () => registry.forEach(unregister => unregister())
@@ -24,13 +24,17 @@ export function useMigrationLookup<E extends Entity = Entity>(migration: Migrati
           if (item && item.entityURI) {
             unregister()
             resolve(item.entityURI)
-          } else if (item && !item.entityURI && item.status === MigrationStatus.INITIAL) {
+          } else if (item && !item.entityURI && item.status & (MigrationStatus.PENDING | MigrationStatus.QUEUED)) {
             unregister()
             reject(new Error(`Item ${sourceID} will not be imported.`))
           } else if (!item) {
             unregister()
             reject(new Error(`Item ${sourceID} does not exist.`))
           }
+        })
+        .catch((err: Error) => {
+          unregister()
+          reject(err)
         })
 
       register(useNitroApp().hooks.hook(`migrate:import:item:imported`, (item) => {
@@ -55,17 +59,19 @@ export function useMigrationLookup<E extends Entity = Entity>(migration: Migrati
       const matcher = sourceIDOrMatcher
       MigrationItem.find({ migration, entityURI: { $exists: 1 } }).select(`entityURI`)
         .then(async (items) => {
-          return await Promise.all(items.map(async (item) => {
+          await Promise.all(items.map(async (item) => {
             const entity = await $fetch<EntityJSON<E>>(item.entityURI)
-            return matcher(entity) ? entity.self : false
+            if (matcher(entity)) {
+              resolve(entity.self)
+            }
           }))
-        })
-        .then((uris: (string | false)[]) => {
-          const uri = uris.find(uri => uri !== false)
-          if (uri || migration.status === MigrationStatus.IDLE) {
-            unregister()
-            uri ? resolve(uri) : reject(new Error(`No ${migration.entityType} entity matches the lookup condition.`))
+          if (migration.status === MigrationStatus.IDLE) {
+            resolve(null)
           }
+        })
+        .catch((err: Error) => {
+          unregister()
+          reject(err)
         })
 
       register(useNitroApp().hooks.hook(`migrate:import:item:imported`, (item, entity) => {
