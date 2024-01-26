@@ -101,11 +101,6 @@ const DocumentTypeSchema = function <
         return entities.filter(e => e)
       },
     },
-    timestamps: {
-      createdAt: `created`,
-      updatedAt: `updated`,
-      currentTime: () => Date.now(),
-    },
     toJSON: {
       virtuals: true,
       transform(doc, ret, transformOptions) {
@@ -139,8 +134,18 @@ const DocumentTypeSchema = function <
 
   const schema = new Schema<E, M, I, Q>({
     ...definition,
-    created: Schema.Types.Number,
-    updated: Schema.Types.Number,
+    created: {
+      type: Schema.Types.Number,
+      required: true,
+      mutable: false,
+      default: Date.now(),
+    },
+    updated: {
+      type: Schema.Types.Number,
+      required: true,
+      mutable: false,
+      default: Date.now(),
+    },
   }, schemaOptions)
 
   if (!Object.values(schema.paths).some(path => path.options.alias === `pk`)) {
