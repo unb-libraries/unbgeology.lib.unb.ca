@@ -13,8 +13,21 @@ export function getSelectedFields(fields: string[], prefix?: string) {
 }
 
 export function getQueryOptions(event: H3Event): QueryOptions {
-  const { select, sort, ...query } = getQuery(event)
+  const { filter: filterQuery, select, sort, ...query } = getQuery(event)
   let { page, pageSize } = query
+
+  const filters = filterQuery ? Array.isArray(filterQuery) ? filterQuery : [filterQuery] : []
+  const filter = filters.reduce((obj, f) => {
+    const [field, op, value] = f.split(`__`)
+    if (!obj[field]) {
+      obj[field] = {}
+    }
+    if (!obj[field][op]) {
+      obj[field][op] = []
+    }
+    obj[field][op].push(value)
+    return obj
+  }, {})
 
   pageSize = pageSize ? Array.isArray(pageSize) ? parseInt(`${pageSize.at(-1)}`) : parseInt(`${pageSize}`) : 25
   pageSize = Math.min(Math.max(1, pageSize), 100)
@@ -28,6 +41,7 @@ export function getQueryOptions(event: H3Event): QueryOptions {
     page,
     pageSize,
     select: selection,
+    filter,
     filterSelect({ root, prefix, default: defaultFields }) {
       const fields = defaultFields ?? []
       if (root) {
