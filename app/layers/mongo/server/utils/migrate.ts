@@ -24,7 +24,7 @@ export function useMigrationLookup<E extends Entity = Entity>(migration: Migrati
           if (item && item.entityURI) {
             unregister()
             resolve(item.entityURI)
-          } else if (item && !item.entityURI && item.status & (MigrationStatus.PENDING | MigrationStatus.QUEUED)) {
+          } else if (item && !item.entityURI && !(item.status & (MigrationStatus.PENDING | MigrationStatus.QUEUED))) {
             unregister()
             reject(new Error(`Item ${sourceID} will not be imported.`))
           } else if (!item) {
@@ -81,6 +81,13 @@ export function useMigrationLookup<E extends Entity = Entity>(migration: Migrati
         }
       }))
     }
+
+    register(useNitroApp().hooks.hook(`migrate:pause`, (paused) => {
+      if (paused.id === migration.id) {
+        unregister()
+        reject(new Error(`Migration ${migration.id} is paused.`))
+      }
+    }))
   })
 }
 
