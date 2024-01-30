@@ -2,7 +2,7 @@ import { defu } from "defu"
 import { type Document, type Types } from "mongoose"
 import { type H3Event } from "h3"
 import { type EntityJSON, type Entity, type EntityJSONBody } from "@unb-libraries/nuxt-layer-entity"
-import { type QueryOptions, type EntityListOptions } from "../../../types/entity"
+import { type QueryOptions, type EntityListOptions, type EntityQueryFilter, FilterOperator } from "../../../types/entity"
 import { EntityBodyCardinality, type EntityBodyReaderOptions } from "../../../types/api"
 
 export function getSelectedFields(fields: string[], prefix?: string) {
@@ -10,6 +10,28 @@ export function getSelectedFields(fields: string[], prefix?: string) {
     return fields.filter(f => f.startsWith(prefix)).map(f => f.split(`.`)[1])
   }
   return fields.map(f => f.split(`.`)[0])
+}
+
+export async function applyFilter(event: H3Event, apply: Record<string, (op: FilterOperator, values: string | string[]) => void | Promise<void>>): Promise<void>
+export async function applyFilter(filter: EntityQueryFilter, apply: Record<string, (op: FilterOperator, values: string | string[]) => void | Promise<void>>): Promise<void>
+export async function applyFilter(eventOrFilter: H3Event | EntityQueryFilter, apply: Record<string, (op: FilterOperator, values: string | string[]) => void | Promise<void>>): Promise<void> {
+  if (eventOrFilter.__is_event__) {
+    const event = eventOrFilter as H3Event
+    const { filter } = getQueryOptions(event)
+    if (filter) {
+      return await applyFilter(filter, apply)
+    }
+  } else {
+    const filter = eventOrFilter as EntityQueryFilter
+    const fields = Object.keys(apply).filter(field => field in filter)
+    for (const field of fields) {
+      const conditions = filter[field]
+      for (const op in conditions) {
+        const values = conditions[op as FilterOperator]
+        await apply[field](op as FilterOperator, values.length > 1 ? values : values[0])
+      }
+    }
+  }
 }
 
 export function getQueryOptions(event: H3Event): QueryOptions {

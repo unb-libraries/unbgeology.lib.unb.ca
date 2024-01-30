@@ -40,10 +40,10 @@ export enum FilterOperator {
   CT = `ct`,
   NC = `nc`,
 }
-export type EntityQueryFilter<E extends Entity = Entity> = Record<keyof E, Record<FilterOperator, (string | string[])[]>>
+
+export type EntityQueryFilter = Record<string, Record<FilterOperator, string[]>>
 export interface EntityQueryHelpers {
   paginate(page: number, pageSize: number): EntityQueryHelpers
-  filter(filter: EntityQueryFilter): EntityQueryHelpers
 }
 
 export interface EntityModel<

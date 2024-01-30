@@ -50,59 +50,6 @@ const DocumentTypeSchema = function <
           .skip((page - 1) * pageSize)
           .limit(pageSize)
       },
-      filter(filter: EntityQueryFilter<E>) {
-        Object.entries(filter).forEach(([field, ops]) => {
-          Object.entries(ops).forEach(([op, values]) => {
-            values.forEach((value) => {
-              // based on op, add where condition to query
-              switch (op) {
-                case `eq`:
-                case `ct`:
-                  this.where(field).equals(value)
-                  break
-                case `ne`:
-                case `nc`:
-                  this.where(field).ne(value)
-                  break
-                case `ma`:
-                  if (!Array.isArray(value)) {
-                    this.where(field).regex(new RegExp(value, `i`))
-                  }
-                  break
-                case `in`:
-                  this.where(field).in(Array.isArray(value) ? value : [value])
-                  break
-                case `ni`:
-                  this.where(field).nin(Array.isArray(value) ? value : [value])
-                  break
-                case `gt`:
-                  if (!Array.isArray(value)) {
-                    this.where(field).gt(parseInt(value))
-                  }
-                  break
-                case `ge`:
-                  if (!Array.isArray(value)) {
-                    this.where(field).gte(parseInt(value))
-                  }
-                  break
-                case `lt`:
-                  if (!Array.isArray(value)) {
-                    this.where(field).lt(parseInt(value))
-                  }
-                  break
-                case `le`:
-                  if (!Array.isArray(value)) {
-                    this.where(field).lte(parseInt(value))
-                  }
-                  break
-                default:
-                  break
-              }
-            })
-          })
-        })
-        return this
-      },
     },
     methods: {
       url() {
