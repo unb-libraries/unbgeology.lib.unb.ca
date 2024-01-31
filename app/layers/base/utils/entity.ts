@@ -14,9 +14,11 @@ import {
   type EntityCreateResponse,
   type EntityDeleteResponse,
   type EntityListResponse,
+  type FetchEntityListOptions,
   type EntityJSONBodyPropertyValue,
   type EntityJSONProperties,
 } from "@unb-libraries/nuxt-layer-entity"
+import type { UseFetchOptions } from "nuxt/app"
 
 export function defineEntityType<E extends Entity = Entity>(name: string, definition: Omit<EntityType<E>, `name`>): EntityType<E> {
   const baseURI = `/api/${name.toLowerCase()}`
@@ -148,20 +150,31 @@ export async function deleteEntity(entityReferenceOrPk: EntityJSONReference | st
   throw createError(`Entity ${entityReferenceOrPk} not found.`)
 }
 
-export async function fetchEntityList <E extends Entity = Entity> (uri: string): Promise<EntityListResponse<E>>
-export async function fetchEntityList <E extends Entity = Entity> (entityTypeId: string): Promise<EntityListResponse<E>>
-export async function fetchEntityList <E extends Entity = Entity> (entityType: EntityType<E>): Promise<EntityListResponse<E>>
-export async function fetchEntityList <E extends Entity = Entity>(entityTypeOrIdOrURI: string | EntityType<E>) {
+export async function fetchEntityList <E extends Entity = Entity> (uri: string, options?: FetchEntityListOptions): Promise<EntityListResponse<E>>
+export async function fetchEntityList <E extends Entity = Entity> (entityTypeId: string, options?: FetchEntityListOptions): Promise<EntityListResponse<E>>
+export async function fetchEntityList <E extends Entity = Entity> (entityType: EntityType<E>, options?: FetchEntityListOptions): Promise<EntityListResponse<E>>
+export async function fetchEntityList <E extends Entity = Entity>(entityTypeOrIdOrURI: string | EntityType<E>, options?: FetchEntityListOptions) {
   const url = typeof entityTypeOrIdOrURI === `string`
     ? entityTypeOrIdOrURI.startsWith(`/`)
       ? entityTypeOrIdOrURI
       : useEntityType<E>(entityTypeOrIdOrURI)?.definition.baseURI
     : entityTypeOrIdOrURI.baseURI
 
-  const { data: list, refresh } = await useFetch<EntityJSONList<E>>(url)
+  const search = ref(options?.search ?? ``)
+  const fetchOptions: UseFetchOptions<EntityJSONList<E>> = {
+    query: {
+      search,
+    },
+    watch: [search],
+  }
+
+  const { data: list, refresh } = await useFetch<EntityJSONList<E>>(url, fetchOptions)
   return {
     list: list as Ref<EntityJSONList<E> | null>,
     entities: computed(() => list.value?.entities ?? []),
+    query: {
+      search,
+    },
     refresh,
     async add(entity: EntityJSONCreateBody<E>) {
       const response = typeof entityTypeOrIdOrURI === `string`

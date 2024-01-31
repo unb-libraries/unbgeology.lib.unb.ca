@@ -63,9 +63,15 @@ export interface EntityDeleteResponse {
     success: boolean;
     errors: any[];
 }
+export interface FetchEntityListOptions {
+    search?: string;
+}
 export interface EntityListResponse<E extends Entity = Entity> {
     list: Ref<EntityJSONList<E> | null>;
     entities: ComputedRef<EntityJSONList<E>[`entities`]>;
+    query: {
+        search: Ref<string>;
+    };
     refresh: () => void;
     add: (entity: EntityJSONCreateBody<E>) => Promise<EntityCreateResponse<E>>;
     update: (entity: EntityJSONBody<E>) => Promise<EntityResponse<E>>;
