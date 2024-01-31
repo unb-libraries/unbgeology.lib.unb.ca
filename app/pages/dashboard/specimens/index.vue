@@ -1,9 +1,11 @@
 <template>
-  <div class="flex flex-row justify-between">
+  <div class="flex flex-row space-x-8">
     <h1 class="mb-6 text-2xl">
       Specimens
     </h1>
-    <div class="space-x-2">
+    <div class="mb-6 flex grow flex-row space-x-2 text-right">
+      <input v-model="search" placeholder="Search" class="placeholder:text-primary dark:placeholder:text-primary-20 form-input form-input-text grow p-2 placeholder:italic">
+
       <NuxtLink to="/dashboard/specimens/create/?category=fossil" class="form-action form-action-submit p-2 font-normal">
         Create Fossil
       </NuxtLink>
@@ -15,10 +17,10 @@
       </NuxtLink>
     </div>
   </div>
-  <PvEntityTable :entities="specimens" :columns="[[`objectID`, `ID`], `category`, `classification`, `measurements`, `age`, `portion`, `pieces`, `partial`]">
-    <template #objectID="{ value: objectID }">
-      <NuxtLink :to="`/dashboard/specimens/${objectID.unb.toLowerCase()}`" class="hover:underline">
-        {{ objectID.unb }}
+  <PvEntityTable :entities="specimens" :columns="[[`id`, `ID`], `category`, `classification`, `measurements`, `age`, `portion`, `pieces`, `partial`]">
+    <template #id="{ value: id }">
+      <NuxtLink :to="`/dashboard/specimens/${id.toLowerCase()}`" class="hover:underline">
+        {{ id }}
       </NuxtLink>
     </template>
     <template #category="{ value: category }">
@@ -62,5 +64,6 @@ definePageMeta({
   layout: `dashboard`,
 })
 
-const { entities: specimens } = await fetchEntityList<Specimen>(`Specimen`)
+const { entities: specimens, query } = await fetchEntityList<Specimen>(`Specimen`)
+const { search } = query
 </script>
