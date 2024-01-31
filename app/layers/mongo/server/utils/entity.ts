@@ -50,6 +50,13 @@ const DocumentTypeSchema = function <
           .skip((page - 1) * pageSize)
           .limit(pageSize)
       },
+      search(search: string) {
+        this
+          .where({ $text: { $search: search } })
+          .sort({ score: { $meta: `textScore` } })
+          .projection({ score: { $meta: `textScore` } })
+        return this
+      },
     },
     methods: {
       url() {

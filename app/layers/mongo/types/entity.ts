@@ -44,6 +44,7 @@ export enum FilterOperator {
 export type EntityQueryFilter = Record<string, Record<FilterOperator, string[]>>
 export interface EntityQueryHelpers {
   paginate(page: number, pageSize: number): EntityQueryHelpers
+  search(search: string): EntityQueryHelpers
 }
 
 export interface EntityModel<
