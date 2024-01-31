@@ -1,6 +1,6 @@
 import mongoose, { type ConnectOptions } from "mongoose"
 
-export default defineNitroPlugin(async (nitroApp) => {
+export default defineNitroPlugin(async (nitro) => {
   const { uri, user, pass, host, port, db, authSource } = useRuntimeConfig().nitro.mongodb
 
   const connectOptions: ConnectOptions = {}
@@ -8,6 +8,6 @@ export default defineNitroPlugin(async (nitroApp) => {
     connectOptions.authSource = authSource
   }
 
-  await mongoose.connect(uri || `mongodb://${user}:${pass}@${host}:${port}/${db}`, connectOptions)
-  console.info(`Connected to MongoDB.`)
+  const conn = await mongoose.connect(uri || `mongodb://${user}:${pass}@${host}:${port}/${db}`, connectOptions)
+  nitro.hooks.callHook(`mongoose:init`, conn)
 })

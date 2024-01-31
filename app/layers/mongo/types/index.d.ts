@@ -1,6 +1,7 @@
 import type { EntityJSON, EntityJSONBody, Migration, MigrationItem, MigrationStatus } from "@unb-libraries/nuxt-layer-entity"
 import type { EntityDocument } from "./entity"
 import type { SourceItem } from "./migrate"
+import type Mongoose from "mongoose"
 
 export declare module "nuxt/schema" {
   interface RuntimeConfig {
@@ -31,6 +32,7 @@ export interface MigrateOptions {
 
 export declare module "nitropack" {
   interface NitroRuntimeHooks {
+    "mongoose:init": (mongoose: typeof Mongoose) => void | Promise<void>
     migrate: (migrationID: string) => void | Promise<void>
     "migrate:init": (migration: Migration, items: SourceItem[]) => void | Promise<void>
     "migrate:import": (migration: Migration, options?: MigrateOptions) => void | Promise<void>
