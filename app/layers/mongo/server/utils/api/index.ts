@@ -35,7 +35,7 @@ export async function applyFilter(eventOrFilter: H3Event | EntityQueryFilter, ap
 }
 
 export function getQueryOptions(event: H3Event): QueryOptions {
-  const { filter: filterQuery, select, sort, ...query } = getQuery(event)
+  const { filter: filterQuery, select, sort, search, ...query } = getQuery(event)
   let { page, pageSize } = query
 
   const filters = filterQuery ? Array.isArray(filterQuery) ? filterQuery : [filterQuery] : []
@@ -79,6 +79,7 @@ export function getQueryOptions(event: H3Event): QueryOptions {
       }
       return prefix ? fields.map(f => `${prefix}.${f}`) : fields
     },
+    search: Array.isArray(search) ? search.at(-1) : search,
     sort: sort ? Array.isArray(sort) ? sort : [sort] : [],
   }
 }

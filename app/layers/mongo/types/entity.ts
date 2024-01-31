@@ -74,5 +74,6 @@ export interface QueryOptions {
   select: string[]
   filter: Record<string, Record<string, string[]>>
   filterSelect: (options?: { root?: string, prefix?: string, default?: string[] }) => string[],
+  search: string
   sort: string[]
 }
