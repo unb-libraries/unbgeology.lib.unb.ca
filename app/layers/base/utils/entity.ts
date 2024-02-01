@@ -176,6 +176,10 @@ export async function fetchEntityList <E extends Entity = Entity>(entityTypeOrId
     watch: [page, pageSize, search, select, sort],
   }
 
+  watch(search, () => {
+    page.value = 1
+  })
+
   const { data: list, refresh } = await useFetch<EntityJSONList<E>>(url, fetchOptions)
   return {
     list: list as Ref<EntityJSONList<E> | null>,
