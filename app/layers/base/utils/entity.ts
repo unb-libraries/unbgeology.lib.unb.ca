@@ -160,12 +160,20 @@ export async function fetchEntityList <E extends Entity = Entity>(entityTypeOrId
       : useEntityType<E>(entityTypeOrIdOrURI)?.definition.baseURI
     : entityTypeOrIdOrURI.baseURI
 
+  const page = ref(options?.page ?? 1)
+  const pageSize = ref(options?.pageSize ?? 25)
   const search = ref(options?.search ?? ``)
+  const select = ref(options?.select ?? [])
+  const sort = ref(options?.sort ?? [])
   const fetchOptions: UseFetchOptions<EntityJSONList<E>> = {
     query: {
+      page,
+      pageSize,
       search,
+      select,
+      sort,
     },
-    watch: [search],
+    watch: [page, pageSize, search, select, sort],
   }
 
   const { data: list, refresh } = await useFetch<EntityJSONList<E>>(url, fetchOptions)
@@ -173,7 +181,11 @@ export async function fetchEntityList <E extends Entity = Entity>(entityTypeOrId
     list: list as Ref<EntityJSONList<E> | null>,
     entities: computed(() => list.value?.entities ?? []),
     query: {
+      page,
+      pageSize,
       search,
+      select,
+      sort,
     },
     refresh,
     async add(entity: EntityJSONCreateBody<E>) {

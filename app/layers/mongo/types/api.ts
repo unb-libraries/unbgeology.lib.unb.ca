@@ -6,3 +6,10 @@ export enum EntityBodyCardinality {
 export interface EntityBodyReaderOptions {
   cardinality: EntityBodyCardinality
 }
+
+export interface EntityHandlerOptions {
+  page: number
+  pageSize: number
+  select: string[]
+  sort: string[]
+}

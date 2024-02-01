@@ -90,13 +90,21 @@ export interface EntityDeleteResponse {
 
 export interface FetchEntityListOptions {
   search?: string
+  page?: number
+  pageSize?: number
+  sort?: string[]
+  select?: string[]
 }
 
 export interface EntityListResponse<E extends Entity = Entity> {
   list: Ref<EntityJSONList<E> | null>
   entities: ComputedRef<EntityJSONList<E>[`entities`]>
   query: {
+    page: Ref<number>
+    pageSize: Ref<number>
     search: Ref<string>
+    select: Ref<string[]>
+    sort: Ref<string[]>
   }
   refresh: () => void
   add: (entity: EntityJSONCreateBody<E>) => Promise<EntityCreateResponse<E>>
