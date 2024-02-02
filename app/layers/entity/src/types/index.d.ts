@@ -64,9 +64,10 @@ export interface EntityDeleteResponse {
     errors: any[];
 }
 export interface FetchEntityListOptions {
-    search?: string;
+    filter?: Record<string, [string, string][]>;
     page?: number;
     pageSize?: number;
+    search?: string;
     sort?: string[];
     select?: string[];
 }
@@ -74,6 +75,7 @@ export interface EntityListResponse<E extends Entity = Entity> {
     list: Ref<EntityJSONList<E> | null>;
     entities: ComputedRef<EntityJSONList<E>[`entities`]>;
     query: {
+        filter: Ref<Record<string, [string, string][]>>;
         page: Ref<number>;
         pageSize: Ref<number>;
         search: Ref<string>;

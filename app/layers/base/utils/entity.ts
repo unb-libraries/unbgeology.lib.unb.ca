@@ -160,31 +160,34 @@ export async function fetchEntityList <E extends Entity = Entity>(entityTypeOrId
       : useEntityType<E>(entityTypeOrIdOrURI)?.definition.baseURI
     : entityTypeOrIdOrURI.baseURI
 
+  const filter = ref(options?.filter ?? {})
   const page = ref(options?.page ?? 1)
   const pageSize = ref(options?.pageSize ?? 25)
   const search = ref(options?.search ?? ``)
   const select = ref(options?.select ?? [])
   const sort = ref(options?.sort ?? [])
+
   const fetchOptions: UseFetchOptions<EntityJSONList<E>> = {
     query: {
+      filter: computed(() => Object.entries(filter.value).map(([field, filters]) => filters.map(([op, value]) => `${field}__${op}__${value}`)).flat()),
       page,
       pageSize,
       search,
       select,
       sort,
     },
-    watch: [page, pageSize, search, select, sort],
   }
 
-  watch(search, () => {
-    page.value = 1
-  })
+  const resetPage = () => { page.value = 1 }
+  watch(search, resetPage)
+  watch(filter, resetPage)
 
   const { data: list, refresh } = await useFetch<EntityJSONList<E>>(url, fetchOptions)
   return {
     list: list as Ref<EntityJSONList<E> | null>,
     entities: computed(() => list.value?.entities ?? []),
     query: {
+      filter,
       page,
       pageSize,
       search,
