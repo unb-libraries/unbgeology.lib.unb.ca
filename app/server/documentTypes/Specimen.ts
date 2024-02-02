@@ -1,14 +1,16 @@
 import { type EntityDocument, EntityFieldTypes } from "layers/mongo/types/entity"
-import { type Specimen as SpecimenBase, Category, Composition, type Storage, type Loan, LoanType, type Publication, Status, Fossil } from "types/specimen"
+import { type Specimen as SpecimenBase, Category, Composition, type Storage, type Loan, LoanType, type Publication, Status, Fossil, ObjectIDType, Unmeasurability, MeasurementType } from "types/specimen"
 
-type SpecimenDocument = EntityDocument<Omit<SpecimenBase, `objectID`> & { objectID: Map<`unb`, string> & Map<`external` | `international`, string | undefined> & Map<string, string | undefined> }>
+type SpecimenDocument = EntityDocument<SpecimenBase>
 type StorageDocument = EntityDocument<Storage>
 type LoanDocument = EntityDocument<Loan>
 type PublicationDocument = EntityDocument<Publication>
 
 export type SpecimenDraft = Partial<SpecimenBase> & { status: Status.DRAFT }
-const optionalWhileInDraft = function (this: SpecimenBase) {
-  return this.status !== Status.DRAFT
+function optionalForStatus(status: Status) {
+  return function (this: SpecimenBase) {
+    return !(this.status & status)
+  }
 }
 
 export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
@@ -17,18 +19,32 @@ export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
     enum: Category,
     required: true,
   },
-  objectID: {
-    type: EntityFieldTypes.Map,
-    of: EntityFieldTypes.String,
-    immutable: true,
-    required: true,
-    default: {
-      unb: `UNB-${`${Math.floor(Math.random() * 1000000)}`.padStart(8, `0`)}`,
+  objectIDs: {
+    type: [{
+      id: {
+        type: EntityFieldTypes.String,
+        required: true,
+      },
+      primary: {
+        type: EntityFieldTypes.Boolean,
+        required: false,
+      },
+      type: {
+        type: EntityFieldTypes.String,
+        enum: ObjectIDType,
+        required: false,
+      },
+    }],
+    validate: {
+      validator: function (this: SpecimenDocument) {
+        return this.objectIDs.filter(objectID => objectID.primary).length > 0
+      },
+      message: `No primary object ID provided`,
     },
   },
   classification: {
     type: EntityFieldTypes.ObjectId,
-    required: optionalWhileInDraft,
+    required: optionalForStatus(Status.IMPORTED | Status.DRAFT),
     refPath: `classificationModel`,
   },
   classificationModel: {
@@ -45,32 +61,57 @@ export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
   },
   description: {
     type: EntityFieldTypes.String,
-    required: optionalWhileInDraft,
+    required: optionalForStatus(Status.IMPORTED | Status.DRAFT),
   },
   images: [{
     type: EntityFieldTypes.ObjectId,
     ref: `File.Image`,
     required: false,
   }],
+  unmeasureable: {
+    type: EntityFieldTypes.String,
+    enum: Unmeasurability,
+    required: false,
+  },
   measurements: [{
-    width: {
-      type: EntityFieldTypes.Number,
+    type: {
+      type: EntityFieldTypes.String,
+      enum: MeasurementType,
+      default: MeasurementType.INDIVIDUAL,
       required: true,
     },
-    length: {
-      type: EntityFieldTypes.Number,
-      required: true,
+    dimensions: {
+      type: [{
+        type: EntityFieldTypes.Number,
+        required: function (this: SpecimenDocument) {
+          return !this.unmeasureable
+        },
+      }],
+      required: false,
     },
   }],
   date: {
-    type: EntityFieldTypes.Date,
+    type: {
+      year: {
+        type: EntityFieldTypes.Number,
+        required: true,
+      },
+      month: {
+        type: EntityFieldTypes.Number,
+        required: false,
+      },
+      day: {
+        type: EntityFieldTypes.Number,
+        required: false,
+      },
+    },
     required: false,
   },
   age: {
     relative: {
       type: EntityFieldTypes.ObjectId,
       ref: Geochronology,
-      required: optionalWhileInDraft,
+      required: optionalForStatus(Status.IMPORTED | Status.DRAFT),
     },
     numeric: {
       type: EntityFieldTypes.Number,
@@ -81,14 +122,27 @@ export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
     type: {
       latitude: {
         type: EntityFieldTypes.Number,
-        required: true,
+        required: optionalForStatus(Status.IMPORTED | Status.DRAFT),
       },
       longitude: {
         type: EntityFieldTypes.Number,
+        required: optionalForStatus(Status.IMPORTED | Status.DRAFT),
+      },
+      accuracy: {
+        type: EntityFieldTypes.Number,
+        required: false,
+        default: 0,
+      },
+      name: {
+        type: EntityFieldTypes.String,
         required: true,
       },
+      description: {
+        type: EntityFieldTypes.String,
+        required: false,
+      },
     },
-    required: optionalWhileInDraft,
+    required: optionalForStatus(Status.IMPORTED | Status.DRAFT),
   },
   portion: {
     type: EntityFieldTypes.ObjectId,
@@ -109,16 +163,16 @@ export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
   },
   pieces: {
     type: EntityFieldTypes.Number,
-    required: optionalWhileInDraft,
+    required: optionalForStatus(Status.IMPORTED | Status.DRAFT),
   },
   partial: {
     type: EntityFieldTypes.Boolean,
-    required: optionalWhileInDraft,
+    required: optionalForStatus(Status.IMPORTED | Status.DRAFT),
   },
   composition: {
     type: EntityFieldTypes.String,
     enum: Composition,
-    required: optionalWhileInDraft,
+    required: optionalForStatus(Status.IMPORTED | Status.DRAFT),
   },
   collector: {
     type: EntityFieldTypes.ObjectId,
@@ -199,7 +253,7 @@ export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
     })],
   },
   status: {
-    type: EntityFieldTypes.String,
+    type: EntityFieldTypes.Number,
     required: true,
     enum: Status,
     default: Status.DRAFT,
@@ -211,16 +265,13 @@ export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
   },
 }, {
   slug: (specimen: SpecimenDocument) => {
-    const externalID = specimen.objectID.get(`external`)
-    if (externalID) {
-      return externalID.toString()
-    }
-    return specimen.objectID.get(`unb`)!.toString()
+    const objectID = specimen.objectIDs.find(objectID => objectID.primary)
+    return objectID?.id
   },
   virtuals: {
     uri: {
       get(this: SpecimenDocument) {
-        return `/api/specimens/${this.objectID.get(`unb`)!.toLowerCase()}`
+        return `/api/specimens/${this.slug}`
       },
     },
   },
@@ -234,8 +285,7 @@ export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
         delete ret.dimensions._id
         delete ret.dimensions.id
       }
-      ret.objectID = Object.fromEntries(doc.objectID.entries())
-      ret.id = doc.objectID.get(`unb`)
+      ret.id = doc.slug
 
       delete ret.classificationModel
       delete ret.portionModel

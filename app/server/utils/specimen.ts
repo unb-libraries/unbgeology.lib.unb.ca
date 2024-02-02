@@ -2,10 +2,14 @@ import { type EntityJSONBody } from "@unb-libraries/nuxt-layer-entity"
 import { type H3Event } from "h3"
 import { type Specimen, Category } from "types/specimen"
 
+export function createObjectID() {
+  return `UNB-${`${Math.floor(Math.random() * 1000000)}`.padStart(8, `0`)}`
+}
+
 export async function readSpecimenBody(event: H3Event) {
   const {
     category,
-    objectID,
+    objectIDs,
     description,
     images: imageURIs,
     classification: classificationURI,
@@ -24,6 +28,7 @@ export async function readSpecimenBody(event: H3Event) {
     publications,
     status,
     editor: userURI,
+    created,
   } = await readBody<EntityJSONBody<Specimen>>(event)
 
   const body: Partial<EntityJSONBody<Specimen>> = {
@@ -34,13 +39,13 @@ export async function readSpecimenBody(event: H3Event) {
     partial,
     composition,
     status,
+    created,
   }
 
-  if (objectID && objectID.unb) {
-    body.objectID = {
-      ...objectID,
-      unb: objectID.unb,
-    }
+  if (Array.isArray(objectIDs)) {
+    body.objectIDs = objectIDs
+      .filter(({ id }) => id)
+      .map(({ id, primary, source, type }) => ({ id, primary: primary ?? false, source, type }))
   }
 
   if (classificationURI) {
@@ -54,11 +59,12 @@ export async function readSpecimenBody(event: H3Event) {
   if (imageURIs) {
     body.images = await ImageFile.findManyByURI(imageURIs)
   }
+
   if (Array.isArray(measurements)) {
     body.measurements = measurements
-      .filter(({ width, length }) => width && length)
-      .map(({ width, length }) => ({ width, length }))
+      .filter(({ dimensions }) => Array.isArray(dimensions) && dimensions.length === 3)
   }
+
   if (age) {
     const { relative: unitURI, numeric } = age
     if (unitURI) {

@@ -13,14 +13,30 @@ export enum Category {
 }
 
 export enum Status {
-  DRAFT = `draft`,
-  REVIEW = `review`,
-  PUBLISHED = `published`,
+  DRAFT = 1,
+  IMPORTED = 2,
+  REVIEW = 4,
+  PUBLISHED = 8,
+}
+
+export enum MeasurementType {
+  INDIVIDUAL = 1,
+  SMALLEST = 2,
+  LARGEST = 4,
+  AVERAGE = 8,
+  CONTAINER = 16,
+}
+
+export enum Unmeasurability {
+  OTHER = 1,
+  TOO_SMALL = 2,
+  TOO_MANY = 4,
+  TOO_FRAGILE = 8,
 }
 
 export interface Measurement {
-  width: number
-  length: number
+  type: MeasurementType
+  dimensions?: [number, number, number]
 }
 
 export interface Place {
@@ -65,14 +81,22 @@ export interface Publication extends Entity {
   doi?: string
 }
 
+export enum ObjectIDType {
+  INTERNAL = 1,
+  EXTERNAL = 2,
+  LEGACY = 4,
+}
+
+export interface ObjectID {
+  id: string | number
+  type?: ObjectIDType
+  source?: string
+  primary?: boolean
+}
+
 export interface Specimen<C extends Category = Category.FOSSIL | Category.MINERAL | Category.ROCK> extends Entity {
   category: C
-  objectID: {
-    unb: string
-    external?: string
-    international?: string
-    [id: string ]: string | undefined
-  }
+  objectIDs: ObjectID[]
   slug: string
   description: string
   images: Image[]
@@ -81,8 +105,13 @@ export interface Specimen<C extends Category = Category.FOSSIL | Category.MINERA
       C extends Category.MINERAL ? MineralClassification :
         C extends Category.ROCK ? RockClassification :
           FossilClassification | MineralClassification | RockClassification
-  measurements: Measurement[]
-  date?: Date
+  unmeasureable?: Unmeasurability
+  measurements?: Measurement[]
+  date?: {
+    year: number
+    month?: number
+    day?: number
+  }
   age: {
     relative: Unit
     numeric?: number
