@@ -22,6 +22,22 @@
         <label class="sr-only" for="search">Search</label>
         <input v-model="search" placeholder="Search" name="search" class="placeholder:text-primary dark:placeholder:text-primary-20 form-input form-input-text grow p-2 placeholder:italic">
       </div>
+      <button id="button-columns" class="form-action form-action-submit bg-primary-80/40 hover:bg-primary-60/40 grow-0 p-2" @click.prevent="columnMenuVisible = !columnMenuVisible">
+        Columns
+      </button>
+
+      <div v-if="columnMenuVisible" id="menu-columns" class="bg-primary border-primary-60/40 absolute right-0 top-12 w-96 rounded-md border p-6">
+        <div class="form-field">
+          <div v-for="column in columns" :key="(column[0])">
+            <PvCheckbox
+              v-model="column[2]"
+              :label="column[1]"
+              :name="`column-${column[0]}`"
+              class="form-input-checkbox rounded-lg p-1"
+            />
+          </div>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -81,4 +97,13 @@ const { list, entities: specimens, query } = await fetchEntityList<Specimen>(`Sp
 const { search, page, pageSize } = query
 
 const selected = ref<EntityJSON<Specimen>[]>([])
+const columnMenuVisible = ref(false)
+const columns = ref<[string, string, boolean][]>([
+  [`id`, `ID`, true],
+  [`category`, `Category`, true],
+  [`classification`, `Classification`, true],
+  [`measurements`, `Dimensions`, false],
+  [`pieces`, `Pieces`, true],
+])
+
 </script>
