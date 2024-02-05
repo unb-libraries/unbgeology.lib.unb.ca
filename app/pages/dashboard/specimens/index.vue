@@ -26,7 +26,7 @@
         Columns
       </button>
 
-      <div v-if="columnMenuVisible" id="menu-columns" class="bg-primary border-primary-60/40 absolute right-0 top-12 w-96 rounded-md border p-6">
+      <div v-if="columnMenuVisible" id="menu-columns" v-on-window="hideColumnMenu" class="bg-primary border-primary-60/40 absolute right-0 top-12 w-96 rounded-md border p-6">
         <div class="form-field">
           <div v-for="column in columns" :key="(column[0])">
             <PvCheckbox
@@ -106,4 +106,11 @@ const columns = ref<[string, string, boolean][]>([
   [`pieces`, `Pieces`, true],
 ])
 
+const isTarget = (el: HTMLElement, id: string) => el.id === id ? true : el.parentElement ? isTarget(el.parentElement, id) : false
+
+const hideColumnMenu = (event: Event) => {
+  if (event.target && !isTarget(event.target, `button-columns`) && !isTarget(event.target, `menu-columns`)) {
+    columnMenuVisible.value = false
+  }
+}
 </script>
