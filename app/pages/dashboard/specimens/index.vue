@@ -119,30 +119,13 @@ const columnMenuVisible = ref(false)
 const columnsOptions = ref<[string, string, boolean][]>(columns.value.map(([id, label], index) => [id, label, index < 4]))
 
 const sortMenuVisible = ref(false)
-const sortOptions = computed<[string, string, number, 0 | 1 | -1][]>({
-  get() {
-    return columns.value.map<[string, string, number, 0 | 1 | -1]>(([id, label]) => {
-      const index = sort.value.findIndex(i => i === id || i === `-${id}`)
-      const column = sort.value[index]
-      return [id, label, index >= 0 ? index : Number.MAX_VALUE, column && !column.startsWith(`-`) ? 1 : column ? -1 : 0]
-    }).sort(({ 2: orderA }, { 2: orderB }) => orderA - orderB)
-  },
-  set(value: [string, string, number, 0 | 1 | -1][]) {
-    sort.value = value
-      .filter(({ 2: order }) => order < Number.MAX_VALUE)
-      .sort(({ 2: orderA }, { 2: orderB }) => orderA - orderB)
-      .map(({ 0: id, 3: direction }) => `${direction === -1 ? `-` : ``}${id}`)
-  },
+const { options: sortedColumnIDs, sortBy } = useSort(columns.value.map(([id]) => id))
+const sortOptions = computed(() => sortedColumnIDs.filter(([id]) => columns.value.find(([colID]) => colID === id)).map(([id, order]) => [id, columns.value.find(([colID]) => colID === id)?.[1], order]))
+watch(sortedColumnIDs, () => {
+  sort.value = sortedColumnIDs
+    .filter(([id, order]) => order !== 0)
+    .map(([id, order]) => `${order === -1 ? `-` : ``}${id}`)
 })
-
-const sortBy = (id: string) => {
-  const index = sortOptions.value.findIndex(([i]) => i === id)
-  if (index > 0) {
-    const options = sortOptions.value
-    options[index][2] = -1
-    sortOptions.value = options
-  }
-}
 
 const hideSortMenu = (event: Event) => {
   if (event.target && !isTarget(event.target, `button-sort`) && !isTarget(event.target, `menu-sort`)) {
