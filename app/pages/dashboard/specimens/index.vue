@@ -22,14 +22,26 @@
         <label class="sr-only" for="search">Search</label>
         <input v-model="search" placeholder="Search" name="search" class="placeholder:text-primary dark:placeholder:text-primary-20 form-input form-input-text grow p-2 placeholder:italic">
       </div>
+      <button id="button-sort" class="form-action form-action-submit bg-primary-80/40 hover:bg-primary-60/40 grow-0 p-2" @click.prevent="sortMenuVisible = !sortMenuVisible">
+        Sort
+      </button>
       <button id="button-columns" class="form-action form-action-submit bg-primary-80/40 hover:bg-primary-60/40 grow-0 p-2" @click.prevent="columnMenuVisible = !columnMenuVisible">
         Columns
       </button>
 
+      <div v-if="sortMenuVisible" id="menu-sort" v-on-window="hideSortMenu" class="bg-primary border-primary-60/40 absolute right-0 top-12 w-96 rounded-md border p-6">
+        <div class="form-field">
+          <div v-for="column in sortOptions" :key="(column[0])">
+            <a class="cursor-pointer hover:underline" @click.stop.prevent="sortBy(column[0])">{{ column[1] }}</a>
+          </div>
+        </div>
+      </div>
+
       <div v-if="columnMenuVisible" id="menu-columns" v-on-window="hideColumnMenu" class="bg-primary border-primary-60/40 absolute right-0 top-12 w-96 rounded-md border p-6">
         <div class="form-field">
-          <div v-for="column in columns" :key="(column[0])">
+          <div v-for="column in columnsOptions" :key="(column[0])">
             <PvCheckbox
+              :id="`column-${column[0]}`"
               v-model="column[2]"
               :label="column[1]"
               :name="`column-${column[0]}`"
@@ -47,7 +59,7 @@
     header-cell-class="group"
     row-class="even:dark:bg-primary-80/20 hover:bg-accent-dark/20 even:dark:hover:bg-accent-dark/20"
     :entities="specimens"
-    :columns="columns.filter(([id, label, selected]) => selected).map(([id, label]) => [id, label])"
+    :columns="columnsOptions.filter(([id, label, selected]) => selected).map(([id, label]) => [id, label])"
     :multi-select="true"
     selected-row-class="dark:bg-accent-dark/40 even:dark:bg-accent-dark/40 hover:dark:bg-accent-dark/60 even:hover:dark:bg-accent-dark/60"
   >
@@ -94,17 +106,51 @@ definePageMeta({
 })
 
 const { list, entities: specimens, query } = await fetchEntityList<Specimen>(`Specimen`)
-const { search, page, pageSize } = query
+const { search, page, pageSize, sort } = query
+const columns = ref<(string | [string, string])[]>([
+  [`id`, `ID`],
+  [`category`, `Category`],
+  [`classification`, `Classification`],
+  [`pieces`, `Pieces`],
+  [`measurements`, `Dimensions`],
+])
+
+const columnMenuVisible = ref(false)
+const columnsOptions = ref<[string, string, boolean][]>(columns.value.map(([id, label], index) => [id, label, index < 4]))
+
+const sortMenuVisible = ref(false)
+const sortOptions = computed<[string, string, number, 0 | 1 | -1][]>({
+  get() {
+    return columns.value.map<[string, string, number, 0 | 1 | -1]>(([id, label]) => {
+      const index = sort.value.findIndex(i => i === id || i === `-${id}`)
+      const column = sort.value[index]
+      return [id, label, index >= 0 ? index : Number.MAX_VALUE, column && !column.startsWith(`-`) ? 1 : column ? -1 : 0]
+    }).sort(({ 2: orderA }, { 2: orderB }) => orderA - orderB)
+  },
+  set(value: [string, string, number, 0 | 1 | -1][]) {
+    sort.value = value
+      .filter(({ 2: order }) => order < Number.MAX_VALUE)
+      .sort(({ 2: orderA }, { 2: orderB }) => orderA - orderB)
+      .map(({ 0: id, 3: direction }) => `${direction === -1 ? `-` : ``}${id}`)
+  },
+})
+
+const sortBy = (id: string) => {
+  const index = sortOptions.value.findIndex(([i]) => i === id)
+  if (index > 0) {
+    const options = sortOptions.value
+    options[index][2] = -1
+    sortOptions.value = options
+  }
+}
+
+const hideSortMenu = (event: Event) => {
+  if (event.target && !isTarget(event.target, `button-sort`) && !isTarget(event.target, `menu-sort`)) {
+    sortMenuVisible.value = false
+  }
+}
 
 const selected = ref<EntityJSON<Specimen>[]>([])
-const columnMenuVisible = ref(false)
-const columns = ref<[string, string, boolean][]>([
-  [`id`, `ID`, true],
-  [`category`, `Category`, true],
-  [`classification`, `Classification`, true],
-  [`measurements`, `Dimensions`, false],
-  [`pieces`, `Pieces`, true],
-])
 
 const isTarget = (el: HTMLElement, id: string) => el.id === id ? true : el.parentElement ? isTarget(el.parentElement, id) : false
 
