@@ -16,8 +16,18 @@ export default function (options: (string | [string, 1 | 0 | -1])[]) {
     }
   }
 
+  const reverse = (id: string) => {
+    const index = sortOptions.findIndex(([i]) => i === id)
+    if (sortOptions[index][1] === 0) {
+      sortOptions[index][1] = 1
+    } else {
+      sortOptions[index][1] *= -1
+    }
+  }
+
   return {
     options: sortOptions,
     sortBy,
+    reverse,
   }
 }
