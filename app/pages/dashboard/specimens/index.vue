@@ -29,25 +29,51 @@
         Columns
       </button>
 
-      <div v-if="sortMenuVisible" id="menu-sort" v-on-window="hideSortMenu" class="bg-primary border-primary-60/40 absolute right-0 top-12 w-96 rounded-md border p-6">
+      <div v-if="filterMenuVisible" id="menu-filter" v-on-window="hideFilterMenu" class="bg-primary border-primary-60/40 absolute right-0 top-12 w-96 rounded-md border p-6">
         <div class="form-field">
-          <div v-for="column in sortOptions" :key="(column[0])">
-            <a class="cursor-pointer hover:underline" @click.stop.prevent="sortBy(column[0])">{{ column[1] }}</a>
-          </div>
+          <label class="form-label" for="filter-category">Category</label>
+          <PvInputSelect
+            v-model="category"
+            name="filter-category"
+            class="form-input form-input-select rounded-lg p-1"
+            :options="[[`fossil`, `Fossil`], [`mineral`, `Mineral`], [`rock`, `Rock`]]"
+            option-label="1"
+            option-value="0"
+            :show-clear="true"
+          />
         </div>
       </div>
 
-      <div v-if="columnMenuVisible" id="menu-columns" v-on-window="hideColumnMenu" class="bg-primary border-primary-60/40 absolute right-0 top-12 w-96 rounded-md border p-6">
+      <div v-if="sortMenuVisible" id="menu-sort" v-on-window="hideSortMenu" class="bg-primary border-primary-60/40 absolute right-0 top-12 w-96 rounded-md border p-4">
         <div class="form-field">
-          <div v-for="column in columnsOptions" :key="(column[0])">
-            <PvCheckbox
-              :id="`column-${column[0]}`"
-              v-model="column[2]"
-              :label="column[1]"
-              :name="`column-${column[0]}`"
-              class="form-input-checkbox rounded-lg p-1"
-            />
-          </div>
+          <ul class="space-y-1">
+            <li v-for="[id, label, direction] in sortOptions" :key="id" class="group">
+              <div class="bg-primary-80/40 flex w-full flex-row justify-between rounded-sm px-3 py-2">
+                <a class="cursor-pointer hover:underline" @click.stop.prevent="sortTop(id)">{{ label }}</a>
+                <div class="invisible inline-flex space-x-2 group-hover:visible">
+                  <a v-if="direction !== 0" class="text-primary-40 cursor-pointer hover:underline" @click.stop.prevent="sortReverse(id)">{{ direction === 1 ? `ASC` : `DESC` }}</a>
+                  <a class="cursor-pointer hover:underline" @click.stop.prevent="sortUp(id)">Up</a>
+                  <a class="cursor-pointer hover:underline" @click.stop.prevent="sortTop(id)">Top</a>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div v-if="columnMenuVisible" id="menu-columns" v-on-window="hideColumnMenu" class="bg-primary border-primary-60/40 absolute right-0 top-12 w-96 rounded-md border p-4">
+        <div class="form-field">
+          <ul class="space-y-1">
+            <li v-for="column in columnsOptions" :key="(column[0])" class="bg-primary-80/40 flex w-full flex-row rounded-sm px-3 py-1">
+              <PvCheckbox
+                :id="`column-${column[0]}`"
+                v-model="column[2]"
+                :label="column[1]"
+                :name="`column-${column[0]}`"
+                class="rounded-lg p-1"
+              />
+            </li>
+          </ul>
         </div>
       </div>
     </div>
