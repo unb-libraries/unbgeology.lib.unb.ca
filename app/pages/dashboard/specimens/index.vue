@@ -54,12 +54,13 @@
               <li v-for="([id, label, direction], index) in activeSortOptions" :key="id" class="group">
                 <div class="bg-primary-80/40 flex w-full flex-row justify-between rounded-sm px-3 py-2">
                   <div class="space-x-2">
-                    <a class="cursor-pointer hover:underline" @click.stop.prevent="sortTop(id)">{{ label }}</a>
+                    <a @click.stop.prevent="">{{ label }}</a>
                     <a class="text-primary-40 cursor-pointer text-xs hover:underline" @click.stop.prevent="sortReverse(id)">{{ direction === 1 ? `ASC` : `DESC` }}</a>
                   </div>
-                  <div v-if="index > 0" class="invisible inline-flex space-x-2 group-hover:visible">
-                    <a class="cursor-pointer hover:underline" @click.stop.prevent="sortUp(id)">Up</a>
-                    <a class="cursor-pointer hover:underline" @click.stop.prevent="sortTop(id)">Top</a>
+                  <div class="invisible inline-flex space-x-2 group-hover:visible">
+                    <a v-if="index > 0" class="cursor-pointer hover:underline" @click.stop.prevent="sortUp(id)">Up</a>
+                    <a v-if="index > 0" class="cursor-pointer hover:underline" @click.stop.prevent="sortTop(id)">Top</a>
+                    <a class="cursor-pointer hover:underline" @click.stop.prevent="unsort(id)">Remove</a>
                   </div>
                 </div>
               </li>
@@ -164,7 +165,7 @@ const columnMenuVisible = ref(false)
 const columnsOptions = ref<[string, string, boolean][]>(columns.value.map(([id, label], index) => [id, label, index < 4]))
 
 const sortMenuVisible = ref(false)
-const { options: sortedColumnIDs, sortTop, sortUp, sortReverse } = useSort(columns.value.map(([id]) => id))
+const { options: sortedColumnIDs, sortTop, sortUp, sortReverse, remove: unsort } = useSort(columns.value.map(([id]) => id))
 
 const sortOptions = computed(() => sortedColumnIDs.filter(([id]) => columns.value.find(([colID]) => colID === id)).map<[string, string, 1 | 0 | -1]>(([id, order]) => [id, columns.value.find(([colID]) => colID === id)![1], order]))
 const activeSortOptions = computed(() => sortOptions.value.filter(([_, __, direction]) => direction !== 0))

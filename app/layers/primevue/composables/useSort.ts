@@ -39,10 +39,18 @@ export default function (options: (string | [string, 1 | 0 | -1])[]) {
     }
   }
 
+  const remove = (id: string) => {
+    const index = sortOptions.findIndex(([i]) => i === id)
+    if (index >= 0) {
+      sortOptions[index][1] = 0
+    }
+  }
+
   return {
     options: sortOptions,
     sortTop,
     sortUp,
     sortReverse,
+    remove,
   }
 }
