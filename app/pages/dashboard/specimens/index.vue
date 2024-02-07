@@ -45,19 +45,38 @@
       </div>
 
       <div v-if="sortMenuVisible" id="menu-sort" v-on-window="hideSortMenu" class="bg-primary border-primary-60/40 absolute right-0 top-12 w-96 rounded-md border p-4">
-        <div class="form-field">
-          <ul class="space-y-1">
-            <li v-for="[id, label, direction] in sortOptions" :key="id" class="group">
-              <div class="bg-primary-80/40 flex w-full flex-row justify-between rounded-sm px-3 py-2">
-                <a class="cursor-pointer hover:underline" @click.stop.prevent="sortTop(id)">{{ label }}</a>
-                <div class="invisible inline-flex space-x-2 group-hover:visible">
-                  <a v-if="direction !== 0" class="text-primary-40 cursor-pointer hover:underline" @click.stop.prevent="sortReverse(id)">{{ direction === 1 ? `ASC` : `DESC` }}</a>
-                  <a class="cursor-pointer hover:underline" @click.stop.prevent="sortUp(id)">Up</a>
-                  <a class="cursor-pointer hover:underline" @click.stop.prevent="sortTop(id)">Top</a>
+        <div class="form-field space-y-4">
+          <div v-if="activeSortOptions.length > 0" class="space-y-2">
+            <h2 class="text-lg font-bold">
+              Sort by
+            </h2>
+            <ul v-if="activeSortOptions.length > 0" class="space-y-1">
+              <li v-for="([id, label, direction], index) in activeSortOptions" :key="id" class="group">
+                <div class="bg-primary-80/40 flex w-full flex-row justify-between rounded-sm px-3 py-2">
+                  <div class="space-x-2">
+                    <a class="cursor-pointer hover:underline" @click.stop.prevent="sortTop(id)">{{ label }}</a>
+                    <a class="text-primary-40 cursor-pointer text-xs hover:underline" @click.stop.prevent="sortReverse(id)">{{ direction === 1 ? `ASC` : `DESC` }}</a>
+                  </div>
+                  <div v-if="index > 0" class="invisible inline-flex space-x-2 group-hover:visible">
+                    <a class="cursor-pointer hover:underline" @click.stop.prevent="sortUp(id)">Up</a>
+                    <a class="cursor-pointer hover:underline" @click.stop.prevent="sortTop(id)">Top</a>
+                  </div>
                 </div>
-              </div>
-            </li>
-          </ul>
+              </li>
+            </ul>
+          </div>
+          <div v-if="inactiveSortOptions.length > 0" class="space-y-2">
+            <h2 class="text-lg font-bold">
+              Unsorted
+            </h2>
+            <ul class="space-y-1">
+              <li v-for="[id, label] in inactiveSortOptions" :key="id" class="group">
+                <div class="bg-primary-80/40 flex w-full flex-row justify-between rounded-sm px-3 py-2">
+                  <a class="cursor-pointer hover:underline" @click.stop.prevent="sortTop(id)">{{ label }}</a>
+                </div>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -145,8 +164,12 @@ const columnMenuVisible = ref(false)
 const columnsOptions = ref<[string, string, boolean][]>(columns.value.map(([id, label], index) => [id, label, index < 4]))
 
 const sortMenuVisible = ref(false)
-const { options: sortedColumnIDs, sortBy } = useSort(columns.value.map(([id]) => id))
-const sortOptions = computed(() => sortedColumnIDs.filter(([id]) => columns.value.find(([colID]) => colID === id)).map(([id, order]) => [id, columns.value.find(([colID]) => colID === id)?.[1], order]))
+const { options: sortedColumnIDs, sortTop, sortUp, sortReverse } = useSort(columns.value.map(([id]) => id))
+
+const sortOptions = computed(() => sortedColumnIDs.filter(([id]) => columns.value.find(([colID]) => colID === id)).map<[string, string, 1 | 0 | -1]>(([id, order]) => [id, columns.value.find(([colID]) => colID === id)![1], order]))
+const activeSortOptions = computed(() => sortOptions.value.filter(([_, __, direction]) => direction !== 0))
+const inactiveSortOptions = computed(() => sortOptions.value.filter(([_, __, direction]) => direction === 0))
+
 watch(sortedColumnIDs, () => {
   sort.value = sortedColumnIDs
     .filter(([id, order]) => order !== 0)
