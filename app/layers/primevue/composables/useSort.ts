@@ -8,7 +8,7 @@ export default function (options: (string | [string, 1 | 0 | -1])[]) {
 
   const sortTop = (id: string, direction?: 1 | -1) => {
     const index = sortOptions.findIndex(([i]) => i === id)
-    if (index > 0) {
+    if (index >= 0) {
       sortOptions.unshift(sortOptions.splice(index, 1)[0])
       if (direction) {
         sortOptions[0][1] = direction
@@ -20,7 +20,7 @@ export default function (options: (string | [string, 1 | 0 | -1])[]) {
 
   const sortUp = (id: string, direction?: 1 | -1) => {
     const index = sortOptions.findIndex(([i]) => i === id)
-    if (index > 0) {
+    if (index >= 0) {
       sortOptions.splice(index - 1, 0, sortOptions.splice(index, 1)[0])
       if (direction) {
         sortOptions[index - 1][1] = direction
