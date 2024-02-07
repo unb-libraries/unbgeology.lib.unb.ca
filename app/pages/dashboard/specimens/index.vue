@@ -29,7 +29,7 @@
         Columns
       </button>
 
-      <div v-if="filterMenuVisible" id="menu-filter" v-on-window="hideFilterMenu" class="bg-primary border-primary-60/40 absolute right-0 top-12 w-96 rounded-md border p-6">
+      <PvContextualDropdown v-model="filterMenuVisible" trigger-id="button-filter" class="bg-primary border-primary-60/40 right-0 top-12 w-96 rounded-md border p-6" @click.prevent.stop="filterMenuVisible = !filterMenuVisible">
         <div class="form-field">
           <label class="form-label" for="filter-category">Category</label>
           <PvInputSelect
@@ -42,9 +42,9 @@
             :show-clear="true"
           />
         </div>
-      </div>
+      </PvContextualDropdown>
 
-      <div v-if="sortMenuVisible" id="menu-sort" v-on-window="hideSortMenu" class="bg-primary border-primary-60/40 absolute right-0 top-12 w-96 rounded-md border p-4">
+      <PvContextualDropdown v-model="sortMenuVisible" trigger-id="button-sort" class="bg-primary border-primary-60/40 right-0 top-12 w-96 rounded-md border p-4" @click.stop.prevent="sortMenuVisible = !sortMenuVisible">
         <div class="form-field space-y-4">
           <div v-if="activeSortOptions.length > 0" class="space-y-2">
             <h2 class="text-lg font-bold">
@@ -79,9 +79,9 @@
             </ul>
           </div>
         </div>
-      </div>
+      </PvContextualDropdown>
 
-      <div v-if="columnMenuVisible" id="menu-columns" v-on-window="hideColumnMenu" class="bg-primary border-primary-60/40 absolute right-0 top-12 w-96 rounded-md border p-4">
+      <PvContextualDropdown v-model="columnMenuVisible" trigger-id="button-columns" class="bg-primary border-primary-60/40 right-0 top-12 w-96 rounded-md border p-4">
         <div class="form-field">
           <ul class="space-y-1">
             <li v-for="column in columnsOptions" :key="(column[0])" class="bg-primary-80/40 flex w-full flex-row rounded-sm px-3 py-1">
@@ -95,7 +95,7 @@
             </li>
           </ul>
         </div>
-      </div>
+      </PvContextualDropdown>
     </div>
   </header>
 
@@ -177,19 +177,5 @@ watch(sortedColumnIDs, () => {
     .map(([id, order]) => `${order === -1 ? `-` : ``}${id}`)
 })
 
-const hideSortMenu = (event: Event) => {
-  if (event.target && !isTarget(event.target, `button-sort`) && !isTarget(event.target, `menu-sort`)) {
-    sortMenuVisible.value = false
-  }
-}
-
 const selected = ref<EntityJSON<Specimen>[]>([])
-
-const isTarget = (el: HTMLElement, id: string) => el.id === id ? true : el.parentElement ? isTarget(el.parentElement, id) : false
-
-const hideColumnMenu = (event: Event) => {
-  if (event.target && !isTarget(event.target, `button-columns`) && !isTarget(event.target, `menu-columns`)) {
-    columnMenuVisible.value = false
-  }
-}
 </script>
