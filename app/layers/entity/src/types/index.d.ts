@@ -79,6 +79,11 @@ export declare enum FilterOperator {
     EX = "ex"
 }
 export type Filter = [string, FilterOperator, string] | [string, FilterOperator];
+export interface Transformer<V = any> {
+    input: (filterValue: string[]) => V;
+    output: (value: V) => (string[] | undefined);
+    empty: (value: V) => boolean;
+}
 export interface FilterGroup {
     has: (id: string, op?: FilterOperator, value?: string) => boolean;
     get: (id: string, op?: FilterOperator) => Map<FilterOperator, Set<string>> | Set<string> | undefined;
@@ -88,7 +93,7 @@ export interface FilterGroup {
     toArray: () => Filter[];
 }
 export interface FetchEntityListOptions {
-    filter?: Record<string, [string, string][]>;
+    filter?: Filter[];
     page?: number;
     pageSize?: number;
     search?: string;
@@ -99,7 +104,7 @@ export interface EntityListResponse<E extends Entity = Entity> {
     list: Ref<EntityJSONList<E> | null>;
     entities: ComputedRef<EntityJSONList<E>[`entities`]>;
     query: {
-        filter: Ref<Record<string, [string, string][]>>;
+        filter: Ref<Filter[]>;
         page: Ref<number>;
         pageSize: Ref<number>;
         search: Ref<string>;

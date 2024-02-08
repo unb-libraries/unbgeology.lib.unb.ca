@@ -84,3 +84,35 @@ function createFilterMap(initialFilters?: Map<string, Map<FilterOperator, Set<st
     toArray,
   }
 }
+
+export default function (filters: Ref<Filter[]>) {
+  const group = createFilterMap(filters.value)
+
+  const created: (() => void)[] = []
+
+  const create = <T = any>(id: string, op: FilterOperator, transformer: Transformer<T>) => {
+    const raw = group.get(id, op) as Set<string> | undefined
+    const value = ref(transformer.input(raw ? [...raw] : []))
+
+    created.push(() => {
+      if (!transformer.empty(value.value as T)) {
+        const transformed = transformer.output(value.value as T)
+        group.set(id, op, new Set<string>(transformed))
+      } else if (group.has(id, op)) {
+        group.remove(id, op)
+      }
+    })
+
+    return value
+  }
+
+  const apply = () => {
+    created.forEach(apply => apply())
+    filters.value = group.toArray()
+  }
+
+  return {
+    create,
+    apply,
+  }
+}
