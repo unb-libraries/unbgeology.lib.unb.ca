@@ -1,5 +1,5 @@
 import { Schema, type SchemaOptions, type Model, type HydratedDocument, type UpdateQuery, type QueryOptions as MongooseQueryOptions, type QueryWithHelpers } from "mongoose"
-import { type Entity, type EntityJSON } from "@unb-libraries/nuxt-layer-entity"
+import { FilterOperator, type Entity, type EntityJSON } from "@unb-libraries/nuxt-layer-entity"
 
 export const EntityFieldTypes = Schema.Types
 
@@ -24,21 +24,6 @@ export type TaxonomyOptions = TermListOptions
 
 export interface EntityInstanceMethods {
   url(): string
-}
-
-export enum FilterOperator {
-  EQ = `eq`,
-  NE = `ne`,
-  MA = `ma`,
-  NM = `nm`,
-  IN = `in`,
-  NI = `ni`,
-  GT = `gt`,
-  GE = `ge`,
-  LT = `lt`,
-  LE = `le`,
-  CT = `ct`,
-  NC = `nc`,
 }
 
 export type EntityQueryFilter = Record<string, Record<FilterOperator, string[]>>

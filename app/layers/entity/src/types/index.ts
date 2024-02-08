@@ -88,6 +88,32 @@ export interface EntityDeleteResponse {
   errors: any[]
 }
 
+// REFACTOR: Move to app/layers/base/types/index.d.ts
+export enum FilterOperator {
+  EQ = `eq`,
+  NE = `ne`,
+  MA = `ma`,
+  NM = `nm`,
+  IN = `in`,
+  NI = `ni`,
+  GT = `gt`,
+  GE = `ge`,
+  LT = `lt`,
+  LE = `le`,
+  CT = `ct`,
+  NC = `nc`,
+  EX = `ex`,
+}
+export type Filter = [string, FilterOperator, string] | [string, FilterOperator]
+export interface FilterGroup {
+  has: (id: string, op?: FilterOperator, value?: string) => boolean
+  get: (id: string, op?: FilterOperator) => Map<FilterOperator, Set<string>> | Set<string> | undefined
+  set: (id: string, op: FilterOperator, value: Set<string>) => void
+  add: (id: string, op?: FilterOperator, value?: string) => void
+  remove: (id: string, op?: FilterOperator, value?: string) => void
+  toArray: () => Filter[]
+}
+
 export interface FetchEntityListOptions {
   filter?: Record<string, [string, string][]>
   page?: number
