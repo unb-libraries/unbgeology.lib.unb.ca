@@ -22,6 +22,9 @@
         <label class="sr-only" for="search">Search</label>
         <input v-model="search" placeholder="Search" name="search" class="placeholder:text-primary dark:placeholder:text-primary-20 form-input form-input-text grow p-2 placeholder:italic">
       </div>
+      <button id="button-filter" class="form-action form-action-submit bg-primary-80/40 hover:bg-primary-60/40 grow-0 p-2" @click.stop.prevent="filterMenuVisible = !filterMenuVisible">
+        Filter
+      </button>
       <button id="button-sort" class="form-action form-action-submit bg-primary-80/40 hover:bg-primary-60/40 grow-0 p-2" @click.prevent="sortMenuVisible = !sortMenuVisible">
         Sort
       </button>
@@ -31,16 +34,14 @@
 
       <PvContextualDropdown v-model="filterMenuVisible" trigger-id="button-filter" class="bg-primary border-primary-60/40 right-0 top-12 w-96 rounded-md border p-6" @click.prevent.stop="filterMenuVisible = !filterMenuVisible">
         <div class="form-field">
-          <label class="form-label" for="filter-category">Category</label>
-          <PvInputSelect
-            v-model="category"
-            name="filter-category"
-            class="form-input form-input-select rounded-lg p-1"
-            :options="[[`fossil`, `Fossil`], [`mineral`, `Mineral`], [`rock`, `Rock`]]"
-            option-label="1"
-            option-value="0"
-            :show-clear="true"
-          />
+          <label class="form-label" for="filter-category">Categories</label>
+          <PvMultipleChoice v-model="categoryFilter" :options="categoryOptions" class="rounded-lg p-1" />
+        </div>
+        <div class="space-x-2">
+          <button type="submit" class="form-action form-action-submit" @click.prevent="applyFilter()">
+            Apply
+          </button>
+          <a class="cursor-pointer p-2 hover:underline" @click.prevent="filter = []">Reset</a>
         </div>
       </PvContextualDropdown>
 
@@ -144,7 +145,7 @@
 </template>
 
 <script setup lang="ts">
-import { type EntityJSON } from '@unb-libraries/nuxt-layer-entity'
+import { FilterOperator, type EntityJSON } from '@unb-libraries/nuxt-layer-entity'
 import { type Specimen } from 'types/specimen'
 
 definePageMeta({
@@ -152,7 +153,10 @@ definePageMeta({
 })
 
 const { list, entities: specimens, query } = await fetchEntityList<Specimen>(`Specimen`)
-const { search, page, pageSize, sort } = query
+const { filter, search, page, pageSize, sort } = query
+
+const filterMenuVisible = ref(false)
+
 const columns = ref<(string | [string, string])[]>([
   [`id`, `ID`],
   [`category`, `Category`],
@@ -178,4 +182,13 @@ watch(sortedColumnIDs, () => {
 })
 
 const selected = ref<EntityJSON<Specimen>[]>([])
+
+const { create: createFilter, apply: applyFilter } = useFilters(filter)
+
+const categoryOptions = [`fossil`, `mineral`, `rock`]
+const categoryFilter = createFilter<string[]>(`category`, FilterOperator.EQ, {
+  input: values => values.length === 0 ? categoryOptions : values,
+  output: values => values,
+  empty: value => value.length === 0 || value.length === categoryOptions.length,
+})
 </script>

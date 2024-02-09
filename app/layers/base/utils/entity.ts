@@ -160,7 +160,7 @@ export async function fetchEntityList <E extends Entity = Entity>(entityTypeOrId
       : useEntityType<E>(entityTypeOrIdOrURI)?.definition.baseURI
     : entityTypeOrIdOrURI.baseURI
 
-  const filter = ref(options?.filter ?? {})
+  const filter = ref(options?.filter ?? [])
   const page = ref(options?.page ?? 1)
   const pageSize = ref(options?.pageSize ?? 25)
   const search = ref(options?.search ?? ``)
@@ -169,7 +169,7 @@ export async function fetchEntityList <E extends Entity = Entity>(entityTypeOrId
 
   const fetchOptions: UseFetchOptions<EntityJSONList<E>> = {
     query: {
-      filter: computed(() => Object.entries(filter.value).map(([field, filters]) => filters.map(([op, value]) => `${field}__${op}__${value}`)).flat()),
+      filter: computed(() => filter.value.map(f => f.join(`__`))),
       page,
       pageSize,
       search,

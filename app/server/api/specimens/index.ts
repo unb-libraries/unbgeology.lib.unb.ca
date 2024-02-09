@@ -1,5 +1,5 @@
+import { FilterOperator } from "@unb-libraries/nuxt-layer-entity"
 import { type Specimen } from "types/specimen"
-import { FilterOperator } from "~/layers/mongo/types/entity"
 
 export default defineEventHandler(async (event) => {
   const { page, pageSize, select, filterSelect, search, sort } = getQueryOptions(event)
