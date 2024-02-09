@@ -1,3 +1,4 @@
+import { defu } from "defu"
 import { type Filter, type FilterGroup, FilterOperator, type Transformer } from "@unb-libraries/nuxt-layer-entity"
 
 function createFilterMap(initialFilters?: Map<string, Map<FilterOperator, Set<string>>> | Filter[]): FilterGroup {
@@ -85,23 +86,34 @@ function createFilterMap(initialFilters?: Map<string, Map<FilterOperator, Set<st
   }
 }
 
-export default function (filters: Ref<Filter[]>) {
+export default function (filters: Ref<Filter[]>, options?: { immediate: boolean }) {
+  const globalOptions = defu(options, { immediate: false })
   const group = createFilterMap(filters.value)
 
   const created: (() => void)[] = []
 
-  const create = <T = any>(id: string, op: FilterOperator, transformer: Transformer<T>) => {
+  const create = <T = any>(id: string, op: FilterOperator, transformer: Transformer<T>, options?: { immediate: boolean }) => {
+    const { immediate = false } = options ?? globalOptions
+
     const raw = group.get(id, op) as Set<string> | undefined
     const value = ref(transformer.input(raw ? [...raw] : []))
 
-    created.push(() => {
+    const apply = () => {
       if (!transformer.empty(value.value as T)) {
         const transformed = transformer.output(value.value as T)
         group.set(id, op, new Set<string>(transformed))
       } else if (group.has(id, op)) {
         group.remove(id, op)
       }
-    })
+    }
+
+    created.push(apply)
+    if (immediate) {
+      watch(value, () => {
+        apply()
+        filters.value = group.toArray()
+      })
+    }
 
     return value
   }
