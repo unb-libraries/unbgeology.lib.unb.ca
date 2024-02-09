@@ -1,126 +1,59 @@
 import { defu } from "defu"
-import { type Filter, type FilterGroup, FilterOperator, type Transformer } from "@unb-libraries/nuxt-layer-entity"
-
-function createFilterMap(initialFilters?: Map<string, Map<FilterOperator, Set<string>>> | Filter[]): FilterGroup {
-  const has = (id: string, op?: FilterOperator, value?: string) => {
-    return filters.has(id) && (!op || (filters.get(id)!.has(op) && (!value || filters.get(id)!.get(op)!.has(value))))
-  }
-
-  function get(id: string): Map<FilterOperator, Set<string>> | undefined
-  function get(id: string, op: FilterOperator): Set<string> | undefined
-  function get(id: string, op?: FilterOperator): Map<FilterOperator, Set<string>> | Set<string> | undefined {
-    if (id && op) {
-      return filters.has(id) && filters.get(id)!.has(op) ? filters.get(id)!.get(op) : new Set<string>()
-    } else {
-      return filters.has(id) ? filters.get(id) : new Map<FilterOperator, Set<string>>()
-    }
-  }
-
-  function set(id: string, op: FilterOperator, value: Set<string>) {
-    if (!has(id, op)) {
-      add(id, op)
-    }
-    filters.get(id)!.set(op, value)
-  }
-
-  const add = (id: string, op?: FilterOperator, value?: string) => {
-    if (!filters.has(id)) {
-      filters.set(id, new Map())
-    }
-    if (op && !filters.get(id)!.has(op)) {
-      filters.get(id)!.set(op, new Set())
-    }
-    if (op && value) {
-      filters.get(id)!.get(op)!.add(value)
-    }
-  }
-
-  const remove = (id: string, op?: FilterOperator, value?: string) => {
-    if (id && op && value) {
-      filters.get(id)!.get(op)!.delete(value)
-    } else if (id && op) {
-      filters.get(id)!.delete(op)
-    } else if (id) {
-      filters.delete(id)
-    }
-  }
-
-  const merge = (filters: Map<string, Map<FilterOperator, Set<string>>> | Filter[]) => {
-    if (Array.isArray(filters)) {
-      filters.forEach(([id, op, value]) => add(id, op, value))
-    } else {
-      filters.forEach((ops, id) => {
-        ops.forEach((values, op) => {
-          values.forEach((value) => {
-            add(id, op, value)
-          })
-        })
-      })
-    }
-  }
-
-  const toArray = () => {
-    const arr: Filter[] = []
-    filters.forEach((ops, id) => {
-      ops.forEach((values, op) => {
-        values.forEach((value) => {
-          arr.push([id, op, value])
-        })
-      })
-    })
-    return arr
-  }
-
-  const filters: Map<string, Map<FilterOperator, Set<string>>> = initialFilters instanceof Map ? initialFilters : new Map()
-  if (initialFilters && Array.isArray(initialFilters)) {
-    merge(initialFilters)
-  }
-
-  return {
-    has,
-    get,
-    set,
-    add,
-    remove,
-    toArray,
-  }
-}
+import { type Filter, FilterOperator, type Transformer } from "@unb-libraries/nuxt-layer-entity"
 
 export default function (filters: Ref<Filter[]>, options?: { immediate: boolean }) {
   const globalOptions = defu(options, { immediate: false })
-  const group = createFilterMap(filters.value)
 
-  const created: (() => void)[] = []
+  const changes: Map<string, (() => Filter[])> = new Map()
 
   const create = <T = any>(id: string, op: FilterOperator, transformer: Transformer<T>, options?: { immediate: boolean }) => {
     const { immediate = false } = options ?? globalOptions
 
-    const raw = group.get(id, op) as Set<string> | undefined
-    const value = ref(transformer.input(raw ? [...raw] : []))
+    const value = computed({
+      get() {
+        const value = filters.value.filter(filter => filter[0] === id && filter[1] === op).reduce((acc, [, , value]) => {
+          if (value) {
+            acc.push(value)
+          }
+          return acc
+        }, [] as string[])
+        return transformer.input(value)
+      },
+      set(value: T) {
+        const transformed = transformer.output(value)
+        changes.set([id, op].join(`::`), () => {
+          if (Array.isArray(transformed)) {
+            const filters: Filter[] = transformed.map(value => value ? [id, op, value] : [id, op])
+            return filters
+          } else {
+            return [[id, op]]
+          }
+        })
 
-    const apply = () => {
-      if (!transformer.empty(value.value as T)) {
-        const transformed = transformer.output(value.value as T)
-        group.set(id, op, new Set<string>(transformed))
-      } else if (group.has(id, op)) {
-        group.remove(id, op)
-      }
-    }
-
-    created.push(apply)
-    if (immediate) {
-      watch(value, () => {
-        apply()
-        filters.value = group.toArray()
-      })
-    }
+        if (immediate) {
+          apply([id, op])
+        }
+      },
+    })
 
     return value
   }
 
-  const apply = () => {
-    created.forEach(apply => apply())
-    filters.value = group.toArray()
+  const apply = (filter?: [string, FilterOperator]) => {
+    if (filter) {
+      const filterBuilder = changes.get(filter.join(`::`))
+      if (filterBuilder) {
+        filters.value = [...filters.value.filter(f => f[0] !== filter[0] && f[1] !== filter[1]), ...filterBuilder()]
+      }
+      changes.delete(filter.join(`::`))
+    } else {
+      const changedFilters: Filter[] = []
+      changes.forEach((builder) => {
+        changedFilters.push(...builder())
+      })
+      filters.value = changedFilters
+      changes.clear()
+    }
   }
 
   return {

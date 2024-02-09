@@ -187,7 +187,7 @@ const { create: createFilter, apply: applyFilter } = useFilters(filter)
 
 const categoryOptions = [`fossil`, `mineral`, `rock`]
 const categoryFilter = createFilter<string[]>(`category`, FilterOperator.EQ, {
-  input: values => values.length === 0 ? categoryOptions : values,
+  input: values => values,
   output: values => values,
   empty: value => value.length === 0 || value.length === categoryOptions.length,
 })
