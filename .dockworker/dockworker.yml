@@ -46,6 +46,7 @@ dockworker:
     jira:
       project_keys:
         - ROCKS
+        - DOC
     ci:
       actions:
         - source: dockworker-drupal
