@@ -63,3 +63,24 @@ export interface QueryOptions {
   search: string
   sort: string[]
 }
+
+export interface DocumentQuery<E extends EntityDocument = EntityDocument> {
+  query: () => { exec: () => Promise<[{ documents: E[], total: [{ total: number }]}]> }
+  join: (field: string, model: ReturnType<typeof defineModel>) => DocumentQuery<E>
+  and: DocumentQuery<E>[`where`]
+  where: (field: string) => {
+    eq: (value: string | number) => DocumentQuery<E>
+    gt: (value: number) => DocumentQuery<E>
+    lt: (value: number) => DocumentQuery<E>
+  }
+  select: (selection: any) => DocumentQuery<E>
+  sort: (field: string, asc?: boolean) => DocumentQuery<E>
+  paginate(page: number, pageSize: number): DocumentQuery<E>
+  then: (resolve: (result: { documents: E[], total: number }) => void, reject: (err: any) => void) => void
+}
+export interface Join {
+  from: string
+  localField: string
+  foreignField: string
+  as: string
+}

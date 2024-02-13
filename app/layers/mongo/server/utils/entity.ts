@@ -16,6 +16,8 @@ import {
   type EntityModel,
   type EntityDocument,
   type DocumentBundleOptions,
+  type DocumentQuery,
+  type Join,
   type EntityQueryFilter,
 } from "../../types/entity"
 
@@ -245,4 +247,104 @@ export const defineEmbeddedDocumentType = function<E extends EntityDocument = En
   }
 
   return schema
+}
+
+export function getDocumentQuery<E extends EntityDocument = EntityDocument>(documentType: ReturnType<typeof defineDocumentType<E>>): DocumentQuery<E> {
+  const joins: Join[] = []
+  const filters: any[] = []
+  const selection: string[] = []
+  const sort: [string, boolean][] = []
+  const paginator: [number, number] = [1, 25]
+
+  return {
+    query() {
+      const query = documentType.aggregate()
+
+      // lookup stage
+      joins.forEach((join) => {
+        query.lookup(join)
+      })
+
+      // match stage
+      filters.forEach((field) => {
+        query.match(field)
+      })
+
+      // pre-sort stage
+      sort.forEach(([field, asc]) => {
+        query
+          .addFields({ [`no${field}`]: { $or: [{ $eq: [`$${field}`, []] }, { $eq: [`$${field}`, null] }] } })
+      })
+
+      // unwind stage: unwind all multi-value joined fields
+      joins
+        .filter(({ localField: field }) => documentType.schema.path(field) instanceof EntityFieldTypes.ObjectId)
+        .forEach(({ localField: field }) => {
+          query.unwind({ path: `$${field}`, preserveNullAndEmptyArrays: true })
+        })
+
+      // sort stage
+      query.sort(sort.map(([field, asc]) => `no${field} ${asc ? `` : `-`}${field}`).join(` `))
+
+      // project stage
+      query.project(selection.join(` `))
+
+      const [page, pageSize] = paginator
+      query
+        .facet({ documents: [{ $skip: (page - 1) * pageSize }, { $limit: pageSize }], total: [{ $count: `total` }] })
+        .project({ documents: 1, total: 1 })
+
+      return query
+    },
+    join(field: string, model: ReturnType<typeof defineModel>) {
+      joins.push({
+        from: model.collection.collectionName,
+        localField: field,
+        foreignField: `_id`,
+        as: field,
+      })
+      return this
+    },
+    and(field: string) {
+      return this.where(field)
+    },
+    where(field: string) {
+      return {
+        eq: (value: string | number) => {
+          filters.push({ [field]: value })
+          return this
+        },
+        gt: (value: number) => {
+          filters.push({ [field]: { $gt: value } })
+          return this
+        },
+        lt: (value: number) => {
+          filters.push({ [field]: { $lt: value } })
+          return this
+        },
+      }
+    },
+    select(field: string) {
+      selection.push(field)
+      return this
+    },
+    sort(field: string, asc: boolean = true) {
+      sort.push([field, asc])
+      return this
+    },
+    paginate(page, pageSize) {
+      paginator[0] = Math.max(1, page)
+      paginator[1] = Math.min(500, pageSize)
+      return this
+    },
+    async then(resolve: (result: { documents: E[], total: number }) => void, reject: (err: any) => void) {
+      try {
+        const [result] = await this.query().exec()
+        const { documents, total } = result
+        resolve({ documents, total: total[0].total })
+      } catch (err) {
+        reject(err)
+      }
+    },
+  }
 }
