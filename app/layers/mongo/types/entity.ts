@@ -70,8 +70,15 @@ export interface DocumentQuery<E extends EntityDocument = EntityDocument> {
   and: DocumentQuery<E>[`where`]
   where: (field: string) => {
     eq: (value: string | number) => DocumentQuery<E>
+    ne: (value: string | number) => DocumentQuery<E>
+    match: (value: string | RegExp) => DocumentQuery<E>
+    in: (value: string[] | number[]) => DocumentQuery<E>
+    nin: (value: string[] | number[]) => DocumentQuery<E>
+    contains: (value: string) => DocumentQuery<E>
     gt: (value: number) => DocumentQuery<E>
+    gte: (value: number) => DocumentQuery<E>
     lt: (value: number) => DocumentQuery<E>
+    lte: (value: number) => DocumentQuery<E>
   }
   select: (selection: any) => DocumentQuery<E>
   sort: (field: string, asc?: boolean) => DocumentQuery<E>

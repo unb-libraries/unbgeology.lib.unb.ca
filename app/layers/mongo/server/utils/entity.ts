@@ -314,12 +314,39 @@ export function getDocumentQuery<E extends EntityDocument = EntityDocument>(docu
           filters.push({ [field]: value })
           return this
         },
+        ne: (value: string | number) => {
+          filters.push({ [field]: { $ne: value } })
+          return this
+        },
+        match: (value: string | RegExp) => {
+          filters.push({ [field]: { $regex: value, $options: `i` } })
+          return this
+        },
+        in: (value: string[] | number[]) => {
+          filters.push({ [field]: { $in: value } })
+          return this
+        },
+        nin: (value: string[] | number[]) => {
+          filters.push({ [field]: { $nin: value } })
+          return this
+        },
+        contains(value: string) {
+          return this.eq(value)
+        },
         gt: (value: number) => {
           filters.push({ [field]: { $gt: value } })
           return this
         },
+        gte: (value: number) => {
+          filters.push({ [field]: { $gte: value } })
+          return this
+        },
         lt: (value: number) => {
           filters.push({ [field]: { $lt: value } })
+          return this
+        },
+        lte: (value: number) => {
+          filters.push({ [field]: { $lte: value } })
           return this
         },
       }
