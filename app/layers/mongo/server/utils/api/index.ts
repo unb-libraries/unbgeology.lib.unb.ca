@@ -2,7 +2,7 @@ import { defu } from "defu"
 import { type Document, type Types } from "mongoose"
 import { type H3Event } from "h3"
 import { type EntityJSON, type Entity, type EntityJSONBody } from "@unb-libraries/nuxt-layer-entity"
-import { type QueryOptions, type EntityListOptions, type EntityQueryFilter, FilterOperator } from "../../../types/entity"
+import { type QueryOptions, type EntityListOptions, type EntityQueryFilter, type DocumentQuery } from "../../../types/entity"
 import { EntityBodyCardinality, type EntityBodyReaderOptions } from "../../../types/api"
 
 export function getSelectedFields(fields: string[], prefix?: string) {
@@ -31,6 +31,21 @@ export async function applyFilter(eventOrFilter: H3Event | EntityQueryFilter, ap
         await apply[field](op as FilterOperator, values.length > 1 ? values : values[0])
       }
     }
+  }
+}
+
+export function defineDocumentSortHandler(event: H3Event, fn: (field: string) => (string | ((query: DocumentQuery, asc: boolean) => void | Promise<void>) | undefined)) {
+  const { sort: sortFields } = getQueryOptions(event)
+  return function (query: DocumentQuery) {
+    sortFields.forEach((field) => {
+      const asc = !field.startsWith(`-`)
+      const sortField = fn(asc ? field : field.substring(1))
+      if (typeof sortField === `string`) {
+        query.sort(sortField, asc)
+      } else if (typeof sortField === `function`) {
+        sortField(query, asc)
+      }
+    })
   }
 }
 
