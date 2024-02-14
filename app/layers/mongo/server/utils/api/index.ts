@@ -58,6 +58,20 @@ export function defineDocumentFilterHandler(event: H3Event, fn: (field: string, 
   }
 }
 
+export function defineDocumentSelectHandler(event: H3Event, fn: (field: string) => string | ((query: DocumentQuery) => void | Promise<void>) | undefined, options?: Partial<{ default: string[] }>) {
+  const { select: selectFields } = getQueryOptions(event)
+  return function (query: DocumentQuery) {
+    (selectFields.length > 0 ? selectFields : options?.default ?? []).forEach((field) => {
+      const selectField = fn(field)
+      if (typeof selectField === `string`) {
+        query.select(selectField)
+      } else if (typeof selectField === `function`) {
+        selectField(query)
+      }
+    })
+  }
+}
+
 export function getQueryOptions(event: H3Event): QueryOptions {
   const { filter, select, sort, search, ...query } = getQuery(event)
   let { page, pageSize } = query
