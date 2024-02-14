@@ -90,19 +90,13 @@ export interface EntityDeleteResponse {
 
 // REFACTOR: Move to app/layers/base/types/index.d.ts
 export enum FilterOperator {
-  EQ = `eq`,
-  NE = `ne`,
-  MA = `ma`,
-  NM = `nm`,
-  IN = `in`,
-  NI = `ni`,
-  GT = `gt`,
-  GE = `ge`,
-  LT = `lt`,
-  LE = `le`,
-  CT = `ct`,
-  NC = `nc`,
-  EX = `ex`,
+  EQUALS = 1,
+  MATCH = 2,
+  GREATER = 4,
+  LESS = 8,
+  NOT = 16,
+  AND = 32,
+  OR = 64,
 }
 export type Filter = [string, FilterOperator, string] | [string, FilterOperator]
 export interface Transformer<V = any> {

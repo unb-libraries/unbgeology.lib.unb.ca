@@ -58,7 +58,7 @@ export interface QueryOptions {
   page: number
   pageSize: number
   select: string[]
-  filter: Record<string, Record<string, string[]>>
+  filter: [string, FilterOperator, string | string[]][]
   filterSelect: (options?: { root?: string, prefix?: string, default?: string[] }) => string[],
   search: string
   sort: string[]

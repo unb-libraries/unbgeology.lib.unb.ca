@@ -7,19 +7,13 @@ export var Status;
 // REFACTOR: Move to app/layers/base/types/index.d.ts
 export var FilterOperator;
 (function (FilterOperator) {
-    FilterOperator["EQ"] = "eq";
-    FilterOperator["NE"] = "ne";
-    FilterOperator["MA"] = "ma";
-    FilterOperator["NM"] = "nm";
-    FilterOperator["IN"] = "in";
-    FilterOperator["NI"] = "ni";
-    FilterOperator["GT"] = "gt";
-    FilterOperator["GE"] = "ge";
-    FilterOperator["LT"] = "lt";
-    FilterOperator["LE"] = "le";
-    FilterOperator["CT"] = "ct";
-    FilterOperator["NC"] = "nc";
-    FilterOperator["EX"] = "ex";
+    FilterOperator[FilterOperator["EQUALS"] = 1] = "EQUALS";
+    FilterOperator[FilterOperator["MATCH"] = 2] = "MATCH";
+    FilterOperator[FilterOperator["GREATER"] = 4] = "GREATER";
+    FilterOperator[FilterOperator["LESS"] = 8] = "LESS";
+    FilterOperator[FilterOperator["NOT"] = 16] = "NOT";
+    FilterOperator[FilterOperator["AND"] = 32] = "AND";
+    FilterOperator[FilterOperator["OR"] = 64] = "OR";
 })(FilterOperator || (FilterOperator = {}));
 export var MigrationStatus;
 (function (MigrationStatus) {

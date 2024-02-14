@@ -1,8 +1,8 @@
 import { defu } from "defu"
 import { type Document, type Types } from "mongoose"
 import { type H3Event } from "h3"
-import { type EntityJSON, type Entity, type EntityJSONBody } from "@unb-libraries/nuxt-layer-entity"
-import { type QueryOptions, type EntityListOptions, type EntityQueryFilter, type DocumentQuery } from "../../../types/entity"
+import { type EntityJSON, type Entity, type EntityJSONBody, FilterOperator } from "@unb-libraries/nuxt-layer-entity"
+import { type QueryOptions, type EntityListOptions, type DocumentQuery } from "../../../types/entity"
 import { EntityBodyCardinality, type EntityBodyReaderOptions } from "../../../types/api"
 
 export function getSelectedFields(fields: string[], prefix?: string) {
@@ -10,28 +10,6 @@ export function getSelectedFields(fields: string[], prefix?: string) {
     return fields.filter(f => f.startsWith(prefix)).map(f => f.split(`.`)[1])
   }
   return fields.map(f => f.split(`.`)[0])
-}
-
-export async function applyFilter(event: H3Event, apply: Record<string, (op: FilterOperator, values: string | string[]) => void | Promise<void>>): Promise<void>
-export async function applyFilter(filter: EntityQueryFilter, apply: Record<string, (op: FilterOperator, values: string | string[]) => void | Promise<void>>): Promise<void>
-export async function applyFilter(eventOrFilter: H3Event | EntityQueryFilter, apply: Record<string, (op: FilterOperator, values: string | string[]) => void | Promise<void>>): Promise<void> {
-  if (eventOrFilter.__is_event__) {
-    const event = eventOrFilter as H3Event
-    const { filter } = getQueryOptions(event)
-    if (filter) {
-      return await applyFilter(filter, apply)
-    }
-  } else {
-    const filter = eventOrFilter as EntityQueryFilter
-    const fields = Object.keys(apply).filter(field => field in filter)
-    for (const field of fields) {
-      const conditions = filter[field]
-      for (const op in conditions) {
-        const values = conditions[op as FilterOperator]
-        await apply[field](op as FilterOperator, values.length > 1 ? values : values[0])
-      }
-    }
-  }
 }
 
 export function defineDocumentSortHandler(event: H3Event, fn: (field: string) => (string | ((query: DocumentQuery, asc: boolean) => void | Promise<void>) | undefined)) {
@@ -49,22 +27,40 @@ export function defineDocumentSortHandler(event: H3Event, fn: (field: string) =>
   }
 }
 
-export function getQueryOptions(event: H3Event): QueryOptions {
-  const { filter: filterQuery, select, sort, search, ...query } = getQuery(event)
-  let { page, pageSize } = query
+export function defineDocumentFilterHandler(event: H3Event, fn: (field: string, op: FilterOperator, value: string | string[]) => [string, FilterOperator, any] | ((query: DocumentQuery) => void | Promise<void>)) {
+  const { filter: filterFields } = getQueryOptions(event)
+  return function (query: DocumentQuery) {
+    filterFields.forEach(([field, op, value]) => {
+      const filterResult = fn(field, op, value)
+      if (Array.isArray(filterResult)) {
+        const [qField, qOp, qValue] = filterResult
+        switch (qOp) {
+          case FilterOperator.EQUALS: {
+            if (Array.isArray(qValue)) {
+              query.where(qField).in(qValue)
+            } else {
+              query.where(qField).eq(qValue)
+            }
+            break
+          }
+          case FilterOperator.EQUALS | FilterOperator.NOT: {
+            if (Array.isArray(qValue)) {
+              query.where(qField).nin(qValue)
+            } else {
+              query.where(qField).ne(qValue)
+            }
+          }
+        }
+      } else if (typeof filterResult === `function`) {
+        filterResult(query)
+      }
+    })
+  }
+}
 
-  const filters = filterQuery ? Array.isArray(filterQuery) ? filterQuery : [filterQuery] : []
-  const filter = filters.reduce((obj, f) => {
-    const [field, op, value] = f.split(`__`)
-    if (!obj[field]) {
-      obj[field] = {}
-    }
-    if (!obj[field][op]) {
-      obj[field][op] = []
-    }
-    obj[field][op].push(value)
-    return obj
-  }, {})
+export function getQueryOptions(event: H3Event): QueryOptions {
+  const { filter, select, sort, search, ...query } = getQuery(event)
+  let { page, pageSize } = query
 
   pageSize = pageSize ? Array.isArray(pageSize) ? parseInt(`${pageSize.at(-1)}`) : parseInt(`${pageSize}`) : 25
   pageSize = Math.min(Math.max(1, pageSize), 100)
@@ -78,7 +74,19 @@ export function getQueryOptions(event: H3Event): QueryOptions {
     page,
     pageSize,
     select: selection,
-    filter,
+    filter: Object.entries((filter ? Array.isArray(filter) ? filter : [filter] : [])
+      .map<string[3]>(f => f.split(`:`))
+      .map<[string, number, string]>(([field, op, value]) => [field, !isNaN(parseInt(op)) ? parseInt(op) : useEnum(FilterOperator).toNumber(op), value])
+      .reduce((obj, [field, newOp, newValue]) => {
+        if (!obj[field]) {
+          obj[field] = [newOp, newValue]
+        } else {
+          const [op, value] = obj[field]
+          obj[field] = [op | newOp, newValue ? Array.isArray(value) ? [...value, newValue] : [value, newValue] : value]
+        }
+        return obj
+      }, {} as Record<string, [number, string | string[]]>))
+      .map(([field, [op, value]]) => [field, op, value]),
     filterSelect({ root, prefix, default: defaultFields }) {
       const fields = defaultFields ?? []
       if (root) {
