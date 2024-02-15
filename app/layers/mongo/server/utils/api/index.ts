@@ -133,34 +133,32 @@ export async function readEntityBody<E extends Entity = Entity>(event: H3Event, 
   }
 }
 
-export function sendEntity <E extends Entity = Entity>(event: H3Event, entity: Document<Types.ObjectId, {}, E>, transform?: (entity: EntityJSON<E>) => EntityJSON<E>) {
-  let json = entity.toJSON<EntityJSON<E>>({ flattenMaps: false })
-  if (transform) {
-    json = transform(json)
+export function createEntity <E extends Entity = Entity>(event: H3Event, entity: Partial<EntityJSON<E>>, options?: Partial<{ self: string | ((entity: Partial<EntityJSON<E>>) => string) }>) {
+  return {
+    ...entity,
+    self: options?.self
+      ? typeof options.self === `function`
+        ? options.self(entity)
+        : options.self
+      : getRequestURL(event).pathname,
   }
-  return json
 }
 
-export function sendEntityList <E extends Entity = Entity>(event: H3Event, entities: Document<Types.ObjectId, {}, E>[], options?: EntityListOptions<E>) {
-  const { pathname } = getRequestURL(event)
-  const paginator = usePaginator(event, { total: options?.total ?? entities.length })
+export function createEntityOr404 <E extends Entity = Entity>(event: H3Event, entity?: Partial<EntityJSON<E>>, options?: Partial<{ self: string | ((entity: Partial<EntityJSON<E>>) => string), message: string }>) {
+  if (entity) {
+    return createEntity(event, entity, options)
+  }
+  return createError({ statusCode: 404, statusMessage: options?.message ? options.message : `The requested entity does not exist.` })
+}
+
+export function createEntityList <E extends Entity = Entity>(event: H3Event, entities: Partial<EntityJSON<E>>[], options?: Partial<{ self: Partial<{ canonical: string | ((entity: Partial<EntityJSON<E>>) => string), list: string }>, total: number, page: number, pageSize: number }>) {
+  const paginator = usePaginator(event, {
+    total: options?.total ? options.total : entities.length,
+  })
 
   return {
-    self: pathname,
-    entities: entities.map((entity) => {
-      let json = entity.toJSON<EntityJSON<E>>({ flattenMaps: false })
-      if (options?.transform) {
-        json = options.transform(json)
-      }
-      return json
-    }),
+    self: options?.self?.list ? options.self.list : getRequestURL(event).pathname,
+    entities: entities.map(entity => createEntity(event, entity, { self: options?.self?.canonical })),
     ...paginator,
   }
-}
-
-export function sendEntityOr404 <E extends Entity = Entity>(event: H3Event, entity?: Document<Types.ObjectId, {}, E>, transform?: (entity: EntityJSON<E>) => EntityJSON<E>) {
-  if (entity) {
-    return sendEntity<E>(event, entity, transform)
-  }
-  throw createError({ statusCode: 404, statusMessage: `The requested resource does not exist.` })
 }
