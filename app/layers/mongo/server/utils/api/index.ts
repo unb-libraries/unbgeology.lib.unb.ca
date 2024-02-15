@@ -12,63 +12,9 @@ export function getSelectedFields(fields: string[], prefix?: string) {
   return fields.map(f => f.split(`.`)[0])
 }
 
-export function defineDocumentSortHandler(event: H3Event, fn: (field: string) => (string | ((query: DocumentQuery, asc: boolean) => void | Promise<void>) | undefined)) {
-  const { sort: sortFields } = getQueryOptions(event)
-  return function (query: DocumentQuery) {
-    sortFields.forEach((field) => {
-      const asc = !field.startsWith(`-`)
-      const sortField = fn(asc ? field : field.substring(1))
-      if (typeof sortField === `string`) {
-        query.sort(sortField, asc)
-      } else if (typeof sortField === `function`) {
-        sortField(query, asc)
-      }
-    })
-  }
-}
-
-export function defineDocumentFilterHandler(event: H3Event, fn: (field: string, op: FilterOperator, value: string | string[]) => [string, FilterOperator, any] | ((query: DocumentQuery) => void | Promise<void>)) {
-  const { filter: filterFields } = getQueryOptions(event)
-  return function (query: DocumentQuery) {
-    filterFields.forEach(([field, op, value]) => {
-      const filterResult = fn(field, op, value)
-      if (Array.isArray(filterResult)) {
-        const [qField, qOp, qValue] = filterResult
-        switch (qOp) {
-          case FilterOperator.EQUALS: {
-            if (Array.isArray(qValue)) {
-              query.where(qField).in(qValue)
-            } else {
-              query.where(qField).eq(qValue)
-            }
-            break
-          }
-          case FilterOperator.EQUALS | FilterOperator.NOT: {
-            if (Array.isArray(qValue)) {
-              query.where(qField).nin(qValue)
-            } else {
-              query.where(qField).ne(qValue)
-            }
-          }
-        }
-      } else if (typeof filterResult === `function`) {
-        filterResult(query)
-      }
-    })
-  }
-}
-
-export function defineDocumentSelectHandler(event: H3Event, fn: (field: string) => string | ((query: DocumentQuery) => void | Promise<void>) | undefined, options?: Partial<{ default: string[] }>) {
-  const { select: selectFields } = getQueryOptions(event)
-  return function (query: DocumentQuery) {
-    (selectFields.length > 0 ? selectFields : options?.default ?? []).forEach((field) => {
-      const selectField = fn(field)
-      if (typeof selectField === `string`) {
-        query.select(selectField)
-      } else if (typeof selectField === `function`) {
-        selectField(query)
-      }
-    })
+export function defineDocumentQueryHandler<TOptions>(handler: (query: DocumentQuery, options: TOptions) => void | Promise<void>) {
+  return function (query: DocumentQuery, options: TOptions) {
+    handler(query, options)
   }
 }
 
