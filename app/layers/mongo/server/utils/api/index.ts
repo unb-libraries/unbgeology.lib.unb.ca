@@ -101,6 +101,16 @@ export function defineEntityBodyReader<E extends Entity = Entity>(reader: (body:
   }
 }
 
+export function defineEntityFormatter<E extends Entity = Entity, T = any>(formatter: (item: T) => Partial<EntityJSON<E>>, options?: Partial<{ removeEmpty: boolean }>) {
+  return function (item: T): Partial<EntityJSON<E>> {
+    const entity = formatter(item)
+    return Object
+      .entries(entity)
+      .filter(([_, value]) => (value !== undefined) || (options?.removeEmpty === false))
+      .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {})
+  }
+}
+
 export async function readEntityBody<E extends Entity = Entity>(event: H3Event, reader: (body: any, event: H3Event) => EntityJSONBody<E> | Promise<EntityJSONBody<E>>, options?: EntityBodyReaderOptions) {
   options = defu(options, { cardinality: EntityBodyCardinality.MANY | EntityBodyCardinality.ONE } as const)
   const body = await readBody(event)
