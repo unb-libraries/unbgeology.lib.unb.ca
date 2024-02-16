@@ -2,6 +2,11 @@
 
 export default defineNuxtConfig({
   buildDir: `./.build/.nuxt`,
+  nitro: {
+    experimental: {
+      asyncContext: true,
+    },
+  },
   runtimeConfig: {
     nitro: {
       mongodb: {

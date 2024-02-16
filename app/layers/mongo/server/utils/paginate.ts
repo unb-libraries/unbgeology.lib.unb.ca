@@ -1,4 +1,3 @@
-import { type H3Event } from "h3"
 import type { PaginateOptions, Navigator, PaginatorOptions } from "../../types/paginate"
 
 const buildQuery = (...params: [string, string | number][]) => {
@@ -9,11 +8,14 @@ export const buildPageLink = function (path: string, params: PaginateOptions) {
   return `${path}?${buildQuery(...Object.entries(params))}`
 }
 
-export const usePaginator = function (event: H3Event, options: PaginatorOptions) {
+export const usePaginator = function (options: PaginatorOptions & Partial<PaginateOptions>) {
+  const event = useEvent()
   const { pathname: path } = getRequestURL(event)
-  const { page, pageSize } = getQueryOptions(event)
+  const queryOptions = getQueryOptions(event)
 
-  const { total } = options
+  const page = options?.page ?? queryOptions.page
+  const pageSize = options?.pageSize ?? queryOptions.pageSize
+  const total = options?.total
 
   const nav: Navigator = {}
   if (total > page * pageSize) {
