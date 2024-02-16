@@ -101,14 +101,51 @@ export function defineEntityBodyReader<E extends Entity = Entity>(reader: (body:
   }
 }
 
-export function defineEntityFormatter<E extends Entity = Entity, T = any>(formatter: (item: T) => Partial<EntityJSON<E>>, options?: Partial<{ removeEmpty: boolean }>) {
-  return function (item: T): Partial<EntityJSON<E>> {
-    const entity = formatter(item)
-    return Object
-      .entries(entity)
-      .filter(([_, value]) => (value !== undefined) || (options?.removeEmpty === false))
-      .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {})
+export function defineFormatter<TOutput extends object = object, TInput extends object = object>(formatter: (item: TInput) => TOutput, options?: Partial<{ removeEmpty: boolean }>) {
+  return function (item: TInput): TOutput {
+    const output = formatter(item)
+    return Object.fromEntries(Object
+      .entries(output)
+      .filter(([_, value]) => (value !== undefined) || (options?.removeEmpty === false))) as TOutput
   }
+}
+
+export function defineEntityFormatter<E extends Entity = Entity, T = any>(formatter: (item: T) => EntityJSON<E>) {
+  const format = {
+    formatEntity(item: T, options?: Partial<{ self: (entity: Omit<EntityJSON<E>, `self`>) => string, removeEmpty: boolean }>): EntityJSON<E> {
+      const entity = Object
+        .entries(formatter(item))
+        .filter(([_, value]) => (value !== undefined) || (options?.removeEmpty === false))
+        .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {}) as Omit<EntityJSON<E>, `self`>
+
+      const self = options?.self ? options.self(entity) : getRequestURL(useEvent()).pathname
+      return { self, ...entity }
+    },
+    formatEntityList(items: T[], options?: Partial<{ self: Partial<{ list: string, canonical: (entity: Omit<EntityJSON<E>, `self`>) => string}>, removeEmpty: boolean, total: number, page: number, pageSize: number }>) {
+      const event = useEvent()
+      const { pathname } = getRequestURL(event)
+
+      const queryOptions = getQueryOptions(event)
+      const self = options?.self?.list ?? pathname
+
+      const canonicalSelf = options?.self?.canonical ?? ((entity: Omit<EntityJSON<E>, `self`>) => self.trim().split(`/`).concat(entity.id).join(`/`))
+      const entities = items.map(item => format.formatEntity(item, { self: canonicalSelf, removeEmpty: options?.removeEmpty }))
+
+      const paginator = usePaginator({
+        total: options?.total ? options.total : entities.length,
+        page: options?.page ?? queryOptions.page,
+        pageSize: options?.pageSize ?? queryOptions.pageSize,
+      })
+
+      return {
+        self,
+        entities,
+        ...paginator,
+      }
+    },
+  }
+
+  return format
 }
 
 export async function readEntityBody<E extends Entity = Entity>(event: H3Event, reader: (body: any, event: H3Event) => EntityJSONBody<E> | Promise<EntityJSONBody<E>>, options?: EntityBodyReaderOptions) {
@@ -143,32 +180,6 @@ export async function readEntityBody<E extends Entity = Entity>(event: H3Event, 
   }
 }
 
-export function createEntity <E extends Entity = Entity>(event: H3Event, entity: Partial<EntityJSON<E>>, options?: Partial<{ self: string | ((entity: Partial<EntityJSON<E>>) => string) }>) {
-  return {
-    ...entity,
-    self: options?.self
-      ? typeof options.self === `function`
-        ? options.self(entity)
-        : options.self
-      : getRequestURL(event).pathname,
-  }
-}
-
-export function createEntityOr404 <E extends Entity = Entity>(event: H3Event, entity?: Partial<EntityJSON<E>>, options?: Partial<{ self: string | ((entity: Partial<EntityJSON<E>>) => string), message: string }>) {
-  if (entity) {
-    return createEntity(event, entity, options)
-  }
-  return createError({ statusCode: 404, statusMessage: options?.message ? options.message : `The requested entity does not exist.` })
-}
-
-export function createEntityList <E extends Entity = Entity>(event: H3Event, entities: Partial<EntityJSON<E>>[], options?: Partial<{ self: Partial<{ canonical: string | ((entity: Partial<EntityJSON<E>>) => string), list: string }>, total: number, page: number, pageSize: number }>) {
-  const paginator = usePaginator(event, {
-    total: options?.total ? options.total : entities.length,
-  })
-
-  return {
-    self: options?.self?.list ? options.self.list : getRequestURL(event).pathname,
-    entities: entities.map(entity => createEntity(event, entity, { self: options?.self?.canonical })),
-    ...paginator,
-  }
+export function createContentOr404(content?: any, options?: Partial<{ message: string }>) {
+  return content ?? createError({ statusCode: 404, statusMessage: options?.message ? options.message : `The requested entity does not exist.` })
 }

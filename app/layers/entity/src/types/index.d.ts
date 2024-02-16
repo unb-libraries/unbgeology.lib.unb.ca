@@ -6,6 +6,7 @@ export declare enum Status {
     PUBLISHED = 4
 }
 export interface Entity {
+    readonly self: string;
     readonly id: string;
     readonly created: string;
     readonly updated: string;
@@ -20,14 +21,8 @@ export interface EntityType<E extends Entity = Entity> {
     uri: (entity: E) => string;
     extends?: keyof AppConfigInput[`entityTypes`];
 }
-export interface EntityJSONReference {
-    readonly self: string;
-    readonly id: string;
-}
-export type EntityJSONPropertyValue = string | number | boolean | EntityJSONReference;
-export type EntityJSON<E extends Entity = Entity> = {
-    [P in keyof E]: E[P] extends Entity[] ? EntityJSON<E[P][number]>[] : E[P] extends Entity[] | undefined ? EntityJSON<E[P][number]>[] | undefined : E[P] extends Entity ? EntityJSON<E[P]> : E[P] extends Entity | undefined ? EntityJSON<E[P]> | undefined : E[P];
-} & EntityJSONReference;
+export type EntityJSON<E extends Entity = Entity> = Partial<Omit<E, `id` | `self`>> & Required<Pick<E, `id` | `self`>>;
+export type EntityJSONPropertyValue = string | number | boolean | EntityJSON;
 export type EntityJSONProperties<E extends Entity = Entity, P extends keyof Omit<E, keyof Entity> = keyof Omit<E, keyof Entity>> = Pick<EntityJSON<E>, P>;
 export interface EntityJSONList<E extends Entity = Entity> {
     entities: EntityJSON<E>[];
@@ -42,13 +37,13 @@ export interface EntityJSONList<E extends Entity = Entity> {
     self: string;
     total: number;
 }
-export type EntityJSONBodyPropertyValue = Exclude<EntityJSONPropertyValue, EntityJSONReference>;
+export type EntityJSONBodyPropertyValue = Exclude<EntityJSONPropertyValue, EntityJSON>;
 export type EntityJSONBody<E extends object = object, P extends keyof Omit<E, keyof Entity> = keyof Omit<E, keyof Entity>> = {
     [K in P]: E[K] extends Entity[] ? string[] : E[K] extends Entity[] | undefined ? string[] | undefined : E[K] extends Entity ? string : E[K] extends Entity | undefined ? string | undefined : E[K] extends object ? EntityJSONBody<E[K]> : E[K] extends object | undefined ? EntityJSONBody<E[K]> | undefined : E[K];
 };
 export type EntityJSONCreateBody<E extends Entity = Entity> = Omit<EntityJSONBody<E>, `self`>;
 export type EntityJSONUpdateBody<E extends Entity = Entity> = EntityJSONBody<E> & {
-    [K in `self`]-?: EntityJSONBody<E>[K];
+    [K in `self`]-?: EntityJSONBody<E[K]>;
 };
 export interface EntityResponse<E extends Entity = Entity> {
     entity: Ref<EntityJSON<E> | null>;

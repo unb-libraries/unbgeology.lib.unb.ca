@@ -6,8 +6,8 @@ export enum Status {
   IMPORTED = 2,
   PUBLISHED = 4,
 }
-
 export interface Entity {
+  readonly self: string
   readonly id: string
   readonly created: string
   readonly updated: string
@@ -25,20 +25,8 @@ export interface EntityType<E extends Entity = Entity> {
   extends?: keyof AppConfigInput[`entityTypes`]
 }
 
-export interface EntityJSONReference {
-  readonly self: string
-  readonly id: string
-}
-
-export type EntityJSONPropertyValue = string | number | boolean | EntityJSONReference
-export type EntityJSON<E extends Entity = Entity> = {
-  [P in keyof E]:
-    E[P] extends Entity[] ? EntityJSON<E[P][number]>[] :
-      E[P] extends Entity[] | undefined ? EntityJSON<E[P][number]>[] | undefined :
-        E[P] extends Entity ? EntityJSON<E[P]> :
-          E[P] extends Entity | undefined ? EntityJSON<E[P]> | undefined :
-            E[P]
-} & EntityJSONReference
+export type EntityJSON<E extends Entity = Entity> = Partial<Omit<E, `id` | `self`>> & Required<Pick<E, `id` | `self`>>
+export type EntityJSONPropertyValue = string | number | boolean | EntityJSON
 
 export type EntityJSONProperties<E extends Entity = Entity, P extends keyof Omit<E, keyof Entity> = keyof Omit<E, keyof Entity>> = Pick<EntityJSON<E>, P>
 
@@ -56,7 +44,7 @@ export interface EntityJSONList<E extends Entity = Entity> {
   total: number
 }
 
-export type EntityJSONBodyPropertyValue = Exclude<EntityJSONPropertyValue, EntityJSONReference>
+export type EntityJSONBodyPropertyValue = Exclude<EntityJSONPropertyValue, EntityJSON>
 export type EntityJSONBody<E extends object = object, P extends keyof Omit<E, keyof Entity> = keyof Omit<E, keyof Entity>> = {
   [K in P]:
     E[K] extends Entity[] ? string[] :
@@ -69,7 +57,7 @@ export type EntityJSONBody<E extends object = object, P extends keyof Omit<E, ke
 }
 
 export type EntityJSONCreateBody<E extends Entity = Entity> = Omit<EntityJSONBody<E>, `self`>
-export type EntityJSONUpdateBody<E extends Entity = Entity> = EntityJSONBody<E> & { [K in `self`]-?: EntityJSONBody<E>[K] }
+export type EntityJSONUpdateBody<E extends Entity = Entity> = EntityJSONBody<E> & { [K in `self`]-?: EntityJSONBody<E[K]> }
 
 export interface EntityResponse<E extends Entity = Entity> {
   entity: Ref<EntityJSON<E> | null>
