@@ -318,8 +318,8 @@ export function getDocumentQuery<E extends EntityDocument = EntityDocument>(docu
           filters.push({ [field]: { $ne: value } })
           return this
         },
-        match: (value: string | RegExp) => {
-          filters.push({ [field]: { $regex: value, $options: `i` } })
+        match: (pattern: RegExp) => {
+          filters.push({ [field]: { $regex: pattern } })
           return this
         },
         in: (value: string[] | number[]) => {
