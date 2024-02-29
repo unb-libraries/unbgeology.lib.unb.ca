@@ -368,7 +368,7 @@ export function getDocumentQuery<E extends EntityDocument = EntityDocument>(docu
       try {
         const [result] = await this.query().exec()
         const { documents, total } = result
-        resolve({ documents, total: total[0].total })
+        resolve({ documents, total: total[0]?.total ?? 0 })
       } catch (err) {
         reject(err)
       }
