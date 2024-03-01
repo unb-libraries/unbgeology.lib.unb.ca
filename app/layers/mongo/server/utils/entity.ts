@@ -351,6 +351,10 @@ export function getDocumentQuery<E extends EntityDocument = EntityDocument>(docu
         },
       }
     },
+    expr(expr: object) {
+      filters.push(expr)
+      return this
+    },
     select(field: string) {
       selection.push(field)
       return this

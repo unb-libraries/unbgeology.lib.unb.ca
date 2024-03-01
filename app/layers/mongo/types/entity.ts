@@ -80,6 +80,7 @@ export interface DocumentQuery<E extends EntityDocument = EntityDocument> {
     lt: (value: number) => DocumentQuery<E>
     lte: (value: number) => DocumentQuery<E>
   }
+  expr: (expr: object) => DocumentQuery<E>
   select: (selection: any) => DocumentQuery<E>
   sort: (field: string, asc?: boolean) => DocumentQuery<E>
   paginate(page: number, pageSize: number): DocumentQuery<E>
