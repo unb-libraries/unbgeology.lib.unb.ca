@@ -180,6 +180,6 @@ export async function readEntityBody<E extends Entity = Entity>(event: H3Event, 
   }
 }
 
-export function createContentOr404(content?: any, options?: Partial<{ message: string }>) {
+export function createContentOr404<T = any>(content?: T, options?: Partial<{ message: string }>) {
   return content ?? createError({ statusCode: 404, statusMessage: options?.message ? options.message : `The requested entity does not exist.` })
 }
