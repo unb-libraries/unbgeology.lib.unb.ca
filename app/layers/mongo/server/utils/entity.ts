@@ -20,6 +20,7 @@ import {
   type Join,
   type EntityQueryFilter,
 } from "../../types/entity"
+import type { DocumentBase, DocumentModel } from "../../types/schema"
 
 const defineDocumentTypeOptions = function <E extends EntityDocument = EntityDocument> (options: DocumentTypeOptions<E>, defaultOptions?: DocumentTypeOptions<E>) {
   if (options?.toJSON?.transform && options?.toJSON?.transform !== true) {
@@ -249,7 +250,7 @@ export const defineEmbeddedDocumentType = function<E extends EntityDocument = En
   return schema
 }
 
-export function getDocumentQuery<E extends EntityDocument = EntityDocument>(documentType: ReturnType<typeof defineDocumentType<E>>): DocumentQuery<E> {
+export function getDocumentQuery<D extends DocumentBase = DocumentBase>(documentType: DocumentModel<D>): DocumentQuery<D> {
   const joins: Join[] = []
   const filters: any[] = []
   const selection: string[] = []
@@ -258,7 +259,7 @@ export function getDocumentQuery<E extends EntityDocument = EntityDocument>(docu
 
   return {
     query() {
-      const query = documentType.aggregate()
+      const query = documentType.mongoose.model.aggregate()
 
       // lookup stage
       joins.forEach((join) => {
@@ -278,7 +279,7 @@ export function getDocumentQuery<E extends EntityDocument = EntityDocument>(docu
 
       // unwind stage: unwind all multi-value joined fields
       joins
-        .filter(({ localField: field }) => documentType.schema.path(field) instanceof EntityFieldTypes.ObjectId)
+        .filter(({ localField: field }) => documentType.mongoose.model.schema.path(field) instanceof EntityFieldTypes.ObjectId)
         .forEach(({ localField: field }) => {
           query.unwind({ path: `$${field}`, preserveNullAndEmptyArrays: true })
         })
@@ -296,9 +297,9 @@ export function getDocumentQuery<E extends EntityDocument = EntityDocument>(docu
 
       return query
     },
-    join(field: string, model: ReturnType<typeof defineModel>) {
+    join<D extends DocumentBase = DocumentBase>(field: string, model: DocumentModel<D>) {
       joins.push({
-        from: model.collection.collectionName,
+        from: model.mongoose.model.collection.collectionName,
         localField: field,
         foreignField: `_id`,
         as: field,

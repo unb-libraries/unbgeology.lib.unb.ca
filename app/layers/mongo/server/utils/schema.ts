@@ -76,7 +76,9 @@ export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B e
       model,
     },
     find() {
-      return getDocumentQuery(model)
+      return !base
+        ? getDocumentQuery<D>(this as DocumentModel<D>)
+        : getDocumentQuery<NonNullable<B>>(this as unknown as DocumentModel<NonNullable<B>>)
     },
     async findByID(id: ObjectId) {
       const doc = !base ? await (model as Model<D>).findById(id) : await (model as Model<NonNullable<B>>).findById(id)

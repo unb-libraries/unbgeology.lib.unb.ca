@@ -1,5 +1,5 @@
 import { FilterOperator } from "@unb-libraries/nuxt-layer-entity"
-import { type DocumentQuery, type EntityDocument, type QueryOptions } from "~/layers/mongo/types/entity"
+import { type DocumentQuery, type QueryOptions } from "~/layers/mongo/types/entity"
 
 type QueryCondition = QueryOptions[`filter`][number]
 
@@ -19,7 +19,7 @@ const returnOnSomeSuccess = (fns: ((query: DocumentQuery, condition: QueryCondit
   }
 }
 
-const Within = <E extends EntityDocument = EntityDocument> (query: DocumentQuery<E>, condition: QueryOptions[`filter`][number]) => {
+const Within = (query: DocumentQuery, condition: QueryOptions[`filter`][number]) => {
   const [field, op, value] = condition
   if (!Array.isArray(value) || value.length < 2) {
     throw new Error(`Invalid value: must provide numeric range`)
@@ -41,7 +41,7 @@ const Within = <E extends EntityDocument = EntityDocument> (query: DocumentQuery
   }
 }
 
-const Outside = <E extends EntityDocument = EntityDocument> (query: DocumentQuery<E>, condition: QueryOptions[`filter`][number]) => {
+const Outside = (query: DocumentQuery, condition: QueryOptions[`filter`][number]) => {
   const [field, op, value] = condition
   if (!Array.isArray(value) || value.length < 2) {
     throw new Error(`Invalid value: must provide numeric range`)
@@ -61,7 +61,7 @@ const Outside = <E extends EntityDocument = EntityDocument> (query: DocumentQuer
   }
 }
 
-const Range = <E extends EntityDocument = EntityDocument> (query: DocumentQuery<E>, condition: QueryOptions[`filter`][number]) => {
+const Range = (query: DocumentQuery, condition: QueryOptions[`filter`][number]) => {
   try {
     Within(query, condition)
   } catch (withinError) {
@@ -76,7 +76,7 @@ const Range = <E extends EntityDocument = EntityDocument> (query: DocumentQuery<
 Range.Within = Within
 Range.Outside = Outside
 
-const Greater = <E extends EntityDocument = EntityDocument> (query: DocumentQuery<E>, condition: QueryOptions[`filter`][number]) => {
+const Greater = (query: DocumentQuery, condition: QueryOptions[`filter`][number]) => {
   const [field, op, value] = condition
   const number = Array.isArray(value) ? value.length > 0 ? parseInt(value.at(-1)!) : undefined : value ? parseInt(value) : undefined
   if (!number) {
@@ -96,7 +96,7 @@ const Greater = <E extends EntityDocument = EntityDocument> (query: DocumentQuer
   }
 }
 
-const Less = <E extends EntityDocument = EntityDocument> (query: DocumentQuery<E>, condition: QueryOptions[`filter`][number]) => {
+const Less = (query: DocumentQuery, condition: QueryOptions[`filter`][number]) => {
   const [field, op, value] = condition
   const number = Array.isArray(value) ? value.length > 0 ? parseInt(value.at(-1)!) : undefined : value ? parseInt(value) : undefined
   if (!number) {
@@ -116,14 +116,14 @@ const Less = <E extends EntityDocument = EntityDocument> (query: DocumentQuery<E
   }
 }
 
-const Numeric = <E extends EntityDocument = EntityDocument> (query: DocumentQuery<E>, condition: QueryOptions[`filter`][number]) => {
+const Numeric = (query: DocumentQuery, condition: QueryOptions[`filter`][number]) => {
   returnOnSomeSuccess([Range, Greater, Less], query, condition)
 }
 
 Numeric.Range = Range
 Numeric.Greater = Greater
 Numeric.Less = Less
-Numeric.NoRange = <E extends EntityDocument = EntityDocument> (query: DocumentQuery<E>, condition: QueryOptions[`filter`][number]) => {
+Numeric.NoRange = (query: DocumentQuery, condition: QueryOptions[`filter`][number]) => {
   returnOnSomeSuccess([Greater, Less], query, condition)
 }
 

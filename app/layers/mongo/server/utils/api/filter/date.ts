@@ -1,5 +1,5 @@
 import Numeric from "./numeric"
-import { type DocumentQuery, type EntityDocument, type QueryOptions } from "~/layers/mongo/types/entity"
+import { type DocumentQuery, type QueryOptions } from "~/layers/mongo/types/entity"
 
 const toMsString = (value: QueryOptions[`filter`][number][2]) => {
   try {
@@ -10,21 +10,21 @@ const toMsString = (value: QueryOptions[`filter`][number][2]) => {
   }
 }
 
-const fn = <E extends EntityDocument = EntityDocument> (fn: (query: DocumentQuery<E>, condition: QueryOptions[`filter`][number]) => void) => (query: DocumentQuery<E>, condition: QueryOptions[`filter`][number]) => {
+const fn = (fn: (query: DocumentQuery, condition: QueryOptions[`filter`][number]) => void) => (query: DocumentQuery, condition: QueryOptions[`filter`][number]) => {
   const [field, op, value] = condition
   const ms = toMsString(value)
   return fn(query, [field, op, ms])
 }
 
-const DateFilter = <E extends EntityDocument = EntityDocument> (query: DocumentQuery<E>, condition: QueryOptions[`filter`][number]) => fn(Numeric)(query, condition)
+const DateFilter = (query: DocumentQuery, condition: QueryOptions[`filter`][number]) => fn(Numeric)(query, condition)
 
-const Range = <E extends EntityDocument = EntityDocument> (query: DocumentQuery<E>, condition: QueryOptions[`filter`][number]) => fn(Numeric.Range)(query, condition)
-const RangeWithin = <E extends EntityDocument = EntityDocument> (query: DocumentQuery<E>, condition: QueryOptions[`filter`][number]) => fn(Numeric.Range.Within)(query, condition)
-const RangeOutside = <E extends EntityDocument = EntityDocument> (query: DocumentQuery<E>, condition: QueryOptions[`filter`][number]) => fn(Numeric.Range.Outside)(query, condition)
+const Range = (query: DocumentQuery, condition: QueryOptions[`filter`][number]) => fn(Numeric.Range)(query, condition)
+const RangeWithin = (query: DocumentQuery, condition: QueryOptions[`filter`][number]) => fn(Numeric.Range.Within)(query, condition)
+const RangeOutside = (query: DocumentQuery, condition: QueryOptions[`filter`][number]) => fn(Numeric.Range.Outside)(query, condition)
 
-const Greater = <E extends EntityDocument = EntityDocument> (query: DocumentQuery<E>, condition: QueryOptions[`filter`][number]) => fn(Numeric.Greater)(query, condition)
-const Less = <E extends EntityDocument = EntityDocument> (query: DocumentQuery<E>, condition: QueryOptions[`filter`][number]) => fn(Numeric.Less)(query, condition)
-const NoRange = <E extends EntityDocument = EntityDocument> (query: DocumentQuery<E>, condition: QueryOptions[`filter`][number]) => fn(Numeric.NoRange)(query, condition)
+const Greater = (query: DocumentQuery, condition: QueryOptions[`filter`][number]) => fn(Numeric.Greater)(query, condition)
+const Less = (query: DocumentQuery, condition: QueryOptions[`filter`][number]) => fn(Numeric.Less)(query, condition)
+const NoRange = (query: DocumentQuery, condition: QueryOptions[`filter`][number]) => fn(Numeric.NoRange)(query, condition)
 
 Range.Within = RangeWithin
 Range.Outside = RangeOutside

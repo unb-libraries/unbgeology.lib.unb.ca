@@ -33,7 +33,7 @@ export interface DocumentModel<D extends DocumentBase = DocumentBase> {
   mongoose: {
     model: Model<D>
   }
-  find: () => DocumentQuery
+  find: () => DocumentQuery<D>
   findByID: (id: ObjectId) => Promise<Document<D> | null>
   create: (body: D) => Promise<Document<D>>
 }

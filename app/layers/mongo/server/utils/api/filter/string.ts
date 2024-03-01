@@ -1,7 +1,7 @@
 import { FilterOperator } from "@unb-libraries/nuxt-layer-entity"
-import { type DocumentQuery, type EntityDocument, type QueryOptions } from "~/layers/mongo/types/entity"
+import { type DocumentQuery, type QueryOptions } from "~/layers/mongo/types/entity"
 
-export default <E extends EntityDocument = EntityDocument> (query: DocumentQuery<E>, condition: QueryOptions[`filter`][number]) => {
+export default (query: DocumentQuery, condition: QueryOptions[`filter`][number]) => {
   const [field, op, value] = condition
 
   if (op & FilterOperator.EQUALS & FilterOperator.NOT) {
