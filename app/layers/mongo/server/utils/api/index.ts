@@ -5,10 +5,16 @@ import { type EntityJSON, type Entity, type EntityJSONBody, FilterOperator } fro
 import { type QueryOptions, type EntityListOptions, type DocumentQuery } from "../../../types/entity"
 import { EntityBodyCardinality, type EntityBodyReaderOptions } from "../../../types/api"
 import { type DocumentBase, type DocumentModel } from "../../../types/schema"
+import { type MongooseEventContext } from "~../../../types"
 
 function initMongooseContext(event: H3Event) {
   event.context.mongoose = {
     model: undefined,
+    query: {
+      fields: [],
+      filter: [],
+      sortFields: [],
+    },
   }
 }
 
@@ -24,6 +30,34 @@ export function defineMongooseHandler<D extends DocumentBase = DocumentBase>(mod
 
 export function getMongooseModel<D extends DocumentBase = DocumentBase>(event: H3Event): DocumentModel<D> {
   return event.context.mongoose?.model
+}
+
+export function getMongooseQuery(event: H3Event): MongooseEventContext[`query`] {
+  if (!event.context.mongoose) {
+    initMongooseContext(event)
+  }
+  return event.context.mongoose?.query as MongooseEventContext[`query`]
+}
+
+export function addMongooseField(event: H3Event, ...field: MongooseEventContext[`query`][`fields`]) {
+  if (!event.context.mongoose) {
+    initMongooseContext(event)
+  }
+  event.context.mongoose.query.fields.push(...field)
+}
+
+export function addMongooseSortField(event: H3Event, ...fields: MongooseEventContext[`query`][`sortFields`]) {
+  if (!event.context.mongoose) {
+    initMongooseContext(event)
+  }
+  event.context.mongoose.query.sortFields.push(...fields)
+}
+
+export function addMongooseFilter(event: H3Event, ...filters: MongooseEventContext[`query`][`filter`]) {
+  if (!event.context.mongoose) {
+    initMongooseContext(event)
+  }
+  event.context.mongoose.query.filter.push(...filters)
 }
 
 export function getSelectedFields(fields: string[], prefix?: string) {

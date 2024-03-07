@@ -1,5 +1,6 @@
 import { Schema, type SchemaOptions, type Model, type HydratedDocument, type UpdateQuery, type QueryOptions as MongooseQueryOptions, type QueryWithHelpers } from "mongoose"
 import { FilterOperator, type Entity, type EntityJSON } from "@unb-libraries/nuxt-layer-entity"
+import type { DocumentBase, DocumentModel } from "./schema"
 
 export const EntityFieldTypes = Schema.Types
 
@@ -61,30 +62,33 @@ export interface QueryOptions {
   filter: [string, FilterOperator, string | string[]][]
   filterSelect: (options?: { root?: string, prefix?: string, default?: string[] }) => string[],
   search: string
-  sort: string[]
+  sort: [string, boolean][]
 }
 
-export interface DocumentQuery<E extends EntityDocument = EntityDocument> {
-  query: () => { exec: () => Promise<[{ documents: E[], total: [{ total: number }]}]> }
-  join: (field: string, model: ReturnType<typeof defineModel>) => DocumentQuery<E>
-  and: DocumentQuery<E>[`where`]
-  where: (field: string) => {
-    eq: (value: string | number) => DocumentQuery<E>
-    ne: (value: string | number) => DocumentQuery<E>
-    match: (value: string | RegExp) => DocumentQuery<E>
-    in: (value: string[] | number[]) => DocumentQuery<E>
-    nin: (value: string[] | number[]) => DocumentQuery<E>
-    contains: (value: string) => DocumentQuery<E>
-    gt: (value: number) => DocumentQuery<E>
-    gte: (value: number) => DocumentQuery<E>
-    lt: (value: number) => DocumentQuery<E>
-    lte: (value: number) => DocumentQuery<E>
+export interface DocumentQuery<D extends DocumentBase = DocumentBase> {
+  query: () => { exec: () => Promise<[{ documents: D[], total: [{ total: number }]}]> }
+  join: <J extends DocumentBase = DocumentBase>(field: string, model: DocumentModel<J>) => DocumentQuery<D>
+  and: DocumentQuery<D>[`where`]
+  where: {
+    (field: string): {
+      eq: (value: string | number) => DocumentQuery<D>
+      ne: (value: string | number) => DocumentQuery<D>
+      match: (pattern: RegExp) => DocumentQuery<D>
+      in: (value: string[] | number[]) => DocumentQuery<D>
+      nin: (value: string[] | number[]) => DocumentQuery<D>
+      contains: (value: string | number) => DocumentQuery<D>
+      gt: (value: number) => DocumentQuery<D>
+      gte: (value: number) => DocumentQuery<D>
+      lt: (value: number) => DocumentQuery<D>
+      lte: (value: number) => DocumentQuery<D>
+    },
+    (...handlers: ((query: DocumentQuery<D>) => void)[]): DocumentQuery<D>
   }
-  expr: (expr: object) => DocumentQuery<E>
-  select: (selection: any) => DocumentQuery<E>
-  sort: (field: string, asc?: boolean) => DocumentQuery<E>
-  paginate(page: number, pageSize: number): DocumentQuery<E>
-  then: (resolve: (result: { documents: E[], total: number }) => void, reject: (err: any) => void) => void
+  expr: (expr: object) => DocumentQuery<D>
+  select: (...fields: string[]) => DocumentQuery<D>
+  sort: (...fields: (string | [string, boolean])[]) => DocumentQuery<D>
+  paginate(page: number, pageSize: number): DocumentQuery<D>
+  then: (resolve: (result: { documents: D[], total: number }) => void, reject: (err: any) => void) => void
 }
 export interface Join {
   from: string

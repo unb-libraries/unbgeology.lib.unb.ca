@@ -256,10 +256,17 @@ export function getDocumentQuery<D extends DocumentBase = DocumentBase>(document
   const selection: string[] = []
   const sort: [string, boolean][] = []
   const paginator: [number, number] = [1, 25]
+  const handlers: ((query: DocumentQuery<D>) => void)[] = []
 
   return {
     query() {
       const query = documentType.mongoose.model.aggregate()
+
+      // apply handlers
+      while (handlers.length > 0) {
+        const handler = handlers.shift()!
+        handler(this)
+      }
 
       // lookup stage
       joins.forEach((join) => {
@@ -272,7 +279,7 @@ export function getDocumentQuery<D extends DocumentBase = DocumentBase>(document
       })
 
       // pre-sort stage
-      sort.forEach(([field, asc]) => {
+      sort.forEach(([field]) => {
         query
           .addFields({ [`no${field}`]: { $or: [{ $eq: [`$${field}`, []] }, { $eq: [`$${field}`, null] }] } })
       })
@@ -285,7 +292,11 @@ export function getDocumentQuery<D extends DocumentBase = DocumentBase>(document
         })
 
       // sort stage
-      query.sort(sort.map(([field, asc]) => `no${field} ${asc ? `` : `-`}${field}`).join(` `))
+      if (sort.length > 0) {
+        query.sort(sort.map(([field, asc]) => `no${field} ${asc ? `` : `-`}${field}`).join(` `))
+      } else {
+        query.sort(`_id`)
+      }
 
       // project stage
       query.project(selection.join(` `))
@@ -306,10 +317,20 @@ export function getDocumentQuery<D extends DocumentBase = DocumentBase>(document
       })
       return this
     },
-    and(field: string) {
-      return this.where(field)
+    and(...fieldOrHandlers: (string | ((query: DocumentQuery) => void))[]) {
+      if (typeof fieldOrHandlers[0] === `function`) {
+        const handlers = fieldOrHandlers
+        return this.where(...handlers as ((query: DocumentQuery) => void)[])
+      }
+      return this.where(fieldOrHandlers[0])
     },
-    where(field: string) {
+    where(...fieldOrHandlers: (string | ((query: DocumentQuery) => void))[]) {
+      if (typeof fieldOrHandlers[0] === `function`) {
+        handlers.push(...fieldOrHandlers as ((query: DocumentQuery) => void)[])
+        return this
+      }
+
+      const field = fieldOrHandlers[0]
       return {
         eq: (value: string | number) => {
           filters.push({ [field]: value })
@@ -356,12 +377,19 @@ export function getDocumentQuery<D extends DocumentBase = DocumentBase>(document
       filters.push(expr)
       return this
     },
-    select(field: string) {
-      selection.push(field)
+    select(...fields: string[]) {
+      selection.push(...fields)
       return this
     },
-    sort(field: string, asc: boolean = true) {
-      sort.push([field, asc])
+    sort(...fields: (string | [string, boolean])[]) {
+      fields.forEach((field) => {
+        if (Array.isArray(field)) {
+          const [fieldname, asc] = field
+          sort.push([fieldname, asc])
+        } else {
+          sort.push([field, true])
+        }
+      })
       return this
     },
     paginate(page, pageSize) {
@@ -369,7 +397,7 @@ export function getDocumentQuery<D extends DocumentBase = DocumentBase>(document
       paginator[1] = Math.min(500, pageSize)
       return this
     },
-    async then(resolve: (result: { documents: E[], total: number }) => void, reject: (err: any) => void) {
+    async then(resolve: (result: { documents: D[], total: number }) => void, reject: (err: any) => void) {
       try {
         const [result] = await this.query().exec()
         const { documents, total } = result

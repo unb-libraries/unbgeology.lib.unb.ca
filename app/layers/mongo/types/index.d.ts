@@ -1,7 +1,8 @@
 import type { EntityJSON, EntityJSONBody, Migration, MigrationItem, MigrationStatus } from "@unb-libraries/nuxt-layer-entity"
-import type { EntityDocument } from "./entity"
+import type { DocumentQuery, EntityDocument } from "./entity"
 import type { SourceItem } from "./migrate"
 import type Mongoose from "mongoose"
+import type { DocumentBase, DocumentModel } from "./schema"
 
 export declare module "nuxt/schema" {
   interface RuntimeConfig {
@@ -42,5 +43,22 @@ export declare module "nitropack" {
     "migrate:import:item:error": (item: MigrationItem, error: string) => void | Promise<void>
     "migrate:import:item:skipped": (item: MigrationItem) => void | Promise<void>
     "migrate:rollback": (migration: Migration) => void | Promise<void>
+    "migrate:pause": (migration: Migration) => void | Promise<void>
+
+  }
+}
+
+export interface MongooseEventContext<D extends DocumentBase = DocumentBase> {
+  model: DocumentModel<D>
+  query: {
+    fields: string[]
+    filter: ((query: DocumentQuery<D>) => void)[]
+    sortFields: [string, boolean][]
+  }
+}
+
+export declare module h3 {
+  interface H3EventContext {
+      mongoose?: MongooseEventContext
   }
 }
