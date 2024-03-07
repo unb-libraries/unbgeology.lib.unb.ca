@@ -1,7 +1,8 @@
 import Numeric from "./numeric"
-import { type DocumentQuery, type QueryOptions } from "~/layers/mongo/types/entity"
+import { type QueryCondition } from "."
+import type { DocumentQuery } from "~/layers/mongo/types/entity"
 
-const toMsString = (value: QueryOptions[`filter`][number][2]) => {
+const toMsString = (value: QueryCondition[1]) => {
   try {
     const parse = (s: string) => Date.parse(s)
     return Array.isArray(value) ? value.map(parse).map(ms => `${ms}`) : `${parse(value)}`
@@ -10,21 +11,19 @@ const toMsString = (value: QueryOptions[`filter`][number][2]) => {
   }
 }
 
-const fn = (fn: (query: DocumentQuery, condition: QueryOptions[`filter`][number]) => void) => (query: DocumentQuery, condition: QueryOptions[`filter`][number]) => {
-  const [field, op, value] = condition
+const fn = (fn: (field: string, condition: QueryCondition) => (query: DocumentQuery) => void) => (field: string, condition: QueryCondition) => {
+  const [op, value] = condition
   const ms = toMsString(value)
-  return fn(query, [field, op, ms])
+  return fn(field, [op, ms])
 }
 
-const DateFilter = (query: DocumentQuery, condition: QueryOptions[`filter`][number]) => fn(Numeric)(query, condition)
-
-const Range = (query: DocumentQuery, condition: QueryOptions[`filter`][number]) => fn(Numeric.Range)(query, condition)
-const RangeWithin = (query: DocumentQuery, condition: QueryOptions[`filter`][number]) => fn(Numeric.Range.Within)(query, condition)
-const RangeOutside = (query: DocumentQuery, condition: QueryOptions[`filter`][number]) => fn(Numeric.Range.Outside)(query, condition)
-
-const Greater = (query: DocumentQuery, condition: QueryOptions[`filter`][number]) => fn(Numeric.Greater)(query, condition)
-const Less = (query: DocumentQuery, condition: QueryOptions[`filter`][number]) => fn(Numeric.Less)(query, condition)
-const NoRange = (query: DocumentQuery, condition: QueryOptions[`filter`][number]) => fn(Numeric.NoRange)(query, condition)
+const DateFilter = (field: string, condition: QueryCondition) => fn(Numeric)(field, condition)
+const Range = (field: string, condition: QueryCondition) => fn(Numeric.Range)(field, condition)
+const RangeWithin = (field: string, condition: QueryCondition) => fn(Numeric.Range.Within)(field, condition)
+const RangeOutside = (field: string, condition: QueryCondition) => fn(Numeric.Range.Outside)(field, condition)
+const Greater = (field: string, condition: QueryCondition) => fn(Numeric.Greater)(field, condition)
+const Less = (field: string, condition: QueryCondition) => fn(Numeric.Less)(field, condition)
+const NoRange = (field: string, condition: QueryCondition) => fn(Numeric.NoRange)(field, condition)
 
 Range.Within = RangeWithin
 Range.Outside = RangeOutside
