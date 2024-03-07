@@ -4,6 +4,27 @@ import { type H3Event } from "h3"
 import { type EntityJSON, type Entity, type EntityJSONBody, FilterOperator } from "@unb-libraries/nuxt-layer-entity"
 import { type QueryOptions, type EntityListOptions, type DocumentQuery } from "../../../types/entity"
 import { EntityBodyCardinality, type EntityBodyReaderOptions } from "../../../types/api"
+import { type DocumentBase, type DocumentModel } from "../../../types/schema"
+
+function initMongooseContext(event: H3Event) {
+  event.context.mongoose = {
+    model: undefined,
+  }
+}
+
+export function defineMongooseHandler<D extends DocumentBase = DocumentBase>(model: DocumentModel<D>, handler: Parameters<typeof defineEventHandler>[0]) {
+  return defineEventHandler((event) => {
+    if (!event.context.mongoose) {
+      initMongooseContext(event)
+    }
+    event.context.mongoose.model = model
+    return handler(event)
+  })
+}
+
+export function getMongooseModel<D extends DocumentBase = DocumentBase>(event: H3Event): DocumentModel<D> {
+  return event.context.mongoose?.model
+}
 
 export function getSelectedFields(fields: string[], prefix?: string) {
   if (prefix) {
