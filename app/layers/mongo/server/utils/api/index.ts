@@ -122,38 +122,61 @@ export function getQueryOptions(event: H3Event): QueryOptions {
   }
 }
 
-export function defineEntityBodyReader<E extends Entity = Entity>(reader: (body: EntityJSONBody<E>) => EntityJSONBody<E> | Promise<EntityJSONBody<E>>) {
-  return async (event: H3Event, options?: EntityBodyReaderOptions): Promise<EntityJSONBody<E> | EntityJSONBody<E>[]> => {
+export function defineEntityBodyReader<E extends Entity = Entity>(reader: (body: any) => EntityJSONBody<E> | Promise<EntityJSONBody<E>>, options?: EntityBodyReaderOptions) {
+  return async (event: H3Event) => {
+    const body = await readBody(event)
+    return await reader(body)
+  }
+}
+
+export function defineBodyReader<T = any>(reader: (body: any) => T | Promise<T>) {
+  const extensions: ((body: any) => any | Promise<any>)[] = []
+
+  const readOne = async (body: any) => {
+    const bodies = await Promise.all([reader, ...extensions]
+      .map(async reader => await reader(body)))
+    return bodies.reduce((body, input) => ({ ...body, ...input }), {})
+  }
+
+  const readMany = async (body: any[]) => {
+    return await Promise.all(body.map(async body => await readOne(body)))
+  }
+
+  const readOneOrMany = async (body: any | any[]) => {
+    return Array.isArray(body)
+      ? await readMany(body)
+      : await readOne(body)
+  }
+
+  const read = async (event: H3Event, options?: EntityBodyReaderOptions) => {
     options = defu(options, { cardinality: EntityBodyCardinality.MANY | EntityBodyCardinality.ONE } as const)
     const body = await readBody(event)
-
-    async function readOne(body: any) {
-      return await reader(body)
-    }
-
-    async function readMany(body: any[]) {
-      return await Promise.all(body.map(async body => await reader(body)))
-    }
-
     switch (options.cardinality) {
       case EntityBodyCardinality.ONE: {
         if (Array.isArray(body)) {
           throw new TypeError(`Body must be of type object.`)
         }
-        return readOne(body)
+        return await readOne(body)
       }
       case EntityBodyCardinality.MANY: {
         if (!Array.isArray(body)) {
           throw new TypeError(`Body must be of type array.`)
         }
-        return readMany(body)
+        return await readMany(body)
       }
       case EntityBodyCardinality.ONE | EntityBodyCardinality.MANY:
       default: {
-        return !Array.isArray(body) ? await readOne(body) : await readMany(body)
+        return await readOneOrMany(body)
       }
     }
   }
+
+  read.append = (reader: (body: any) => any | Promise<any>) => {
+    extensions.push(reader)
+    return read
+  }
+
+  return read
 }
 
 export function defineFormatter<TOutput extends object = object, TInput extends object = object>(formatter: (item: TInput) => TOutput, options?: Partial<{ removeEmpty: boolean }>) {
