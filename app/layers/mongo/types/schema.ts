@@ -18,6 +18,10 @@ export interface DocumentSchema<D = any> {
   alterSchema: (schema: Schema<D>) => void
 }
 
+export type ObjectProperties<T extends object = object> = Pick<T, {
+  [K in keyof T]: T[K] extends Function ? never : K
+}[keyof T]>
+
 export type Document<D extends DocumentBase = DocumentBase> = {
   // update: () => Promise<DocumentUpdate<Partial<D>>>
   delete: () => Promise<void>

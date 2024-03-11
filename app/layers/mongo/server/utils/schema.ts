@@ -294,4 +294,19 @@ function findDocumentByID<D extends IDocumentBase = IDocumentBase>(Model: Docume
 async function createDocument<D extends IDocumentBase = IDocumentBase>(Model: DocumentModel<D>, body: Partial<D> | Partial<D>[]) {
   return await Model.mongoose.model.create(body)
 }
+
+function diff<T extends object = object>(obj: T, clone: T): [Partial<ObjectProperties<T>>, Partial<ObjectProperties<T>>] {
+  const entries = Object.entries(obj) as [keyof ObjectProperties<T>, T[keyof ObjectProperties<T>]][]
+  const diffs: [keyof T, [T[keyof T], T[keyof T]]][] = entries
+    .filter(([, value]) => typeof value !== `function`)
+    .filter(([path, value]) => JSON.stringify(value) !== JSON.stringify(clone[path]))
+    .map(([path, value]) => [path, typeof value !== `object`
+      ? [value, clone[path]]
+      : diff(value as object, clone[path] as object)]) as [keyof T, [T[keyof T], T[keyof T]]][]
+
+  return [
+    Object.fromEntries(diffs.map(([path, diffs]) => [path, diffs[0]])) as Partial<ObjectProperties<T>>,
+    Object.fromEntries(diffs.map(([path, diffs]) => [path, diffs[1]])) as Partial<ObjectProperties<T>>,
+  ]
+}
 }
