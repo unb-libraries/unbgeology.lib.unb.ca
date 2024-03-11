@@ -1,4 +1,4 @@
-import { Schema, type SchemaDefinition, type ObjectId, Model } from "mongoose"
+import { Schema, type SchemaDefinition, type ObjectId, type Model } from "mongoose"
 import { type DocumentQuery } from "./entity"
 
 export interface DocumentUpdate<D = any> {
@@ -45,6 +45,7 @@ export interface DocumentModel<D extends DocumentBase = DocumentBase> {
   findByID: (id: ObjectId) => DocumentRequest<D>
   create: (body: D | D[]) => Promise<Document<D> | Document<D>[]>
   update: (id: ObjectId, body: Partial<D>) => Promise<void>
+  delete: (id: ObjectId) => Promise<void>
 }
 
 export type AlterSchemaHandler<D = any> = (schema: Schema<D>) => void

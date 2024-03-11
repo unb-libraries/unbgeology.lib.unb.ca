@@ -96,6 +96,9 @@ export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B e
         ? await updateDocument<D>(this as DocumentModel<D>, id, body)
         : await updateDocument<D>(this as DocumentModel<NonNullable<B>>, id, body)
     },
+    async delete(id: ObjectId) {
+      await deleteDocument(this as DocumentModel, id)
+    },
   } as unknown as B extends undefined ? DocumentModel<D> : DocumentModel<NonNullable<B>>
 }
 
@@ -273,6 +276,9 @@ function findDocument<D extends IDocumentBase = IDocumentBase>(Model: DocumentMo
         if (document) {
           const clone = JSON.parse(JSON.stringify(document))
           Object.assign(document, {
+            async delete() {
+              return await Model.mongoose.model.deleteOne({ _id: document._id })
+            },
             async update() {
               const [before, after] = diff<D>(clone, document)
               await Model.update(document._id, after as Partial<D>)
@@ -324,4 +330,7 @@ function diff<T extends object = object>(obj: T, clone: T): [Partial<ObjectPrope
 async function updateDocument<D extends IDocumentBase = IDocumentBase>(Model: DocumentModel<D>, id: ObjectId, body: Partial<D>) {
   await Model.mongoose.model.updateOne({ _id: id }, body)
 }
+
+async function deleteDocument(Model: DocumentModel, id: ObjectId) {
+  await Model.mongoose.model.deleteOne({ _id: id })
 }
