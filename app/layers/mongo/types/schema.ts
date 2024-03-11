@@ -23,10 +23,11 @@ export type ObjectProperties<T extends object = object> = Pick<T, {
 }[keyof T]>
 
 export type Document<D extends DocumentBase = DocumentBase> = {
-  // update: () => Promise<DocumentUpdate<Partial<D>>>
+  update: () => Promise<[Partial<D>, Partial<D>]>
   delete: () => Promise<void>
   save: () => Promise<void>
 } & D
+
 type DocumentRequest<D extends DocumentBase = DocumentBase> = {
   select: (...fields: string[]) => DocumentRequest<D>
   then: (resolve: (document: Document<D>) => void, reject: (err: any) => void) => void
@@ -41,8 +42,9 @@ export interface DocumentModel<D extends DocumentBase = DocumentBase> {
     model: Model<D>
   }
   find: () => DocumentQuery<D>
-  findByID: (id: string) => DocumentRequest<D>
+  findByID: (id: ObjectId) => DocumentRequest<D>
   create: (body: D | D[]) => Promise<Document<D> | Document<D>[]>
+  update: (id: ObjectId, body: Partial<D>) => Promise<void>
 }
 
 export type AlterSchemaHandler<D = any> = (schema: Schema<D>) => void
