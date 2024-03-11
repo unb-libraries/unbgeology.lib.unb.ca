@@ -77,42 +77,221 @@ export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B e
     },
     find() {
       return !base
-        ? getDocumentQuery<D>(this as DocumentModel<D>)
-        : getDocumentQuery<NonNullable<B>>(this as unknown as DocumentModel<NonNullable<B>>)
+        ? DocumentQuery<D>(this as DocumentModel<D>)
+        : DocumentQuery<NonNullable<B>>(this as unknown as DocumentModel<NonNullable<B>>)
     },
-    async findByID(id: ObjectId) {
-      const doc = !base ? await (model as Model<D>).findById(id) : await (model as Model<NonNullable<B>>).findById(id)
-      if (!doc) { return null }
+    findByID(id: string) {
+      return !base
+        ? findDocumentByID(this as DocumentModel<D>, id)
+        : findDocumentByID(this as unknown as DocumentModel<NonNullable<B>>, id)
+    },
+    async create(body: B extends undefined ? Partial<D> | Partial<D>[] : Partial<B> | Partial<B>[]) {
+      return !base
+        ? await createDocument(this as DocumentModel<D>, body as Partial<D> | Partial<D>[])
+        : await createDocument(this as DocumentModel<NonNullable<B>>, body as Partial<B> | Partial<B>[])
+    },
+  } as unknown as B extends undefined ? DocumentModel<D> : DocumentModel<NonNullable<B>>
+}
 
-      const clone = doc.$clone()
+export function DocumentQuery<D extends IDocumentBase = IDocumentBase>(documentType: DocumentModel<D>): DocumentQuery<D> {
+  const joins: Join[] = []
+  const filters: any[] = []
+  const selection: string[] = []
+  const sort: [string, boolean][] = []
+  const paginator: [number, number] = [1, 25]
+  const handlers: ((query: DocumentQuery<D>) => void)[] = []
+
+  return {
+    query() {
+      const query = documentType.mongoose.model.aggregate()
+
+      // apply handlers
+      while (handlers.length > 0) {
+        const handler = handlers.shift()!
+        handler(this)
+      }
+
+      // lookup stage
+      joins.forEach((join) => {
+        query.lookup(join)
+      })
+
+      // match stage
+      filters.forEach((field) => {
+        query.match(field)
+      })
+
+      // pre-sort stage
+      sort.forEach(([field]) => {
+        query
+          .addFields({ [`no${field}`]: { $or: [{ $eq: [`$${field}`, []] }, { $eq: [`$${field}`, null] }] } })
+      })
+
+      // unwind stage: unwind all multi-value joined fields
+      joins
+        .filter(({ localField: field }) => documentType.mongoose.model.schema.path(field) instanceof Types.ObjectId)
+        .forEach(({ localField: field }) => {
+          query.unwind({ path: `$${field}`, preserveNullAndEmptyArrays: true })
+        })
+
+      // sort stage
+      if (sort.length > 0) {
+        query.sort(sort.map(([field, asc]) => `no${field} ${asc ? `` : `-`}${field}`).join(` `))
+      } else {
+        query.sort(`_id`)
+      }
+
+      // project stage
+      if (selection.length > 0) {
+        query.project(selection.reduce((projection, field) => ({ ...projection, [field]: 1 }), {}))
+      }
+
+      const [page, pageSize] = paginator
+      query
+        .facet({ documents: [{ $skip: (page - 1) * pageSize }, { $limit: pageSize }], total: [{ $count: `total` }] })
+        .project({ documents: 1, total: 1 })
+
+      return query
+    },
+    join<D extends IDocumentBase = IDocumentBase>(field: string, model: DocumentModel<D>) {
+      joins.push({
+        from: model.mongoose.model.collection.collectionName,
+        localField: field,
+        foreignField: `_id`,
+        as: field,
+      })
+      return this
+    },
+    and(...fieldOrHandlers: (string | ((query: DocumentQuery) => void))[]) {
+      if (typeof fieldOrHandlers[0] === `function`) {
+        const handlers = fieldOrHandlers
+        return this.where(...handlers as ((query: DocumentQuery) => void)[])
+      }
+      return this.where(fieldOrHandlers[0])
+    },
+    where(...fieldOrHandlers: (string | ((query: DocumentQuery) => void))[]) {
+      if (fieldOrHandlers.length === 0) { return this }
+
+      if (typeof fieldOrHandlers[0] === `function`) {
+        handlers.push(...fieldOrHandlers as ((query: DocumentQuery) => void)[])
+        return this
+      }
+
+      const field = fieldOrHandlers[0]
       return {
-        get(path: B extends undefined ? keyof D : keyof Exclude<B, undefined>) {
-          return doc.get(path as Extract<keyof B extends undefined ? D : Exclude<B, undefined>, string>)
+        eq: (value: string | number) => {
+          filters.push({ [field]: value })
+          return this
         },
-        set(path: B extends undefined ? keyof D : keyof Exclude<B, undefined>, value: D[B extends undefined ? keyof D : keyof Exclude<B, undefined>]) {
-          doc.set(path as Extract<keyof B extends undefined ? D : Exclude<B, undefined>, string>, value)
-          return this as B extends undefined ? IDocument<D> : IDocument<NonNullable<B>>
+        ne: (value: string | number) => {
+          filters.push({ [field]: { $ne: value } })
+          return this
         },
-        async update() {
-          const before = doc.modifiedPaths()
-            .map(path => ({ [path]: clone.get(path) }))
-            .reduce((diff, update) => ({ ...diff, ...update }), {})
-          const after = doc.modifiedPaths()
-            .map(path => ({ [path]: doc.get(path) }))
-            .reduce((diff, update) => ({ ...diff, ...update }), {})
-          await doc.save()
-          return { before, after } as { before: B extends undefined ? Partial<D> : Partial<B>, after: B extends undefined ? Partial<D> : Partial<B> }
+        match: (pattern: RegExp) => {
+          filters.push({ [field]: { $regex: pattern } })
+          return this
         },
-        async delete() {
-          await doc.deleteOne()
+        in: (value: (string | number)[]) => {
+          filters.push({ [field]: { $in: value } })
+          return this
+        },
+        nin: (value: (string | number)[]) => {
+          filters.push({ [field]: { $nin: value } })
+          return this
+        },
+        contains(value: string | number) {
+          return this.eq(value)
+        },
+        gt: (value: number) => {
+          filters.push({ [field]: { $gt: value } })
+          return this
+        },
+        gte: (value: number) => {
+          filters.push({ [field]: { $gte: value } })
+          return this
+        },
+        lt: (value: number) => {
+          filters.push({ [field]: { $lt: value } })
+          return this
+        },
+        lte: (value: number) => {
+          filters.push({ [field]: { $lte: value } })
+          return this
         },
       }
     },
-    async create(body: B extends undefined ? D : B) {
-      const { _id } = !base
-        ? await (model as Model<D>).create(body)
-        : await (model as Model<NonNullable<B>>).create(body)
-      return (await this.findByID(_id))!
+    expr(expr: object) {
+      filters.push(expr)
+      return this
     },
-  } as B extends undefined ? DocumentModel<D> : DocumentModel<NonNullable<B>>
+    select(...fields: string[]) {
+      selection.push(...fields)
+      return this
+    },
+    sort(...fields: (string | [string, boolean])[]) {
+      fields.forEach((field) => {
+        if (Array.isArray(field)) {
+          const [fieldname, asc] = field
+          sort.push([fieldname, asc])
+        } else {
+          sort.push([field, true])
+        }
+      })
+      return this
+    },
+    paginate(page, pageSize) {
+      paginator[0] = Math.max(1, page)
+      paginator[1] = Math.min(500, pageSize)
+      return this
+    },
+    async then(resolve: (result: { documents: D[], total: number }) => void, reject: (err: any) => void) {
+      try {
+        const [result] = await this.query().exec()
+        const { documents, total } = result
+        resolve({ documents, total: total[0]?.total ?? 0 })
+      } catch (err) {
+        reject(err)
+      }
+    },
+  }
+}
+
+function findDocument<D extends IDocumentBase = IDocumentBase>(Model: DocumentModel<D>) {
+  const query = DocumentQuery(Model)
+  return {
+    ...query,
+    async then(resolve: (document: IDocument<D> | null) => void, reject: (err: any) => void) {
+      try {
+        const { documents } = await query.paginate(1, 1)
+        const document = documents[0]
+        if (document) {
+          Object.assign(document, {
+            delete: async () => {
+              await Model.mongoose.model.deleteOne({ _id: documents[0]._id })
+            },
+            save: async () => {
+              await Model.mongoose.model.updateOne({ _id: documents[0]._id }, documents[0])
+            },
+          })
+        }
+        resolve(document as IDocument<D> | null)
+      } catch (err: any) {
+        reject(err)
+      }
+    },
+  }
+}
+
+function findDocumentByID<D extends IDocumentBase = IDocumentBase>(Model: DocumentModel<D>, id: string) {
+  const { join, select, then } = findDocument(Model).where(`_id`).eq(new Types.ObjectId(id))
+  return {
+    join,
+    select,
+    then,
+  }
+}
+
+async function createDocument<D extends IDocumentBase = IDocumentBase>(Model: DocumentModel<D>, body: Partial<D> | Partial<D>[]) {
+  return await Model.mongoose.model.create(body)
+}
 }
