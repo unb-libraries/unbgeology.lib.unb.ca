@@ -81,7 +81,7 @@ export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B e
         ? DocumentQuery<D>(this as DocumentModel<D>)
         : DocumentQuery<NonNullable<B>>(this as unknown as DocumentModel<NonNullable<B>>)
     },
-    findByID(id: ObjectId) {
+    findByID(id: string) {
       return !base
         ? findDocumentByID(this as DocumentModel<D>, id)
         : findDocumentByID(this as unknown as DocumentModel<NonNullable<B>>, id)
@@ -91,12 +91,12 @@ export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B e
         ? await createDocument(this as DocumentModel<D>, body as Partial<D> | Partial<D>[])
         : await createDocument(this as DocumentModel<NonNullable<B>>, body as Partial<B> | Partial<B>[])
     },
-    async update(id: ObjectId, body: B extends undefined ? Partial<D> : Partial<NonNullable<B>>) {
+    async update(id: string, body: B extends undefined ? Partial<D> : Partial<NonNullable<B>>) {
       !base
         ? await updateDocument<D>(this as DocumentModel<D>, id, body)
         : await updateDocument<D>(this as DocumentModel<NonNullable<B>>, id, body)
     },
-    async delete(id: ObjectId) {
+    async delete(id: string) {
       await deleteDocument(this as DocumentModel, id)
     },
   } as unknown as B extends undefined ? DocumentModel<D> : DocumentModel<NonNullable<B>>
@@ -281,7 +281,7 @@ function findDocument<D extends IDocumentBase = IDocumentBase>(Model: DocumentMo
             },
             async update() {
               const [before, after] = diff<D>(clone, document)
-              await Model.update(document._id, after as Partial<D>)
+              await Model.update(`${document._id}`, after as Partial<D>)
               return [before, after]
             },
             async save() {
@@ -299,7 +299,7 @@ function findDocument<D extends IDocumentBase = IDocumentBase>(Model: DocumentMo
   }
 }
 
-function findDocumentByID<D extends IDocumentBase = IDocumentBase>(Model: DocumentModel<D>, id: ObjectId) {
+function findDocumentByID<D extends IDocumentBase = IDocumentBase>(Model: DocumentModel<D>, id: string) {
   const { join, select, then } = findDocument(Model).where(`_id`).eq(new Types.ObjectId(id))
   return {
     join,
@@ -327,10 +327,10 @@ function diff<T extends object = object>(obj: T, clone: T): [Partial<ObjectPrope
   ]
 }
 
-async function updateDocument<D extends IDocumentBase = IDocumentBase>(Model: DocumentModel<D>, id: ObjectId, body: Partial<D>) {
+async function updateDocument<D extends IDocumentBase = IDocumentBase>(Model: DocumentModel<D>, id: string, body: Partial<D>) {
   await Model.mongoose.model.updateOne({ _id: id }, body)
 }
 
-async function deleteDocument(Model: DocumentModel, id: ObjectId) {
+async function deleteDocument(Model: DocumentModel, id: string) {
   await Model.mongoose.model.deleteOne({ _id: id })
 }

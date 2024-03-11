@@ -42,10 +42,10 @@ export interface DocumentModel<D extends DocumentBase = DocumentBase> {
     model: Model<D>
   }
   find: () => DocumentQuery<D>
-  findByID: (id: ObjectId) => DocumentRequest<D>
+  findByID: (id: string) => DocumentRequest<D>
   create: (body: D | D[]) => Promise<Document<D> | Document<D>[]>
-  update: (id: ObjectId, body: Partial<D>) => Promise<void>
-  delete: (id: ObjectId) => Promise<void>
+  update: (id: string, body: Partial<D>) => Promise<void>
+  delete: (id: string) => Promise<void>
 }
 
 export type AlterSchemaHandler<D = any> = (schema: Schema<D>) => void
