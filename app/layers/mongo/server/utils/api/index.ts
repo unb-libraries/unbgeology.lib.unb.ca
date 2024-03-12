@@ -129,49 +129,43 @@ export function defineEntityBodyReader<E extends Entity = Entity>(reader: (body:
   }
 }
 
-export function defineBodyReader<T = any>(reader: (body: any) => T | Promise<T>) {
+export function defineBodyReader<TIn = any, TOut = TIn>(reader: (body: Partial<TIn>) => Partial<TOut> | Promise<Partial<TOut>>) {
   const extensions: ((body: any) => any | Promise<any>)[] = []
 
-  const readOne = async (body: any) => {
+  const readOne = async (body: Partial<TIn>): Promise<Partial<TOut>> => {
     const bodies = await Promise.all([reader, ...extensions]
       .map(async reader => await reader(body)))
     return bodies.reduce((body, input) => ({ ...body, ...input }), {})
   }
 
-  const readMany = async (body: any[]) => {
+  const readMany = async (body: Partial<TIn>[]): Promise<Partial<TOut>[]> => {
     return await Promise.all(body.map(async body => await readOne(body)))
   }
 
-  const readOneOrMany = async (body: any | any[]) => {
-    return Array.isArray(body)
-      ? await readMany(body)
-      : await readOne(body)
-  }
-
-  const read = async (event: H3Event, options?: EntityBodyReaderOptions) => {
-    options = defu(options, { cardinality: EntityBodyCardinality.MANY | EntityBodyCardinality.ONE } as const)
+  const read = async (event: H3Event) => {
     const body = await readBody(event)
-    switch (options.cardinality) {
-      case EntityBodyCardinality.ONE: {
-        if (Array.isArray(body)) {
-          throw new TypeError(`Body must be of type object.`)
-        }
-        return await readOne(body)
-      }
-      case EntityBodyCardinality.MANY: {
-        if (!Array.isArray(body)) {
-          throw new TypeError(`Body must be of type array.`)
-        }
-        return await readMany(body)
-      }
-      case EntityBodyCardinality.ONE | EntityBodyCardinality.MANY:
-      default: {
-        return await readOneOrMany(body)
-      }
-    }
+    return !Array.isArray(body)
+      ? await readOne(body)
+      : await readMany(body)
   }
 
-  read.append = (reader: (body: any) => any | Promise<any>) => {
+  read.one = async (event: H3Event) => {
+    const body = await readBody(event)
+    if (Array.isArray(body)) {
+      throw new TypeError(`Body must be of type object.`)
+    }
+    return readOne(body)
+  }
+
+  read.many = async (event: H3Event) => {
+    const body = await readBody(event)
+    if (!Array.isArray(body)) {
+      throw new TypeError(`Body must be of type array.`)
+    }
+    return readMany(body)
+  }
+
+  read.append = (reader: <TInx extends TIn = TIn, TOutx extends TOut = TOut>(body: Partial<TInx>) => Partial<TOutx> | Promise<Partial<TOutx>>) => {
     extensions.push(reader)
     return read
   }
