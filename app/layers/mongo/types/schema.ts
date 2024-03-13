@@ -8,8 +8,8 @@ export interface DocumentUpdate<D = any> {
 
 export interface DocumentBase {
   readonly _id: ObjectId
-  readonly created: Date
-  readonly updated: Date
+  readonly created: number
+  readonly updated: number
 }
 
 export interface DocumentSchema<D = any> {

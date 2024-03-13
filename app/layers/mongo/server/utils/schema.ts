@@ -43,13 +43,13 @@ defineDocumentSchema.mixin = <D = any>(mixin: DocumentSchema<D>) => {
 
 export const DocumentBase = defineDocumentSchema<IDocumentBase>({
   created: {
-    type: Schema.Types.Date,
+    type: Schema.Types.Number,
     required: true,
     immutable: true,
     default: Date.now,
   },
   updated: {
-    type: Schema.Types.Date,
+    type: Schema.Types.Number,
     required: true,
     default: Date.now,
   },

@@ -131,13 +131,16 @@ export interface TaxonomyTerm extends Term {
 }
 export type JTaxonomy = EntityJSON<TaxonomyTerm>;
 export type JTaxonomyList = EntityJSONList<TaxonomyTerm>;
-export interface File extends EntityBundle {
+export declare enum FileState {
+    PENDING = 1,
+    PERSISTED = 2,
+    DELETED = 4
+}
+export interface File extends Stateful<typeof FileState>, EntityBundle {
     filename: string;
-    filepath: string;
     filesize: number;
-    filetype: string;
-    persisted: boolean;
-    uploadName: string;
+    mimetype: string;
+    uri: string;
 }
 export type JFile = EntityJSON<File>;
 export type JFileList = EntityJSONList<File>;

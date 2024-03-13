@@ -12,6 +12,12 @@ export var FilterOperator;
     FilterOperator[FilterOperator["AND"] = 32] = "AND";
     FilterOperator[FilterOperator["OR"] = 64] = "OR";
 })(FilterOperator || (FilterOperator = {}));
+export var FileState;
+(function (FileState) {
+    FileState[FileState["PENDING"] = 1] = "PENDING";
+    FileState[FileState["PERSISTED"] = 2] = "PERSISTED";
+    FileState[FileState["DELETED"] = 4] = "DELETED";
+})(FileState || (FileState = {}));
 export var MigrationStatus;
 (function (MigrationStatus) {
     MigrationStatus[MigrationStatus["INITIAL"] = 1] = "INITIAL";
