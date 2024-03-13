@@ -1,8 +1,5 @@
 export var Status;
 (function (Status) {
-    Status[Status["DRAFT"] = 1] = "DRAFT";
-    Status[Status["IMPORTED"] = 2] = "IMPORTED";
-    Status[Status["PUBLISHED"] = 4] = "PUBLISHED";
 })(Status || (Status = {}));
 // REFACTOR: Move to app/layers/base/types/index.d.ts
 export var FilterOperator;
