@@ -1,10 +1,10 @@
-export enum EntityBodyCardinality {
+export enum Cardinality {
   ONE = 1,
   MANY = 2
 }
 
 export interface EntityBodyReaderOptions {
-  cardinality: EntityBodyCardinality
+  cardinality: Cardinality
 }
 
 export interface EntityHandlerOptions {

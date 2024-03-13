@@ -1,9 +1,9 @@
 import { defu } from "defu"
 import { type Document, type Types } from "mongoose"
 import { type H3Event } from "h3"
-import { type EntityJSON, type Entity, type EntityJSONBody, FilterOperator } from "@unb-libraries/nuxt-layer-entity"
-import { type QueryOptions, type EntityListOptions, type DocumentQuery } from "../../../types/entity"
-import { EntityBodyCardinality, type EntityBodyReaderOptions } from "../../../types/api"
+import { type EntityJSON, type Entity, type EntityJSONBody, type EntityUpdateResponse, FilterOperator } from "@unb-libraries/nuxt-layer-entity"
+import { type QueryOptions, type DocumentQuery } from "../../../types/entity"
+import { Cardinality, type EntityBodyReaderOptions } from "../../../types/api"
 import { type DocumentBase, type DocumentModel } from "../../../types/schema"
 import { type MongooseEventContext } from "~../../../types"
 
@@ -182,18 +182,19 @@ export function defineFormatter<TOutput extends object = object, TInput extends 
   }
 }
 
-export function defineEntityFormatter<E extends Entity = Entity, T = any>(formatter: (item: T) => EntityJSON<E>) {
+export function defineEntityFormatter<E extends Entity = Entity, T = any>(formatter: (item: T) => Omit<EntityJSON<E>, `self`>) {
   const format = {
-    formatEntity(item: T, options?: Partial<{ self: (entity: Omit<EntityJSON<E>, `self`>) => string, removeEmpty: boolean }>): EntityJSON<E> {
+    format(item: T, options?: Partial<{ self: (entity: Omit<EntityJSON<E>, `self`>) => string, removeEmpty: boolean }>): EntityJSON<E> {
       const entity = Object
         .entries(formatter(item))
         .filter(([_, value]) => (value !== undefined) || (options?.removeEmpty === false))
         .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {}) as Omit<EntityJSON<E>, `self`>
 
       const self = options?.self ? options.self(entity) : getRequestURL(useEvent()).pathname
-      return { self, ...entity }
+      return { self, ...entity } as EntityJSON<E>
     },
-    formatEntityList(items: T[], options?: Partial<{ self: Partial<{ list: string, canonical: (entity: Omit<EntityJSON<E>, `self`>) => string}>, removeEmpty: boolean, total: number, page: number, pageSize: number }>) {
+
+    formatList(items: T[], options?: Partial<{ self: Partial<{ list: string, canonical: (entity: Omit<EntityJSON<E>, `self`>) => string}>, removeEmpty: boolean, total: number, page: number, pageSize: number }>) {
       const event = useEvent()
       const { pathname } = getRequestURL(event)
 
@@ -201,7 +202,7 @@ export function defineEntityFormatter<E extends Entity = Entity, T = any>(format
       const self = options?.self?.list ?? pathname
 
       const canonicalSelf = options?.self?.canonical ?? ((entity: Omit<EntityJSON<E>, `self`>) => self.trim().split(`/`).concat(entity.id).join(`/`))
-      const entities = items.map(item => format.formatEntity(item, { self: canonicalSelf, removeEmpty: options?.removeEmpty }))
+      const entities = items.map(item => format.format(item, { self: canonicalSelf, removeEmpty: options?.removeEmpty }))
 
       const paginator = usePaginator({
         total: options?.total ? options.total : entities.length,
@@ -215,13 +216,30 @@ export function defineEntityFormatter<E extends Entity = Entity, T = any>(format
         ...paginator,
       }
     },
+
+    formatDiff(before: T, after: T): EntityUpdateResponse<E> {
+      const formatAndRemoveID = (item: T): Omit<EntityJSON<E>, `self` | `id`> => {
+        const formatted = formatter(item)
+        if (formatted.id) {
+          return Object.fromEntries(Object
+            .entries(formatted)
+            .filter(([key]) => key !== `id`)) as Omit<EntityJSON<E>, `self` | `id`>
+        }
+        return formatted as Omit<EntityJSON<E>, `self` | `id`>
+      }
+
+      return {
+        before: formatAndRemoveID(before),
+        after: formatAndRemoveID(after),
+      }
+    },
   }
 
   return format
 }
 
 export async function readEntityBody<E extends Entity = Entity>(event: H3Event, reader: (body: any, event: H3Event) => EntityJSONBody<E> | Promise<EntityJSONBody<E>>, options?: EntityBodyReaderOptions) {
-  options = defu(options, { cardinality: EntityBodyCardinality.MANY | EntityBodyCardinality.ONE } as const)
+  options = defu(options, { cardinality: Cardinality.MANY | Cardinality.ONE } as const)
   const body = await readBody(event)
 
   async function readOne(body: any) {
@@ -233,19 +251,19 @@ export async function readEntityBody<E extends Entity = Entity>(event: H3Event, 
   }
 
   switch (options.cardinality) {
-    case EntityBodyCardinality.ONE: {
+    case Cardinality.ONE: {
       if (Array.isArray(body)) {
         throw new TypeError(`Body must be of type object.`)
       }
       return readOne(body)
     }
-    case EntityBodyCardinality.MANY: {
+    case Cardinality.MANY: {
       if (!Array.isArray(body)) {
         throw new TypeError(`Body must be of type array.`)
       }
       return readMany(body)
     }
-    case EntityBodyCardinality.ONE | EntityBodyCardinality.MANY:
+    case Cardinality.ONE | Cardinality.MANY:
     default: {
       return !Array.isArray(body) ? await readOne(body) : await readMany(body)
     }

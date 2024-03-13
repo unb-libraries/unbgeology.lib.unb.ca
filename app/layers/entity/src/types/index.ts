@@ -70,6 +70,10 @@ export interface EntityFetchResponse<E extends Entity = Entity> extends EntityRe
 }
 
 export type EntityCreateResponse<E extends Entity = Entity> = EntityFetchResponse<E>
+export interface EntityUpdateResponse<E extends Entity = Entity> {
+  before: Omit<EntityJSON<E>, `self` | `id`>;
+  after: Omit<EntityJSON<E>, `self` | `id`>;
+}
 
 export interface EntityDeleteResponse {
   success: boolean
