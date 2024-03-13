@@ -64,7 +64,7 @@ export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B e
     ? defineDocumentSchema.mixin(base.schema).mixin(definition as unknown as DocumentSchema<Omit<NonNullable<B>, keyof D>>)({})
     : definition
 
-  const model = !base
+  const Model = !base
     ? defineModel<D>(fullName, definition.schema as Schema<D>)
     : getRootModel(base as unknown as DocumentModel).discriminator<NonNullable<B>>(fullName, definition.schema)
 
@@ -74,7 +74,10 @@ export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B e
     base,
     schema,
     mongoose: {
-      model,
+      model: Model,
+    },
+    new(body: B extends undefined ? Partial<D> : Partial<NonNullable<B>>) {
+      return new Model(body)
     },
     find() {
       return !base

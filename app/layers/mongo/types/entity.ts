@@ -78,12 +78,12 @@ export interface DocumentQuery<D extends DocumentBase = DocumentBase> {
   and: DocumentQuery<D>[`where`]
   where: {
     (field: string): {
-      eq: (value: string | number) => DocumentQuery<D>
-      ne: (value: string | number) => DocumentQuery<D>
+      eq: (value: any) => DocumentQuery<D>
+      ne: (value: any) => DocumentQuery<D>
       match: (pattern: RegExp) => DocumentQuery<D>
-      in: (value: string[] | number[]) => DocumentQuery<D>
-      nin: (value: string[] | number[]) => DocumentQuery<D>
-      contains: (value: string | number) => DocumentQuery<D>
+      in: (value: any[]) => DocumentQuery<D>
+      nin: (value: any[]) => DocumentQuery<D>
+      contains: (value: any) => DocumentQuery<D>
       gt: (value: number) => DocumentQuery<D>
       gte: (value: number) => DocumentQuery<D>
       lt: (value: number) => DocumentQuery<D>

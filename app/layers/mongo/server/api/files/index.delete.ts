@@ -1,13 +1,26 @@
-import { rm as removeFile } from "fs/promises"
+import { removeFile } from "../../utils/api/files/fs"
 
 export default defineEventHandler(async (event) => {
-  const files = await FileBase.find()
+  const { page, pageSize } = getQueryOptions(event)
+  const { sortFields, filter } = getMongooseQuery(event)
 
-  await Promise.all(files.map(async (file) => {
-    await removeFile(file.filepath, { force: true })
-    return file._id
-  }))
-  await FileBase.deleteMany({ _id: files })
+  const { documents: files, delete: remove } = await FileBase.find()
+    .select(`filepath`)
+    .sort(...sortFields)
+    .where(...filter)
+    .paginate(page, pageSize)
+
+  try {
+    await Promise.all(files.map(async (file) => {
+      await removeFile(file.filepath)
+    }))
+    await remove()
+  } catch (err: any) {
+    return sendError(event, createError({
+      statusCode: 500,
+      statusMessage: `Failed to delete files: ${(err as Error).message}`,
+    }))
+  }
 
   return sendNoContent(event)
 })

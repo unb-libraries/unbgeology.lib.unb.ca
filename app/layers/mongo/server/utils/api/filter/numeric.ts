@@ -103,17 +103,35 @@ const Less = (field: string, condition: QueryCondition) => {
   }
 }
 
+const Equals = (field: string, condition: QueryCondition) => {
+  const [op, value] = condition
+  const number = Array.isArray(value) ? value.length > 0 ? value.map(parseInt) : undefined : value ? parseInt(value) : undefined
+  if (!number) {
+    throw new Error(`Invalid value: must provide a number`)
+  }
+
+  if (op === FilterOperator.EQUALS) {
+    return (query: DocumentQuery) => !Array.isArray(number)
+      ? query.where(field).eq(number)
+      : query.where(field).in(number)
+  }
+
+  throw new Error(`Invalid operator`)
+}
+
 const Numeric = (field: string, condition: QueryCondition) => {
   return returnOnSomeSuccess([
     Range,
     Greater,
     Less,
+    Equals,
   ], field, condition)
 }
 
 Numeric.Range = Range
 Numeric.Greater = Greater
 Numeric.Less = Less
+Numeric.Equals = Equals
 Numeric.NoRange = (field: string, condition: QueryCondition) => {
   return returnOnSomeSuccess([
     Greater,

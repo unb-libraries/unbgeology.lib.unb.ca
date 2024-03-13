@@ -9,9 +9,9 @@ export default defineNuxtConfig({
   ],
   hooks: {
     'nitro:config': (nitroConfig) => {
-      const { uploadDir } = nitroConfig.runtimeConfig!
-      if (!existsSync(uploadDir)) {
-        mkdirSync(uploadDir, { recursive: true })
+      const { dir } = nitroConfig.runtimeConfig!.uploads as { dir: string }
+      if (!existsSync(dir)) {
+        mkdirSync(dir, { recursive: true })
       }
     },
   },
@@ -23,7 +23,10 @@ export default defineNuxtConfig({
       },
     ],
     runtimeConfig: {
-      uploadDir: `/app/files/`,
+      uploads: {
+        dir: `/app/html/public/files`,
+        uri: `/public/files`,
+      },
     },
   },
 })

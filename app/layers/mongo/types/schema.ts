@@ -41,9 +41,10 @@ export interface DocumentModel<D extends DocumentBase = DocumentBase> {
   mongoose: {
     model: Model<D>
   }
+  new: (body: Partial<D>) => Document<D>
   find: () => DocumentQuery<D>
   findByID: (id: string) => DocumentRequest<D>
-  create: (body: D | D[]) => Promise<Document<D> | Document<D>[]>
+  create: (body: Omit<D, keyof DocumentBase> | Omit<D, keyof DocumentBase>[]) => Promise<Document<D> | Document<D>[]>
   update: (id: string, body: Partial<D>) => Promise<void>
   delete: (id: string) => Promise<void>
 }
