@@ -165,7 +165,7 @@ export function defineBodyReader<TIn = any, TOut = TIn>(reader: (body: Partial<T
     return readMany(body)
   }
 
-  read.append = (reader: <TInx extends TIn = TIn, TOutx extends TOut = TOut>(body: Partial<TInx>) => Partial<TOutx> | Promise<Partial<TOutx>>) => {
+  read.merge = <TInx extends TIn = TIn, TOutx extends TOut = TOut>(reader: (body: Partial<TInx>) => Partial<TOutx> | Promise<Partial<TOutx>>) => {
     extensions.push(reader)
     return read
   }
@@ -183,56 +183,78 @@ export function defineFormatter<TOutput extends object = object, TInput extends 
 }
 
 export function defineEntityFormatter<E extends Entity = Entity, T = any>(formatter: (item: T) => Omit<EntityJSON<E>, `self`>) {
-  const format = {
-    format(item: T, options?: Partial<{ self: (entity: Omit<EntityJSON<E>, `self`>) => string, removeEmpty: boolean }>): EntityJSON<E> {
-      const entity = Object
-        .entries(formatter(item))
-        .filter(([_, value]) => (value !== undefined) || (options?.removeEmpty === false))
-        .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {}) as Omit<EntityJSON<E>, `self`>
+  const extensions: ((item: any) => any)[] = []
+  const apply = (item: T) => {
+    return extensions.reduce((formatted, extension) => ({
+      ...formatted,
+      ...extension(item),
+    }), formatter(item))
+  }
 
-      const self = options?.self ? options.self(entity) : getRequestURL(useEvent()).pathname
-      return { self, ...entity } as EntityJSON<E>
-    },
+  const formatOne = (item: T, options?: Partial<FormatOptions<E>>): EntityJSON<E> => {
+    const entity = Object
+      .entries(apply(item))
+      .filter(([_, value]) => (value !== undefined) || (options?.removeEmpty === false))
+      .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {}) as Omit<EntityJSON<E>, `self`>
 
-    formatList(items: T[], options?: Partial<{ self: Partial<{ list: string, canonical: (entity: Omit<EntityJSON<E>, `self`>) => string}>, removeEmpty: boolean, total: number, page: number, pageSize: number }>) {
-      const event = useEvent()
-      const { pathname } = getRequestURL(event)
+    const self = options?.self ? options.self(entity) : getRequestURL(useEvent()).pathname
+    return { self, ...entity } as EntityJSON<E>
+  }
 
-      const queryOptions = getQueryOptions(event)
-      const self = options?.self?.list ?? pathname
+  const formatMany = (items: T[], options?: Partial<FormatManyOptions<E>>) => {
+    const event = useEvent()
+    const { pathname } = getRequestURL(event)
 
-      const canonicalSelf = options?.self?.canonical ?? ((entity: Omit<EntityJSON<E>, `self`>) => self.trim().split(`/`).concat(entity.id).join(`/`))
-      const entities = items.map(item => format.format(item, { self: canonicalSelf, removeEmpty: options?.removeEmpty }))
+    const queryOptions = getQueryOptions(event)
+    const self = options?.self?.list ?? pathname
 
-      const paginator = usePaginator({
-        total: options?.total ? options.total : entities.length,
-        page: options?.page ?? queryOptions.page,
-        pageSize: options?.pageSize ?? queryOptions.pageSize,
-      })
+    const canonicalSelf = options?.self?.canonical ?? ((entity: Omit<EntityJSON<E>, `self`>) => self.trim().split(`/`).concat(entity.id).join(`/`))
+    const entities = items.map(item => formatOne(item, {
+      self: canonicalSelf,
+      removeEmpty: options?.removeEmpty,
+    }))
 
-      return {
-        self,
-        entities,
-        ...paginator,
+    const paginator = usePaginator({
+      total: options?.total ? options.total : entities.length,
+      page: options?.page ?? queryOptions.page,
+      pageSize: options?.pageSize ?? queryOptions.pageSize,
+    })
+
+    return {
+      self,
+      entities,
+      ...paginator,
+    }
+  }
+
+  const formatDiff = (before: T, after: T): EntityUpdateResponse<E> => {
+    const formatAndRemoveID = (item: T): Omit<EntityJSON<E>, `self` | `id`> => {
+      const formatted = apply(item)
+      if (formatted.id) {
+        return Object.fromEntries(Object
+          .entries(formatted)
+          .filter(([key]) => key !== `id`)) as Omit<EntityJSON<E>, `self` | `id`>
       }
-    },
+      return formatted as Omit<EntityJSON<E>, `self` | `id`>
+    }
 
-    formatDiff(before: T, after: T): EntityUpdateResponse<E> {
-      const formatAndRemoveID = (item: T): Omit<EntityJSON<E>, `self` | `id`> => {
-        const formatted = formatter(item)
-        if (formatted.id) {
-          return Object.fromEntries(Object
-            .entries(formatted)
-            .filter(([key]) => key !== `id`)) as Omit<EntityJSON<E>, `self` | `id`>
-        }
-        return formatted as Omit<EntityJSON<E>, `self` | `id`>
-      }
+    return {
+      before: formatAndRemoveID(before),
+      after: formatAndRemoveID(after),
+    }
+  }
 
-      return {
-        before: formatAndRemoveID(before),
-        after: formatAndRemoveID(after),
-      }
-    },
+  const format = (items: T | T[], options?: Partial<typeof items extends T ? FormatOptions<E> : FormatManyOptions<E>>): typeof items extends T ? ReturnType<typeof formatOne> : ReturnType<typeof formatMany> => {
+    return (Array.isArray(items)
+      ? formatMany(items, options as Partial<FormatManyOptions<E>>)
+      : formatOne(items, options as Partial<FormatOptions<E>>)) as typeof items extends T ? ReturnType<typeof formatOne> : ReturnType<typeof formatMany>
+  }
+
+  format.one = formatOne
+  format.many = formatMany
+  format.diff = formatDiff
+  format.merge = <TIn extends T = T, EIn extends Entity = E>(formatter: (item: TIn) => Omit<EntityJSON<EIn>, keyof E>) => {
+    extensions.push(formatter)
   }
 
   return format
