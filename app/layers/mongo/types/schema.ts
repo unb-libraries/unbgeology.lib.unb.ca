@@ -23,7 +23,7 @@ export type ObjectProperties<T extends object = object> = Pick<T, {
 }[keyof T]>
 
 export type Document<D extends DocumentBase = DocumentBase> = {
-  update: () => Promise<[Partial<D>, Partial<D>]>
+  update: (body?: Partial<D>) => Promise<[Partial<D>, Partial<D>]>
   delete: () => Promise<void>
   save: () => Promise<void>
 } & D

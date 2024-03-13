@@ -1,7 +1,7 @@
 import { defu } from "defu"
-import { Schema, type SchemaDefinition, model as defineModel, Types, type ObjectId } from "mongoose"
+import { Schema, type SchemaDefinition, model as defineModel, Types } from "mongoose"
 import type { DocumentSchema, AlterSchemaHandler, Document as IDocument, DocumentBase as IDocumentBase, DocumentModel, DocumentSchemaOptions, ObjectProperties } from "../../types/schema"
-import { type DocumentQuery, type Join } from "../../types/entity"
+import { type DocumentQuery, type DocumentQueryResult, type Join } from "../../types/entity"
 
 const mixins: DocumentSchema[] = []
 const modifiers: AlterSchemaHandler[] = []
@@ -253,11 +253,22 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase>(documentT
       paginator[1] = Math.min(500, pageSize)
       return this
     },
-    async then(resolve: (result: { documents: D[], total: number }) => void, reject: (err: any) => void) {
+    async then(resolve: (result: DocumentQueryResult<D>) => void, reject: (err: any) => void) {
       try {
         const [result] = await this.query().exec()
         const { documents, total } = result
-        resolve({ documents, total: total[0]?.total ?? 0 })
+        resolve({
+          documents,
+          async update(body: Partial<D>) {
+            const diffs = documents.map(document => diff(document, body))
+            await documentType.mongoose.model.updateMany({ _id: { $in: documents.map(({ _id }) => _id) } }, body)
+            return diffs
+          },
+          async delete() {
+            await documentType.mongoose.model.deleteMany({ _id: { $in: documents.map(({ _id }) => _id) } })
+          },
+          total: total[0]?.total ?? 0,
+        })
       } catch (err) {
         reject(err)
       }
@@ -279,8 +290,8 @@ function findDocument<D extends IDocumentBase = IDocumentBase>(Model: DocumentMo
             async delete() {
               return await Model.mongoose.model.deleteOne({ _id: document._id })
             },
-            async update() {
-              const [before, after] = diff<D>(clone, document)
+            async update(body?: Partial<D>) {
+              const [before, after] = diff<D>(clone, body ? { ...clone, ...body } : document)
               await Model.update(`${document._id}`, after as Partial<D>)
               return [before, after]
             },
@@ -312,7 +323,7 @@ async function createDocument<D extends IDocumentBase = IDocumentBase>(Model: Do
   return await Model.mongoose.model.create(body)
 }
 
-function diff<T extends object = object>(obj: T, clone: T): [Partial<ObjectProperties<T>>, Partial<ObjectProperties<T>>] {
+function diff<T extends object = object>(obj: T, clone: T): [Partial<T>, Partial<T>] {
   const entries = Object.entries(obj) as [keyof ObjectProperties<T>, T[keyof ObjectProperties<T>]][]
   const diffs: [keyof T, [T[keyof T], T[keyof T]]][] = entries
     .filter(([, value]) => typeof value !== `function`)
@@ -322,8 +333,8 @@ function diff<T extends object = object>(obj: T, clone: T): [Partial<ObjectPrope
       : diff(value as object, clone[path] as object)]) as [keyof T, [T[keyof T], T[keyof T]]][]
 
   return [
-    Object.fromEntries(diffs.map(([path, diffs]) => [path, diffs[0]])) as Partial<ObjectProperties<T>>,
-    Object.fromEntries(diffs.map(([path, diffs]) => [path, diffs[1]])) as Partial<ObjectProperties<T>>,
+    Object.fromEntries(diffs.map(([path, diffs]) => [path, diffs[0]])) as Partial<T>,
+    Object.fromEntries(diffs.map(([path, diffs]) => [path, diffs[1]])) as Partial<T>,
   ]
 }
 

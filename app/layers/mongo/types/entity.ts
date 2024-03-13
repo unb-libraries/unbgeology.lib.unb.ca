@@ -65,6 +65,13 @@ export interface QueryOptions {
   sort: [string, boolean][]
 }
 
+export interface DocumentQueryResult<D extends DocumentBase = DocumentBase> {
+  documents: D[],
+  update: (body: Partial<D>) => Promise<[Partial<D>, Partial<D>][]>
+  delete: () => Promise<void>
+  total: number
+}
+
 export interface DocumentQuery<D extends DocumentBase = DocumentBase> {
   query: () => { exec: () => Promise<[{ documents: D[], total: [{ total: number }]}]> }
   join: <J extends DocumentBase = DocumentBase>(field: string, model: DocumentModel<J>) => DocumentQuery<D>
@@ -88,7 +95,7 @@ export interface DocumentQuery<D extends DocumentBase = DocumentBase> {
   select: (...fields: string[]) => DocumentQuery<D>
   sort: (...fields: (string | [string, boolean])[]) => DocumentQuery<D>
   paginate(page: number, pageSize: number): DocumentQuery<D>
-  then: (resolve: (result: { documents: D[], total: number }) => void, reject: (err: any) => void) => void
+  then: (resolve: (result: DocumentQueryResult<D>) => void, reject: (err: any) => void) => void
 }
 export interface Join {
   from: string
