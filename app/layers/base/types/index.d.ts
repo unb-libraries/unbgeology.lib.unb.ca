@@ -1,1 +1,0 @@
-export type Enum = Record<PropertyKey, number | string>
