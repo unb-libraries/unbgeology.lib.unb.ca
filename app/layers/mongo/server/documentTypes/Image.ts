@@ -4,10 +4,7 @@ import FileBase, { type File, Mimetyped } from "./FileBase"
 
 export interface Image extends Omit<ImageEntity, keyof Entity>, File {}
 
-const Schema = defineDocumentSchema
-  .mixin(Mimetyped({ accept: [`image/jpeg`] }))
-
-export default defineDocumentModel<File, Image>(`Image`, Schema<Image>({
+export default defineDocumentModel<File, Image>(`Image`, defineDocumentSchema<Image>({
   alt: {
     type: EntityFieldTypes.String,
     required: false,
@@ -17,4 +14,8 @@ export default defineDocumentModel<File, Image>(`Image`, Schema<Image>({
     type: EntityFieldTypes.String,
     required: false,
   },
-})(), FileBase)
+}).mixin(Mimetyped({
+  accept: [
+    `image/jpeg`,
+  ],
+}))(), FileBase)

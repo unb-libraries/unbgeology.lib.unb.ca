@@ -20,15 +20,7 @@ export const Mimetyped = defineDocumentSchema<Pick<FileEntity, `mimetype`>, Mime
   },
 }))
 
-const Schema = defineDocumentSchema
-  .mixin(Mimetyped({}))
-  .mixin(Stateful<typeof FileState>({
-    values: FileState,
-    default: FileState.PENDING,
-  }))
-  .mixin(DocumentBase())
-
-export default defineDocumentModel<File>(`File`, Schema<File>({
+export default defineDocumentModel<File>(`File`, defineDocumentSchema<File>({
   filename: {
     type: EntityFieldTypes.String,
     required: true,
@@ -48,4 +40,9 @@ export default defineDocumentModel<File>(`File`, Schema<File>({
     type: EntityFieldTypes.String,
     required: true,
   },
-})())
+}).mixin(Mimetyped({}))
+  .mixin(Stateful<typeof FileState>({
+    values: FileState,
+    default: FileState.PENDING,
+  }))
+  .mixin(DocumentBase())())

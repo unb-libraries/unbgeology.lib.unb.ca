@@ -4,8 +4,9 @@ import FileBase, { type File, Mimetyped } from "./FileBase"
 export interface Document extends Omit<DocumentEntity, keyof Entity>, File {
 }
 
-const Schema = defineDocumentSchema
-  .mixin(Mimetyped({ accept: [`application/pdf`] }))
-
-export default defineDocumentModel<File, Document>(`Document`, Schema<Document>({
-})(), FileBase)
+export default defineDocumentModel<File, Document>(`Document`, defineDocumentSchema<Document>({
+}).mixin(Mimetyped({
+  accept: [
+    `application/pdf`,
+  ],
+}))(), FileBase)

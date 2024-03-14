@@ -3,9 +3,14 @@ import { Schema, type SchemaDefinition, model as defineModel, Types } from "mong
 import type { DocumentSchema, AlterSchemaHandler, Document as IDocument, DocumentBase as IDocumentBase, DocumentModel, DocumentSchemaOptions, ObjectProperties } from "../../types/schema"
 import { type DocumentQuery, type DocumentQueryResult, type Join } from "../../types/entity"
 
-const mixins: DocumentSchema[] = []
-const modifiers: AlterSchemaHandler[] = []
-export function defineDocumentSchema<D = any, TOptions extends any | undefined = undefined>(definition: TOptions extends undefined ? DocumentSchema<D>[`paths`] : (options: TOptions) => DocumentSchema<D>[`paths`], options?: Partial<DocumentSchemaOptions<D>>): TOptions extends undefined ? () => DocumentSchema<D> : (options: TOptions) => DocumentSchema<D> {
+type DefineDocumentSchema<D = any, TOptions extends any | undefined = undefined> =
+  (TOptions extends undefined ? { (): DocumentSchema<D> } : { (options: TOptions): DocumentSchema<D> })
+  & { mixin: <Dx = any>(schema: DocumentSchema<Dx>) => DefineDocumentSchema<D, TOptions> }
+
+export function defineDocumentSchema<D = any, TOptions extends any | undefined = undefined>(definition: TOptions extends undefined ? DocumentSchema<D>[`paths`] : (options: TOptions) => DocumentSchema<D>[`paths`], options?: Partial<DocumentSchemaOptions<D>>) {
+  const mixins: DocumentSchema[] = []
+  const modifiers: AlterSchemaHandler[] = []
+
   const mapMixinPaths = (mixin: DocumentSchema) => mixin.paths
   const createPaths = (options?: TOptions) => defu(typeof definition === `function` ? definition(options!) : definition, ...mixins.map(mapMixinPaths))
 
@@ -20,7 +25,7 @@ export function defineDocumentSchema<D = any, TOptions extends any | undefined =
     return schema
   }
 
-  return (typeof definition === `function`
+  const define = (typeof definition === `function`
     ? function (pathsOptions: TOptions) {
       return {
         paths: createPaths(pathsOptions),
@@ -34,11 +39,14 @@ export function defineDocumentSchema<D = any, TOptions extends any | undefined =
         get schema() { return createSchema(this.paths) },
         alterSchema,
       }
-    }) as TOptions extends undefined ? () => DocumentSchema<D> : (options: TOptions) => DocumentSchema<D>
-}
-defineDocumentSchema.mixin = <D = any>(mixin: DocumentSchema<D>) => {
-  mixins.push(mixin)
-  return defineDocumentSchema
+    }) as DefineDocumentSchema<D, TOptions>
+
+  define.mixin = <Dx = any>(mixin: DocumentSchema<Dx>) => {
+    mixins.push(mixin)
+    return define
+  }
+
+  return define
 }
 
 export const DocumentBase = defineDocumentSchema<IDocumentBase>({
