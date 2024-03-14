@@ -302,9 +302,13 @@ function findDocument<D extends IDocumentBase = IDocumentBase>(Model: DocumentMo
               return await Model.mongoose.model.deleteOne({ _id: document._id })
             },
             async update(body?: Partial<D>) {
-              const [before, after] = diff<D>(clone, body ? { ...clone, ...body } : document)
-              await Model.update(`${document._id}`, after as Partial<D>)
-              return [before, after]
+              if (body) {
+                await Model.update(`${document._id}`, body)
+                const updated = await findDocumentByID(Model, `${document._id}`)
+                return diff(clone, updated)
+              } else {
+                return await this.save()
+              }
             },
             async save() {
               const [before, after] = diff<D>(clone, document)

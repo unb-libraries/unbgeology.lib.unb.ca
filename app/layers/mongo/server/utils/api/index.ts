@@ -226,9 +226,9 @@ export function defineEntityFormatter<E extends Entity = Entity, T = any>(format
     }
   }
 
-  const formatDiff = (before: T, after: T): EntityUpdateResponse<E> => {
-    const formatAndRemoveID = (item: T): Omit<EntityJSON<E>, `self` | `id`> => {
-      const formatted = apply(item)
+  const formatDiff = (before: Partial<Mutable<T>>, after: Partial<Mutable<T>>): EntityUpdateResponse<E> => {
+    const formatAndRemoveID = (item: Partial<Mutable<T>>): Omit<EntityJSON<E>, `self` | `id`> => {
+      const formatted = apply(item as T)
       if (formatted.id) {
         return Object.fromEntries(Object
           .entries(formatted)
