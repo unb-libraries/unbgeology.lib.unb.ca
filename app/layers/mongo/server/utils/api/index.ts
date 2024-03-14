@@ -1,11 +1,10 @@
 import { defu } from "defu"
-import { type Document, type Types } from "mongoose"
 import { type H3Event } from "h3"
 import { type EntityJSON, type Entity, type EntityJSONBody, type EntityUpdateResponse, FilterOperator } from "@unb-libraries/nuxt-layer-entity"
 import { type QueryOptions, type DocumentQuery } from "../../../types/entity"
-import { Cardinality, type EntityBodyReaderOptions } from "../../../types/api"
+import { Cardinality, type EntityBodyReaderOptions, type FormatOptions, type FormatManyOptions } from "../../../types/api"
 import { type DocumentBase, type DocumentModel } from "../../../types/schema"
-import { type MongooseEventContext } from "~../../../types"
+import { Read, type Mutable, type MongooseEventContext } from "~../../../types"
 
 function initMongooseContext(event: H3Event) {
   event.context.mongoose = {
@@ -129,43 +128,43 @@ export function defineEntityBodyReader<E extends Entity = Entity>(reader: (body:
   }
 }
 
-export function defineBodyReader<TIn = any, TOut = TIn>(reader: (body: Partial<TIn>) => Partial<TOut> | Promise<Partial<TOut>>) {
+export function defineBodyReader<TIn = any, TOut = TIn>(reader: (body: TIn) => TOut | Promise<TOut>) {
   const extensions: ((body: any) => any | Promise<any>)[] = []
 
-  const readOne = async (body: Partial<TIn>): Promise<Partial<TOut>> => {
+  const readOne = async (body: TIn): Promise<TOut> => {
     const bodies = await Promise.all([reader, ...extensions]
       .map(async reader => await reader(body)))
     return bodies.reduce((body, input) => ({ ...body, ...input }), {})
   }
 
-  const readMany = async (body: Partial<TIn>[]): Promise<Partial<TOut>[]> => {
+  const readMany = async (body: TIn[]): Promise<TOut[]> => {
     return await Promise.all(body.map(async body => await readOne(body)))
   }
 
-  const read = async (event: H3Event) => {
+  const read = async <M extends Read = Read.CREATE>(event: H3Event): Promise<M extends Read.CREATE ? TOut | TOut[] : Partial<Mutable<TOut>> | Partial<Mutable<TOut>>[]> => {
     const body = await readBody(event)
-    return !Array.isArray(body)
-      ? await readOne(body)
-      : await readMany(body)
+    return (!Array.isArray(body)
+      ? await read.one(event)
+      : await read.many(event)) as Promise<M extends Read.CREATE ? TOut | TOut[] : Partial<Mutable<TOut>> | Partial<Mutable<TOut>>[]>
   }
 
-  read.one = async (event: H3Event) => {
+  read.one = async <M extends Read = Read.CREATE>(event: H3Event) => {
     const body = await readBody(event)
     if (Array.isArray(body)) {
       throw new TypeError(`Body must be of type object.`)
     }
-    return readOne(body)
+    return readOne(body) as Promise<M extends Read.CREATE ? TOut : Partial<Mutable<TOut>>>
   }
 
-  read.many = async (event: H3Event) => {
+  read.many = async <M extends Read = Read.CREATE>(event: H3Event) => {
     const body = await readBody(event)
     if (!Array.isArray(body)) {
       throw new TypeError(`Body must be of type array.`)
     }
-    return readMany(body)
+    return readMany(body) as Promise<M extends Read.CREATE ? TOut[] : Partial<Mutable<TOut[]>>>
   }
 
-  read.merge = <TInx extends TIn = TIn, TOutx extends TOut = TOut>(reader: (body: Partial<TInx>) => Partial<TOutx> | Promise<Partial<TOutx>>) => {
+  read.merge = <TInx extends TIn = TIn, TOutx extends TOut = TOut>(reader: (body: TInx) => TOutx | Promise<TOutx>) => {
     extensions.push(reader)
     return read
   }

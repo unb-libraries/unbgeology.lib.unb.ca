@@ -99,13 +99,13 @@ export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B e
     },
     async create(body: B extends undefined ? Partial<D> | Partial<D>[] : Partial<B> | Partial<B>[]) {
       return !base
-        ? await createDocument(this as DocumentModel<D>, body as Partial<D> | Partial<D>[])
-        : await createDocument(this as DocumentModel<NonNullable<B>>, body as Partial<B> | Partial<B>[])
+        ? await createDocument<D>(this as DocumentModel<D>, body as Partial<D> | Partial<D>[])
+        : await createDocument<NonNullable<B>>(this as DocumentModel<NonNullable<B>>, body as Partial<NonNullable<B>> | Partial<NonNullable<B>>[])
     },
-    async update(id: string, body: B extends undefined ? Partial<D> : Partial<NonNullable<B>>) {
+    async update(id: string, body: B extends undefined ? Partial<Mutable<D>> : Partial<Mutable<NonNullable<B>>>) {
       !base
-        ? await updateDocument<D>(this as DocumentModel<D>, id, body)
-        : await updateDocument<D>(this as DocumentModel<NonNullable<B>>, id, body)
+        ? await updateDocument<D>(this as DocumentModel<D>, id, body as Partial<Mutable<D>>)
+        : await updateDocument<NonNullable<B>>(this as DocumentModel<NonNullable<B>>, id, body as Partial<Mutable<NonNullable<B>>>)
     },
     async delete(id: string) {
       await deleteDocument(this as DocumentModel, id)
@@ -270,9 +270,9 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase>(documentT
         const { documents, total } = result
         resolve({
           documents,
-          async update(body: Partial<D>) {
+          async update(body: Partial<Mutable<D>>) {
             const diffs = documents.map(document => diff(document, body))
-            await documentType.mongoose.model.updateMany({ _id: { $in: documents.map(({ _id }) => _id) } }, body)
+            await documentType.mongoose.model.updateMany({ _id: { $in: documents.map(({ _id }) => _id) } }, body as Partial<D>)
             return diffs
           },
           async delete() {
@@ -349,8 +349,8 @@ function diff<T extends object = object>(obj: T, clone: T): [Partial<T>, Partial
   ]
 }
 
-async function updateDocument<D extends IDocumentBase = IDocumentBase>(Model: DocumentModel<D>, id: string, body: Partial<D>) {
-  await Model.mongoose.model.updateOne({ _id: id }, body)
+async function updateDocument<D extends IDocumentBase = IDocumentBase>(Model: DocumentModel<D>, id: string, body: Partial<Mutable<D>>) {
+  await Model.mongoose.model.updateOne({ _id: id }, body as Partial<D>)
 }
 
 async function deleteDocument(Model: DocumentModel, id: string) {

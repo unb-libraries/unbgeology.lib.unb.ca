@@ -1,5 +1,6 @@
 import { Schema, type SchemaDefinition, type ObjectId, type Model } from "mongoose"
 import { type DocumentQuery } from "./entity"
+import { type Mutable } from "."
 
 export interface DocumentUpdate<D = any> {
   before: D
@@ -23,7 +24,7 @@ export type ObjectProperties<T extends object = object> = Pick<T, {
 }[keyof T]>
 
 export type Document<D extends DocumentBase = DocumentBase> = {
-  update: (body?: Partial<D>) => Promise<[Partial<D>, Partial<D>]>
+  update: (body?: Partial<Mutable<D>>) => Promise<[Partial<Mutable<D>>, Partial<Mutable<D>>]>
   delete: () => Promise<void>
   save: () => Promise<void>
 } & D
@@ -45,7 +46,7 @@ export interface DocumentModel<D extends DocumentBase = DocumentBase> {
   find: () => DocumentQuery<D>
   findByID: (id: string) => DocumentRequest<D>
   create: (body: Omit<D, keyof DocumentBase> | Omit<D, keyof DocumentBase>[]) => Promise<Document<D> | Document<D>[]>
-  update: (id: string, body: Partial<D>) => Promise<void>
+  update: (id: string, body: Partial<Mutable<D>>) => Promise<void>
   delete: (id: string) => Promise<void>
 }
 

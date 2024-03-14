@@ -3,6 +3,29 @@ import type { DocumentQuery, EntityDocument } from "./entity"
 import type { SourceItem } from "./migrate"
 import type Mongoose from "mongoose"
 import type { DocumentBase, DocumentModel } from "./schema"
+import type { EntityBodyReaderOptions } from "./api"
+
+type IfEquals<X, Y, A = X, B = never> =
+  (<T>() => T extends X ? 1 : 2) extends
+  (<T>() => T extends Y ? 1 : 2) ? A : B
+
+type MutableKeys<T> = {
+  [P in keyof T]: IfEquals<
+  { [Q in P]: T[P] },
+    { -readonly [Q in P]: T[P] },
+    P,
+    never
+    >
+  }[keyof T]
+
+type MutablePart<T> = Pick<T, MutableKeys<T>>
+
+export type Mutable<T = any> = MutablePart<T>
+
+export enum Read {
+  CREATE = 1,
+  UPDATE = 2,
+}
 
 export declare module "nuxt/schema" {
   interface RuntimeConfig {

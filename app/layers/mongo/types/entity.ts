@@ -1,6 +1,7 @@
 import { Schema, type SchemaOptions, type Model, type HydratedDocument, type UpdateQuery, type QueryOptions as MongooseQueryOptions, type QueryWithHelpers } from "mongoose"
 import { FilterOperator, type Entity, type EntityJSON } from "@unb-libraries/nuxt-layer-entity"
 import type { DocumentBase, DocumentModel } from "./schema"
+import { type Mutable } from "."
 
 export const EntityFieldTypes = Schema.Types
 
@@ -67,7 +68,7 @@ export interface QueryOptions {
 
 export interface DocumentQueryResult<D extends DocumentBase = DocumentBase> {
   documents: D[],
-  update: (body: Partial<D>) => Promise<[Partial<D>, Partial<D>][]>
+  update: (body: Partial<Mutable<D>>) => Promise<[Partial<Mutable<D>>, Partial<Mutable<D>>][]>
   delete: () => Promise<void>
   total: number
 }
