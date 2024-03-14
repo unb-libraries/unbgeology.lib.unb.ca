@@ -13,6 +13,11 @@ export interface Entity {
   readonly updated: string
 }
 
+export interface Slugified {
+  slug: string
+}
+
+
 export interface EntityBundle extends Entity {
   type: string
 }
@@ -144,7 +149,7 @@ export interface User extends Entity {
 export type JUser = EntityJSON<User>
 export type JUserList = EntityJSONList<User>
 
-export interface Term extends EntityBundle {
+export interface Term extends EntityBundle, Slugified {
   label: string
 }
 export type JTerm = EntityJSON<Term>

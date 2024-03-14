@@ -1,8 +1,7 @@
 import { type Term as TermEntity, type Entity } from "@unb-libraries/nuxt-layer-entity"
 import { type DocumentBase } from "../../types/schema"
-import { type Slugified } from "../../types/mixins"
 
-export interface Term extends Omit<TermEntity, keyof Entity>, Slugified, DocumentBase {
+export interface Term extends Omit<TermEntity, keyof Entity>, DocumentBase {
 }
 
 export default defineDocumentModel<Term>(`Term`, defineDocumentSchema<Term>({
