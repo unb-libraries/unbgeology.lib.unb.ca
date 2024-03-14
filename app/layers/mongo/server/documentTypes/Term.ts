@@ -1,48 +1,16 @@
-import { type Term as ITerm, type TaxonomyTerm as ITaxonomyTerm } from "@unb-libraries/nuxt-layer-entity"
-import { type EntityDocument, EntityFieldTypes } from "../../types/entity"
+import { type Term as TermEntity, type Entity } from "@unb-libraries/nuxt-layer-entity"
+import { type DocumentBase } from "../../types/schema"
+import { type Slugified } from "../../types/mixins"
 
-export const TermBase = defineDocumentType<EntityDocument<ITerm>>(`Term`, {
+export interface Term extends Omit<TermEntity, keyof Entity>, Slugified, DocumentBase {
+}
+
+export default defineDocumentModel<Term>(`Term`, defineDocumentSchema<Term>({
   label: {
-    type: EntityFieldTypes.String,
+    type: String,
     required: true,
   },
-}, {
-  slug: `_id`,
-  statics: {
-    baseURL() {
-      return `/api/terms`
-    },
-  },
-  virtuals: {
-    uri: {
-      get(this: EntityDocument<ITerm>) {
-        const chunks = this.type.split(`.`)
-        if (chunks.length < 2) {
-          chunks.splice(0, 0, `default`)
-        }
-        return `/api/terms/${chunks.join(`/`)}/${this.slug}`
-      },
-    },
-  },
-  toJSON: {
-    transform(doc, ret, options) {
-      if (ret.parent === null) {
-        delete ret.parent
-      }
-
-      ret.slug = doc._id
-      delete ret.id
-    },
-  },
-})
-
-export const Term = defineDocumentBundle<EntityDocument<ITerm>>(TermBase, `Term`)
-
-export const TaxonomyTerm = defineDocumentBundle<EntityDocument<ITaxonomyTerm>>(TermBase, `TaxonomyTerm`, {
-  parent: {
-    type: EntityFieldTypes.ObjectId,
-    // FIX: allow only references to terms of same type
-    ref: TermBase,
-    required: false,
-  },
-})
+}).mixin(Slugified<Term>({
+  path: `label`,
+}))
+  .mixin(DocumentBase())())
