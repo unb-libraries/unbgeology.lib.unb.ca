@@ -1,9 +1,13 @@
-export default defineEventHandler((event) => {
-  return Object
-    .values(useAppConfig().entityTypes || {})
-    .filter(entityType => [`Term`, `TaxonomyTerm`].includes(entityType.extends ?? ``))
-    .map(({ name, baseURI }) => ({
-      name,
-      self: baseURI,
-    }))
+import { formatTerm } from "../../utils/api/terms"
+
+export default defineEventHandler(async (event) => {
+  const { page, pageSize } = getQueryOptions(event)
+  const { fields, sortFields, filter } = getMongooseQuery(event)
+  const { documents: terms, total } = await Term.find()
+    .and(...filter)
+    .select(...fields)
+    .sort(...sortFields)
+    .paginate(page, pageSize)
+
+  return createContentOr404(formatTerm.many(terms, { total }))
 })
