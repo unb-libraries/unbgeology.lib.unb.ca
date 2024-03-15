@@ -226,20 +226,29 @@ export function defineEntityFormatter<E extends Entity = Entity, T = any>(format
     }
   }
 
-  const formatDiff = (before: Partial<Mutable<T>>, after: Partial<Mutable<T>>): EntityUpdateResponse<E> => {
-    const formatAndRemoveID = (item: Partial<Mutable<T>>): Omit<EntityJSON<E>, `self` | `id`> => {
-      const formatted = apply(item as T)
-      if (formatted.id) {
-        return Object.fromEntries(Object
-          .entries(formatted)
-          .filter(([key]) => key !== `id`)) as Omit<EntityJSON<E>, `self` | `id`>
+  function formatDiff(diffs: [Partial<T>, Partial<T>][], options?: Partial<Pick<FormatManyOptions<E>, `self`>>): EntityUpdateList<E>
+  function formatDiff(before: Partial<T>, after: Partial<T>, options?: Pick<FormatOptions<E>, `self`>): EntityUpdate<E>
+  function formatDiff(originalOrDiffs: Partial<T> | [Partial<T>, Partial<T>][], updatedOrListOptions?: Partial<T> | Partial<Pick<FormatManyOptions<E>, `self`>>, options?: Pick<FormatOptions<E>, `self`>): EntityUpdate<E> | EntityUpdateList<E> {
+    if (Array.isArray(originalOrDiffs)) {
+      const diffs = originalOrDiffs as [Partial<T>, Partial<T>][]
+      const options = updatedOrListOptions as Partial<FormatManyOptions<E>>
+      const beforeList = formatMany(diffs.map(([before, after]) => before as T), options)
+      const afterList = formatMany(diffs.map(([before, after]) => after as T), options)
+      const { entities, ...list } = beforeList
+      return {
+        ...list,
+        entities: entities.map((before, i) => ({
+          ...before,
+          previous: afterList.entities[i],
+        })),
+      } as EntityUpdateList<E>
+    } else {
+      const before = originalOrDiffs as T
+      const after = updatedOrListOptions as T
+      return {
+        ...formatOne(before as T, options),
+        previous: formatOne(after as T, options) as Omit<EntityUpdate<E>, `previous`>,
       }
-      return formatted as Omit<EntityJSON<E>, `self` | `id`>
-    }
-
-    return {
-      before: formatAndRemoveID(before),
-      after: formatAndRemoveID(after),
     }
   }
 

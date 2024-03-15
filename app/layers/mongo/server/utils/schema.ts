@@ -266,14 +266,18 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase>(documentT
     },
     async then(resolve: (result: DocumentQueryResult<D>) => void, reject: (err: any) => void) {
       try {
-        const [result] = await this.query().exec()
+        const query = this.query
+        const [result] = await query().exec()
         const { documents, total } = result
         resolve({
           documents,
           async update(body: Partial<Mutable<D>>) {
-            const diffs = documents.map(document => diff(document, body))
             await documentType.mongoose.model.updateMany({ _id: { $in: documents.map(({ _id }) => _id) } }, body as Partial<D>)
-            return diffs
+            const [{ documents: updated }] = await query().exec()
+            return updated.map((updated, index) => diff<D>(documents[index], updated).map(document => ({
+              _id: documents[index]._id,
+              ...document,
+            }))) as DocumentDiff<D>[]
           },
           async delete() {
             await documentType.mongoose.model.deleteMany({ _id: { $in: documents.map(({ _id }) => _id) } })
@@ -296,7 +300,7 @@ function findDocument<D extends IDocumentBase = IDocumentBase>(Model: DocumentMo
         const { documents } = await query.paginate(1, 1)
         const document = documents[0]
         if (document) {
-          const clone = JSON.parse(JSON.stringify(document))
+          const clone = JSON.parse(JSON.stringify(document)) as IDocument<D>
           Object.assign(document, {
             async delete() {
               return await Model.mongoose.model.deleteOne({ _id: document._id })
@@ -304,16 +308,16 @@ function findDocument<D extends IDocumentBase = IDocumentBase>(Model: DocumentMo
             async update(body?: Partial<D>) {
               if (body) {
                 await Model.update(`${document._id}`, body)
-                const updated = await findDocumentByID(Model, `${document._id}`)
-                return diff(clone, updated)
+                const updated = await Model.findByID(`${document._id}`)
+                return diff<D>(clone, updated).map(document => ({ _id: clone._id, ...document }))
               } else {
                 return await this.save()
               }
             },
             async save() {
-              const [before, after] = diff<D>(clone, document)
-              await Model.mongoose.model.updateOne({ _id: document._id }, after as Partial<D>)
-              return [before, after]
+              await Model.mongoose.model.updateOne({ _id: document._id }, document)
+              const updated = await Model.findByID(`${document._id}`)
+              return diff<D>(clone, updated).map(document => ({ _id: clone._id, ...document }))
             },
           })
         }

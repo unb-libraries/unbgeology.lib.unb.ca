@@ -27,8 +27,8 @@ export interface EntityType<E extends Entity = Entity> {
 export type EntityJSON<E extends Entity = Entity> = Partial<Omit<E, `id` | `self`>> & Required<Pick<E, `id` | `self`>>;
 export type EntityJSONPropertyValue = string | number | boolean | EntityJSON;
 export type EntityJSONProperties<E extends Entity = Entity, P extends keyof Omit<E, keyof Entity> = keyof Omit<E, keyof Entity>> = Pick<EntityJSON<E>, P>;
-export interface EntityJSONList<E extends Entity = Entity> {
-    entities: EntityJSON<E>[];
+export interface EntityJSONList<E extends EntityJSON = EntityJSON> {
+    entities: E[];
     nav: {
         first?: string;
         last?: string;
@@ -57,10 +57,11 @@ export interface EntityFetchResponse<E extends Entity = Entity> extends EntityRe
     remove: () => Promise<void>;
 }
 export type EntityCreateResponse<E extends Entity = Entity> = EntityFetchResponse<E>;
-export interface EntityUpdateResponse<E extends Entity = Entity> {
-    before: Omit<EntityJSON<E>, `self` | `id`>;
-    after: Omit<EntityJSON<E>, `self` | `id`>;
-}
+export type EntityUpdate<E extends Entity = Entity> = Partial<Omit<E, `self` | `id`>> & Pick<Entity, `self` | `id`> & {
+    previous: Omit<EntityUpdate<E>, `previous`>;
+};
+export type EntityDiff<E extends Entity = Entity> = [Omit<EntityUpdate<E>, `previous`>, Omit<EntityUpdate<E>, `previous`>];
+export type EntityUpdateList<E extends Entity = Entity> = EntityJSONList<EntityUpdate<E>>;
 export interface EntityDeleteResponse {
     success: boolean;
     errors: any[];

@@ -66,9 +66,11 @@ export interface QueryOptions {
   sort: [string, boolean][]
 }
 
+export type DocumentUpdate<D extends DocumentBase = DocumentBase> = Pick<DocumentBase, `_id`> & Partial<Omit<D, `_id`>>
+export type DocumentDiff<D extends DocumentBase = DocumentBase> = [DocumentUpdate<D>, DocumentUpdate<D>]
 export interface DocumentQueryResult<D extends DocumentBase = DocumentBase> {
   documents: D[],
-  update: (body: Partial<Mutable<D>>) => Promise<[Partial<Mutable<D>>, Partial<Mutable<D>>][]>
+  update: (body: Partial<Mutable<D>>) => Promise<DocumentDiff<D>[]>
   delete: () => Promise<void>
   total: number
 }
