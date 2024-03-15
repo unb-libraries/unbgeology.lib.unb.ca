@@ -43,6 +43,7 @@ export function defineDocumentSchema<D = any, TOptions extends any | undefined =
 
   define.mixin = <Dx = any>(mixin: DocumentSchema<Dx>) => {
     mixins.push(mixin)
+    modifiers.push(mixin.alterSchema)
     return define
   }
 
@@ -69,7 +70,9 @@ export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B e
   const getRoot = (model: DocumentModel): DocumentModel => model.base ? getRoot(model.base) : model
   const getRootModel = (model: DocumentModel) => getRoot(model).mongoose.model
   const schema = base && base as unknown as DocumentModel !== getRoot(base as unknown as DocumentModel)
-    ? defineDocumentSchema.mixin(base.schema).mixin(definition as unknown as DocumentSchema<Omit<NonNullable<B>, keyof D>>)({})
+    ? defineDocumentSchema({})
+      .mixin(base.schema)
+      .mixin(definition as unknown as DocumentSchema<Omit<NonNullable<B>, keyof D>>)
     : definition
 
   const Model = !base
