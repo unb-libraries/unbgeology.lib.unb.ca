@@ -41,12 +41,14 @@ async function getBounds(Model: Model<any>, node: Node) {
   const { id, left, right, parent, sortFieldID, sortFieldValue } = node
 
   const query = parent
-    ? { parent: parent?.id, _id: { $ne: id } }
-    : { parent: { $exists: false }, _id: { $ne: id } }
+    ? { parentModel: Model.modelName, parent: parent?.id, _id: { $ne: id } }
+    : { parentModel: Model.modelName, parent: { $exists: false }, _id: { $ne: id } }
   const condition = sortFieldID ? { [sortFieldID]: { $lt: sortFieldValue } } : {}
 
   const siblingsCount = await Model.countDocuments(query)
-  const rightmostSibling = await Model.findOne({ ...query, ...condition }).sort(`-__r`)
+  const rightmostSibling = await Model
+    .findOne({ ...query, ...condition })
+    .sort(`-__r`)
 
   if (rightmostSibling) {
     return [rightmostSibling.get(`__r`) + 1, rightmostSibling.get(`__r`) + right - left + 1]
