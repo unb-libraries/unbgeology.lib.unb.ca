@@ -4,8 +4,8 @@ import type { DocumentBase } from "~/layers/mongo/types/schema"
 export interface Hierarchical {
   parent: ObjectId
   parentModel: string
-  left: number
-  right: number
+  __l: number
+  __r: number
 }
 
 interface Node {
@@ -23,7 +23,7 @@ async function createNode<M = any>(Model: Model<M>, id: ObjectId, left: number, 
     if (!parent) {
       throw new Error(`Parent not found`)
     }
-    const [left, right] = [`left`, `right`].map(f => parent.get(f))
+    const [left, right] = [`__l`, `__r`].map(f => parent.get(f))
     return await createNode(Model, pid, left, right)
   }
 
@@ -46,10 +46,10 @@ async function getBounds(Model: Model<any>, node: Node) {
   const condition = sortFieldID ? { [sortFieldID]: { $lt: sortFieldValue } } : {}
 
   const siblingsCount = await Model.countDocuments(query)
-  const rightmostSibling = await Model.findOne({ ...query, ...condition }).sort(`-right`)
+  const rightmostSibling = await Model.findOne({ ...query, ...condition }).sort(`-__r`)
 
   if (rightmostSibling) {
-    return [rightmostSibling.get(`right`) + 1, rightmostSibling.get(`right`) + right - left + 1]
+    return [rightmostSibling.get(`__r`) + 1, rightmostSibling.get(`__r`) + right - left + 1]
   } else if (parent && siblingsCount > 0) {
     return [parent.left + 1, parent.left + right - left + 1]
   } else if (parent) {
@@ -64,16 +64,16 @@ async function shiftRightSubtree(Model: Model<any>, node: Node, distance: number
 
   const condition = {
     parentModel: Model.modelName,
-    left: { $gte: left },
-    right: { $gte: right },
+    __l: { $gte: left },
+    __r: { $gte: right },
     protected: { $exists: false },
     _id: { $ne: id },
   }
 
   await Model.updateMany(condition, {
     $inc: {
-      left: distance,
-      right: distance,
+      __l: distance,
+      __r: distance,
     },
   })
 }
@@ -83,14 +83,14 @@ async function shiftUpperSubtree(Model: Model<any>, node: Node, distance: number
 
   const condition = {
     parentModel: Model.modelName,
-    left: { $lte: left },
-    right: { $gte: right },
+    __l: { $lte: left },
+    __r: { $gte: right },
     protected: { $exists: false },
   }
 
   await Model.updateMany(condition, {
     $inc: {
-      right: distance,
+      __r: distance,
     },
   })
 }
@@ -100,15 +100,15 @@ async function shiftOrDeleteLowerSubtree(Model: Model<any>, node: Node, distance
 
   const condition = {
     parentModel: Model.modelName,
-    left: { $gt: left },
-    right: { $lt: right },
+    __l: { $gt: left },
+    __r: { $lt: right },
   }
 
   if (distance) {
     await Model.updateMany(condition, {
       $inc: {
-        left: distance,
-        right: distance,
+        __l: distance,
+        __r: distance,
       },
       $set: {
         protected: true,
@@ -146,12 +146,12 @@ export default <T extends DocumentBase>(options?: { sort: keyof Omit<T, keyof Do
       return this.model().modelName
     },
   },
-  left: {
+  __l: {
     type: Schema.Types.Number,
     required: true,
     default: 1,
   },
-  right: {
+  __r: {
     type: Schema.Types.Number,
     required: true,
     default: 2,
@@ -161,7 +161,7 @@ export default <T extends DocumentBase>(options?: { sort: keyof Omit<T, keyof Do
     schema.pre(`save`, async function () {
       const Model = this.model()
 
-      const [id, left, right, parentID] = [`_id`, `left`, `right`, `parent`].map(f => this.get(f))
+      const [id, left, right, parentID] = [`_id`, `__l`, `__r`, `parent`].map(f => this.get(f))
       const node = await createNode(Model, id, left, right, parentID, options?.sort ? [String(options.sort), this.get(String(options.sort))] : undefined)
       if (!this.isNew) {
         this.$locals.original = node
@@ -169,17 +169,17 @@ export default <T extends DocumentBase>(options?: { sort: keyof Omit<T, keyof Do
 
       const [newLeft, newRight] = await getBounds(Model, node)
       if (newLeft <= left || this.isNew) {
-        this.set(`left`, newLeft)
-        this.set(`right`, newRight)
+        this.set(`__l`, newLeft)
+        this.set(`__r`, newRight)
       } else {
-        this.set(`left`, newLeft - (right - left + 1))
-        this.set(`right`, newRight - (right - left + 1))
+        this.set(`__l`, newLeft - (right - left + 1))
+        this.set(`__r`, newRight - (right - left + 1))
       }
     })
 
     schema.post(`save`, async function () {
       const Model = this.model()
-      const [id, left, right, parent] = [`_id`, `left`, `right`, `parent`].map(f => this.get(f))
+      const [id, left, right, parent] = [`_id`, `__l`, `__r`, `parent`].map(f => this.get(f))
 
       const original = this.$locals.original as Node | undefined
       if (original) {
@@ -199,13 +199,13 @@ export default <T extends DocumentBase>(options?: { sort: keyof Omit<T, keyof Do
 
     schema.pre(`deleteOne`, { document: true, query: false }, async function () {
       const Model = this.model()
-      const [id, left, right, parent] = [`_id`, `left`, `right`].map(f => this.get(f))
+      const [id, left, right, parent] = [`_id`, `__l`, `__r`].map(f => this.get(f))
       this.$locals.original = await createNode(Model, id, left, right, parent)
     })
 
     schema.post(`deleteOne`, { document: true, query: false }, async function () {
       const Model = this.model()
-      const [left, right] = [`left`, `right`].map(f => this.get(f))
+      const [left, right] = [`__l`, `__r`].map(f => this.get(f))
 
       const original = this.$locals.original as Node
       await shiftOrDeleteLowerSubtree(Model, original)
