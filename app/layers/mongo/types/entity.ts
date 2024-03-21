@@ -5,6 +5,37 @@ import { type Mutable } from "."
 
 export const EntityFieldTypes = Schema.Types
 
+export interface Content {
+  readonly created?: string
+  readonly updated?: string
+  readonly type?: string
+}
+
+export type Diff<T extends Content = Content> = {
+  previous: Partial<T>
+} & Partial<T>
+
+export type Entity<T extends Content = Content> = {
+  readonly self: string
+  readonly id: string
+} & T
+
+export type EntityDiff<T extends Content = Content> = Diff<Entity<T>>
+
+export type EntityList<T extends Content = Content> = {
+  self: string
+  entities: Entity<T>[]
+  nav: Partial<{
+    first: string
+    next: string
+    prev: string
+    last: string
+  }>
+  page: number
+  pageSize: number
+  total: number
+}
+
 export type EntityDocument<E extends Entity = Entity> = {
   slug?: string
   pk: PropertyKey

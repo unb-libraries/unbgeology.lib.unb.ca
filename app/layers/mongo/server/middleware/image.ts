@@ -1,5 +1,4 @@
 import { type Image as ImageEntity } from "@unb-libraries/nuxt-layer-entity"
-import FileFormatter from "../utils/api/files/format"
 import FileReader from "../utils/api/files/read"
 import ImageFile, { type Image as ImageDocument } from "../documentTypes/Image"
 
@@ -15,15 +14,6 @@ export default defineEventHandler(async (event) => {
           ? ImageFile.mongoose.model.modelName
           : undefined,
         title,
-        alt,
-      }
-    })
-
-    FileFormatter.merge<ImageDocument, ImageEntity>((doc) => {
-      const { title, alt, type } = doc
-      return {
-        title,
-        type: type ? `image` : undefined,
         alt,
       }
     })

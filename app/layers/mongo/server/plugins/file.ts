@@ -1,7 +1,7 @@
 import { FileState, type File as FileEntity } from "@unb-libraries/nuxt-layer-entity"
-import { type File as FileDocument } from "../../../documentTypes/FileBase"
+import FileBase, { type File as FileDocument } from "../documentTypes/FileBase"
 
-export default defineEntityFormatter<FileEntity, Partial<FileDocument>>((item) => {
+export default defineEntityFormatter<FileEntity, Partial<FileDocument>>(FileBase, (item) => {
   const { _id, filename, filesize, mimetype, status, type, created, updated } = item
 
   return {
@@ -9,7 +9,7 @@ export default defineEntityFormatter<FileEntity, Partial<FileDocument>>((item) =
     filename,
     filesize,
     mimetype,
-    type,
+    type: !type ? `other` : type,
     uri: (() => {
       const { uri } = useRuntimeConfig().uploads as { uri: string }
       return filename && status && useEnum(FileState).valueOf(status) > FileState.PENDING

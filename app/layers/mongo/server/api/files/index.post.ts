@@ -1,5 +1,4 @@
 import { FileState } from "@unb-libraries/nuxt-layer-entity"
-import formatFile from "../../utils/api/files/format"
 import { fileExists, getUploadDir, moveFile } from "../../utils/api/files/fs"
 import readFileBody from "../../utils/api/files/read"
 import { type File } from "../../documentTypes/FileBase"
@@ -25,5 +24,5 @@ export default defineEventHandler(async (event) => {
     doc.save()
   }))
 
-  return createContentOr404(formatFile(docs.map(({ _id }) => ({ _id }))))
+  return renderList(event, docs.map(({ _id }) => ({ _id })))
 })

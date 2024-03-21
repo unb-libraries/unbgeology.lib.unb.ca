@@ -1,5 +1,3 @@
-import { type JFileList } from "@unb-libraries/nuxt-layer-entity"
-import formatFile from "../../utils/api/files/format"
 import { type File } from "../../documentTypes/FileBase"
 
 export default defineMongooseHandler(FileBase, async (event) => {
@@ -13,5 +11,5 @@ export default defineMongooseHandler(FileBase, async (event) => {
     .where(...filter)
     .paginate(page, pageSize)
 
-  return createContentOr404<JFileList>(formatFile(files, { total }))
+  return renderList(event, files, { total })
 })

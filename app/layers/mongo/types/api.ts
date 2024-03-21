@@ -1,4 +1,5 @@
-import type { Entity, EntityJSON } from "@unb-libraries/nuxt-layer-entity"
+import type { Content, Entity } from "../types/entity"
+
 export enum Cardinality {
   ONE = 1,
   MANY = 2
@@ -8,17 +9,15 @@ export interface EntityBodyReaderOptions {
   cardinality: Cardinality
 }
 
-export interface FormatOptions<E extends Entity = Entity> {
-  self: (entity: Omit<EntityJSON<E>, `self`>) => string
-  removeEmpty: boolean
+export interface FormatOptions<T extends Content = Content> {
+  self: (entity: Omit<Entity<T>, `self`>) => string
 }
 
-export interface FormatManyOptions<E extends Entity = Entity> {
+export interface FormatManyOptions<T extends Content = Content> {
   self: Partial<{
     list: string
-    canonical: (entity: Omit<EntityJSON<E>, `self`>) => string
+    canonical: (entity: Omit<Entity<T>, `self`>) => string
   }>
-  removeEmpty: boolean
   total: number
   page: number
   pageSize: number

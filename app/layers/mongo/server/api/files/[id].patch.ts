@@ -1,5 +1,4 @@
 import { FileState } from "@unb-libraries/nuxt-layer-entity"
-import formatFile from "../../utils/api/files/format"
 import { getUploadDir, moveFile } from "../../utils/api/files/fs"
 import readFileBody from "../../utils/api/files/read"
 import type { File } from "../../documentTypes/FileBase"
@@ -41,6 +40,6 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const [before, after] = await file.update(update)
-  return createContentOr404(formatFile.diff(before, after))
+  const diff = await file.update(update)
+  return renderDiffOr404(event, diff)
 })

@@ -57,6 +57,8 @@ export interface MigrateOptions {
 export declare module "nitropack" {
   interface NitroRuntimeHooks {
     "mongoose:init": (mongoose: typeof Mongoose) => void | Promise<void>
+    
+    // migrate hooks
     migrate: (migrationID: string) => void | Promise<void>
     "migrate:init": (migration: Migration, items: SourceItem[]) => void | Promise<void>
     "migrate:import": (migration: Migration, options?: MigrateOptions) => void | Promise<void>
@@ -67,7 +69,9 @@ export declare module "nitropack" {
     "migrate:import:item:skipped": (item: MigrationItem) => void | Promise<void>
     "migrate:rollback": (migration: Migration) => void | Promise<void>
     "migrate:pause": (migration: Migration) => void | Promise<void>
-
+    
+    // Document hooks
+    "document:format": (item: any) => any
   }
 }
 

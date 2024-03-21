@@ -1,5 +1,5 @@
 import { Read } from "../../../types"
-import { formatTerm, readTerm } from "../../utils/api/terms"
+import { readTerm } from "../../utils/api/terms"
 
 export default defineEventHandler(async (event) => {
   const { page, pageSize } = getQueryOptions(event)
@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
     .where(...filter)
     .sort(...sortFields)
     .paginate(page, pageSize)
+  const diffs = await updateTerms(body)
 
-  const update = (await updateTerms(body))
-  return createContentOr404(formatTerm.diff(update))
+  return renderDiffList(event, diffs)
 })

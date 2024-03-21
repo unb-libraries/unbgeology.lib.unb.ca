@@ -1,6 +1,6 @@
 import { defu } from "defu"
 import { type H3Event } from "h3"
-import { type EntityJSON, type Entity, type EntityJSONBody, type EntityUpdateResponse, FilterOperator } from "@unb-libraries/nuxt-layer-entity"
+import { type EntityJSON, type Entity, type EntityJSONBody, type EntityUpdate, FilterOperator } from "@unb-libraries/nuxt-layer-entity"
 import { type QueryOptions, type DocumentQuery } from "../../../types/entity"
 import { Cardinality, type EntityBodyReaderOptions, type FormatOptions, type FormatManyOptions } from "../../../types/api"
 import { type DocumentBase, type DocumentModel } from "../../../types/schema"
@@ -172,100 +172,108 @@ export function defineBodyReader<TIn = any, TOut = TIn>(reader: (body: TIn) => T
   return read
 }
 
-export function defineFormatter<TOutput extends object = object, TInput extends object = object>(formatter: (item: TInput) => TOutput, options?: Partial<{ removeEmpty: boolean }>) {
-  return function (item: TInput): TOutput {
-    const output = formatter(item)
-    return Object.fromEntries(Object
-      .entries(output)
-      .filter(([_, value]) => (value !== undefined) || (options?.removeEmpty === false))) as TOutput
+export function defineEntityFormatter<E extends Entity = Entity, T = any>(Model: DocumentModel<any>, formatter: (item: T) => Omit<EntityJSON<E>, `self`>) {
+  return defineNitroPlugin((nitro) => {
+    nitro.hooks.hook(`document:format`, (item: T, options) => {
+      if (Model.name === options.modelName) {
+        return formatter(item)
+      }
+      return {}
+    })
+  })
+}
+
+export async function render<C extends Content = Content, D = any>(event: H3Event, data: D, options?: Partial<FormatOptions<C>>): Promise<Entity<C>> {
+  const nitro = useNitroApp()
+  const formattedContent = await nitro.hooks.callHookParallel(`document:format`, data, { modelName: getMongooseModel(event).name })
+  const entity = Object
+    .entries(formattedContent.reduce((content, formatted) => ({ ...content, ...formatted }), {}))
+    .filter(([_, value]) => (value !== undefined))
+    .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {}) as Omit<Entity<C>, `self`>
+  const self = options?.self ? options.self(entity) : getRequestURL(event).pathname
+  return { self, ...entity } as Entity<C>
+}
+
+export async function renderOr404<C extends Content = Content, D = any>(event: H3Event, data?: D, options?: Partial<FormatOptions<C> & { message: string }>) {
+  if (data) {
+    return await render(event, data, options)
+  }
+  return createError({ statusCode: 404, statusMessage: options?.message ? options.message : `The requested entity does not exist.` })
+}
+
+export async function renderList<C extends Content = Content, D = any>(event: H3Event, data: D[], options?: Partial<FormatManyOptions<C> & { format?: typeof render }>): Promise<EntityList<C>> {
+  const { pathname } = getRequestURL(event)
+
+  const queryOptions = getQueryOptions(event)
+  const self = options?.self?.list ?? pathname
+
+  const canonicalSelf = options?.self?.canonical ?? ((entity: Omit<Entity<C>, `self`>) => self.trim().split(`/`).concat(entity.id).join(`/`))
+  const formatOptions = { self: canonicalSelf }
+  const entities = await Promise.all(data.map(async (item: any) => options?.format?.(event, item, formatOptions) ?? await render(event, item, formatOptions)))
+
+  const paginator = usePaginator({
+    total: options?.total ? options.total : entities.length,
+    page: options?.page ?? queryOptions.page,
+    pageSize: options?.pageSize ?? queryOptions.pageSize,
+  })
+
+  return {
+    self,
+    entities,
+    ...paginator,
   }
 }
 
-export function defineEntityFormatter<E extends Entity = Entity, T = any>(formatter: (item: T) => Omit<EntityJSON<E>, `self`>) {
-  const extensions: ((item: any) => any)[] = []
-  const apply = (item: T) => {
-    return extensions.reduce((formatted, extension) => ({
-      ...formatted,
-      ...extension(item),
-    }), formatter(item))
+export function diff<T extends object = object>(obj: T, clone: T, options?: { keep: (keyof T)[] }): [Partial<T>, Partial<T>] {
+  const diffs: [keyof T, [T[keyof T], T[keyof T]]][] = Object.entries(obj)
+    .filter(([path, value]) => options?.keep?.includes(path as keyof T) || JSON.stringify(value) !== JSON.stringify(clone[path as keyof T]))
+    .map(([path, value]) => [path, typeof value !== `object`
+      ? [value, clone[path as keyof T]]
+      : diff(value as object, clone[path as keyof T] as object)]) as [keyof T, [T[keyof T], T[keyof T]]][]
+
+  return [
+    Object.fromEntries(diffs.map(([path, diffs]) => [path, diffs[0]])) as Partial<T>,
+    Object.fromEntries(diffs.map(([path, diffs]) => [path, diffs[1]])) as Partial<T>,
+  ]
+}
+
+export async function renderDiffOr404<C extends Content = Content, D = any>(event: H3Event, data?: [D, D], options?: Partial<FormatOptions<C> & { message: string }>) {
+  if (data) {
+    return await renderDiff<C>(event, data, options)
   }
+  return createError({ statusCode: 404, statusMessage: options?.message ? options.message : `The requested entity does not exist.` })
+}
 
-  const formatOne = (item: T, options?: Partial<FormatOptions<E>>): EntityJSON<E> => {
-    const entity = Object
-      .entries(apply(item))
-      .filter(([_, value]) => (value !== undefined) || (options?.removeEmpty === false))
-      .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {}) as Omit<EntityJSON<E>, `self`>
-
-    const self = options?.self ? options.self(entity) : getRequestURL(useEvent()).pathname
-    return { self, ...entity } as EntityJSON<E>
+export async function renderDiff<C extends Content = Content, D = any>(event: H3Event, data: [D, D], options?: Partial<FormatOptions<C>>): Promise<Entity<Partial<C>>> {
+  const [before, after] = await Promise.all(data.map(d => render(event, d, options)))
+  const [diffBefore, diffAfter] = diff(before, after, { keep: [`id`, `self`] }) as [Entity<Partial<C>>, Entity<Partial<C>>]
+  return {
+    previous: diffBefore,
+    ...diffAfter,
   }
+}
 
-  const formatMany = (items: T[], options?: Partial<FormatManyOptions<E>>) => {
-    const event = useEvent()
-    const { pathname } = getRequestURL(event)
+export async function renderDiffList<C extends Content = Content, D = any>(event: H3Event, data: [D, D][], options?: Partial<FormatManyOptions<C>>): Promise<EntityList<Partial<C>>> {
+  const beforeData = data.map(([before]) => before)
+  const afterData = data.map(([, after]) => after)
+  const [beforeList, afterList] = await Promise.all([beforeData, afterData].map(async data => await renderList(event, data, options)))
 
-    const queryOptions = getQueryOptions(event)
-    const self = options?.self?.list ?? pathname
-
-    const canonicalSelf = options?.self?.canonical ?? ((entity: Omit<EntityJSON<E>, `self`>) => self.trim().split(`/`).concat(entity.id).join(`/`))
-    const entities = items.map(item => formatOne(item, {
-      self: canonicalSelf,
-      removeEmpty: options?.removeEmpty,
-    }))
-
-    const paginator = usePaginator({
-      total: options?.total ? options.total : entities.length,
-      page: options?.page ?? queryOptions.page,
-      pageSize: options?.pageSize ?? queryOptions.pageSize,
+  const { entities: beforeEntities, ...list } = beforeList
+  const { entities: afterEntities } = afterList
+  const diffs = beforeEntities
+    .map((before, index) => [before, afterEntities[index]])
+    .map(([before, after]) => {
+      const [diffBefore, diffAfter] = diff(before, after, { keep: [`id`, `self`] }) as [Entity<Partial<C>>, Entity<Partial<C>>]
+      return {
+        previous: diffBefore,
+        ...diffAfter,
+      }
     })
 
-    return {
-      self,
-      entities,
-      ...paginator,
-    }
+  return {
+    ...list,
+    entities: diffs,
   }
-
-  function formatDiff(diffs: [Partial<T>, Partial<T>][], options?: Partial<Pick<FormatManyOptions<E>, `self`>>): EntityUpdateList<E>
-  function formatDiff(before: Partial<T>, after: Partial<T>, options?: Pick<FormatOptions<E>, `self`>): EntityUpdate<E>
-  function formatDiff(originalOrDiffs: Partial<T> | [Partial<T>, Partial<T>][], updatedOrListOptions?: Partial<T> | Partial<Pick<FormatManyOptions<E>, `self`>>, options?: Pick<FormatOptions<E>, `self`>): EntityUpdate<E> | EntityUpdateList<E> {
-    if (Array.isArray(originalOrDiffs)) {
-      const diffs = originalOrDiffs as [Partial<T>, Partial<T>][]
-      const options = updatedOrListOptions as Partial<FormatManyOptions<E>>
-      const beforeList = formatMany(diffs.map(([before, after]) => before as T), options)
-      const afterList = formatMany(diffs.map(([before, after]) => after as T), options)
-      const { entities, ...list } = beforeList
-      return {
-        ...list,
-        entities: entities.map((before, i) => ({
-          ...before,
-          previous: afterList.entities[i],
-        })),
-      } as EntityUpdateList<E>
-    } else {
-      const before = originalOrDiffs as T
-      const after = updatedOrListOptions as T
-      return {
-        ...formatOne(before as T, options),
-        previous: formatOne(after as T, options) as Omit<EntityUpdate<E>, `previous`>,
-      }
-    }
-  }
-
-  const format = (items: T | T[], options?: Partial<typeof items extends T ? FormatOptions<E> : FormatManyOptions<E>>): typeof items extends T ? ReturnType<typeof formatOne> : ReturnType<typeof formatMany> => {
-    return (Array.isArray(items)
-      ? formatMany(items, options as Partial<FormatManyOptions<E>>)
-      : formatOne(items, options as Partial<FormatOptions<E>>)) as typeof items extends T ? ReturnType<typeof formatOne> : ReturnType<typeof formatMany>
-  }
-
-  format.one = formatOne
-  format.many = formatMany
-  format.diff = formatDiff
-  format.merge = <TIn extends T = T, EIn extends Entity = E>(formatter: (item: TIn) => Omit<EntityJSON<EIn>, keyof E>) => {
-    extensions.push(formatter)
-  }
-
-  return format
 }
 
 export async function readEntityBody<E extends Entity = Entity>(event: H3Event, reader: (body: any, event: H3Event) => EntityJSONBody<E> | Promise<EntityJSONBody<E>>, options?: EntityBodyReaderOptions) {
@@ -298,8 +306,4 @@ export async function readEntityBody<E extends Entity = Entity>(event: H3Event, 
       return !Array.isArray(body) ? await readOne(body) : await readMany(body)
     }
   }
-}
-
-export function createContentOr404<T = any>(content?: T, options?: Partial<{ message: string }>) {
-  return content ?? createError({ statusCode: 404, statusMessage: options?.message ? options.message : `The requested entity does not exist.` })
 }
