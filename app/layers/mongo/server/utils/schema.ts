@@ -283,7 +283,10 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase>(documentT
             }))) as DocumentDiff<D>[]
           },
           async delete() {
-            await documentType.mongoose.model.deleteMany({ _id: { $in: documents.map(({ _id }) => _id) } })
+            await Promise.all(documents.map(doc => doc._id).map(async (id) => {
+              const doc = await documentType.mongoose.model.findOne({ _id: id })
+              return await doc?.deleteOne()
+            }))
           },
           total: total[0]?.total ?? 0,
         })
@@ -306,16 +309,30 @@ function findDocument<D extends IDocumentBase = IDocumentBase>(Model: DocumentMo
           const clone = JSON.parse(JSON.stringify(document)) as IDocument<D>
           Object.assign(document, {
             async delete() {
-              return await Model.mongoose.model.deleteOne({ _id: document._id })
+              const toDelete = await Model.mongoose.model.findOne({ _id: document._id })
+              await toDelete?.deleteOne()
             },
             async update(body?: Partial<D>) {
-              if (body) {
-                await Model.update(`${document._id}`, body)
-                const updated = await Model.findByID(`${document._id}`)
-                return diff<D>(clone, updated).map(document => ({ _id: clone._id, ...document }))
-              } else {
-                return await this.save()
+              const toUpdate = await Model.mongoose.model.findOne({ _id: document._id })
+              const modify = (body: Partial<D>, rootPath?: string) => {
+                Object.entries(body)
+                  .filter(([, value]) => value !== undefined)
+                  .forEach(([path, value]) => {
+                    if (value !== null && typeof value === `object` && !Array.isArray(value)) {
+                      modify(value, path)
+                    } else if (value !== null) {
+                      toUpdate!.set(rootPath ? `${rootPath}.${path}` : path, value)
+                    } else {
+                      toUpdate!.set(rootPath ? `${rootPath}.${path}` : path, undefined)
+                    }
+                  })
               }
+              if (body) {
+                modify(body)
+              }
+              await toUpdate?.save()
+              const updated = await Model.findByID(`${document._id}`)
+              return diff<D>(clone, updated).map(document => ({ _id: clone._id, ...document }))
             },
             async save() {
               await Model.mongoose.model.updateOne({ _id: document._id }, document)
