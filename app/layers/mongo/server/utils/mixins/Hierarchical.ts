@@ -1,4 +1,5 @@
 import { Schema, type ObjectId, type Model } from "mongoose"
+import type { DocumentBase } from "~/layers/mongo/types/schema"
 
 export interface Hierarchical {
   parent: ObjectId
@@ -12,9 +13,11 @@ interface Node {
   left: number
   right: number
   parent?: Node
+  sortFieldID?: string
+  sortFieldValue?: any
 }
 
-async function createNode<M = any>(Model: Model<M>, id: ObjectId, left: number, right: number, parentID?: ObjectId): Promise<Node> {
+async function createNode<M = any>(Model: Model<M>, id: ObjectId, left: number, right: number, parentID?: ObjectId, sortField?: [string, any]): Promise<Node> {
   const getParent = async (pid: ObjectId) => {
     const parent = await Model.findOne().where(`_id`).equals(pid)
     if (!parent) {
@@ -28,19 +31,27 @@ async function createNode<M = any>(Model: Model<M>, id: ObjectId, left: number, 
     id,
     left,
     right,
+    sortFieldID: sortField ? sortField[0] : undefined,
+    sortFieldValue: sortField ? sortField[1] : undefined,
     parent: parentID ? await getParent(parentID) : undefined,
   }
 }
 
-async function getBounds(Model: Model<any>, node: Node, sortField?: string) {
-  const { id, left, right, parent } = node
+async function getBounds(Model: Model<any>, node: Node) {
+  const { id, left, right, parent, sortFieldID, sortFieldValue } = node
 
-  const sibling = parent
-    ? await Model.findOne({ parent: parent.id, _id: { $ne: id } }).sort(`-right`)
-    : await Model.findOne({ parent: { $exists: false }, _id: { $ne: id } }).sort(`-right`)
+  const query = parent
+    ? { parent: parent?.id, _id: { $ne: id } }
+    : { parent: { $exists: false }, _id: { $ne: id } }
+  const condition = sortFieldID ? { [sortFieldID]: { $lt: sortFieldValue } } : {}
 
-  if (sibling) {
-    return [sibling.get(`right`) + 1, sibling.get(`right`) + right - left + 1]
+  const siblingsCount = await Model.countDocuments(query)
+  const rightmostSibling = await Model.findOne({ ...query, ...condition }).sort(`-right`)
+
+  if (rightmostSibling) {
+    return [rightmostSibling.get(`right`) + 1, rightmostSibling.get(`right`) + right - left + 1]
+  } else if (parent && siblingsCount > 0) {
+    return [parent.left + 1, parent.left + right - left + 1]
   } else if (parent) {
     return [parent.right, parent.right + right - left]
   } else {
@@ -121,7 +132,7 @@ async function unprotect(Model: Model<any>) {
   }, { strict: false })
 }
 
-export default defineDocumentSchema<Hierarchical>({
+export default <T extends DocumentBase>(options?: { sort: keyof Omit<T, keyof DocumentBase | keyof Hierarchical> }) => defineDocumentSchema<Hierarchical>({
   parent: {
     type: Schema.Types.ObjectId,
     required: false,
@@ -151,7 +162,7 @@ export default defineDocumentSchema<Hierarchical>({
       const Model = this.model()
 
       const [id, left, right, parentID] = [`_id`, `left`, `right`, `parent`].map(f => this.get(f))
-      const node = await createNode(Model, id, left, right, parentID)
+      const node = await createNode(Model, id, left, right, parentID, options?.sort ? [String(options.sort), this.get(String(options.sort))] : undefined)
       if (!this.isNew) {
         this.$locals.original = node
       }
@@ -202,4 +213,4 @@ export default defineDocumentSchema<Hierarchical>({
       await shiftUpperSubtree(Model, original, left - right - 1)
     })
   },
-})
+})()
