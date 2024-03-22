@@ -1,4 +1,4 @@
-import { Schema, type SchemaDefinition, type ObjectId, type Model } from "mongoose"
+import { Schema, type SchemaDefinition, type ObjectId, type Model, type Document, type FilterQuery, type Query } from "mongoose"
 import { type DocumentQuery } from "./entity"
 import { type Mutable } from "."
 
@@ -23,17 +23,6 @@ export type ObjectProperties<T extends object = object> = Pick<T, {
   [K in keyof T]: T[K] extends Function ? never : K
 }[keyof T]>
 
-export type Document<D extends DocumentBase = DocumentBase> = {
-  update: (body?: Partial<Mutable<D>>) => Promise<[Partial<Mutable<D>>, Partial<Mutable<D>>]>
-  delete: () => Promise<void>
-  save: () => Promise<void>
-} & D
-
-type DocumentRequest<D extends DocumentBase = DocumentBase> = {
-  select: (...fields: string[]) => DocumentRequest<D>
-  then: (resolve: (document: Document<D>) => void, reject: (err: any) => void) => void
-}
-
 export interface DocumentModel<D extends DocumentBase = DocumentBase> {
   name: string
   fullName: string
@@ -42,11 +31,11 @@ export interface DocumentModel<D extends DocumentBase = DocumentBase> {
   mongoose: {
     model: Model<D>
   }
-  new: (body: Partial<D>) => Document<D>
   find: () => DocumentQuery<D>
-  findByID: (id: string) => DocumentRequest<D>
-  create: (body: Omit<D, keyof DocumentBase> | Omit<D, keyof DocumentBase>[]) => Promise<Document<D> | Document<D>[]>
-  update: (id: string, body: Partial<Mutable<D>>) => Promise<void>
+  findOne: (filter: FilterQuery<D>) => Query<Document<D>, D>
+  findByID: (id: string) => Query<Document<D>, D>
+  create: (body: Omit<D, keyof DocumentBase> | Omit<D, keyof DocumentBase>[]) => Document<D> | Document<D>[]
+  update: (id: string, body: Partial<Mutable<D>>) => Promise<[Document<D>, Document<D>]>
   delete: (id: string) => Promise<void>
 }
 

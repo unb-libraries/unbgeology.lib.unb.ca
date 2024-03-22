@@ -3,7 +3,7 @@ export default defineEventHandler(async (event) => {
   const { fields } = getMongooseQuery(event)
 
   const file = await FileBase.findByID(id)
-    .select(...fields)
+    .select(fields)
 
   return renderOr404(event, file)
 })

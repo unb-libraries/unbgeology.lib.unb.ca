@@ -1,6 +1,5 @@
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
-  const { delete: deleteTerm } = await Term.findByID(id)
-  await deleteTerm()
+  await Term.delete(id)
   return sendNoContent(event)
 })

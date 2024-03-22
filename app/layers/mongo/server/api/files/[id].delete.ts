@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     await removeFile(file.filepath)
-    await file.delete()
+    await FileBase.delete(id)
   } catch (err: any) {
     return sendError(event, createError({
       statusCode: 500,

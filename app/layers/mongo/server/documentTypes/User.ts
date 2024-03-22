@@ -1,9 +1,10 @@
-import { type User } from "@unb-libraries/nuxt-layer-entity"
-import { EntityFieldTypes, type EntityDocument } from "../../types/entity"
+import { type User as UserEntity, type Entity } from "@unb-libraries/nuxt-layer-entity"
+import { EntityFieldTypes } from "../../types/entity"
+import { type DocumentBase } from "../../types/schema"
 
-type UserDocument = EntityDocument<User>
+interface User extends Omit<UserEntity, keyof Entity>, DocumentBase {}
 
-export default defineDocumentType<UserDocument>(`User`, {
+export default defineDocumentModel<User>(`User`, defineDocumentSchema<User>({
   username: {
     type: EntityFieldTypes.String,
     required: true,
@@ -28,4 +29,4 @@ export default defineDocumentType<UserDocument>(`User`, {
       required: false,
     },
   },
-})
+})())

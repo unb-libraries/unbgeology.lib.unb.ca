@@ -1,7 +1,8 @@
 import { defu } from "defu"
-import { Schema, type SchemaDefinition, model as defineModel, Types } from "mongoose"
-import type { DocumentSchema, AlterSchemaHandler, Document as IDocument, DocumentBase as IDocumentBase, DocumentModel, DocumentSchemaOptions, ObjectProperties } from "../../types/schema"
+import { Schema, type SchemaDefinition, model as defineModel, Types, type FilterQuery } from "mongoose"
+import type { DocumentSchema, AlterSchemaHandler, DocumentBase as IDocumentBase, DocumentModel, DocumentSchemaOptions } from "../../types/schema"
 import { type DocumentQuery, type DocumentQueryResult, type Join } from "../../types/entity"
+import { type Mutable } from "../../types"
 
 type DefineDocumentSchema<D = any, TOptions extends any | undefined = undefined> =
   (TOptions extends undefined ? { (): DocumentSchema<D> } : { (options: TOptions): DocumentSchema<D> })
@@ -95,6 +96,11 @@ export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B e
         ? DocumentQuery<D>(this as DocumentModel<D>)
         : DocumentQuery<NonNullable<B>>(this as unknown as DocumentModel<NonNullable<B>>)
     },
+    findOne(filter: FilterQuery<D>) {
+      return !base
+        ? findDocument(this as DocumentModel<D>, filter)
+        : findDocument(this as unknown as DocumentModel<NonNullable<B>>, filter)
+    },
     findByID(id: string) {
       return !base
         ? findDocumentByID(this as DocumentModel<D>, id)
@@ -106,7 +112,7 @@ export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B e
         : await createDocument<NonNullable<B>>(this as DocumentModel<NonNullable<B>>, body as Partial<NonNullable<B>> | Partial<NonNullable<B>>[])
     },
     async update(id: string, body: B extends undefined ? Partial<Mutable<D>> : Partial<Mutable<NonNullable<B>>>) {
-      !base
+      return !base
         ? await updateDocument<D>(this as DocumentModel<D>, id, body as Partial<Mutable<D>>)
         : await updateDocument<NonNullable<B>>(this as DocumentModel<NonNullable<B>>, id, body as Partial<Mutable<NonNullable<B>>>)
     },
@@ -185,18 +191,20 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase>(documentT
       })
       return this
     },
-    and(...fieldOrHandlers: (string | ((query: DocumentQuery) => void))[]) {
-      if (typeof fieldOrHandlers[0] === `function`) {
-        const handlers = fieldOrHandlers
-        return this.where(...handlers as ((query: DocumentQuery) => void)[])
+    and(...fieldOrHandlers: (string | ((query: DocumentQuery<D>) => void))[]) {
+      if (fieldOrHandlers.length === 0) {
+        return this.where()
+      } else {
+        return typeof fieldOrHandlers[0] === `function`
+          ? this.where(...fieldOrHandlers as ((query: DocumentQuery<D>) => void)[])
+          : this.where(fieldOrHandlers[0])
       }
-      return this.where(fieldOrHandlers[0])
     },
-    where(...fieldOrHandlers: (string | ((query: DocumentQuery) => void))[]) {
+    where(...fieldOrHandlers: (string | ((query: DocumentQuery<D>) => void))[]) {
       if (fieldOrHandlers.length === 0) { return this }
 
       if (typeof fieldOrHandlers[0] === `function`) {
-        handlers.push(...fieldOrHandlers as ((query: DocumentQuery) => void)[])
+        handlers.push(...fieldOrHandlers as ((query: DocumentQuery<D>) => void)[])
         return this
       }
 
@@ -204,6 +212,10 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase>(documentT
       return {
         eq: (value: string | number) => {
           filters.push({ [field]: value })
+          return this
+        },
+        ex: () => {
+          filters.push({ [field]: { $exists: true } })
           return this
         },
         ne: (value: string | number) => {
@@ -269,24 +281,15 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase>(documentT
     },
     async then(resolve: (result: DocumentQueryResult<D>) => void, reject: (err: any) => void) {
       try {
-        const query = this.query
-        const [result] = await query().exec()
+        const [result] = await this.query().exec()
         const { documents, total } = result
         resolve({
           documents,
-          async update(body: Partial<Mutable<D>>) {
-            await documentType.mongoose.model.updateMany({ _id: { $in: documents.map(({ _id }) => _id) } }, body as Partial<D>)
-            const [{ documents: updated }] = await query().exec()
-            return updated.map((updated, index) => diff<D>(documents[index], updated).map(document => ({
-              _id: documents[index]._id,
-              ...document,
-            }))) as DocumentDiff<D>[]
+          update: async (body: Partial<Mutable<D>>) => {
+            return await Promise.all(documents.map(async document => await updateDocument(documentType, `${document._id}`, body)))
           },
-          async delete() {
-            await Promise.all(documents.map(doc => doc._id).map(async (id) => {
-              const doc = await documentType.mongoose.model.findOne({ _id: id })
-              return await doc?.deleteOne()
-            }))
+          delete: async () => {
+            await Promise.all(documents.map(async document => await deleteDocument(documentType, `${document._id}`)))
           },
           total: total[0]?.total ?? 0,
         })
@@ -297,90 +300,32 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase>(documentT
   }
 }
 
-function findDocument<D extends IDocumentBase = IDocumentBase>(Model: DocumentModel<D>) {
-  const query = DocumentQuery(Model)
-  return {
-    ...query,
-    async then(resolve: (document: IDocument<D> | null) => void, reject: (err: any) => void) {
-      try {
-        const { documents } = await query.paginate(1, 1)
-        const document = documents[0]
-        if (document) {
-          const clone = JSON.parse(JSON.stringify(document)) as IDocument<D>
-          Object.assign(document, {
-            async delete() {
-              const toDelete = await Model.mongoose.model.findOne({ _id: document._id })
-              await toDelete?.deleteOne()
-            },
-            async update(body?: Partial<D>) {
-              const toUpdate = await Model.mongoose.model.findOne({ _id: document._id })
-              const modify = (body: Partial<D>, rootPath?: string) => {
-                Object.entries(body)
-                  .filter(([, value]) => value !== undefined)
-                  .forEach(([path, value]) => {
-                    if (value !== null && typeof value === `object` && !Array.isArray(value)) {
-                      modify(value, path)
-                    } else if (value !== null) {
-                      toUpdate!.set(rootPath ? `${rootPath}.${path}` : path, value)
-                    } else {
-                      toUpdate!.set(rootPath ? `${rootPath}.${path}` : path, undefined)
-                    }
-                  })
-              }
-              if (body) {
-                modify(body)
-              }
-              await toUpdate?.save()
-              const updated = await Model.findByID(`${document._id}`)
-              return diff<D>(clone, updated).map(document => ({ _id: clone._id, ...document }))
-            },
-            async save() {
-              await Model.mongoose.model.updateOne({ _id: document._id }, document)
-              const updated = await Model.findByID(`${document._id}`)
-              return diff<D>(clone, updated).map(document => ({ _id: clone._id, ...document }))
-            },
-          })
-        }
-        resolve(document as IDocument<D> | null)
-      } catch (err: any) {
-        reject(err)
-      }
-    },
-  }
+function findDocument<D extends IDocumentBase = IDocumentBase>(Model: DocumentModel<D>, filter: FilterQuery<D>) {
+  return Model.mongoose.model.findOne(filter)
 }
 
 function findDocumentByID<D extends IDocumentBase = IDocumentBase>(Model: DocumentModel<D>, id: string) {
-  const { join, select, then } = findDocument(Model).where(`_id`).eq(new Types.ObjectId(id))
-  return {
-    join,
-    select,
-    then,
-  }
+  return findDocument(Model, { _id: id })
 }
 
 async function createDocument<D extends IDocumentBase = IDocumentBase>(Model: DocumentModel<D>, body: Partial<D> | Partial<D>[]) {
   return await Model.mongoose.model.create(body)
 }
 
-function diff<T extends object = object>(obj: T, clone: T): [Partial<T>, Partial<T>] {
-  const entries = Object.entries(obj) as [keyof ObjectProperties<T>, T[keyof ObjectProperties<T>]][]
-  const diffs: [keyof T, [T[keyof T], T[keyof T]]][] = entries
-    .filter(([, value]) => typeof value !== `function`)
-    .filter(([path, value]) => JSON.stringify(value) !== JSON.stringify(clone[path]))
-    .map(([path, value]) => [path, typeof value !== `object`
-      ? [value, clone[path]]
-      : diff(value as object, clone[path] as object)]) as [keyof T, [T[keyof T], T[keyof T]]][]
-
-  return [
-    Object.fromEntries(diffs.map(([path, diffs]) => [path, diffs[0]])) as Partial<T>,
-    Object.fromEntries(diffs.map(([path, diffs]) => [path, diffs[1]])) as Partial<T>,
-  ]
-}
-
 async function updateDocument<D extends IDocumentBase = IDocumentBase>(Model: DocumentModel<D>, id: string, body: Partial<Mutable<D>>) {
-  await Model.mongoose.model.updateOne({ _id: id }, body as Partial<D>)
+  const document = await findDocumentByID(Model, id)
+  if (!document) {
+    throw new Error(`Document not found`)
+  }
+
+  const original = document.toJSON()
+  document.set({ label: body.label })
+  await document.save()
+
+  return [original, document.toJSON()] as [typeof original, typeof original]
 }
 
-async function deleteDocument(Model: DocumentModel, id: string) {
-  await Model.mongoose.model.deleteOne({ _id: id })
+async function deleteDocument(Model: DocumentModel<any>, id: string) {
+  const document = await findDocumentByID(Model, id)
+  await document?.deleteOne()
 }

@@ -1,7 +1,12 @@
-import { type Migration, MigrationStatus } from "@unb-libraries/nuxt-layer-entity"
-import { type EntityDocument, EntityFieldTypes } from "../../types/entity"
+import { type Entity, type Migration as MigrationEntity, MigrationStatus } from "@unb-libraries/nuxt-layer-entity"
+import { EntityFieldTypes } from "../../types/entity"
+import { type DocumentBase } from "../../types/schema"
 
-export default defineDocumentType<EntityDocument<Migration>>(`Migration`, {
+interface Migration extends Omit<MigrationEntity, keyof Entity>, DocumentBase {
+
+}
+
+export default defineDocumentModel(`Migration`, defineDocumentSchema<Migration>({
   name: {
     type: EntityFieldTypes.String,
     required: true,
@@ -50,4 +55,4 @@ export default defineDocumentType<EntityDocument<Migration>>(`Migration`, {
     enum: [MigrationStatus.IDLE, MigrationStatus.RUNNING],
     default: MigrationStatus.IDLE,
   },
-})
+})())

@@ -1,5 +1,5 @@
 import { Schema, type SchemaOptions, type Model, type HydratedDocument, type UpdateQuery, type QueryOptions as MongooseQueryOptions, type QueryWithHelpers } from "mongoose"
-import { FilterOperator, type Entity, type EntityJSON } from "@unb-libraries/nuxt-layer-entity"
+import { FilterOperator, type EntityJSON } from "@unb-libraries/nuxt-layer-entity"
 import type { DocumentBase, DocumentModel } from "./schema"
 import { type Mutable } from "."
 
@@ -114,6 +114,7 @@ export interface DocumentQuery<D extends DocumentBase = DocumentBase> {
     (field: string): {
       eq: (value: any) => DocumentQuery<D>
       ne: (value: any) => DocumentQuery<D>
+      ex: () => DocumentQuery<D>
       match: (pattern: RegExp) => DocumentQuery<D>
       in: (value: any[]) => DocumentQuery<D>
       nin: (value: any[]) => DocumentQuery<D>

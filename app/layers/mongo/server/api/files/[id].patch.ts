@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
 
   const file = await FileBase.findByID(id)
-    .select(`filename`, `filepath`, `status`)
+    .select([`filename`, `filepath`, `status`])
 
   if (!file) {
     return sendError(event, createError({
@@ -40,6 +40,5 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const diff = await file.update(update)
-  return renderDiffOr404(event, diff)
+  return renderDiffOr404(event, await FileBase.update(id, update))
 })

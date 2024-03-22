@@ -1,7 +1,10 @@
-import { type MigrationItem, MigrationStatus } from "@unb-libraries/nuxt-layer-entity"
-import { EntityFieldTypes, type EntityDocument } from "../../types/entity"
+import { type MigrationItem as MigrationItemEntity, MigrationStatus, type Entity } from "@unb-libraries/nuxt-layer-entity"
+import { EntityFieldTypes } from "../../types/entity"
+import type { DocumentBase } from "../../types/schema"
 
-export default defineDocumentType<EntityDocument<MigrationItem>>(`MigrationItem`, {
+interface MigrationItem extends Omit<MigrationItemEntity, keyof Entity>, DocumentBase {}
+
+export default defineDocumentModel<MigrationItem>(`MigrationItem`, defineDocumentSchema<MigrationItem>({
   sourceID: {
     type: EntityFieldTypes.Number,
     required: true,
@@ -16,7 +19,7 @@ export default defineDocumentType<EntityDocument<MigrationItem>>(`MigrationItem`
   },
   migration: {
     type: EntityFieldTypes.ObjectId,
-    ref: Migration,
+    ref: Migration.mongoose.model.modelName,
     required: true,
   },
   error: {
@@ -28,4 +31,4 @@ export default defineDocumentType<EntityDocument<MigrationItem>>(`MigrationItem`
     enum: [MigrationStatus.INITIAL, MigrationStatus.QUEUED, MigrationStatus.PENDING, MigrationStatus.IMPORTED, MigrationStatus.SKIPPED, MigrationStatus.ERRORED],
     default: MigrationStatus.INITIAL,
   },
-})
+})())
