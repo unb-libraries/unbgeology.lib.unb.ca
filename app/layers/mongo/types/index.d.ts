@@ -71,7 +71,8 @@ export declare module "nitropack" {
     "migrate:pause": (migration: Migration) => void | Promise<void>
     
     // Document hooks
-    "document:format": (item: any) => any
+    "document:format": (item: any | any[], options: { modelName: string }) => any
+    "body:transform": (payload: any | any[], options: { modelName: string }) => any
   }
 }
 

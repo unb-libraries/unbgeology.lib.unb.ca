@@ -1,10 +1,9 @@
-import { defu } from "defu"
 import { type H3Event } from "h3"
-import { type EntityJSON, type Entity, type EntityJSONBody, type EntityUpdate, FilterOperator } from "@unb-libraries/nuxt-layer-entity"
-import { type QueryOptions, type DocumentQuery } from "../../../types/entity"
-import { Cardinality, type EntityBodyReaderOptions, type FormatOptions, type FormatManyOptions } from "../../../types/api"
+import { type EntityJSON, FilterOperator } from "@unb-libraries/nuxt-layer-entity"
+import { type QueryOptions, type DocumentQuery, type Content, type Entity, type EntityList, type Payload } from "../../../types/entity"
+import { type FormatOptions, type FormatManyOptions } from "../../../types/api"
 import { type DocumentBase, type DocumentModel } from "../../../types/schema"
-import { Read, type Mutable, type MongooseEventContext } from "~../../../types"
+import { type MongooseEventContext } from "~../../../types"
 
 function initMongooseContext(event: H3Event) {
   event.context.mongoose = {
@@ -121,55 +120,48 @@ export function getQueryOptions(event: H3Event): QueryOptions {
   }
 }
 
-export function defineEntityBodyReader<E extends Entity = Entity>(reader: (body: any) => EntityJSONBody<E> | Promise<EntityJSONBody<E>>, options?: EntityBodyReaderOptions) {
-  return async (event: H3Event) => {
-    const body = await readBody(event)
-    return await reader(body)
-  }
+export function defineBodyTransformer<I extends object = object, O extends object = object>(Model: DocumentModel<any>, transformer: (body: Payload<I>) => Payload<O> | Promise<Payload<O>>) {
+  return defineNitroPlugin((nitro) => {
+    nitro.hooks.hook(`body:transform`, async (payload, options) => {
+      if (Model.name === options.modelName) {
+        return await transformer(payload)
+      }
+      return {}
+    })
+  })
 }
 
-export function defineBodyReader<TIn = any, TOut = TIn>(reader: (body: TIn) => TOut | Promise<TOut>) {
-  const extensions: ((body: any) => any | Promise<any>)[] = []
+async function transformBody<T extends object = object>(modelName:string, payload: any): Promise<Payload<T> | Payload<T>[]> {
+  const nitro = useNitroApp()
+  const bodies = await nitro.hooks.callHookParallel(`body:transform`, payload, {
+    modelName,
+  })
+  return bodies.reduce((body, input) => ({ ...body, ...input }), {})
+}
 
-  const readOne = async (body: TIn): Promise<TOut> => {
-    const bodies = await Promise.all([reader, ...extensions]
-      .map(async reader => await reader(body)))
-    return bodies.reduce((body, input) => ({ ...body, ...input }), {})
+export async function readTransformedBody<T extends object = object>(event: H3Event): Promise<Payload<T> | Payload<T>[]> {
+  const payload = await readBody(event)
+  if (Array.isArray(payload)) {
+    return await readTransformedBodyList<T>(event)
   }
+  return await readOneTransformedBody<T>(event)
+}
 
-  const readMany = async (body: TIn[]): Promise<TOut[]> => {
-    return await Promise.all(body.map(async body => await readOne(body)))
+export async function readOneTransformedBody<T extends object = object>(event: H3Event): Promise<Payload<T>> {
+  const payload = await readBody(event)
+  if (Array.isArray(payload)) {
+    throw new TypeError(`Body must be of type object.`)
   }
+  return await transformBody<T>(getMongooseModel(event).name, payload) as T
+}
 
-  const read = async <M extends Read = Read.CREATE>(event: H3Event): Promise<M extends Read.CREATE ? TOut | TOut[] : Partial<Mutable<TOut>> | Partial<Mutable<TOut>>[]> => {
-    const body = await readBody(event)
-    return (!Array.isArray(body)
-      ? await read.one(event)
-      : await read.many(event)) as Promise<M extends Read.CREATE ? TOut | TOut[] : Partial<Mutable<TOut>> | Partial<Mutable<TOut>>[]>
+export async function readTransformedBodyList<T extends object = object>(event: H3Event): Promise<Payload<T>[]> {
+  const payloads = await readBody<T[]>(event)
+  if (!Array.isArray(payloads)) {
+    throw new TypeError(`Body must be of type array.`)
   }
-
-  read.one = async <M extends Read = Read.CREATE>(event: H3Event) => {
-    const body = await readBody(event)
-    if (Array.isArray(body)) {
-      throw new TypeError(`Body must be of type object.`)
-    }
-    return readOne(body) as Promise<M extends Read.CREATE ? TOut : Partial<Mutable<TOut>>>
-  }
-
-  read.many = async <M extends Read = Read.CREATE>(event: H3Event) => {
-    const body = await readBody(event)
-    if (!Array.isArray(body)) {
-      throw new TypeError(`Body must be of type array.`)
-    }
-    return readMany(body) as Promise<M extends Read.CREATE ? TOut[] : Partial<Mutable<TOut[]>>>
-  }
-
-  read.merge = <TInx extends TIn = TIn, TOutx extends TOut = TOut>(reader: (body: TInx) => TOutx | Promise<TOutx>) => {
-    extensions.push(reader)
-    return read
-  }
-
-  return read
+  const modelName = getMongooseModel(event).name
+  return await Promise.all(payloads.map(payload => transformBody(modelName, payload))) as T[]
 }
 
 export function defineEntityFormatter<E extends Entity = Entity, T = any>(Model: DocumentModel<any>, formatter: (item: T) => Omit<EntityJSON<E>, `self`>) {
@@ -273,37 +265,5 @@ export async function renderDiffList<C extends Content = Content, D = any>(event
   return {
     ...list,
     entities: diffs,
-  }
-}
-
-export async function readEntityBody<E extends Entity = Entity>(event: H3Event, reader: (body: any, event: H3Event) => EntityJSONBody<E> | Promise<EntityJSONBody<E>>, options?: EntityBodyReaderOptions) {
-  options = defu(options, { cardinality: Cardinality.MANY | Cardinality.ONE } as const)
-  const body = await readBody(event)
-
-  async function readOne(body: any) {
-    return await reader(body, event)
-  }
-
-  async function readMany(body: any[]) {
-    return await Promise.all(body.map(async body => await reader(body, event)))
-  }
-
-  switch (options.cardinality) {
-    case Cardinality.ONE: {
-      if (Array.isArray(body)) {
-        throw new TypeError(`Body must be of type object.`)
-      }
-      return readOne(body)
-    }
-    case Cardinality.MANY: {
-      if (!Array.isArray(body)) {
-        throw new TypeError(`Body must be of type array.`)
-      }
-      return readMany(body)
-    }
-    case Cardinality.ONE | Cardinality.MANY:
-    default: {
-      return !Array.isArray(body) ? await readOne(body) : await readMany(body)
-    }
   }
 }

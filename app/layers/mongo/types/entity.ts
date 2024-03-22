@@ -11,6 +11,8 @@ export interface Content {
   readonly type?: string
 }
 
+export type Payload<C extends object = object> = C | Partial<Mutable<C>>
+
 export type Diff<T extends Content = Content> = {
   previous: Partial<T>
 } & Partial<T>
