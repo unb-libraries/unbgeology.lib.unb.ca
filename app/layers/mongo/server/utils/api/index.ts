@@ -120,7 +120,7 @@ export function getQueryOptions(event: H3Event): QueryOptions {
   }
 }
 
-export function defineBodyTransformer<I extends object = object, O extends object = object>(Model: DocumentModel<any>, transformer: (body: Payload<I>) => Payload<O> | Promise<Payload<O>>) {
+export function defineBodyReader<T extends object = object>(Model: DocumentModel<any>, transformer: (body: any) => Payload<T> | Promise<Payload<T>>) {
   return defineNitroPlugin((nitro) => {
     nitro.hooks.hook(`body:transform`, async (payload, options) => {
       if (Model.name === options.modelName) {
@@ -131,37 +131,41 @@ export function defineBodyTransformer<I extends object = object, O extends objec
   })
 }
 
-async function transformBody<T extends object = object>(modelName:string, payload: any): Promise<Payload<T> | Payload<T>[]> {
+async function transformOr400<T extends object = object, P extends `create` | `update` = `create`>(modelName:string, payload: any): Promise<Payload<T, P> | Payload<T, P>[]> {
   const nitro = useNitroApp()
-  const bodies = await nitro.hooks.callHookParallel(`body:transform`, payload, {
-    modelName,
-  })
-  return bodies.reduce((body, input) => ({ ...body, ...input }), {})
+  try {
+    const bodies = await nitro.hooks.callHookParallel(`body:transform`, payload, {
+      modelName,
+    })
+    return bodies.reduce((body, input) => ({ ...body, ...input }), {})
+  } catch (err) {
+    throw createError({ statusCode: 400, statusMessage: `Invalid payload: ${(err as Error).message}` })
+  }
 }
 
-export async function readTransformedBody<T extends object = object>(event: H3Event): Promise<Payload<T> | Payload<T>[]> {
+export async function readBodyOr400<T extends object = object, P extends `create` | `update` = `create`>(event: H3Event): Promise<Payload<T, P> | Payload<T, P>[]> {
   const payload = await readBody(event)
   if (Array.isArray(payload)) {
-    return await readTransformedBodyList<T>(event)
+    return await readBodyListOr400<T>(event)
   }
-  return await readOneTransformedBody<T>(event)
+  return await readOneBodyOr400<T>(event)
 }
 
-export async function readOneTransformedBody<T extends object = object>(event: H3Event): Promise<Payload<T>> {
+export async function readOneBodyOr400<T extends object = object, P extends `create` | `update` = `create`>(event: H3Event): Promise<Payload<T, P>> {
   const payload = await readBody(event)
   if (Array.isArray(payload)) {
     throw new TypeError(`Body must be of type object.`)
   }
-  return await transformBody<T>(getMongooseModel(event).name, payload) as T
+  return await transformOr400<T>(getMongooseModel(event).name, payload) as T
 }
 
-export async function readTransformedBodyList<T extends object = object>(event: H3Event): Promise<Payload<T>[]> {
+export async function readBodyListOr400<T extends object = object, P extends `create` | `update` = `create`>(event: H3Event): Promise<Payload<T, P>[]> {
   const payloads = await readBody<T[]>(event)
   if (!Array.isArray(payloads)) {
     throw new TypeError(`Body must be of type array.`)
   }
   const modelName = getMongooseModel(event).name
-  return await Promise.all(payloads.map(payload => transformBody(modelName, payload))) as T[]
+  return await Promise.all(payloads.map(payload => transformOr400(modelName, payload))) as T[]
 }
 
 export function defineEntityFormatter<E extends Entity = Entity, T = any>(Model: DocumentModel<any>, formatter: (item: T) => Omit<EntityJSON<E>, `self`>) {
