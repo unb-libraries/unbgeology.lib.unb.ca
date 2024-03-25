@@ -281,6 +281,10 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase>(documentT
     },
     async then(resolve: (result: DocumentQueryResult<D>) => void, reject: (err: any) => void) {
       try {
+        const nitro = useNitroApp()
+        if (nitro) {
+          await nitro.hooks.callHook(`mongoose:query`, this)
+        }
         const [result] = await this.query().exec()
         const { documents, total } = result
         resolve({

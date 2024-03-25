@@ -120,6 +120,17 @@ export function getQueryOptions(event: H3Event): QueryOptions {
   }
 }
 
+export function defineMongooseMiddleware<D extends DocumentBase = DocumentBase>(Model: DocumentModel<D>, handler: (event: H3Event, query: DocumentQuery<D>) => void) {
+  return defineNitroPlugin((nitro) => {
+    const event = useEvent()
+    nitro.hooks.hook(`mongoose:query`, (query) => {
+      if (event && Model.mongoose.model.modelName === getMongooseModel(event).mongoose.model.modelName) {
+        handler(event, query)
+      }
+    })
+  })
+}
+
 export function defineBodyReader<T extends object = object>(Model: DocumentModel<any>, transformer: (body: any) => Payload<T> | Promise<Payload<T>>) {
   return defineNitroPlugin((nitro) => {
     nitro.hooks.hook(`body:transform`, async (payload, options) => {
