@@ -1,78 +1,126 @@
 openapi: 3.0.2
 info:
-  title: UNB Earth Sciences Collection API
-  description: The UNB Eartch Science Collection provides access to specimen metadata curated by the UNB Eartch Science Centre.
+  title: UNB Geology API
+  description: The UNB Geology API provides access to specimen metadata curated by the UNB Earth Science Centre.
   version: '0.1'
 
 servers:
-  - url: http://local-unbgeology.lib.unb.ca:3118/api
+  - url: http://local-unbgeology.lib.unb.ca:3118/
 
 paths:
-  /classifications:
-    parameters:
-      - $ref: "#/components/parameters/Page"
-      - $ref: "#/components/parameters/PageSize"
+  /api/terms:
     get:
       tags:
-        - Classification
+        - Term
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/Sort"
+        - $ref: "#/components/parameters/Select"
+        - $ref: "#/components/parameters/Filter"
+        - $ref: "#/components/parameters/Search"
       responses:
         200:
-          $ref: "./classifications.yml#/components/responses/ClassificationQueryResult"
-        204:
-          description: Objects deleted.
-        406:
-          $ref: "#/components/responses/NotAccepted"
-        default:
+          $ref: "./classifications.yml#/components/responses/TermQueryResult"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        500:
           $ref: "#/components/responses/ServerError"
     post:
       tags:
-        - Classification
+        - Term
       security:
         - Session: []
       requestBody:
-        $ref: "./classifications.yml#/components/requestBodies/Classification"
+        $ref: "./classifications.yml#/components/requestBodies/Term"
       responses:
         201:
-          $ref: "./classifications.yml#/components/responses/ClassificationCreated"
-        # 202:
-        #   description: Accepted batch.
+          $ref: "./classifications.yml#/components/responses/TermCreated"
         400:
           $ref: "#/components/responses/BadRequest"
         401:
           $ref: "#/components/responses/Unauthenticated"
         403:
           $ref: "#/components/responses/Unauthorized"
-        default:
+        500:
+          $ref: "#/components/responses/ServerError"
+    patch:
+      tags:
+        - Term
+      security:
+        - Session: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/Sort"
+        - $ref: "#/components/parameters/Select"
+        - $ref: "#/components/parameters/Filter"
+        - $ref: "#/components/parameters/Search"
+      requestBody:
+        $ref: "./classifications.yml#/components/requestBodies/Term"
+      responses:
+        201:
+          $ref: "./classifications.yml#/components/responses/TermUpdated"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthenticated"
+        403:
+          $ref: "#/components/responses/Unauthorized"
+        500:
+          $ref: "#/components/responses/ServerError"
+    delete:
+      tags:
+        - Term
+      security:
+        - Session: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/Sort"
+        - $ref: "#/components/parameters/Select"
+        - $ref: "#/components/parameters/Filter"
+        - $ref: "#/components/parameters/Search"
+      responses:
+        204:
+          $ref: "#/components/responses/Deleted"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthenticated"
+        403:
+          $ref: "#/components/responses/Unauthorized"
+        500:
           $ref: "#/components/responses/ServerError"
 
-  /classifications/{slug}:
+  /api/terms/{id}:
     get:
       tags:
-        - Classification
+        - Term
       operationId: classification.canonical
       parameters:
-        - $ref: "./classifications.yml#/components/parameters/Slug"
+        - $ref: "./classifications.yml#/components/parameters/ID"
       responses:
         200:
-          $ref: "./classifications.yml#/components/responses/ClassificationFound"
+          $ref: "./classifications.yml#/components/responses/TermFound"
         400:
           $ref: "#/components/responses/BadRequest"
         404:
           $ref: "#/components/responses/NotFound"
-        default:
+        500:
           $ref: "#/components/responses/ServerError"
 
-    put:
+    patch:
       tags:
-        - Classification
+        - Term
       parameters:
-        - $ref: "./classifications.yml#/components/parameters/Slug"
+        - $ref: "./classifications.yml#/components/parameters/ID"
       security:
         - Session: []
       
       responses:
         200:
-          $ref: "./classifications.yml#/components/responses/ClassificationUpdated"
+          $ref: "./classifications.yml#/components/responses/TermUpdated"
         400:
           $ref: "#/components/responses/BadRequest"
         404:
@@ -81,40 +129,29 @@ paths:
           $ref: "#/components/responses/Unauthenticated"
         403:
           $ref: "#/components/responses/Unauthorized"
-        default:
+        500:
           $ref: "#/components/responses/ServerError"
 
     delete:
       tags:
-        - Classification
+        - Term
       parameters:
-        - name: slug
-          in: path
-          required: true
-          schema:
-            type: string
-          example: quartz-diorite
-        - name: deleteOrphans
-          in: query
-          required: false
-          schema:
-            type: boolean
-            default: false
+        - $ref: "./classifications.yml#/components/parameters/ID"
       security:
         - Session: []
       
       responses:
         204:
-          $ref: "#/components/responses/ObjectDeleted"
+          $ref: "#/components/responses/Deleted"
         400:
           $ref: "#/components/responses/BadRequest"
-        404:
-          $ref: "#/components/responses/NotFound"
         401:
           $ref: "#/components/responses/Unauthenticated"
         403:
           $ref: "#/components/responses/Unauthorized"
-        default:
+        404:
+          $ref: "#/components/responses/NotFound"
+        500:
           $ref: "#/components/responses/ServerError"
 
 
@@ -129,7 +166,7 @@ paths:
         200:
           $ref: "./specimens.yml#/components/responses/SpecimenQueryResult"
         204:
-          $ref: "#/components/responses/ObjectDeleted"
+          $ref: "#/components/responses/Deleted"
         406:
           $ref: "#/components/responses/NotAccepted"
         default:
@@ -146,8 +183,6 @@ paths:
       responses:
         201:
           $ref: "./specimens.yml#/components/responses/SpecimenCreated"
-        # 202:
-        #   description: Accepted batch.
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -217,7 +252,7 @@ paths:
       
       responses:
         204:
-          $ref: "#/components/responses/ObjectDeleted"
+          $ref: "#/components/responses/Deleted"
         400:
           $ref: "#/components/responses/BadRequest"
         404:
@@ -234,15 +269,9 @@ components:
     QueryResult:
       type: object
       properties:
-        count:
-          type: integer
-          minimum: 0
         total:
           type: integer
           minimum: 0
-        pages:
-          type: integer
-          minimum: 1
         page:
           type: integer
           minimum: 1
@@ -250,19 +279,22 @@ components:
           type: integer
           minimum: 1
           example: 25
-        previous:
-          type: string
-          format: uri
-        next:
-          type: string
-          format: uri
-        first:
-          type: string
-          format: uri
-        last:
-          type: string
-          format: uri
-        items:
+        nav:
+          type: object
+          properties:
+            first:
+              type: string
+              format: uri
+            previous:
+              type: string
+              format: uri
+            next:
+              type: string
+              format: uri
+            last:
+              type: string
+              format: uri
+        entities:
           type: array
           items: {}
     Error:
@@ -288,6 +320,30 @@ components:
         minimum: 1
         default: 25
       required: false
+    Sort:
+      name: sort
+      in: query
+      schema:
+        type: string
+      required: false
+    Select:
+      name: select
+      in: query
+      schema:
+        type: string
+      required: false
+    Filter:
+      name: filter
+      in: query
+      schema:
+        type: string
+      required: false
+    Search:
+      name: search
+      in: query
+      schema:
+        type: string
+      required: false
 
   responses:
     Error:
@@ -296,8 +352,8 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
-    ObjectDeleted:
-      description: Object deleted.
+    Deleted:
+      description: Entity deleted.
     BadRequest:
       description: Bad request.
       $ref: "#/components/responses/Error"
@@ -308,10 +364,10 @@ components:
       description: Permission required.
       $ref: "#/components/responses/Error"
     NotFound:
-      description: Object not found.
+      description: Entity not found.
       $ref: "#/components/responses/Error"
     NotAccepted:
-      description: Requested format not supported.
+      description: Format not supported.
       $ref: "#/components/responses/Error"
     ServerError:
       description: Server error.

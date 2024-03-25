@@ -1,87 +1,115 @@
 components:
-  partials:
-    ClassificationLinks:
+  schemas:
+    Term:
       type: object
+      required:
+        - id
+        - self
       properties:
+        id:
+          type: string
+          example: 65ffb4e4ca21b3e99f821003
         self:
           type: string
           format: uri
-          example: /api/classifications/quartz-diorite
-        super:
-          type: object
-          properties:
-            self:
-              type: string
-              format: uri
-              example: /api/classifications/quartz-diorite/super
-        sub:
-          type: object
-          properties:
-            self:
-              type: string
-              format: uri
-              example: /api/classifications/quartz-diorite/sub
-
-  schemas:
-    Classification:
-      type: object
-      required:
-        - name
-        - slug
-      properties:
-        name:
+          example: /api/terms/65ffb4e4ca21b3e99f821003
+        label:
           type: string
-          example: Quartz diorite
+          example: Sample term
         slug:
           type: string
-          example: quartz-diorite
+          example: sample-term
+        type:
+          type: string
+          example: term
+    TaxonomyTerm:
+      allOf:
+        - $ref: "#/components/schemas/Term"
+        - type: object
+          properties:
+            parents:
+              type: array
+              items:
+                $ref: "#/components/schemas/TaxonomyTerm"
+            children:
+              type: array
+              items:
+                $ref: "#/components/schemas/TaxonomyTerm"
+            level:
+              type: integer
+              example: 1
 
   parameters:
-    Slug:
-      name: slug
+    ID:
+      name: id
       in: path
       required: true
       schema:
         type: string
-      example: quartz-diorite
+      example: 65ffb4e4ca21b3e99f821003
 
   requestBodies:
-    Classification:
+    Term:
       required: true
       content:
         application/json:
           schema:
             allOf:
-              - $ref: "#/components/schemas/Classification"
               - type: object
+                required:
+                  - label
+                  - type
                 properties:
-                  super:
+                  label:
                     type: string
-                    example: diorite    
-
-  responses:
-    Classification:
+                    example: Sample term
+                  type:
+                    type: string
+                    example: term
+    TaxonomyTerm:
+      required: true
       content:
         application/json:
           schema:
             allOf:
-              - $ref: "#/components/schemas/Classification"
-              - $ref: "#/components/partials/ClassificationLinks"
+              - $ref: "#/components/requestBodies/Term"
+              - type: object
+                properties:
+                  parent:
+                    type: string
+                    format: uri
+                    example: /api/terms/65ffb4e4ca21b3e99f821003
 
-    ClassificationFound:
-      description: Classification object found.
-      $ref: "#/components/responses/Classification"
-    
-    ClassificationCreated:
-      description: Classification object created.
-      $ref: "#/components/responses/Classification"
+  responses:
+    Term:
+      description: Term entity.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Term"
+          
+    TermFound:
+      description: Term entity found.
+      $ref: "#/components/responses/Term"
 
-    ClassificationUpdated:
-      description: Classification object found.
-      $ref: "#/components/responses/Classification"
-    
-    ClassificationQueryResult:
-      description: Classification objects found.
+    TermCreated:
+      description: Term entity created.
+      $ref: "#/components/responses/Term"
+
+    TermUpdated:
+      description: Term entity created.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/Term"
+              - type: object
+                properties:
+                  previous:
+                    $ref: "#/components/schemas/Term"
+
+    TermQueryResult:
+      description: Term entities found.
       content:
         application/json:
           schema:
@@ -89,33 +117,33 @@ components:
               - $ref: "./openapi.yml#/components/schemas/QueryResult"
               - type: object
                 properties:
-                  items:
+                  entities:
                     type: array
                     items:
-                      allOf:
-                        - $ref: "#/components/schemas/Classification"
-                        - $ref: "#/components/partials/ClassificationLinks"
+                      anyOf:
+                        - $ref: "#/components/schemas/Term"
+                        - $ref: "#/components/schemas/TaxonomyTerm"
           example:
-            count: 2
             total: 9
             page: 3
             pages: 5
             pageSize: 2
-            items:
-              - name: Igneous Rock
-                slug: igneous-rock
-                super:
-                  self: /api/classifications/igneous-rock/super
-                sub:
-                  self: /api/classifications/igneous-rock/sub
-              - name: Quartz diorite
-                slug: quartz-diorite
-                super:
-                  self: /api/classifications/quartz-diorite/super
-                sub:
-                  self: /api/classifications/quartz-diorite/sub
-            self: /api/classifications?page=3
-            next: /api/classifications?page=4
-            previous: /api/classifications?page=2
-            first: /api/classifications?page=1
-            last: /api/classifications?page=5
+            entities:
+              - id: 65ffb4e4ca21b3e99f821003
+                self: /api/terms/65ffb4e4ca21b3e99f821003
+                label: Sample term 4
+                slug: sample-term-4
+              - id: 65ffb552feed9350b3ea266a
+                self: /api/terms/65ffb552feed9350b3ea266a
+                label: Taxonomy term 2
+                slug: taxonomy-term-2
+                parents:
+                  self: /api/terms/taxonomy-term-2/parents
+                children:
+                  self: /api/terms/sample-term-5/children
+            self: /api/terms?page=3
+            nav:
+              first: /api/terms?page=1
+              previous: /api/terms?page=2
+              next: /api/terms?page=4
+              last: /api/terms?page=5
