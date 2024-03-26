@@ -132,6 +132,7 @@ export interface DocumentQuery<D extends DocumentBase = DocumentBase> {
   select: (...fields: string[]) => DocumentQuery<D>
   sort: (...fields: (string | [string, boolean])[]) => DocumentQuery<D>
   paginate(page: number, pageSize: number): DocumentQuery<D>
+  use: (...handlers: ((query: DocumentQuery<D>) => void)[]) => DocumentQuery<D>
   then: (resolve: (result: DocumentQueryResult<D>) => void, reject: (err: any) => void) => void
 }
 export interface Join {

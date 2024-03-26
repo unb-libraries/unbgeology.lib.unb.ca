@@ -120,21 +120,26 @@ export function getQueryOptions(event: H3Event): QueryOptions {
   }
 }
 
+export function getMongooseMiddleware<D extends DocumentBase = DocumentBase>(event: H3Event): ((query: DocumentQuery<D>) => void)[] {
+  return event.context.mongoose?.handlers ?? []
+}
+
 export function defineMongooseMiddleware<D extends DocumentBase = DocumentBase>(Model: DocumentModel<D>, handler: (event: H3Event, query: DocumentQuery<D>) => void) {
-  return defineNitroPlugin((nitro) => {
-    const event = useEvent()
-    nitro.hooks.hook(`mongoose:query`, (query) => {
-      if (event && Model.mongoose.model.modelName === getMongooseModel(event).mongoose.model.modelName) {
-        handler(event, query)
+  return defineEventHandler((event) => {
+    if (getMongooseModel(event)?.mongoose.model.modelName === Model.mongoose.model.modelName) {
+      if (!event.context.mongoose.handlers) {
+        event.context.mongoose.handlers = []
       }
-    })
+      event.context.mongoose.handlers.push((query: DocumentQuery<D>) => handler(event, query))
+    }
   })
+}
 }
 
 export function defineBodyReader<T extends object = object>(Model: DocumentModel<any>, transformer: (body: any) => Payload<T> | Promise<Payload<T>>) {
   return defineNitroPlugin((nitro) => {
     nitro.hooks.hook(`body:transform`, async (payload, options) => {
-      if (Model.name === options.modelName) {
+      if (Model.mongoose.model.modelName === options.modelName) {
         return await transformer(payload)
       }
       return {}
@@ -167,7 +172,7 @@ export async function readOneBodyOr400<T extends object = object, P extends `cre
   if (Array.isArray(payload)) {
     throw new TypeError(`Body must be of type object.`)
   }
-  return await transformOr400<T>(getMongooseModel(event).name, payload) as T
+  return await readOr400<T, P>(getMongooseModel(event).mongoose.model.modelName, payload) as T
 }
 
 export async function readBodyListOr400<T extends object = object, P extends `create` | `update` = `create`>(event: H3Event): Promise<Payload<T, P>[]> {
@@ -182,7 +187,7 @@ export async function readBodyListOr400<T extends object = object, P extends `cr
 export function defineEntityFormatter<E extends Entity = Entity, T = any>(Model: DocumentModel<any>, formatter: (item: T) => Omit<EntityJSON<E>, `self`>) {
   return defineNitroPlugin((nitro) => {
     nitro.hooks.hook(`document:format`, (item: T, options) => {
-      if (Model.name === options.modelName) {
+      if (Model.mongoose.model.modelName === options.modelName) {
         return formatter(item)
       }
       return {}
@@ -192,7 +197,7 @@ export function defineEntityFormatter<E extends Entity = Entity, T = any>(Model:
 
 export async function render<C extends Content = Content, D = any>(event: H3Event, data: D, options?: Partial<FormatOptions<C>>): Promise<Entity<C>> {
   const nitro = useNitroApp()
-  const formattedContent = await nitro.hooks.callHookParallel(`document:format`, data, { modelName: getMongooseModel(event).name })
+  const formattedContent = await nitro.hooks.callHookParallel(`document:format`, data, { modelName: getMongooseModel(event)?.mongoose.model.modelName })
   const entity = Object
     .entries(formattedContent.reduce((content, formatted) => ({ ...content, ...formatted }), {}))
     .filter(([_, value]) => (value !== undefined))

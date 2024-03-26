@@ -57,7 +57,6 @@ export interface MigrateOptions {
 export declare module "nitropack" {
   interface NitroRuntimeHooks {
     "mongoose:init": (mongoose: typeof Mongoose) => void | Promise<void>
-    "mongoose:query": (query: DocumentQuery<any>) => void | Promise<void>
     
     // migrate hooks
     migrate: (migrationID: string) => void | Promise<void>
