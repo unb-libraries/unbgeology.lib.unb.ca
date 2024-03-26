@@ -3,16 +3,10 @@ import { type EntityJSON, FilterOperator } from "@unb-libraries/nuxt-layer-entit
 import { type QueryOptions, type DocumentQuery, type Content, type Entity, type EntityList, type Payload } from "../../../types/entity"
 import { type FormatOptions, type FormatManyOptions } from "../../../types/api"
 import { type DocumentBase, type DocumentModel } from "../../../types/schema"
-import { type MongooseEventContext } from "~../../../types"
 
 function initMongooseContext(event: H3Event) {
   event.context.mongoose = {
     model: undefined,
-    query: {
-      fields: [],
-      filter: [],
-      sortFields: [],
-    },
   }
 }
 
@@ -26,43 +20,34 @@ export function defineMongooseHandler<D extends DocumentBase = DocumentBase>(mod
   })
 }
 
+export function setModel(event: H3Event, model: DocumentModel<any>) {
+  if (!event.context.mongoose) {
+    initMongooseContext(event)
+  }
+  event.context.mongoose.model = model
+}
+
 export function getMongooseModel<D extends DocumentBase = DocumentBase>(event: H3Event): DocumentModel<D> {
   return event.context.mongoose?.model
 }
 
-export function getMongooseQuery(event: H3Event): MongooseEventContext[`query`] {
-  if (!event.context.mongoose) {
-    initMongooseContext(event)
+export function getEntityQueryOptions(event: H3Event) {
+  if (!event.context.query) {
+    event.context.query = {
+      filter: true,
+      select: true,
+      sort: true,
+    }
   }
-  return event.context.mongoose?.query as MongooseEventContext[`query`]
+  return event.context.query
 }
 
-export function addMongooseField(event: H3Event, ...field: MongooseEventContext[`query`][`fields`]) {
-  if (!event.context.mongoose) {
-    initMongooseContext(event)
+export function setEntityQueryOptions(event: H3Event, options: Partial<{ filter: boolean, select: boolean, sort: boolean }>) {
+  const queryOptions = getEntityQueryOptions(event)
+  event.context.query = {
+    ...queryOptions,
+    ...options,
   }
-  event.context.mongoose.query.fields.push(...field)
-}
-
-export function addMongooseSortField(event: H3Event, ...fields: MongooseEventContext[`query`][`sortFields`]) {
-  if (!event.context.mongoose) {
-    initMongooseContext(event)
-  }
-  event.context.mongoose.query.sortFields.push(...fields)
-}
-
-export function addMongooseFilter(event: H3Event, ...filters: MongooseEventContext[`query`][`filter`]) {
-  if (!event.context.mongoose) {
-    initMongooseContext(event)
-  }
-  event.context.mongoose.query.filter.push(...filters)
-}
-
-export function getSelectedFields(fields: string[], prefix?: string) {
-  if (prefix) {
-    return fields.filter(f => f.startsWith(prefix)).map(f => f.split(`.`)[1])
-  }
-  return fields.map(f => f.split(`.`)[0])
 }
 
 export function defineDocumentQueryHandler<TOptions>(handler: (query: DocumentQuery, options: TOptions) => void | Promise<void>) {
@@ -72,6 +57,7 @@ export function defineDocumentQueryHandler<TOptions>(handler: (query: DocumentQu
 }
 
 export function getQueryOptions(event: H3Event): QueryOptions {
+  const queryOptions = getEntityQueryOptions(event)
   const { filter, select, sort, search, ...query } = getQuery(event)
   let { page, pageSize } = query
 
@@ -81,42 +67,27 @@ export function getQueryOptions(event: H3Event): QueryOptions {
   page = page ? Array.isArray(page) ? parseInt(`${page.at(-1)}`) : parseInt(`${page}`) : 1
   page = Math.max(1, page)
 
-  const selection: string[] = select ? Array.isArray(select) ? select : [select] : []
-
   return {
     page,
     pageSize,
-    select: selection,
-    filter: Object.entries((filter ? Array.isArray(filter) ? filter : [filter] : [])
-      .map<string[3]>(f => f.split(`:`))
-      .map<[string, number, string]>(([field, op, value]) => [field, !isNaN(parseInt(op)) ? parseInt(op) : useEnum(FilterOperator).toNumber(op), value])
-      .reduce((obj, [field, newOp, newValue]) => {
-        if (!obj[field]) {
-          obj[field] = [newOp, newValue]
-        } else {
-          const [op, value] = obj[field]
-          obj[field] = [op | newOp, newValue ? Array.isArray(value) ? [...value, newValue] : [value, newValue] : value]
-        }
-        return obj
-      }, {} as Record<string, [number, string | string[]]>))
-      .map(([field, [op, value]]) => [field, op, value]),
-    filterSelect({ root, prefix, default: defaultFields }) {
-      const fields = defaultFields ?? []
-      if (root) {
-        const nestedFields = selection
-          .filter(f => f.startsWith(root))
-          .map(f => f.substring(root.length))
-          .filter(f => f)
-          .map(f => f.split(`.`).filter(c => c)[0])
-        fields.push(...nestedFields)
-      } else {
-        fields.push(...selection
-          .map(f => f.split(`.`)[0]))
-      }
-      return prefix ? fields.map(f => `${prefix}.${f}`) : fields
-    },
+    select: queryOptions.select && select ? Array.isArray(select) ? select : [select] : [],
+    filter: queryOptions.filter && filter
+      ? Object.entries((Array.isArray(filter) ? filter : [filter])
+        .map<string[3]>(f => f.split(`:`))
+        .map<[string, number, string]>(([field, op, value]) => [field, !isNaN(parseInt(op)) ? parseInt(op) : useEnum(FilterOperator).valueOf(op as unknown as FilterOperator), value])
+        .reduce((obj, [field, newOp, newValue]) => {
+          if (!obj[field]) {
+            obj[field] = [newOp, newValue]
+          } else {
+            const [op, value] = obj[field]
+            obj[field] = [op | newOp, newValue ? Array.isArray(value) ? [...value, newValue] : [value, newValue] : value]
+          }
+          return obj
+        }, {} as Record<string, [number, string | string[]]>))
+        .map(([field, [op, value]]) => [field, op, value])
+      : [],
     search: Array.isArray(search) ? search.at(-1) : search,
-    sort: sort ? Array.isArray(sort) ? sort : [sort] : [],
+    sort: queryOptions.sort && sort ? (Array.isArray(sort) ? sort : [sort]).map(field => field.startsWith(`-`) ? [field.substring(1), false] : [field, true]) : [],
   }
 }
 
