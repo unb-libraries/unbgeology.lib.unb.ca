@@ -189,7 +189,7 @@ export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B e
 
 type AggregateResult<D extends IDocumentBase = IDocumentBase> = Pick<DocumentQueryResult<D>, `documents`> & { total: [{ total: number }] }
 
-export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends `findOne` | `findMany` = `findMany`>(documentType: DocumentModel<D>, options?: { method: M }) {
+export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends DocumentQueryMethod = `findMany`>(documentType: DocumentModel<D>, options?: { method: M }) {
   const joins: Join[] = []
   const filters: any[] = []
   const selection: string[] = []
@@ -342,29 +342,21 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
         const [result] = await buildQuery().exec()
         const { documents, total } = result
 
-        if (options?.method === `findOne`) {
-          const document = documents[0]
-          Object.assign(document, {
-            update: async (body: Partial<Mutable<D>>) => {
-              return await updateDocument(documentType, `${document._id}`, body)
-            },
-            delete: async () => {
-              await deleteDocument(documentType, `${document._id}`)
-            },
-          })
-          resolve(document as DocumentQueryResult<D, M>)
-        } else {
-          resolve({
-            documents,
-            update: async (body: Partial<Mutable<D>>) => {
-              return await Promise.all(documents.map(async document => await updateDocument(documentType, `${document._id}`, body)))
-            },
-            delete: async () => {
-              await Promise.all(documents.map(async document => await deleteDocument(documentType, `${document._id}`)))
-            },
-            total: total[0]?.total ?? 0,
-          } as DocumentQueryResult<D, M>)
-        }
+        const assign = (document: D) => Object.assign(document, {
+          update: async (body: Partial<Mutable<D>>) => {
+            return await updateDocument(documentType, `${document._id}`, body)
+          },
+          delete: async () => {
+            await deleteDocument(documentType, `${document._id}`)
+          },
+        })
+
+        resolve((options?.method === `findOne`
+          ? assign(documents[0])
+          : {
+              documents: documents.map(assign),
+              total: total[0]?.total ?? 0,
+            }) as DocumentQueryResult<D, M>)
       } catch (err) {
         reject(err)
       }
