@@ -72,7 +72,7 @@ export declare module "nitropack" {
     
     // Document hooks
     "document:format": (item: any | any[], options: { modelName: string }) => any
-    "body:transform": (payload: any | any[], options: { modelName: string }) => any
+    "body:read": (payload: any | any[], options: { modelName: string, op?: `create` | `update` }) => any
   }
 }
 

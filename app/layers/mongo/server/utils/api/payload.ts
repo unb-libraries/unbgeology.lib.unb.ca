@@ -1,10 +1,7 @@
 import type { Entity } from "~/layers/mongo/types/entity"
 
-interface Validator<T = any> {
-  (input: any): T | Promise<T>
-  expected?: boolean
-}
-
+type Validator<T = any> = (input: any) => T | Promise<T>
+type ConstrainedValidator<T = any> = Validator<T> & { expected: boolean }
 class RequiredError extends Error {
   constructor(message: string) {
     super(message)
@@ -25,13 +22,13 @@ function validate<T = any, R extends boolean = true>(input: any | undefined, val
 export const require = <T = any>(validator: Validator<T>) => {
   const $return = (input: any) => validate(input, validator, { required: true })
   $return.expected = true
-  return $return
+  return $return as Validator<T>
 }
 
 export const optional = <T = any>(validator: Validator<T>) => {
   const $return = (input: any) => validate(input, validator, { required: false })
   $return.expected = false
-  return $return
+  return $return as Validator<T | undefined>
 }
 export const requireIf = <R extends boolean, T = any>(condition: R, validator: Validator<T>) => condition ? require(validator) : optional(validator) as R extends true ? Validator<T> : Validator<T | undefined>
 
@@ -107,7 +104,7 @@ export function ObjectValidator<T extends object = object>(input: { [K in keyof 
 
     const unavailableRequiredKeys = Object
       .entries(input)
-      .filter(([path, validator]) => !(path in obj) && (validator as Validator).expected !== false)
+      .filter(([path, validator]) => !(path in obj) && (validator as ConstrainedValidator).expected !== false)
       .map(([path]) => path)
 
     if (unavailableRequiredKeys.length > 0) {

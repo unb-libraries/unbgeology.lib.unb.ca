@@ -105,24 +105,28 @@ export function defineMongooseMiddleware<D extends DocumentBase = DocumentBase>(
     }
   })
 }
+interface BodyReadOptions<T extends `create` | `update`> {
+  op: T
 }
 
-export function defineBodyReader<T extends object = object>(Model: DocumentModel<any>, transformer: (body: any) => Payload<T> | Promise<Payload<T>>) {
+export function defineBodyReader<T extends object = object, P extends `create` | `update` = `create` | `update`>(Model: DocumentModel<any>, transformer: (body: any, options?: Partial<BodyReadOptions<P>>) => Payload<T, P> | Promise<Payload<T, P>>) {
   return defineNitroPlugin((nitro) => {
-    nitro.hooks.hook(`body:transform`, async (payload, options) => {
+    nitro.hooks.hook(`body:read`, async (payload, options) => {
       if (Model.mongoose.model.modelName === options.modelName) {
-        return await transformer(payload)
+        return await transformer(payload, { op: options.op } as BodyReadOptions<P>)
       }
       return {}
     })
   })
 }
 
-async function transformOr400<T extends object = object, P extends `create` | `update` = `create`>(modelName:string, payload: any): Promise<Payload<T, P> | Payload<T, P>[]> {
+async function readOr400<T extends object = object, P extends `create` | `update` = `create`>(modelName: string, payload: any, options?: Partial<BodyReadOptions<P>>): Promise<Payload<T, P> | Payload<T, P>[]> {
   const nitro = useNitroApp()
   try {
-    const bodies = await nitro.hooks.callHookParallel(`body:transform`, payload, {
+    const bodies = await nitro.hooks.callHookParallel(`body:read`, payload, {
       modelName,
+      op: `create`,
+      ...options,
     })
     return bodies.reduce((body, input) => ({ ...body, ...input }), {})
   } catch (err) {
@@ -130,29 +134,29 @@ async function transformOr400<T extends object = object, P extends `create` | `u
   }
 }
 
-export async function readBodyOr400<T extends object = object, P extends `create` | `update` = `create`>(event: H3Event): Promise<Payload<T, P> | Payload<T, P>[]> {
+export async function readBodyOr400<T extends object = object, P extends `create` | `update` = `create`>(event: H3Event, options?: Partial<BodyReadOptions<P>>): Promise<Payload<T, P> | Payload<T, P>[]> {
   const payload = await readBody(event)
   if (Array.isArray(payload)) {
-    return await readBodyListOr400<T>(event)
+    return await readBodyListOr400<T, P>(event, options)
   }
-  return await readOneBodyOr400<T>(event)
+  return await readOneBodyOr400<T, P>(event, options)
 }
 
-export async function readOneBodyOr400<T extends object = object, P extends `create` | `update` = `create`>(event: H3Event): Promise<Payload<T, P>> {
+export async function readOneBodyOr400<T extends object = object, P extends `create` | `update` = `create`>(event: H3Event, options?: Partial<BodyReadOptions<P>>): Promise<Payload<T, P>> {
   const payload = await readBody(event)
   if (Array.isArray(payload)) {
     throw new TypeError(`Body must be of type object.`)
   }
-  return await readOr400<T, P>(getMongooseModel(event).mongoose.model.modelName, payload) as T
+  return await readOr400<T, P>(getMongooseModel(event).mongoose.model.modelName, payload, options) as T
 }
 
-export async function readBodyListOr400<T extends object = object, P extends `create` | `update` = `create`>(event: H3Event): Promise<Payload<T, P>[]> {
+export async function readBodyListOr400<T extends object = object, P extends `create` | `update` = `create`>(event: H3Event, options?: Partial<BodyReadOptions<P>>): Promise<Payload<T, P>[]> {
   const payloads = await readBody<T[]>(event)
   if (!Array.isArray(payloads)) {
     throw new TypeError(`Body must be of type array.`)
   }
   const modelName = getMongooseModel(event).name
-  return await Promise.all(payloads.map(payload => transformOr400(modelName, payload))) as T[]
+  return await Promise.all(payloads.map(payload => readOr400<T, P>(modelName, payload, options))) as T[]
 }
 
 export function defineEntityFormatter<E extends Entity = Entity, T = any>(Model: DocumentModel<any>, formatter: (item: T) => Omit<EntityJSON<E>, `self`>) {
