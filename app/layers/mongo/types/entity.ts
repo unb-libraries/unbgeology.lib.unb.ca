@@ -150,6 +150,17 @@ export type DocumentUpdateQueryResult<D extends DocumentBase = DocumentBase, M e
 export type DocumentUpdateQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> = Omit<DocumentQuery<D, M>, `then`> & {
   then: (resolve: (result: DocumentUpdateQueryResult<D, M>) => void, reject: (err: any) => void) => void
 }
+
+export type DocumentDeleteQueryResult<D extends DocumentBase = DocumentBase, M extends `findOne` | `findMany` = `findMany`> =
+  M extends `findMany` ? {
+    total: number
+  }
+  : void
+
+export type DocumentDeleteQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> = Omit<DocumentQuery<D, M>, `then`> & {
+  then: (resolve: (result: DocumentDeleteQueryResult<D, M>) => void, reject: (err: any) => void) => void
+}
+
 export interface Join {
   from: string
   localField: string

@@ -1,7 +1,7 @@
 import { defu } from "defu"
 import { Schema, type SchemaDefinition, model as defineModel, Types, type FilterQuery } from "mongoose"
 import type { DocumentSchema, AlterSchemaHandler, DocumentBase as IDocumentBase, DocumentModel, DocumentSchemaOptions } from "../../types/schema"
-import { type DocumentQuery, type DocumentQueryResult, type Join } from "../../types/entity"
+import { type DocumentQuery, type DocumentQueryMethod, type DocumentQueryResult, type DocumentUpdateQueryResult, type Join } from "../../types/entity"
 import { type Mutable } from "../../types"
 
 type DefineDocumentSchema<D = any, TOptions extends any | undefined = undefined> =
@@ -153,8 +153,36 @@ export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B e
         ? (this as DocumentModel<D>).updateOne(body as Partial<Mutable<D>>).where(`_id`).eq(new Types.ObjectId(id))
         : (this as unknown as DocumentModel<NonNullable<B>>).updateOne(body as Partial<Mutable<NonNullable<B>>>).where(`_id`).eq(new Types.ObjectId(id))
     },
-    async delete(id: string) {
-      await deleteDocument(this as DocumentModel, id)
+    delete() {
+      const { then, ...query } = !base
+        ? DocumentQuery(this as DocumentModel<D>)
+        : DocumentQuery(this as unknown as DocumentModel<NonNullable<B>>)
+      return {
+        ...query,
+        then: async (resolve: (result: { total: number }) => void, reject: () => void) => {
+          await then(async ({ documents, total }) => {
+            await Promise.all(documents.map(document => document.delete()))
+            resolve({ total })
+          }, reject)
+        },
+      }
+    },
+    deleteOne() {
+      const { then, ...query } = DocumentQuery(this as DocumentModel<D>, { method: `findOne` })
+      return {
+        ...query,
+        then: async (resolve: () => void, reject: () => void) => {
+          await then(async (document) => {
+            await document.delete()
+            resolve()
+          }, reject)
+        },
+      }
+    },
+    deleteByID(id: string) {
+      return !base
+        ? (this as DocumentModel<D>).deleteOne().where(`_id`).eq(new Types.ObjectId(id))
+        : (this as unknown as DocumentModel<NonNullable<B>>).findOne().where(`_id`).eq(new Types.ObjectId(id))
     },
   } as unknown as B extends undefined ? DocumentModel<D> : DocumentModel<NonNullable<B>>
 }

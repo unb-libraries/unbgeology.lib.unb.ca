@@ -1,5 +1,5 @@
 import { Schema, type SchemaDefinition, type ObjectId, type Model, type Document } from "mongoose"
-import { type DocumentQuery, type DocumentUpdateQuery } from "./entity"
+import { type DocumentDeleteQuery, type DocumentQuery, type DocumentUpdateQuery } from "./entity"
 import { type Mutable } from "."
 
 export interface DocumentUpdate<D = any> {
@@ -38,7 +38,9 @@ export interface DocumentModel<D extends DocumentBase = DocumentBase> {
   update: (body: Partial<Mutable<D>>) => DocumentUpdateQuery<D>
   updateOne: (body: Partial<Mutable<D>>) => DocumentUpdateQuery<D, `findOne`>
   updateByID: (id: string, body: Partial<Mutable<D>>) => DocumentUpdateQuery<D, `findOne`>
-  delete: (id: string) => Promise<void>
+  delete: () => DocumentDeleteQuery<D>
+  deleteOne: () => DocumentDeleteQuery<D, `findOne`>
+  deleteByID: (id: string) => DocumentDeleteQuery<D, `findOne`>
 }
 
 export type AlterSchemaHandler<D = any> = (schema: Schema<D>) => void
