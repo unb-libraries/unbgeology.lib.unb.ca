@@ -116,10 +116,42 @@ export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B e
         ? await createDocument<D>(this as DocumentModel<D>, body as Partial<D> | Partial<D>[])
         : await createDocument<NonNullable<B>>(this as DocumentModel<NonNullable<B>>, body as Partial<NonNullable<B>> | Partial<NonNullable<B>>[])
     },
-    async update(id: string, body: B extends undefined ? Partial<Mutable<D>> : Partial<Mutable<NonNullable<B>>>) {
+    update(body: B extends undefined ? Partial<Mutable<D>> : Partial<Mutable<NonNullable<B>>>) {
+      const { then, ...query } = !base
+        ? DocumentQuery(this as DocumentModel<D>)
+        : DocumentQuery(this as unknown as DocumentModel<NonNullable<B>>)
+      return {
+        ...query,
+        then: async (resolve: (result: B extends undefined ? DocumentUpdateQueryResult<D> : DocumentSchemaOptions<NonNullable<B>>) => void, reject: () => void) => {
+          await then(async ({ documents, total }) => {
+            const updates = !base
+              ? await Promise.all(documents.map(document => updateDocument<D>(this as DocumentModel<D>, `${document._id}`, body as Partial<Mutable<D>>)))
+              : await Promise.all(documents.map(document => updateDocument<NonNullable<B>>(this as unknown as DocumentModel<NonNullable<B>>, `${document._id}`, body as Partial<Mutable<NonNullable<B>>>)))
+            resolve({ documents: updates, total } as B extends undefined ? DocumentUpdateQueryResult<D> : DocumentSchemaOptions<NonNullable<B>>)
+          }, reject)
+        },
+      }
+    },
+    updateOne(body: B extends undefined ? Partial<Mutable<D>> : Partial<Mutable<NonNullable<B>>>) {
+      const { then, ...query } = !base
+        ? DocumentQuery(this as DocumentModel<D>, { method: `findOne` })
+        : DocumentQuery(this as unknown as DocumentModel<NonNullable<B>>, { method: `findOne` })
+      return {
+        ...query,
+        then: async (resolve: (result: B extends undefined ? DocumentUpdateQueryResult<D, `findOne`> : DocumentUpdateQueryResult<NonNullable<B>, `findOne`>) => void, reject: () => void) => {
+          await then(async (document) => {
+            const update = !base
+              ? await updateDocument<D>(this as DocumentModel<D>, `${document._id}`, body as Partial<Mutable<D>>)
+              : await updateDocument<NonNullable<B>>(this as unknown as DocumentModel<NonNullable<B>>, `${document._id}`, body as Partial<Mutable<NonNullable<B>>>)
+            resolve(update as B extends undefined ? [D, D] : [NonNullable<B>, NonNullable<B>])
+          }, reject)
+        },
+      }
+    },
+    updateByID(id: string, body: B extends undefined ? Partial<Mutable<D>> : Partial<Mutable<NonNullable<B>>>) {
       return !base
-        ? await updateDocument<D>(this as DocumentModel<D>, id, body as Partial<Mutable<D>>)
-        : await updateDocument<NonNullable<B>>(this as DocumentModel<NonNullable<B>>, id, body as Partial<Mutable<NonNullable<B>>>)
+        ? (this as DocumentModel<D>).updateOne(body as Partial<Mutable<D>>).where(`_id`).eq(new Types.ObjectId(id))
+        : (this as unknown as DocumentModel<NonNullable<B>>).updateOne(body as Partial<Mutable<NonNullable<B>>>).where(`_id`).eq(new Types.ObjectId(id))
     },
     async delete(id: string) {
       await deleteDocument(this as DocumentModel, id)

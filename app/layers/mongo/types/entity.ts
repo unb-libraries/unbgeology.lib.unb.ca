@@ -106,14 +106,17 @@ export type DocumentQueryResultItem<D = any> = {
   delete: () => Promise<void>
 } & D
 
-export type DocumentQueryResult<D extends DocumentBase = DocumentBase, M extends `findOne` | `findMany` = `findMany`> = M extends `findMany` ? {
-  documents: DocumentQueryResultItem<D>[],
-  total: number
-  update: (body: Partial<Mutable<D>>) => Promise<[D, D][]>
-  delete: () => Promise<void>
-} : DocumentQueryResultItem<D>
+export type DocumentQueryMethod = `findOne` | `findMany`
+export type DocumentQueryResult<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> =
+  M extends `findMany` ? {
+    total: number
+    documents: DocumentQueryResultItem<D>[],
+    update: (body: Partial<Mutable<D>>) => Promise<[D, D][]>
+    delete: () => Promise<void>
+  }
+  : DocumentQueryResultItem<D>
 
-export interface DocumentQuery<D extends DocumentBase = DocumentBase, M extends `findOne` | `findMany` = `findMany`> {
+export interface DocumentQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> {
   join: <J extends DocumentBase = DocumentBase>(field: string, model: DocumentModel<J>) => DocumentQuery<D>
   and: DocumentQuery<D>[`where`]
   where: (field: string) => {
@@ -135,6 +138,17 @@ export interface DocumentQuery<D extends DocumentBase = DocumentBase, M extends 
   paginate(page: number, pageSize: number): DocumentQuery<D>
   use: (...handlers: ((query: DocumentQuery<D>) => void)[]) => DocumentQuery<D>
   then: (resolve: (result: DocumentQueryResult<D, M>) => void, reject: (err: any) => void) => void
+}
+
+export type DocumentUpdateQueryResult<D extends DocumentBase = DocumentBase, M extends `findOne` | `findMany` = `findMany`> =
+  M extends `findMany` ? {
+    documents: [D, D][]
+    total: number
+  }
+  : [D, D]
+
+export type DocumentUpdateQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> = Omit<DocumentQuery<D, M>, `then`> & {
+  then: (resolve: (result: DocumentUpdateQueryResult<D, M>) => void, reject: (err: any) => void) => void
 }
 export interface Join {
   from: string
