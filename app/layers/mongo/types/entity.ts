@@ -100,14 +100,20 @@ export interface QueryOptions {
 
 export type DocumentUpdate<D extends DocumentBase = DocumentBase> = Pick<DocumentBase, `_id`> & Partial<Omit<D, `_id`>>
 export type DocumentDiff<D extends DocumentBase = DocumentBase> = [DocumentUpdate<D>, DocumentUpdate<D>]
-export interface DocumentQueryResult<D extends DocumentBase = DocumentBase> {
+
+export type DocumentQueryResultItem<D = any> = {
+  update: (body: Partial<Mutable<D>>) => Promise<[D, D]>
+  delete: () => Promise<void>
+} & D
+
+export type DocumentQueryResult<D extends DocumentBase = DocumentBase, M extends `findOne` | `findMany` = `findMany`> = M extends `findMany` ? {
   documents: DocumentQueryResultItem<D>[],
   total: number
   update: (body: Partial<Mutable<D>>) => Promise<[D, D][]>
   delete: () => Promise<void>
-}
+} : DocumentQueryResultItem<D>
 
-export interface DocumentQuery<D extends DocumentBase = DocumentBase> {
+export interface DocumentQuery<D extends DocumentBase = DocumentBase, M extends `findOne` | `findMany` = `findMany`> {
   join: <J extends DocumentBase = DocumentBase>(field: string, model: DocumentModel<J>) => DocumentQuery<D>
   and: DocumentQuery<D>[`where`]
   where: (field: string) => {
@@ -128,7 +134,7 @@ export interface DocumentQuery<D extends DocumentBase = DocumentBase> {
   sort: (...fields: (string | [string, boolean])[]) => DocumentQuery<D>
   paginate(page: number, pageSize: number): DocumentQuery<D>
   use: (...handlers: ((query: DocumentQuery<D>) => void)[]) => DocumentQuery<D>
-  then: (resolve: (result: DocumentQueryResult<D>) => void, reject: (err: any) => void) => void
+  then: (resolve: (result: DocumentQueryResult<D, M>) => void, reject: (err: any) => void) => void
 }
 export interface Join {
   from: string

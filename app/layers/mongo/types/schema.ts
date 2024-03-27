@@ -1,4 +1,4 @@
-import { Schema, type SchemaDefinition, type ObjectId, type Model, type Document, type FilterQuery, type Query } from "mongoose"
+import { Schema, type SchemaDefinition, type ObjectId, type Model, type Document } from "mongoose"
 import { type DocumentQuery } from "./entity"
 import { type Mutable } from "."
 
@@ -32,8 +32,8 @@ export interface DocumentModel<D extends DocumentBase = DocumentBase> {
     model: Model<D>
   }
   find: () => DocumentQuery<D>
-  findOne: (filter: FilterQuery<D>) => Query<Document<D>, D>
-  findByID: (id: string) => Query<Document<D>, D>
+  findOne: () => DocumentQuery<D, `findOne`>
+  findByID: (id: string) => Pick<DocumentQuery<D, `findOne`>, `select` | `use` | `then`>
   create: (body: Omit<D, keyof DocumentBase> | Omit<D, keyof DocumentBase>[]) => Document<D> | Document<D>[]
   update: (id: string, body: Partial<Mutable<D>>) => Promise<[D, D]>
   delete: (id: string) => Promise<void>

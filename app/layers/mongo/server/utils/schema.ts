@@ -1,6 +1,6 @@
 import { defu } from "defu"
 import { Schema, type SchemaDefinition, model as defineModel, Types, type FilterQuery } from "mongoose"
-import type { DocumentSchema, AlterSchemaHandler, DocumentBase as IDocumentBase, DocumentModel, DocumentSchemaOptions, DocumentBase } from "../../types/schema"
+import type { DocumentSchema, AlterSchemaHandler, DocumentBase as IDocumentBase, DocumentModel, DocumentSchemaOptions } from "../../types/schema"
 import { type DocumentQuery, type DocumentQueryResult, type Join } from "../../types/entity"
 import { type Mutable } from "../../types"
 
@@ -96,15 +96,20 @@ export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B e
         ? DocumentQuery<D>(this as DocumentModel<D>)
         : DocumentQuery<NonNullable<B>>(this as unknown as DocumentModel<NonNullable<B>>)
     },
-    findOne(filter: FilterQuery<D>) {
+    findOne() {
       return !base
-        ? findDocument(this as DocumentModel<D>, filter)
-        : findDocument(this as unknown as DocumentModel<NonNullable<B>>, filter)
+        ? DocumentQuery(this as DocumentModel<D>, { method: `findOne` })
+        : DocumentQuery(this as unknown as DocumentModel<NonNullable<B>>, { method: `findOne` })
     },
     findByID(id: string) {
-      return !base
-        ? findDocumentByID(this as DocumentModel<D>, id)
-        : findDocumentByID(this as unknown as DocumentModel<NonNullable<B>>, id)
+      const { select, use, then } = !base
+        ? (this as DocumentModel<D>).findOne().where(`_id`).eq(new Types.ObjectId(id))
+        : (this as unknown as DocumentModel<NonNullable<B>>).findOne().where(`_id`).eq(new Types.ObjectId(id))
+      return {
+        select,
+        use,
+        then,
+      }
     },
     async create(body: B extends undefined ? Partial<D> | Partial<D>[] : Partial<B> | Partial<B>[]) {
       return !base
@@ -124,13 +129,13 @@ export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B e
 
 type AggregateResult<D extends IDocumentBase = IDocumentBase> = Pick<DocumentQueryResult<D>, `documents`> & { total: [{ total: number }] }
 
-export function DocumentQuery<D extends IDocumentBase = IDocumentBase>(documentType: DocumentModel<D>) {
+export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends `findOne` | `findMany` = `findMany`>(documentType: DocumentModel<D>, options?: { method: M }) {
   const joins: Join[] = []
   const filters: any[] = []
   const selection: string[] = []
   const sort: [string, boolean][] = []
   const paginator: [number, number] = [1, 25]
-  const handlers: ((query: DocumentQuery<D>) => void)[] = []
+  const handlers: ((query: DocumentQuery<D, M>) => void)[] = []
 
   function buildQuery() {
     const aggregate = documentType.mongoose.model.aggregate<AggregateResult<D>>()
@@ -138,7 +143,7 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase>(documentT
     // apply handlers
     while (handlers.length > 0) {
       const handler = handlers.shift()!
-      handler(query)
+      handler(query as DocumentQuery<D, M>)
     }
 
     // lookup stage
@@ -185,7 +190,7 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase>(documentT
   }
 
   const query = {
-    use(...newHandlers: ((query: DocumentQuery<D>) => void)[]) {
+    use(...newHandlers: ((query: DocumentQuery<D, M>) => void)[]) {
       handlers.push(...newHandlers)
       return this
     },
@@ -272,20 +277,34 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase>(documentT
       paginator[1] = Math.min(500, pageSize)
       return this
     },
-    async then(resolve: (result: DocumentQueryResult<D>) => void, reject: (err: any) => void) {
+    async then(resolve: (result: DocumentQueryResult<D, M>) => void, reject: (err: any) => void) {
       try {
         const [result] = await buildQuery().exec()
         const { documents, total } = result
-        resolve({
-          documents,
-          update: async (body: Partial<Mutable<D>>) => {
-            return await Promise.all(documents.map(async document => await updateDocument(documentType, `${document._id}`, body)))
-          },
-          delete: async () => {
-            await Promise.all(documents.map(async document => await deleteDocument(documentType, `${document._id}`)))
-          },
-          total: total[0]?.total ?? 0,
-        })
+
+        if (options?.method === `findOne`) {
+          const document = documents[0]
+          Object.assign(document, {
+            update: async (body: Partial<Mutable<D>>) => {
+              return await updateDocument(documentType, `${document._id}`, body)
+            },
+            delete: async () => {
+              await deleteDocument(documentType, `${document._id}`)
+            },
+          })
+          resolve(document as DocumentQueryResult<D, M>)
+        } else {
+          resolve({
+            documents,
+            update: async (body: Partial<Mutable<D>>) => {
+              return await Promise.all(documents.map(async document => await updateDocument(documentType, `${document._id}`, body)))
+            },
+            delete: async () => {
+              await Promise.all(documents.map(async document => await deleteDocument(documentType, `${document._id}`)))
+            },
+            total: total[0]?.total ?? 0,
+          } as DocumentQueryResult<D, M>)
+        }
       } catch (err) {
         reject(err)
       }
