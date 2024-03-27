@@ -94,7 +94,6 @@ export interface QueryOptions {
   pageSize: number
   select: string[]
   filter: [string, FilterOperator, string | string[]][]
-  filterSelect: (options?: { root?: string, prefix?: string, default?: string[] }) => string[],
   search: string
   sort: [string, boolean][]
 }
@@ -102,31 +101,27 @@ export interface QueryOptions {
 export type DocumentUpdate<D extends DocumentBase = DocumentBase> = Pick<DocumentBase, `_id`> & Partial<Omit<D, `_id`>>
 export type DocumentDiff<D extends DocumentBase = DocumentBase> = [DocumentUpdate<D>, DocumentUpdate<D>]
 export interface DocumentQueryResult<D extends DocumentBase = DocumentBase> {
-  documents: D[],
-  update: (body: Partial<Mutable<D>>) => Promise<DocumentDiff<D>[]>
-  delete: () => Promise<void>
+  documents: DocumentQueryResultItem<D>[],
   total: number
+  update: (body: Partial<Mutable<D>>) => Promise<[D, D][]>
+  delete: () => Promise<void>
 }
 
 export interface DocumentQuery<D extends DocumentBase = DocumentBase> {
-  query: () => { exec: () => Promise<[{ documents: D[], total: [{ total: number }]}]> }
   join: <J extends DocumentBase = DocumentBase>(field: string, model: DocumentModel<J>) => DocumentQuery<D>
   and: DocumentQuery<D>[`where`]
-  where: {
-    (field: string): {
-      eq: (value: any) => DocumentQuery<D>
-      ne: (value: any) => DocumentQuery<D>
-      ex: () => DocumentQuery<D>
-      match: (pattern: RegExp) => DocumentQuery<D>
-      in: (value: any[]) => DocumentQuery<D>
-      nin: (value: any[]) => DocumentQuery<D>
-      contains: (value: any) => DocumentQuery<D>
-      gt: (value: number) => DocumentQuery<D>
-      gte: (value: number) => DocumentQuery<D>
-      lt: (value: number) => DocumentQuery<D>
-      lte: (value: number) => DocumentQuery<D>
-    },
-    (...handlers: ((query: DocumentQuery<D>) => void)[]): DocumentQuery<D>
+  where: (field: string) => {
+    eq: (value: any) => DocumentQuery<D>
+    ne: (value: any) => DocumentQuery<D>
+    ex: () => DocumentQuery<D>
+    match: (pattern: RegExp) => DocumentQuery<D>
+    in: (value: any[]) => DocumentQuery<D>
+    nin: (value: any[]) => DocumentQuery<D>
+    contains: (value: any) => DocumentQuery<D>
+    gt: (value: number) => DocumentQuery<D>
+    gte: (value: number) => DocumentQuery<D>
+    lt: (value: number) => DocumentQuery<D>
+    lte: (value: number) => DocumentQuery<D>
   }
   expr: (expr: object) => DocumentQuery<D>
   select: (...fields: string[]) => DocumentQuery<D>

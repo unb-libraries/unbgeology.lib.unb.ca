@@ -35,7 +35,7 @@ export interface DocumentModel<D extends DocumentBase = DocumentBase> {
   findOne: (filter: FilterQuery<D>) => Query<Document<D>, D>
   findByID: (id: string) => Query<Document<D>, D>
   create: (body: Omit<D, keyof DocumentBase> | Omit<D, keyof DocumentBase>[]) => Document<D> | Document<D>[]
-  update: (id: string, body: Partial<Mutable<D>>) => Promise<[Document<D>, Document<D>]>
+  update: (id: string, body: Partial<Mutable<D>>) => Promise<[D, D]>
   delete: (id: string) => Promise<void>
 }
 

@@ -1,6 +1,6 @@
 import { defu } from "defu"
 import { Schema, type SchemaDefinition, model as defineModel, Types, type FilterQuery } from "mongoose"
-import type { DocumentSchema, AlterSchemaHandler, DocumentBase as IDocumentBase, DocumentModel, DocumentSchemaOptions } from "../../types/schema"
+import type { DocumentSchema, AlterSchemaHandler, DocumentBase as IDocumentBase, DocumentModel, DocumentSchemaOptions, DocumentBase } from "../../types/schema"
 import { type DocumentQuery, type DocumentQueryResult, type Join } from "../../types/entity"
 import { type Mutable } from "../../types"
 
@@ -122,7 +122,9 @@ export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B e
   } as unknown as B extends undefined ? DocumentModel<D> : DocumentModel<NonNullable<B>>
 }
 
-export function DocumentQuery<D extends IDocumentBase = IDocumentBase>(documentType: DocumentModel<D>): DocumentQuery<D> {
+type AggregateResult<D extends IDocumentBase = IDocumentBase> = Pick<DocumentQueryResult<D>, `documents`> & { total: [{ total: number }] }
+
+export function DocumentQuery<D extends IDocumentBase = IDocumentBase>(documentType: DocumentModel<D>) {
   const joins: Join[] = []
   const filters: any[] = []
   const selection: string[] = []
@@ -130,61 +132,62 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase>(documentT
   const paginator: [number, number] = [1, 25]
   const handlers: ((query: DocumentQuery<D>) => void)[] = []
 
-  return {
-    use(...handlers: ((query: DocumentQuery<D>) => void)[]) {
-      handlers.forEach(handler => handler(this))
+  function buildQuery() {
+    const aggregate = documentType.mongoose.model.aggregate<AggregateResult<D>>()
+
+    // apply handlers
+    while (handlers.length > 0) {
+      const handler = handlers.shift()!
+      handler(query)
+    }
+
+    // lookup stage
+    joins.forEach((join) => {
+      aggregate.lookup(join)
+    })
+
+    // match stage
+    filters.forEach((field) => {
+      aggregate.match(field)
+    })
+
+    // pre-sort stage
+    sort.forEach(([field]) => {
+      aggregate
+        .addFields({ [`no${field}`]: { $or: [{ $eq: [`$${field}`, []] }, { $eq: [`$${field}`, null] }] } })
+    })
+
+    // unwind stage: unwind all multi-value joined fields
+    joins
+      .filter(({ localField: field }) => documentType.mongoose.model.schema.path(field) instanceof Types.ObjectId)
+      .forEach(({ localField: field }) => {
+        aggregate.unwind({ path: `$${field}`, preserveNullAndEmptyArrays: true })
+      })
+
+    // sort stage
+    if (sort.length > 0) {
+      aggregate.sort(sort.map(([field, asc]) => `no${field} ${asc ? `` : `-`}${field}`).join(` `))
+    } else {
+      aggregate.sort(`_id`)
+    }
+
+    // project stage
+    if (selection.length > 0) {
+      aggregate.project(selection.reduce((projection, field) => ({ ...projection, [field]: 1 }), {}))
+    }
+
+    const [page, pageSize] = paginator
+    aggregate
+      .facet({ documents: [{ $skip: (page - 1) * pageSize }, { $limit: pageSize }], total: [{ $count: `total` }] })
+      .project({ documents: 1, total: 1 })
+
+    return aggregate
+  }
+
+  const query = {
+    use(...newHandlers: ((query: DocumentQuery<D>) => void)[]) {
+      handlers.push(...newHandlers)
       return this
-    },
-    query() {
-      const query = documentType.mongoose.model.aggregate()
-
-      // apply handlers
-      while (handlers.length > 0) {
-        const handler = handlers.shift()!
-        handler(this)
-      }
-
-      // lookup stage
-      joins.forEach((join) => {
-        query.lookup(join)
-      })
-
-      // match stage
-      filters.forEach((field) => {
-        query.match(field)
-      })
-
-      // pre-sort stage
-      sort.forEach(([field]) => {
-        query
-          .addFields({ [`no${field}`]: { $or: [{ $eq: [`$${field}`, []] }, { $eq: [`$${field}`, null] }] } })
-      })
-
-      // unwind stage: unwind all multi-value joined fields
-      joins
-        .filter(({ localField: field }) => documentType.mongoose.model.schema.path(field) instanceof Types.ObjectId)
-        .forEach(({ localField: field }) => {
-          query.unwind({ path: `$${field}`, preserveNullAndEmptyArrays: true })
-        })
-
-      // sort stage
-      if (sort.length > 0) {
-        query.sort(sort.map(([field, asc]) => `no${field} ${asc ? `` : `-`}${field}`).join(` `))
-      } else {
-        query.sort(`_id`)
-      }
-
-      // project stage
-      if (selection.length > 0) {
-        query.project(selection.reduce((projection, field) => ({ ...projection, [field]: 1 }), {}))
-      }
-
-      const [page, pageSize] = paginator
-      query
-        .facet({ documents: [{ $skip: (page - 1) * pageSize }, { $limit: pageSize }], total: [{ $count: `total` }] })
-        .project({ documents: 1, total: 1 })
-
-      return query
     },
     join<D extends IDocumentBase = IDocumentBase>(field: string, model: DocumentModel<D>) {
       joins.push({
@@ -195,24 +198,10 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase>(documentT
       })
       return this
     },
-    and(...fieldOrHandlers: (string | ((query: DocumentQuery<D>) => void))[]) {
-      if (fieldOrHandlers.length === 0) {
-        return this.where()
-      } else {
-        return typeof fieldOrHandlers[0] === `function`
-          ? this.where(...fieldOrHandlers as ((query: DocumentQuery<D>) => void)[])
-          : this.where(fieldOrHandlers[0])
-      }
+    and(field: string) {
+      return this.where(field)
     },
-    where(...fieldOrHandlers: (string | ((query: DocumentQuery<D>) => void))[]) {
-      if (fieldOrHandlers.length === 0) { return this }
-
-      if (typeof fieldOrHandlers[0] === `function`) {
-        handlers.push(...fieldOrHandlers as ((query: DocumentQuery<D>) => void)[])
-        return this
-      }
-
-      const field = fieldOrHandlers[0]
+    where(field: string) {
       return {
         eq: (value: string | number) => {
           filters.push({ [field]: value })
@@ -278,14 +267,14 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase>(documentT
       })
       return this
     },
-    paginate(page, pageSize) {
+    paginate(page: number, pageSize: number) {
       paginator[0] = Math.max(1, page)
       paginator[1] = Math.min(500, pageSize)
       return this
     },
     async then(resolve: (result: DocumentQueryResult<D>) => void, reject: (err: any) => void) {
       try {
-        const [result] = await this.query().exec()
+        const [result] = await buildQuery().exec()
         const { documents, total } = result
         resolve({
           documents,
@@ -302,6 +291,8 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase>(documentT
       }
     },
   }
+
+  return query
 }
 
 function findDocument<D extends IDocumentBase = IDocumentBase>(Model: DocumentModel<D>, filter: FilterQuery<D>) {
@@ -323,10 +314,10 @@ async function updateDocument<D extends IDocumentBase = IDocumentBase>(Model: Do
   }
 
   const original = document.toJSON()
-  document.set({ label: body.label })
+  document.set(body)
   await document.save()
 
-  return [original, document.toJSON()] as [typeof original, typeof original]
+  return [original, document.toJSON()] as [D, D]
 }
 
 async function deleteDocument(Model: DocumentModel<any>, id: string) {
