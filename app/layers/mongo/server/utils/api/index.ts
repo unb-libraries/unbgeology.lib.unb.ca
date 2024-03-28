@@ -185,7 +185,7 @@ export async function renderOr404<C extends Content = Content, D = any>(event: H
   if (data) {
     return await render(event, data, options)
   }
-  return createError({ statusCode: 404, statusMessage: options?.message ? options.message : `The requested entity does not exist.` })
+  return create404(event)
 }
 
 export async function renderList<C extends Content = Content, D = any>(event: H3Event, data: D[], options?: Partial<FormatManyOptions<C> & { format?: typeof render }>): Promise<EntityList<C>> {
@@ -228,7 +228,7 @@ export async function renderDiffOr404<C extends Content = Content, D = any>(even
   if (data) {
     return await renderDiff<C>(event, data, options)
   }
-  return createError({ statusCode: 404, statusMessage: options?.message ? options.message : `The requested entity does not exist.` })
+  return create404(event)
 }
 
 export async function renderDiff<C extends Content = Content, D = any>(event: H3Event, data: [D, D], options?: Partial<FormatOptions<C>>): Promise<Entity<Partial<C>>> {
@@ -261,4 +261,13 @@ export async function renderDiffList<C extends Content = Content, D = any>(event
     ...list,
     entities: diffs,
   }
+}
+
+export function create404(event: H3Event, message?: string) {
+  const params = Object.entries(getRouterParams(event))
+  if (params.length > 0) {
+    const [param, value] = params.at(-1)!
+    return createError({ statusCode: 404, statusMessage: message ?? `The resource with ${param} "${value}" does not exist.` })
+  }
+  return createError({ statusCode: 404, statusMessage: message ?? `The resource does not exist.` })
 }
