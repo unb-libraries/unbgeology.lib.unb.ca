@@ -107,59 +107,50 @@ export type DocumentQueryResultItem<D = any> = {
 } & D
 
 export type DocumentQueryMethod = `findOne` | `findMany`
-export type DocumentQueryResult<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> =
+export type DocumentFindQueryResult<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> =
   M extends `findMany` ? {
     total: number
     documents: DocumentQueryResultItem<D>[],
-    update: (body: Partial<Mutable<D>>) => Promise<[D, D][]>
-    delete: () => Promise<void>
   }
   : DocumentQueryResultItem<D>
-
-export interface DocumentQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> {
-  join: <J extends DocumentBase = DocumentBase>(field: string, model: DocumentModel<J>) => DocumentQuery<D>
-  and: DocumentQuery<D>[`where`]
-  where: (field: string) => {
-    eq: (value: any) => DocumentQuery<D>
-    ne: (value: any) => DocumentQuery<D>
-    ex: () => DocumentQuery<D>
-    match: (pattern: RegExp) => DocumentQuery<D>
-    in: (value: any[]) => DocumentQuery<D>
-    nin: (value: any[]) => DocumentQuery<D>
-    contains: (value: any) => DocumentQuery<D>
-    gt: (value: number) => DocumentQuery<D>
-    gte: (value: number) => DocumentQuery<D>
-    lt: (value: number) => DocumentQuery<D>
-    lte: (value: number) => DocumentQuery<D>
-  }
-  expr: (expr: object) => DocumentQuery<D>
-  select: (...fields: string[]) => DocumentQuery<D>
-  sort: (...fields: (string | [string, boolean])[]) => DocumentQuery<D>
-  paginate(page: number, pageSize: number): DocumentQuery<D>
-  use: (...handlers: ((query: DocumentQuery<D>) => void)[]) => DocumentQuery<D>
-  then: (resolve: (result: DocumentQueryResult<D, M>) => void, reject: (err: any) => void) => void
-}
-
-export type DocumentUpdateQueryResult<D extends DocumentBase = DocumentBase, M extends `findOne` | `findMany` = `findMany`> =
+export type DocumentUpdateQueryResult<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> =
   M extends `findMany` ? {
     documents: [D, D][]
     total: number
   }
   : [D, D]
-
-export type DocumentUpdateQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> = Omit<DocumentQuery<D, M>, `then`> & {
-  then: (resolve: (result: DocumentUpdateQueryResult<D, M>) => void, reject: (err: any) => void) => void
-}
-
-export type DocumentDeleteQueryResult<D extends DocumentBase = DocumentBase, M extends `findOne` | `findMany` = `findMany`> =
+export type DocumentDeleteQueryResult<M extends DocumentQueryMethod = `findMany`> =
   M extends `findMany` ? {
     total: number
   }
   : void
-
-export type DocumentDeleteQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> = Omit<DocumentQuery<D, M>, `then`> & {
-  then: (resolve: (result: DocumentDeleteQueryResult<D, M>) => void, reject: (err: any) => void) => void
+interface DocumentQuery<Q, R> {
+  join: <J extends DocumentBase = DocumentBase>(field: string, model: DocumentModel<J>) => Q
+  and: DocumentQuery<Q, R>[`where`]
+  where: (field: string) => {
+    eq: (value: any) => Q
+    ne: (value: any) => Q
+    ex: () => Q
+    match: (pattern: RegExp) => Q
+    in: (value: any[]) => Q
+    nin: (value: any[]) => Q
+    contains: (value: any) => Q
+    gt: (value: number) => Q
+    gte: (value: number) => Q
+    lt: (value: number) => Q
+    lte: (value: number) => Q
+  }
+  expr: (expr: object) => Q
+  select: (...fields: string[]) => Q
+  sort: (...fields: (string | [string, boolean])[]) => Q
+  paginate(page: number, pageSize: number): Q
+  use: (...handlers: ((query: Q) => void)[]) => Q
+  then: (resolve: (result: R) => void, reject: (err: any) => void) => void
 }
+
+export type DocumentFindQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> = DocumentQuery<DocumentFindQuery<D, M>, DocumentFindQueryResult<D, M>>
+export type DocumentUpdateQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> = DocumentQuery<DocumentUpdateQuery<D, M>, DocumentUpdateQueryResult<D, M>>
+export type DocumentDeleteQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> = DocumentQuery<DocumentDeleteQuery<D, M>, DocumentDeleteQueryResult<M>>
 
 export interface Join {
   from: string

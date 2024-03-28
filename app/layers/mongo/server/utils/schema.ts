@@ -1,7 +1,7 @@
 import { defu } from "defu"
 import { Schema, type SchemaDefinition, model as defineModel, Types, type FilterQuery } from "mongoose"
 import type { DocumentSchema, AlterSchemaHandler, DocumentBase as IDocumentBase, DocumentModel, DocumentSchemaOptions } from "../../types/schema"
-import { type DocumentQuery, type DocumentQueryMethod, type DocumentQueryResult, type DocumentUpdateQueryResult, type Join } from "../../types/entity"
+import { type DocumentFindQuery, type DocumentQueryMethod, type DocumentFindQueryResult, type DocumentUpdateQueryResult, type DocumentDeleteQueryResult, type Join } from "../../types/entity"
 import { type Mutable } from "../../types"
 
 type DefineDocumentSchema<D = any, TOptions extends any | undefined = undefined> =
@@ -159,7 +159,7 @@ export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B e
         : DocumentQuery(this as unknown as DocumentModel<NonNullable<B>>)
       return {
         ...query,
-        then: async (resolve: (result: { total: number }) => void, reject: () => void) => {
+        then: async (resolve: (result: DocumentDeleteQueryResult) => void, reject: () => void) => {
           await then(async ({ documents, total }) => {
             await Promise.all(documents.map(document => document.delete()))
             resolve({ total })
@@ -187,7 +187,7 @@ export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B e
   } as unknown as B extends undefined ? DocumentModel<D> : DocumentModel<NonNullable<B>>
 }
 
-type AggregateResult<D extends IDocumentBase = IDocumentBase> = Pick<DocumentQueryResult<D>, `documents`> & { total: [{ total: number }] }
+type AggregateResult<D extends IDocumentBase = IDocumentBase> = Pick<DocumentFindQueryResult<D>, `documents`> & { total: [{ total: number }] }
 
 export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends DocumentQueryMethod = `findMany`>(documentType: DocumentModel<D>, options?: { method: M }) {
   const joins: Join[] = []
@@ -195,7 +195,7 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
   const selection: string[] = []
   const sort: [string, boolean][] = []
   const paginator: [number, number] = [1, 25]
-  const handlers: ((query: DocumentQuery<D, M>) => void)[] = []
+  const handlers: ((query: DocumentFindQuery<D, M>) => void)[] = []
 
   function buildQuery() {
     const aggregate = documentType.mongoose.model.aggregate<AggregateResult<D>>()
@@ -203,7 +203,7 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
     // apply handlers
     while (handlers.length > 0) {
       const handler = handlers.shift()!
-      handler(query as DocumentQuery<D, M>)
+      handler(query as DocumentFindQuery<D, M>)
     }
 
     // lookup stage
@@ -250,7 +250,7 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
   }
 
   const query = {
-    use(...newHandlers: ((query: DocumentQuery<D, M>) => void)[]) {
+    use(...newHandlers: ((query: DocumentFindQuery<D, M>) => void)[]) {
       handlers.push(...newHandlers)
       return this
     },
@@ -337,7 +337,7 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
       paginator[1] = Math.min(500, pageSize)
       return this
     },
-    async then(resolve: (result: DocumentQueryResult<D, M>) => void, reject: (err: any) => void) {
+    async then(resolve: (result: DocumentFindQueryResult<D, M>) => void, reject: (err: any) => void) {
       try {
         const [result] = await buildQuery().exec()
         const { documents, total } = result
@@ -356,7 +356,7 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
           : {
               documents: documents.map(assign),
               total: total[0]?.total ?? 0,
-            }) as DocumentQueryResult<D, M>)
+            }) as DocumentFindQueryResult<D, M>)
       } catch (err) {
         reject(err)
       }

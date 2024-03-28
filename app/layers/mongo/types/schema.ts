@@ -1,5 +1,5 @@
 import { Schema, type SchemaDefinition, type ObjectId, type Model, type Document } from "mongoose"
-import { type DocumentDeleteQuery, type DocumentQuery, type DocumentUpdateQuery } from "./entity"
+import { type DocumentFindQuery, type DocumentDeleteQuery, type DocumentUpdateQuery } from "./entity"
 import { type Mutable } from "."
 
 export interface DocumentUpdate<D = any> {
@@ -31,10 +31,10 @@ export interface DocumentModel<D extends DocumentBase = DocumentBase> {
   mongoose: {
     model: Model<D>
   }
-  find: () => DocumentQuery<D>
-  findOne: () => DocumentQuery<D, `findOne`>
-  findByID: (id: string) => Pick<DocumentQuery<D, `findOne`>, `select` | `use` | `then`>
-  create: (body: Omit<D, keyof DocumentBase> | Omit<D, keyof DocumentBase>[]) => Document<D> | Document<D>[]
+  find: () => DocumentFindQuery<D>
+  findOne: () => DocumentFindQuery<D, `findOne`>
+  findByID: (id: string) => Pick<DocumentFindQuery<D, `findOne`>, `select` | `use` | `then`>
+  create: (body: Omit<D, keyof DocumentBase> | Omit<D, keyof DocumentBase>[]) => Promise<Document<D> | Document<D>[]>
   update: (body: Partial<Mutable<D>>) => DocumentUpdateQuery<D>
   updateOne: (body: Partial<Mutable<D>>) => DocumentUpdateQuery<D, `findOne`>
   updateByID: (id: string, body: Partial<Mutable<D>>) => DocumentUpdateQuery<D, `findOne`>
