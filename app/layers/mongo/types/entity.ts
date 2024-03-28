@@ -112,19 +112,21 @@ export type DocumentFindQueryResult<D extends DocumentBase = DocumentBase, M ext
     total: number
     documents: DocumentQueryResultItem<D>[],
   }
-  : DocumentQueryResultItem<D>
+  : DocumentQueryResultItem<D> | undefined
 export type DocumentUpdateQueryResult<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> =
   M extends `findMany` ? {
     documents: [D, D][]
     total: number
   }
-  : [D, D]
-export type DocumentDeleteQueryResult<M extends DocumentQueryMethod = `findMany`> =
+  : [D, D] | undefined
+export type DocumentDeleteQueryResult<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> =
   M extends `findMany` ? {
+    documents: D[]
     total: number
   }
-  : void
-interface DocumentQuery<Q, R> {
+  : D | undefined
+
+  interface DocumentQuery<Q, R> {
   join: <J extends DocumentBase = DocumentBase>(field: string, model: DocumentModel<J>) => Q
   and: DocumentQuery<Q, R>[`where`]
   where: (field: string) => {
@@ -150,7 +152,7 @@ interface DocumentQuery<Q, R> {
 
 export type DocumentFindQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> = DocumentQuery<DocumentFindQuery<D, M>, DocumentFindQueryResult<D, M>>
 export type DocumentUpdateQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> = DocumentQuery<DocumentUpdateQuery<D, M>, DocumentUpdateQueryResult<D, M>>
-export type DocumentDeleteQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> = DocumentQuery<DocumentDeleteQuery<D, M>, DocumentDeleteQueryResult<M>>
+export type DocumentDeleteQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> = DocumentQuery<DocumentDeleteQuery<D, M>, DocumentDeleteQueryResult<D, M>>
 
 export interface Join {
   from: string

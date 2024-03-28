@@ -1,7 +1,7 @@
 import { defu } from "defu"
 import { Schema, type SchemaDefinition, model as defineModel, Types, type FilterQuery } from "mongoose"
 import type { DocumentSchema, AlterSchemaHandler, DocumentBase as IDocumentBase, DocumentModel, DocumentSchemaOptions } from "../../types/schema"
-import { type DocumentFindQuery, type DocumentQueryMethod, type DocumentFindQueryResult, type DocumentUpdateQueryResult, type DocumentDeleteQueryResult, type Join } from "../../types/entity"
+import { type DocumentFindQuery, type DocumentQueryMethod, type DocumentFindQueryResult, type DocumentUpdateQueryResult, type DocumentDeleteQueryResult, type Join, type DocumentQueryResultItem } from "../../types/entity"
 import { type Mutable } from "../../types"
 
 type DefineDocumentSchema<D = any, TOptions extends any | undefined = undefined> =
@@ -125,8 +125,8 @@ export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B e
         then: async (resolve: (result: B extends undefined ? DocumentUpdateQueryResult<D> : DocumentSchemaOptions<NonNullable<B>>) => void, reject: () => void) => {
           await then(async ({ documents, total }) => {
             const updates = !base
-              ? await Promise.all(documents.map(document => updateDocument<D>(this as DocumentModel<D>, `${document._id}`, body as Partial<Mutable<D>>)))
-              : await Promise.all(documents.map(document => updateDocument<NonNullable<B>>(this as unknown as DocumentModel<NonNullable<B>>, `${document._id}`, body as Partial<Mutable<NonNullable<B>>>)))
+              ? await Promise.all(documents.map(document => (document as DocumentQueryResultItem<D>).update(body as Partial<Mutable<D>>)))
+              : await Promise.all(documents.map(document => (document as DocumentQueryResultItem<NonNullable<B>>).update(body as Partial<Mutable<NonNullable<B>>>)))
             resolve({ documents: updates, total } as B extends undefined ? DocumentUpdateQueryResult<D> : DocumentSchemaOptions<NonNullable<B>>)
           }, reject)
         },
@@ -140,10 +140,13 @@ export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B e
         ...query,
         then: async (resolve: (result: B extends undefined ? DocumentUpdateQueryResult<D, `findOne`> : DocumentUpdateQueryResult<NonNullable<B>, `findOne`>) => void, reject: () => void) => {
           await then(async (document) => {
-            const update = !base
-              ? await updateDocument<D>(this as DocumentModel<D>, `${document._id}`, body as Partial<Mutable<D>>)
-              : await updateDocument<NonNullable<B>>(this as unknown as DocumentModel<NonNullable<B>>, `${document._id}`, body as Partial<Mutable<NonNullable<B>>>)
-            resolve(update as B extends undefined ? [D, D] : [NonNullable<B>, NonNullable<B>])
+            if (document) {
+              const update = !base
+                ? await (document as DocumentQueryResultItem<D>).update(body as Partial<Mutable<D>>)
+                : await (document as DocumentQueryResultItem<NonNullable<B>>).update(body as Partial<Mutable<NonNullable<B>>>)
+              resolve(update as B extends undefined ? [D, D] : [NonNullable<B>, NonNullable<B>])
+            }
+            resolve(undefined as B extends undefined ? undefined : undefined)
           }, reject)
         },
       }
@@ -162,7 +165,7 @@ export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B e
         then: async (resolve: (result: DocumentDeleteQueryResult) => void, reject: () => void) => {
           await then(async ({ documents, total }) => {
             await Promise.all(documents.map(document => document.delete()))
-            resolve({ total })
+            resolve({ documents, total })
           }, reject)
         },
       }
@@ -171,10 +174,13 @@ export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B e
       const { then, ...query } = DocumentQuery(this as DocumentModel<D>, { method: `findOne` })
       return {
         ...query,
-        then: async (resolve: () => void, reject: () => void) => {
+        then: async (resolve: (result: DocumentDeleteQueryResult<D, `findOne`>) => void, reject: () => void) => {
           await then(async (document) => {
-            await document.delete()
-            resolve()
+            if (document) {
+              await document.delete()
+              resolve(document)
+            }
+            resolve(undefined)
           }, reject)
         },
       }
@@ -352,7 +358,9 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
         })
 
         resolve((options?.method === `findOne`
-          ? assign(documents[0])
+          ? documents[0]
+            ? assign(documents[0])
+            : undefined
           : {
               documents: documents.map(assign),
               total: total[0]?.total ?? 0,
