@@ -213,8 +213,8 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
     }
 
     // lookup stage
-    joins.forEach((join) => {
-      aggregate.lookup(join)
+    joins.forEach(({ from, foreignField, localField, as }) => {
+      aggregate.lookup({ from, foreignField, localField, as })
     })
 
     // match stage
@@ -230,7 +230,7 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
 
     // unwind stage: unwind all multi-value joined fields
     joins
-      .filter(({ localField: field }) => documentType.mongoose.model.schema.path(field) instanceof Types.ObjectId)
+      .filter(({ cardinality }) => cardinality === `one`)
       .forEach(({ localField: field }) => {
         aggregate.unwind({ path: `$${field}`, preserveNullAndEmptyArrays: true })
       })
@@ -260,12 +260,13 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
       handlers.push(...newHandlers)
       return this
     },
-    join<D extends IDocumentBase = IDocumentBase>(field: string, model: DocumentModel<D>) {
+    join<D extends IDocumentBase = IDocumentBase>(field: string, model: DocumentModel<D>, options?: { cardinality: `one` | `many` }) {
       joins.push({
         from: model.mongoose.model.collection.collectionName,
         localField: field,
         foreignField: `_id`,
         as: field,
+        cardinality: options?.cardinality ?? `one`,
       })
       return this
     },

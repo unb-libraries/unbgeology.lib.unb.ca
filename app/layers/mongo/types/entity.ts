@@ -159,4 +159,5 @@ export interface Join {
   localField: string
   foreignField: string
   as: string
+  cardinality?: `one` | `many`
 }
