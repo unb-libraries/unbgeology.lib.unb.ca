@@ -1,6 +1,6 @@
+import { FilterOperator } from "@unb-libraries/nuxt-layer-entity"
 import { type H3Event } from "h3"
-import { type EntityJSON, FilterOperator } from "@unb-libraries/nuxt-layer-entity"
-import { type QueryOptions, type DocumentQuery, type Content, type Entity, type EntityList, type Payload } from "../../../types/entity"
+import { type QueryOptions, type Content, type Entity, type EntityList, type Payload, type DocumentFindQuery } from "../../../types/entity"
 import { type FormatOptions, type FormatManyOptions } from "../../../types/api"
 import { type DocumentBase, type DocumentModel } from "../../../types/schema"
 
@@ -91,17 +91,17 @@ export function getQueryOptions(event: H3Event): QueryOptions {
   }
 }
 
-export function getMongooseMiddleware<D extends DocumentBase = DocumentBase>(event: H3Event): ((query: DocumentQuery<D>) => void)[] {
+export function getMongooseMiddleware<D extends DocumentBase = DocumentBase>(event: H3Event): ((query: DocumentFindQuery<D>) => void)[] {
   return event.context.mongoose?.handlers ?? []
 }
 
-export function defineMongooseMiddleware<D extends DocumentBase = DocumentBase>(Model: DocumentModel<D>, handler: (event: H3Event, query: DocumentQuery<D>) => void) {
+export function defineMongooseMiddleware<D extends DocumentBase = DocumentBase>(Model: DocumentModel<D>, handler: (event: H3Event, query: DocumentFindQuery<D>) => void) {
   return defineEventHandler((event) => {
     if (getMongooseModel(event)?.mongoose.model.modelName === Model.mongoose.model.modelName) {
       if (!event.context.mongoose.handlers) {
         event.context.mongoose.handlers = []
       }
-      event.context.mongoose.handlers.push((query: DocumentQuery<D>) => handler(event, query))
+      event.context.mongoose.handlers.push((query: DocumentFindQuery<D>) => handler(event, query))
     }
   })
 }
@@ -159,7 +159,7 @@ export async function readBodyListOr400<T extends object = object, P extends `cr
   return await Promise.all(payloads.map(payload => readOr400<T, P>(modelName, payload, options))) as T[]
 }
 
-export function defineEntityFormatter<E extends Entity = Entity, T = any>(Model: DocumentModel<any>, formatter: (item: T) => Omit<EntityJSON<E>, `self`>) {
+export function defineEntityFormatter<E extends Entity = Entity, T = any>(Model: DocumentModel<any>, formatter: (item: T) => Omit<E, `self`>) {
   return defineNitroPlugin((nitro) => {
     nitro.hooks.hook(`document:format`, (item: T, options) => {
       if (Model.mongoose.model.modelName === options.modelName) {
