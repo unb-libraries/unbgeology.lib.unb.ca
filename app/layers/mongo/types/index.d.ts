@@ -54,6 +54,14 @@ export interface MigrateOptions {
   chunkSize?: number
 }
 
+export interface ModelHookOptions {
+  modelName: string
+}
+
+export interface PayloadHookOptions extends ModelHookOptions {
+  op: `create` | `update`
+}
+
 export declare module "nitropack" {
   interface NitroRuntimeHooks {
     "mongoose:init": (mongoose: typeof Mongoose) => void | Promise<void>
@@ -71,8 +79,8 @@ export declare module "nitropack" {
     "migrate:pause": (migration: Migration) => void | Promise<void>
     
     // Document hooks
-    "document:format": (item: any | any[], options: { modelName: string }) => any
-    "body:read": (payload: any | any[], options: { modelName: string, op?: `create` | `update` }) => any
+    "document:format": (item: any | any[], options: ModelHookOptions) => any
+    "body:read": (payload: any | any[], options: PayloadHookOptions) => any
   }
 }
 

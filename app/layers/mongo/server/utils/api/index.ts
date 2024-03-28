@@ -3,6 +3,7 @@ import { type H3Event } from "h3"
 import { type QueryOptions, type Content, type Entity, type EntityList, type Payload, type DocumentFindQuery } from "../../../types/entity"
 import { type FormatOptions, type FormatManyOptions } from "../../../types/api"
 import { type DocumentBase, type DocumentModel } from "../../../types/schema"
+import type { PayloadHookOptions } from "~/layers/mongo/types"
 
 function initMongooseContext(event: H3Event) {
   event.context.mongoose = {
@@ -109,11 +110,13 @@ interface BodyReadOptions<T extends `create` | `update`> {
   op: T
 }
 
-export function defineBodyReader<T extends object = object, P extends `create` | `update` = `create` | `update`>(Model: DocumentModel<any>, transformer: (body: any, options?: Partial<BodyReadOptions<P>>) => Payload<T, P> | Promise<Payload<T, P>>) {
+export function defineBodyReader<T extends object = object, P extends `create` | `update` = `create` | `update`>(Model: DocumentModel<any>, transformer: (body: any, options?: Partial<BodyReadOptions<P>>) => Payload<T, P> | Promise<Payload<T, P>>, options?: { validate?: (payload: any, options: PayloadHookOptions) => boolean }) {
+  const validate = options?.validate || ((payload: any, options: PayloadHookOptions): boolean => options.modelName === Model.fullName)
   return defineNitroPlugin((nitro) => {
     nitro.hooks.hook(`body:read`, async (payload, options) => {
-      if (Model.mongoose.model.modelName === options.modelName) {
-        return await transformer(payload, { op: options.op } as BodyReadOptions<P>)
+      const { op } = options
+      if (validate(payload, options)) {
+        return await transformer(payload, { op } as BodyReadOptions<P>)
       }
       return {}
     })
@@ -159,10 +162,11 @@ export async function readBodyListOr400<T extends object = object, P extends `cr
   return await Promise.all(payloads.map(payload => readOr400<T, P>(modelName, payload, options))) as T[]
 }
 
-export function defineEntityFormatter<E extends Entity = Entity, T = any>(Model: DocumentModel<any>, formatter: (item: T) => Omit<E, `self`>) {
+export function defineEntityFormatter<E extends Entity = Entity, T = any>(Model: DocumentModel<any>, formatter: (item: T) => Omit<E, `self`>, options?: { validate?: (content: T, options: ModelHookOptions) => boolean }) {
+  const validate = options?.validate || ((content: T, options: ModelHookOptions): boolean => options.modelName === Model.fullName)
   return defineNitroPlugin((nitro) => {
     nitro.hooks.hook(`document:format`, (item: T, options) => {
-      if (Model.mongoose.model.modelName === options.modelName) {
+      if (validate(item, options)) {
         return formatter(item)
       }
       return {}
