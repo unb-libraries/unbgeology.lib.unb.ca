@@ -56,6 +56,7 @@ export interface MigrateOptions {
 
 export interface ModelHookOptions {
   modelName: string
+  event: H3Event
 }
 
 export interface PayloadHookOptions extends ModelHookOptions {
