@@ -3,13 +3,10 @@ import { type Term } from "../../documentTypes/Term"
 
 export default defineMongooseMiddleware(Term, (event, query) => {
   const { filter, select, sort } = getQueryOptions(event)
-  const defaultFields = [
-      `parent`,
-  ]
 
-  query.select(`__l`, `__r`, ...(select.length > 0
-    ? select.filter(field => defaultFields.includes(field))
-    : defaultFields))
+  if (select.length < 1 || select.filter(field => field.startsWith(`parent`)).length > 0) {
+    query.select(`parent`)
+  }
 
   query.sort(...sort.map<[string, boolean]>(([field, asc]) => {
     if (field === `parent`) {
