@@ -9,9 +9,9 @@ class RequiredError extends Error {
   }
 }
 
-function validate<T = any, R extends boolean = true>(input: any | undefined, validator: Validator<T>, options?: { required: R }): R extends true ? T : T | undefined {
+async function validate<T = any, R extends boolean = true>(input: any | undefined, validator: Validator<T>, options?: { required: R }): Promise<R extends true ? T : T | undefined> {
   if (input !== undefined) {
-    return validator(input) as T
+    return await validator(input) as T
   } else if (!options || options.required) {
     throw new RequiredError(`Input must not be undefined.`)
   } else {
@@ -20,13 +20,13 @@ function validate<T = any, R extends boolean = true>(input: any | undefined, val
 }
 
 export const require = <T = any>(validator: Validator<T>) => {
-  const $return = (input: any) => validate(input, validator, { required: true })
+  const $return = async (input: any) => await validate(input, validator, { required: true })
   $return.expected = true
   return $return as Validator<T>
 }
 
 export const optional = <T = any>(validator: Validator<T>) => {
-  const $return = (input: any) => validate(input, validator, { required: false })
+  const $return = async (input: any) => await validate(input, validator, { required: false })
   $return.expected = false
   return $return as Validator<T | undefined>
 }
@@ -87,20 +87,20 @@ export function ArrayValidator<T = any>(validator: (input: any) => T) {
 }
 
 export function ObjectValidator<T extends object = object>(input: { [K in keyof T]: Validator<T[K]> }) {
-  return (obj: T) => {
-    const validated = Object.fromEntries(Object
+  return async (obj: T) => {
+    const validated = Object.fromEntries(await Promise.all(Object
       .entries(obj)
       .filter(([key]) => key in input)
-      .map(([key, value]) => {
+      .map(async ([key, value]) => {
         try {
-          return [key, input[key as keyof T](value)]
+          return [key, await input[key as keyof T](value)]
         } catch (err: unknown) {
           if (err instanceof RequiredError) {
             throw new RequiredError(`"${key}" must not be undefined`)
           }
           throw err
         }
-      })) as T
+      }))) as T
 
     const unavailableRequiredKeys = Object
       .entries(input)
@@ -114,6 +114,6 @@ export function ObjectValidator<T extends object = object>(input: { [K in keyof 
   }
 }
 
-export function validateBody<T extends object = object>(body: any, validate: { [K in keyof T]: (input: any) => T[K] | Promise<T[K]> }) {
-  return ObjectValidator<T>(validate)(body)
+export async function validateBody<T extends object = object>(body: any, validate: { [K in keyof T]: (input: any) => T[K] | Promise<T[K]> }) {
+  return await ObjectValidator<T>(validate)(body)
 }
