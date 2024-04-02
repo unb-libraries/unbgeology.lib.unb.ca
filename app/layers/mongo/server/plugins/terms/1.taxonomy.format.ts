@@ -2,7 +2,7 @@ import type { TaxonomyTerm as TaxonomyTermEntity } from "@unb-libraries/nuxt-lay
 import type { TaxonomyTerm as TaxonomyTermDocument } from "../../documentTypes/TaxonomyTerm"
 
 export default defineEntityFormatter<TaxonomyTermEntity, TaxonomyTermDocument>(Term, async (item, { event }) => {
-  const { parent: pid, __type, type } = item
+  const { parent, __type, type } = item
 
   if (__type === TaxonomyTerm.fullName) {
     const fetchParent = async (pid: string) => {
@@ -27,7 +27,7 @@ export default defineEntityFormatter<TaxonomyTermEntity, TaxonomyTermDocument>(T
 
     return {
       type: type ? `taxonomy` : undefined,
-      parent: pid ? await fetchParent(`${pid}`) : undefined,
+      parent: parent?._id ? await fetchParent(`${parent._id}`) : undefined,
     }
   }
 

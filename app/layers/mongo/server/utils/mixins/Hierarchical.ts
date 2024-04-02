@@ -2,7 +2,7 @@ import { Schema, type ObjectId, type Model } from "mongoose"
 import type { DocumentBase } from "~/layers/mongo/types/schema"
 
 export interface Hierarchical {
-  parent: ObjectId
+  parent: Hierarchical
   parentModel: string
   __l: number
   __r: number

@@ -1,7 +1,8 @@
 import { Hierarchical, type Hierarchical as IMxHierarchical } from "../utils/mixins"
 import TermBase, { type Term as TermDocument } from "./Term"
 
-export interface TaxonomyTerm extends IMxHierarchical, TermDocument {
+export interface TaxonomyTerm extends Omit<IMxHierarchical, `parent`>, TermDocument {
+  parent?: TaxonomyTerm
 }
 
 const Schema = defineDocumentSchema<TaxonomyTerm>({
