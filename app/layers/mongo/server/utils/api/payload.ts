@@ -67,6 +67,17 @@ export function URIMatchValidator<E extends Entity = Entity>(pattern: RegExp) {
   return async (input: any) => await URIValidator<E>(MatchValidator(pattern)(input))
 }
 
+enum Enum {}
+export function EnumValidator<E extends typeof Enum>(e: E) {
+  return (input: any) => {
+    const keys = Object.keys(e).map(key => `${key}`.toUpperCase())
+    if (keys.includes(`${input}`.toUpperCase())) {
+      return input as keyof E
+    }
+    throw new TypeError(`"${input}" must be any of ${keys.join(`,`)}`)
+  }
+}
+
 export function NumberValidator(input: any) {
   if (typeof input === `number`) {
     return input
