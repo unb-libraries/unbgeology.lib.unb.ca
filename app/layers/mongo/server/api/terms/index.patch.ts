@@ -1,16 +1,13 @@
-import { Read } from "../../../types"
-import { readTerm } from "../../utils/api/terms"
+import { type Term } from "../../documentTypes/Term"
 
 export default defineEventHandler(async (event) => {
   const { page, pageSize } = getQueryOptions(event)
-  const { sortFields, filter } = getMongooseQuery(event)
+  const handlers = getMongooseMiddleware(event)
 
-  const body = await readTerm.one<Read.UPDATE>(event)
-  const { update: updateTerms } = await Term.find()
-    .where(...filter)
-    .sort(...sortFields)
+  const body = await readOneBodyOr400<Term>(event)
+  const { documents: updates, total } = await Term.update(body)
+    .use(...handlers)
     .paginate(page, pageSize)
-  const diffs = await updateTerms(body)
 
-  return renderDiffList(event, diffs)
+  return renderDiffList(event, updates, { total })
 })

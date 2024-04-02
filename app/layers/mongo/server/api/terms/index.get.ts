@@ -1,10 +1,8 @@
 export default defineEventHandler(async (event) => {
   const { page, pageSize } = getQueryOptions(event)
-  const { fields, sortFields, filter } = getMongooseQuery(event)
+  const handlers = getMongooseMiddleware(event)
   const { documents: terms, total } = await Term.find()
-    .where(...filter)
-    .select(...fields)
-    .sort(...sortFields)
+    .use(...handlers)
     .paginate(page, pageSize)
 
   return renderList(event, terms, { total })

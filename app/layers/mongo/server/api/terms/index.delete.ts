@@ -1,12 +1,10 @@
 export default defineEventHandler(async (event) => {
   const { page, pageSize } = getQueryOptions(event)
-  const { sortFields, filter } = getMongooseQuery(event)
-  const { delete: deleteTerms } = await Term.find()
-    .where(...filter)
-    .select(`_id type`)
-    .sort(...sortFields)
+  const handlers = getMongooseMiddleware(event)
+
+  await Term.delete()
+    .use(...handlers)
     .paginate(page, pageSize)
 
-  await deleteTerms()
   return sendNoContent(event)
 })
