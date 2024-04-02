@@ -197,7 +197,7 @@ type AggregateResult<D extends IDocumentBase = IDocumentBase> = Pick<DocumentFin
 
 export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends DocumentQueryMethod = `findMany`>(documentType: DocumentModel<D>, options?: { method: M }) {
   const joins: Join[] = []
-  const filters: any[] = []
+  const filters: [string, any][] = []
   const selection: string[] = []
   const sort: [string, boolean][] = []
   const paginator: [number, number] = [1, 25]
@@ -218,8 +218,16 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
     })
 
     // match stage
-    filters.forEach((field) => {
-      aggregate.match(field)
+    const findJoin = (field: string) => joins.find(({ localField }) => localField === field)
+
+    // filter by non-join fields
+    filters.filter(([field]) => !findJoin(field)).forEach(([field, condition]) => {
+      aggregate.match(field !== `` ? { [field]: condition } : condition)
+    })
+
+    // filter by join fields
+    filters.filter(([field]) => findJoin(field)).map<[[string, any], Join]>(filter => [filter, findJoin(filter[0])!]).forEach(([[field, condition], { cardinality }]) => {
+      aggregate.match(cardinality === `one` ? { [`${field}.0`]: condition } : { [field]: { $elemMatch: condition } })
     })
 
     // pre-sort stage
@@ -286,52 +294,52 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
     where(field: string) {
       return {
         eq: (value: string | number) => {
-          filters.push({ [field]: value })
+          filters.push([field, value])
           return this
         },
         ex: () => {
-          filters.push({ [field]: { $exists: true } })
+          filters.push([field, { $exists: true }])
           return this
         },
         ne: (value: string | number) => {
-          filters.push({ [field]: { $ne: value } })
+          filters.push([field, { $ne: value }])
           return this
         },
         match: (pattern: RegExp) => {
-          filters.push({ [field]: { $regex: pattern } })
+          filters.push([field, { $regex: pattern }])
           return this
         },
         in: (value: (string | number)[]) => {
-          filters.push({ [field]: { $in: value } })
+          filters.push([field, { $in: value }])
           return this
         },
         nin: (value: (string | number)[]) => {
-          filters.push({ [field]: { $nin: value } })
+          filters.push([field, { $nin: value }])
           return this
         },
         contains(value: string | number) {
           return this.eq(value)
         },
         gt: (value: number) => {
-          filters.push({ [field]: { $gt: value } })
+          filters.push([field, { $gt: value }])
           return this
         },
         gte: (value: number) => {
-          filters.push({ [field]: { $gte: value } })
+          filters.push([field, { $gte: value }])
           return this
         },
         lt: (value: number) => {
-          filters.push({ [field]: { $lt: value } })
+          filters.push([field, { $lt: value }])
           return this
         },
         lte: (value: number) => {
-          filters.push({ [field]: { $lte: value } })
+          filters.push([field, { $lte: value }])
           return this
         },
       }
     },
     expr(expr: object) {
-      filters.push(expr)
+      filters.push([``, expr])
       return this
     },
     select(...fields: string[]) {
