@@ -254,7 +254,7 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
         }, {} as Record<string, string[]>)
         return Object.fromEntries(Object.entries(reduced).map(([p, v]) => [p, v.length > 0 ? reduce(v) : 1])) as Selection
       }
-      aggregate.project(reduce(selection))
+      aggregate.project({ ...reduce(selection), __type: `$type` })
     }
 
     const [page, pageSize] = paginator
