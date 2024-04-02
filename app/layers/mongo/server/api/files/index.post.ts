@@ -1,6 +1,5 @@
 import { FileState } from "@unb-libraries/nuxt-layer-entity"
 import { fileExists, getUploadDir, moveFile } from "../../utils/api/files/fs"
-import readFileBody from "../../utils/api/files/read"
 import { type File } from "../../documentTypes/FileBase"
 
 export default defineEventHandler(async (event) => {
@@ -10,7 +9,7 @@ export default defineEventHandler(async (event) => {
     return Array.isArray(docs) ? docs : [docs]
   }
 
-  const body = await readFileBody(event)
+  const body = await readBodyOr400(event)
   const docs = await createExisting((Array.isArray(body) ? body : [body]))
 
   await Promise.all(docs.map(async (doc): Promise<void> => {
@@ -19,9 +18,7 @@ export default defineEventHandler(async (event) => {
     const filename = `${_id}-${uploadName}`
     const filepath = `${uploadDir}/${filename}`
     await moveFile(doc.filepath, filepath)
-    doc.filepath = filepath
-    doc.filename = filename
-    doc.save()
+    await FileBase.updateByID(`${doc._id}`, { filepath, filename })
   }))
 
   return renderList(event, docs.map(({ _id }) => ({ _id })))

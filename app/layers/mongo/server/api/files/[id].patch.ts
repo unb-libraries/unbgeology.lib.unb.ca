@@ -1,13 +1,12 @@
 import { FileState } from "@unb-libraries/nuxt-layer-entity"
 import { getUploadDir, moveFile } from "../../utils/api/files/fs"
-import readFileBody from "../../utils/api/files/read"
 import type { File } from "../../documentTypes/FileBase"
 
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
 
   const file = await FileBase.findByID(id)
-    .select([`filename`, `filepath`, `status`])
+    .select(`filename`, `filepath`, `status`)
 
   if (!file) {
     return sendError(event, createError({
@@ -17,7 +16,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const update: Partial<File> = {}
-  const { filename: newFilename, status: newStatus } = await readFileBody.one(event)
+  const { filename: newFilename, status: newStatus } = await readOneBodyOr400<File>(event)
 
   if (newFilename) {
     update.filename = newFilename
@@ -40,5 +39,5 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  return renderDiffOr404(event, await FileBase.update(id, update))
+  return renderDiffOr404(event, await file.update(update))
 })

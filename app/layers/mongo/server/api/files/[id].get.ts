@@ -1,9 +1,8 @@
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
-  const { fields } = getMongooseQuery(event)
-
+  const handlers = getMongooseMiddleware(event)
   const file = await FileBase.findByID(id)
-    .select(fields)
+    .use(...handlers)
 
   return renderOr404(event, file)
 })
