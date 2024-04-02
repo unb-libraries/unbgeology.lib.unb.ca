@@ -63,6 +63,10 @@ export async function URIValidator<E extends Entity = Entity>(input: string) {
   }
 }
 
+export function URIMatchValidator<E extends Entity = Entity>(pattern: RegExp) {
+  return async (input: any) => await URIValidator<E>(MatchValidator(pattern)(input))
+}
+
 export function NumberValidator(input: any) {
   if (typeof input === `number`) {
     return input
