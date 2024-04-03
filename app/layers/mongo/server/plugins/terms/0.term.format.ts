@@ -1,20 +1,13 @@
-import { type Term as TermEntity } from "@unb-libraries/nuxt-layer-entity"
-import { type Term as TermDocument } from "../../documentTypes/Term"
+import { type Term } from "@unb-libraries/nuxt-layer-entity"
 
-export default defineEntityFormatter<TermEntity, TermDocument>(Term, (doc) => {
-  const { _id, label, slug, created, updated, __type } = doc
-  const render = {
+export default defineMongooseFormatter(Term, (doc): Partial<Term> => {
+  const { _id, label, slug, type, created, updated } = doc
+  return {
     id: `${_id}`,
     label,
     slug,
+    type: type ? `term` : undefined,
     created: created ? new Date(created).toISOString() : undefined,
     updated: updated ? new Date(updated).toISOString() : undefined,
   }
-
-  return !__type
-    ? {
-        ...render,
-        type: `term`,
-      }
-    : render
 })

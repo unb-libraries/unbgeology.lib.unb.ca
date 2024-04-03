@@ -9,6 +9,7 @@ export interface DocumentUpdate<D = any> {
 
 export interface DocumentBase {
   readonly _id: ObjectId
+  readonly __type: string
   readonly created: number
   readonly updated: number
 }

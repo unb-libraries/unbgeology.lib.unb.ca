@@ -1,8 +1,11 @@
-import { type Image as ImageEntity } from "@unb-libraries/nuxt-layer-entity"
-import FileBase from "../../documentTypes/FileBase"
-import ImageFile, { type Image as ImageDocument } from "../../documentTypes/Image"
+import { type Image } from "@unb-libraries/nuxt-layer-entity"
+import ImageFile from "../../documentTypes/Image"
 
-export default defineEntityFormatter<ImageEntity, ImageDocument>(FileBase, (doc) => {
+export default defineMongooseFormatter(ImageFile, (doc): Partial<Image> => {
   const { title, alt, type } = doc
-  return type === ImageFile.fullName ? { title, alt, type: `image` } : {}
+  return {
+    title,
+    alt,
+    type: type ? `image` : undefined,
+  }
 })

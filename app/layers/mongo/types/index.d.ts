@@ -1,4 +1,4 @@
-import type { EntityJSON, EntityJSONBody, Migration, MigrationItem, MigrationStatus } from "@unb-libraries/nuxt-layer-entity"
+import { H3Event } from "h3"
 import type { DocumentQuery, EntityDocument } from "./entity"
 import type { SourceItem } from "./migrate"
 import type Mongoose from "mongoose"
@@ -54,8 +54,7 @@ export interface MigrateOptions {
   chunkSize?: number
 }
 
-export interface ModelHookOptions {
-  modelName: string
+export interface RenderOptions {
   event: H3Event
 }
 
@@ -79,8 +78,8 @@ export declare module "nitropack" {
     "migrate:rollback": (migration: Migration) => void | Promise<void>
     "migrate:pause": (migration: Migration) => void | Promise<void>
     
-    // Document hooks
-    "document:format": (item: any | any[], options: ModelHookOptions) => any
+    // Entity hooks
+    "entity:render": (item: any | any[], options: RenderOptions) => any
     "body:read": (payload: any | any[], options: PayloadHookOptions) => any
   }
 }

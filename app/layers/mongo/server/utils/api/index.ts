@@ -3,7 +3,7 @@ import { type H3Event } from "h3"
 import { type QueryOptions, type Content, type Entity, type EntityList, type Payload, type DocumentFindQuery } from "../../../types/entity"
 import { type FormatOptions, type FormatManyOptions } from "../../../types/api"
 import { type DocumentBase, type DocumentModel } from "../../../types/schema"
-import type { PayloadHookOptions } from "~/layers/mongo/types"
+import type { RenderOptions, PayloadHookOptions } from "~/layers/mongo/types"
 
 function initMongooseContext(event: H3Event) {
   event.context.mongoose = {
@@ -163,11 +163,11 @@ export async function readBodyListOr400<T extends object = object, P extends `cr
   return await Promise.all(payloads.map(payload => readOr400<T, P>(event, modelName, payload, options))) as T[]
 }
 
-export function defineEntityFormatter<C extends Content = Content, T = any>(Model: DocumentModel<any>, formatter: (item: T, options: ModelHookOptions) => Partial<C> | Promise<Partial<C>>, options?: { validate?: (content: T, options: ModelHookOptions) => boolean }) {
-  const validate = options?.validate || ((content: T, options: ModelHookOptions): boolean => options.modelName === Model.fullName)
+export function defineEntityFormatter<T = any, C extends Content = Content>(formatter: (item: T, options: RenderOptions) => Partial<C> | Promise<Partial<C>>, options?: { validate?: (content: T, options: RenderOptions) => boolean }) {
+  const validate = options?.validate
   return defineNitroPlugin((nitro) => {
-    nitro.hooks.hook(`document:format`, (item: T, options) => {
-      if (validate(item, options)) {
+    nitro.hooks.hook(`entity:render`, (item: T, options) => {
+      if (!validate || validate(item, options)) {
         return formatter(item, options)
       }
       return {}
@@ -175,9 +175,14 @@ export function defineEntityFormatter<C extends Content = Content, T = any>(Mode
   })
 }
 
+export function defineMongooseFormatter<D extends DocumentBase, T extends Content>(Model: DocumentModel<D>, formatter: (doc: D, options: RenderOptions) => Partial<T> | Promise<Partial<T>>, options?: { validate?: (content: D, options: RenderOptions) => boolean }) {
+  const validate = options?.validate || ((document: D, options: RenderOptions): boolean => document.__type?.startsWith(Model.fullName))
+  return defineEntityFormatter<D, T>(formatter, { validate })
+}
+
 export async function render<C extends Content = Content, D = any>(event: H3Event, data: D, options?: Partial<FormatOptions<C>>): Promise<Entity<C>> {
   const nitro = useNitroApp()
-  const formattedContent = await nitro.hooks.callHookParallel(`document:format`, data, { modelName: getMongooseModel(event)?.mongoose.model.modelName, event })
+  const formattedContent = await nitro.hooks.callHookParallel(`entity:render`, data, { event })
   const entity = Object
     .entries(formattedContent.reduce((content, formatted) => ({ ...content, ...formatted }), {}))
     .filter(([_, value]) => (value !== undefined))
