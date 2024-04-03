@@ -279,6 +279,10 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
       return this
     },
     join<D extends IDocumentBase = IDocumentBase>(field: string, model: DocumentModel<D>, options?: { cardinality: `one` | `many` }) {
+      if (joins.find(({ localField }) => localField === field)) {
+        return this
+      }
+
       joins.push({
         from: model.mongoose.model.collection.collectionName,
         localField: field,
