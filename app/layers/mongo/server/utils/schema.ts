@@ -372,6 +372,7 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
         const { documents, total } = result
 
         const assign = (document: D) => Object.assign(document, {
+          __type: document.__type ?? documentType.fullName,
           update: async (body: Partial<Mutable<D>>) => {
             return await updateDocument(documentType, `${document._id}`, body)
           },
