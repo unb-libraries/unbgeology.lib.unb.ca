@@ -1,7 +1,14 @@
-import { type Unit, Division } from "types/vocabularies/geochronology"
-import { type EntityDocument, EntityFieldTypes } from "layers/mongo/types/entity"
+import { EntityFieldTypes } from "layers/mongo/types/entity"
+import { type Unit, Status, Division } from "types/geochronology"
+import type { TaxonomyTerm } from "~/layers/mongo/server/documentTypes/TaxonomyTerm"
 
-export default defineTaxonomy<EntityDocument<Unit>>(`Unit`, {
+type GeochronologicUnit = Omit<Unit, keyof TaxonomyTerm> & TaxonomyTerm
+const State = Stateful({
+  values: Status,
+  default: Status.DRAFT,
+})
+
+export default defineDocumentModel(`GeochronologicUnit`, defineDocumentSchema<GeochronologicUnit>({
   division: {
     type: EntityFieldTypes.String,
     enum: Division,
@@ -30,4 +37,4 @@ export default defineTaxonomy<EntityDocument<Unit>>(`Unit`, {
     type: EntityFieldTypes.String,
     required: false,
   },
-}, { domain: `Geochronology` })
+}).mixin(State)())

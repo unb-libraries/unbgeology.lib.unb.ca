@@ -1,4 +1,10 @@
-import { type TaxonomyTerm } from "@unb-libraries/nuxt-layer-entity"
+import { type Stateful, type TaxonomyTerm } from "@unb-libraries/nuxt-layer-entity"
+
+export enum Status {
+  MIGRATED = 1,
+  DRAFT = 2,
+  PUBLISHED = 4,
+}
 
 export enum Division {
   AGE = `age`,
@@ -8,7 +14,7 @@ export enum Division {
   EON = `eon`,
 }
 
-export interface Unit extends TaxonomyTerm {
+export interface Unit extends TaxonomyTerm, Stateful<typeof Status> {
   division: Division
   boundaries: {
     lower: number
