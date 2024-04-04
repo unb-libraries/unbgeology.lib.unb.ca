@@ -1,8 +1,7 @@
 import { FileState } from "@unb-libraries/nuxt-layer-entity"
 import { EnumValidator as Enum, NumberValidator as Number, requireIf, StringValidator as String } from "../../utils/api/payload"
-import { type File } from "../../documentTypes/FileBase"
 
-export default defineBodyReader<File>(FileBase, async (body, options) => {
+export default defineMongooseReader(FileBase, async (body, options) => {
   const create = options?.op === `create`
   const { status, ...validatedBody } = await validateBody(body, {
     filename: requireIf(create, String),

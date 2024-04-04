@@ -15,6 +15,7 @@ export default defineEventHandler(async (event) => {
           filesize: size,
           uploadName: originalFilename,
           mimetype,
+          type: mimetype,
         }
       })
       .map((file, index) => {

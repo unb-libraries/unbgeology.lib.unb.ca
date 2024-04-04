@@ -3,7 +3,7 @@ import { type H3Event } from "h3"
 import { type QueryOptions, type Content, type Entity, type EntityList, type Payload, type DocumentFindQuery } from "../../../types/entity"
 import { type FormatOptions, type FormatManyOptions } from "../../../types/api"
 import { type DocumentBase, type DocumentModel } from "../../../types/schema"
-import type { RenderOptions, PayloadHookOptions } from "~/layers/mongo/types"
+import type { RenderOptions, PayloadReadOptions } from "~/layers/mongo/types"
 
 function initMongooseContext(event: H3Event) {
   event.context.mongoose = {
@@ -110,24 +110,45 @@ interface BodyReadOptions<T extends `create` | `update`> {
   op: T
 }
 
-export function defineBodyReader<T extends object = object, P extends `create` | `update` = `create` | `update`>(Model: DocumentModel<any>, transformer: (body: any, options?: Partial<BodyReadOptions<P>>) => Payload<T, P> | Promise<Payload<T, P>>, options?: { validate?: (payload: any, options: PayloadHookOptions) => boolean }) {
-  const validate = options?.validate || ((payload: any, options: PayloadHookOptions): boolean => options.modelName === Model.fullName)
+export function defineBodyReader<T extends object = object, P extends `create` | `update` = `create` | `update`>(reader: (body: any, options?: Partial<BodyReadOptions<P>>) => Payload<T, P> | Promise<Payload<T, P>>, options?: { validate?: (payload: any, options: PayloadReadOptions) => boolean }) {
+  const validate = options?.validate
   return defineNitroPlugin((nitro) => {
     nitro.hooks.hook(`body:read`, async (payload, options) => {
       const { op } = options
-      if (validate(payload, options)) {
-        return await transformer(payload, { op } as BodyReadOptions<P>)
+      if (!validate || validate(payload, options)) {
+        return await reader(payload, { op } as BodyReadOptions<P>)
       }
       return {}
     })
   })
 }
 
+export function defineMongooseReader<D extends DocumentBase, P extends `create` | `update`>(Model: DocumentModel<D>, reader: (body: any, options?: Partial<BodyReadOptions<P>>) => Payload<Omit<D, keyof DocumentBase>, P> | Promise<Payload<Omit<D, keyof DocumentBase>, P>>, options?: { validate?: (payload: any, options: PayloadReadOptions & { modelName: string }) => boolean }) {
+  const validate = options?.validate || expectModel(Model.fullName)
+  return defineBodyReader<Omit<D, keyof DocumentBase>, P>(reader, { validate: (payload, options) => validate(payload, { ...options, modelName: Model.fullName }) })
+}
+
+export function expectModel(modelName: string, options?: Partial<{ strict: boolean }>) {
+  return (payload: any, readOptions: PayloadReadOptions & { modelName: string }): boolean => {
+    const eventModel = getMongooseModel(readOptions.event)
+    return eventModel
+      ? options?.strict
+        ? modelName === eventModel.fullName
+        : modelName.startsWith(eventModel.fullName)
+      : false
+  }
+}
+
+export function expectDistriminatorType(type: string | RegExp) {
+  return (payload: any, options: PayloadReadOptions & { modelName: string }): boolean => {
+    return expectModel(options.modelName)(payload, options) && (typeof type === `string` ? payload.type === type : type.test(payload.type))
+  }
+}
+
 async function readOr400<T extends object = object, P extends `create` | `update` = `create`>(event: H3Event, modelName: string, payload: any, options?: Partial<BodyReadOptions<P>>): Promise<Payload<T, P> | Payload<T, P>[]> {
   const nitro = useNitroApp()
   try {
     const bodies = await nitro.hooks.callHookParallel(`body:read`, payload, {
-      modelName,
       op: `create`,
       event,
       ...options,

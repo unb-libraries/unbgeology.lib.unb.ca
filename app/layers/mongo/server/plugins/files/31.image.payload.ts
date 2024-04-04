@@ -1,21 +1,19 @@
+import ImageFile from "../../documentTypes/Image"
 import { requireIf, StringValidator as String, validateBody } from "../../utils/api/payload"
-import { type Payload } from "../../../types/entity"
-import ImageFile, { type Image } from "../../documentTypes/Image"
 
-export default defineBodyReader<Payload<Image>>(FileBase, async (body, options) => {
+const options = { validate: expectDistriminatorType(/[a-z]{3,}\/image/) }
+
+export default defineMongooseReader(ImageFile, async (body, options) => {
   const create = options?.op === `create`
-  const { mimetype, title, alt } = await validateBody(body, {
+  const { title, alt } = await validateBody(body, {
     mimetype: requireIf(create, String),
     title: optional(String),
     alt: optional(String),
   })
 
-  const type = mimetype?.split(`/`)[0]
-  return type === `image`
-    ? {
-        type: ImageFile.fullName,
-        title,
-        alt,
-      }
-    : {}
-})
+  return {
+    type: ImageFile.fullName,
+    title,
+    alt,
+  }
+}, options)

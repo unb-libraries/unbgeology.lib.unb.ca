@@ -58,7 +58,8 @@ export interface RenderOptions {
   event: H3Event
 }
 
-export interface PayloadHookOptions extends ModelHookOptions {
+export interface PayloadReadOptions {
+  event: H3Event
   op: `create` | `update`
 }
 
@@ -80,7 +81,7 @@ export declare module "nitropack" {
     
     // Entity hooks
     "entity:render": (item: any | any[], options: RenderOptions) => any
-    "body:read": (payload: any | any[], options: PayloadHookOptions) => any
+    "body:read": (payload: any | any[], options: PayloadReadOptions) => any
   }
 }
 

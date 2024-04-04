@@ -427,3 +427,7 @@ async function deleteDocument(Model: DocumentModel<any>, id: string) {
   const document = await findDocumentByID(Model, id)
   await document?.deleteOne()
 }
+
+export function parseObjectID(id: string) {
+  return new Types.ObjectId(id) as unknown as ObjectId
+}
