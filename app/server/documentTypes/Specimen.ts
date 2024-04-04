@@ -1,10 +1,10 @@
 import { EntityFieldTypes } from "layers/mongo/types/entity"
 import { Immeasurabibility, MeasurementType, ObjectIDType, Status } from "types/specimen"
-import type { Entity, Stateful } from "@unb-libraries/nuxt-layer-entity"
+import type { Entity, Stateful as IStateful } from "@unb-libraries/nuxt-layer-entity"
 import type { Specimen as SpecimenEntity, Fossil as FossilEntity } from "types/specimen"
 import type { DocumentBase } from "~/layers/mongo/types/schema"
 
-interface Specimen extends Omit<SpecimenEntity, keyof Entity>, Stateful<typeof Status>, DocumentBase {
+interface Specimen extends Omit<SpecimenEntity, keyof Entity>, IStateful<typeof Status>, DocumentBase {
   classificationModel: string
   collectorModel: string
   sponsorModel: string
@@ -86,40 +86,40 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
     }],
     required: optionalForStatus(Status.IMPORTED | Status.DRAFT),
     validate: [
-      [
-        function (measurements: Specimen[`measurements`]) {
+      {
+        validator: function (measurements: Specimen[`measurements`]) {
           return measurements.length > 0
         },
-        `At least one measurement must be provided.`,
-      ],
-      [
-        function (measurements: Specimen[`measurements`]) {
+        message: `At least one measurement must be provided.`,
+      },
+      {
+        validator: function (measurements: Specimen[`measurements`]) {
           return measurements.every(m => m.type === MeasurementType.IMMEASURABLE) || measurements.every(m => m.type !== MeasurementType.IMMEASURABLE)
         },
-        `All measurements must be either measurable or immeasurable.`,
-      ],
-      [
-        function (measurements: Specimen[`measurements`]) {
+        message: `All measurements must be either measurable or immeasurable.`,
+      },
+      {
+        validator: function (measurements: Specimen[`measurements`]) {
           return (measurements.every(m => m.type === MeasurementType.IMMEASURABLE) && measurements.length === 1) || true
         },
-        `Only one immeasurable measurement is allowed.`,
-      ],
-      [
-        function (measurements: Specimen[`measurements`]) {
+        message: `Only one immeasurable measurement is allowed.`,
+      },
+      {
+        validator: function (measurements: Specimen[`measurements`]) {
           return measurements.every(m => m.type === MeasurementType.IMMEASURABLE
             ? m.reason !== undefined && m.dimensions === undefined
             : true)
         },
-        `Immeasurable measurements must provide a reason but no dimensions.`,
-      ],
-      [
-        function (measurements: Specimen[`measurements`]) {
+        message: `Immeasurable measurements must provide a reason but no dimensions.`,
+      },
+      {
+        validator: function (measurements: Specimen[`measurements`]) {
           return measurements.every(m => m.type !== MeasurementType.IMMEASURABLE
             ? m.reason === undefined && m.dimensions !== undefined
             : true)
         },
-        `Measurable measurements must provide dimensions but no reason.`,
-      ],
+        message: `Measurable measurements must provide dimensions but no reason.`,
+      },
     ],
   },
   date: {
@@ -140,19 +140,17 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
       },
     },
     required: false,
-    validate: [
-      [
-        function (date: Specimen[`date`]) {
-          return (date && (date.day === undefined || date.month !== undefined)) || true
-        },
-        `Month must be provided if day is provided.`,
-      ],
-    ],
+    validate: {
+      validator: function (date: Specimen[`date`]) {
+        return (date && (date.day === undefined || date.month !== undefined)) || true
+      },
+      message: `Month must be provided if day is provided.`,
+    },
   },
   age: {
     relative: {
       type: EntityFieldTypes.ObjectId,
-      ref: Geochronology,
+      ref: Geochronology.mongoose.model,
       required: optionalForStatus(Status.IMPORTED | Status.DRAFT),
     },
     numeric: {
@@ -250,26 +248,22 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
         email: {
           type: EntityFieldTypes.String,
           required: true,
-          validate: [
-            {
-              validator: function (email: string) {
-                return email.match(/^.+@.+\..+$/)
-              },
-              message: `Invalid email address`,
+          validate: {
+            validator: function (email: string) {
+              return email.match(/^.+@.+\..+$/)
             },
-          ],
+            message: `Invalid email address`,
+          },
         },
         phone: {
           type: EntityFieldTypes.String,
           required: true,
-          validate: [
-            {
-              validator: function (phone: string) {
-                return phone.match(/^[\d-() ]+$/)
-              },
-              message: `Invalid phone number`,
+          validate: {
+            validator: function (phone: string) {
+              return phone.match(/^[\d-() ]+$/)
             },
-          ],
+            message: `Invalid phone number`,
+          },
         },
       },
       start: {
@@ -299,30 +293,30 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
       dateOut: EntityFieldTypes.Date,
     }],
     validate: [
-      [
-        function (this: Specimen, storage: Specimen[`storage`]) {
+      {
+        validator: function (this: Specimen, storage: Specimen[`storage`]) {
           return storage.length < 1 || this.status === Status.IMPORTED || !storage.slice(1).some(s => s.dateIn === undefined)
         },
-        `Each entry must provide an incoming date.`,
-      ],
-      [
-        function (this: Specimen, storage: Specimen[`storage`]) {
+        message: `Each entry must provide an incoming date.`,
+      },
+      {
+        validator: function (this: Specimen, storage: Specimen[`storage`]) {
           return storage.length > 0 && storage.reverse().slice(1).some(s => s.dateOut === undefined)
         },
-        `Each but the most recent entry must provide an outgoing date.`,
-      ],
-      [
-        function (this: Specimen, storage: Specimen[`storage`]) {
+        message: `Each but the most recent entry must provide an outgoing date.`,
+      },
+      {
+        validator: function (this: Specimen, storage: Specimen[`storage`]) {
           return storage.every(s => !s.dateOut || s.dateIn <= s.dateOut)
         },
-        `Each entry's incoming date must precede its outgoing date.`,
-      ],
-      [
-        function (this: Specimen, storage: Specimen[`storage`]) {
+        message: `Each entry's incoming date must precede its outgoing date.`,
+      },
+      {
+        validator: function (this: Specimen, storage: Specimen[`storage`]) {
           return storage.slice(1).every((s, i) => s.dateIn >= storage[i].dateOut!)
         },
-        `Each entry's incoming date must follow the previous entry's outgoing date.`,
-      ],
+        message: `Each entry's incoming date must follow the previous entry's outgoing date.`,
+      },
     ],
   },
   publications: {
