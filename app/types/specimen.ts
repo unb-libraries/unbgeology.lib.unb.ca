@@ -1,10 +1,20 @@
-import { type Image, type Entity, type User } from "@unb-libraries/nuxt-layer-entity"
-import { type Person } from "types/affiliation"
-import { type StorageLocation } from "types/vocabularies"
-import { type Unit } from "types/vocabularies/geochronology"
-import { type Classification as FossilClassification, type Portion as FossilPortion } from "types/vocabularies/fossil"
-import { type Classification as MineralClassification, type Portion as MineralPortion } from "types/vocabularies/mineral"
-import { type Classification as RockClassification, type Portion as RockPortion } from "types/vocabularies/rock"
+import type { Image, Entity, User, Term, Stateful } from "@unb-libraries/nuxt-layer-entity"
+import type { Affiliate } from "types/affiliate"
+import type { StorageLocation } from "types/storagelocation"
+import type { Unit } from "types/geochronology"
+import type {
+  Classification,
+  FossilClassification,
+  RockClassification,
+  MineralClassification,
+} from "types/classification"
+
+export enum Status {
+  IMPORTED = 1,
+  DRAFT = 2,
+  REVIEW = 4,
+  PUBLISHED = 8,
+}
 
 export enum Category {
   FOSSIL = `fossil`,
@@ -12,31 +22,26 @@ export enum Category {
   ROCK = `rock`,
 }
 
-export enum Status {
-  DRAFT = 1,
-  IMPORTED = 2,
-  REVIEW = 4,
-  PUBLISHED = 8,
-}
-
 export enum MeasurementType {
-  INDIVIDUAL = 1,
-  SMALLEST = 2,
-  LARGEST = 4,
-  AVERAGE = 8,
-  CONTAINER = 16,
+  INDIVIDUAL = `individual`,
+  SMALLEST = `smallest`,
+  LARGEST = `largest`,
+  AVERAGE = `average`,
+  CONTAINER = `container`,
+  IMMEASURABLE = `immeasurable`,
 }
 
-export enum Unmeasurability {
-  OTHER = 1,
-  TOO_SMALL = 2,
-  TOO_MANY = 4,
-  TOO_FRAGILE = 8,
+export enum Immeasurabibility {
+  OTHER = `other`,
+  TOO_SMALL = `too_small`,
+  TOO_MANY = `too_many`,
+  TOO_FRAGILE = `too_fragile`,
 }
 
 export interface Measurement {
   type: MeasurementType
-  dimensions?: [number, number, number]
+  dimensions: Measurement[`type`] extends MeasurementType.IMMEASURABLE ? undefined : [number, number, number]
+  reason: Measurement[`type`] extends MeasurementType.IMMEASURABLE ? Immeasurabibility : undefined
 }
 
 export interface Place {
@@ -47,17 +52,8 @@ export interface Place {
   description?: string
 }
 
-export enum Composition {
-  SOLID = `solid`,
-}
-
-export enum LoanType {
-  IN = `in`,
-  OUT = `out`,
-}
-
 export interface Loan extends Entity {
-  type: LoanType
+  type: `in` | `out`
   contact: {
     name: string
     affiliation: string
@@ -82,11 +78,10 @@ export interface Publication extends Entity {
 }
 
 export enum ObjectIDType {
-  INTERNAL = 1,
-  EXTERNAL = 2,
-  LEGACY = 4,
+  INTERNAL = `internal`,
+  EXTERNAL = `external`,
+  LEGACY = `legacy`,
 }
-
 export interface ObjectID {
   id: string | number
   type?: ObjectIDType
@@ -94,23 +89,20 @@ export interface ObjectID {
   primary?: boolean
 }
 
-export interface Specimen<C extends Category = Category.FOSSIL | Category.MINERAL | Category.ROCK> extends Entity {
-  category: C
+export interface Specimen extends Entity, Stateful<typeof Status> {
+  type: Category
   objectIDs: ObjectID[]
   slug: string
   description: string
   images: Image[]
-  classification:
-    C extends Category.FOSSIL ? FossilClassification :
-      C extends Category.MINERAL ? MineralClassification :
-        C extends Category.ROCK ? RockClassification :
-          FossilClassification | MineralClassification | RockClassification
-  unmeasureable?: Unmeasurability
-  measurements?: Measurement[]
+  classification: Classification
+  measurements: Measurement[]
   date?: {
-    year: number
-    month?: number
-    day?: number
+    day?: string
+    month?: Specimen[`date`] extends object ?
+      Specimen[`date`][`day`] extends undefined ?
+        undefined | string : string : undefined
+    year: string
   }
   age: {
     relative: Unit
@@ -119,17 +111,26 @@ export interface Specimen<C extends Category = Category.FOSSIL | Category.MINERA
   origin: Place
   pieces: number
   partial: boolean
-  portion?:
-    C extends Category.FOSSIL ? FossilPortion :
-      C extends Category.MINERAL ? MineralPortion :
-        C extends Category.ROCK ? RockPortion :
-          FossilPortion | MineralPortion | RockPortion
-  composition: Composition,
-  collector?: Person,
-  sponsor?: Person,
+  collector?: Affiliate,
+  sponsor?: Affiliate,
   loans?: Loan[],
   storage: Storage[],
   publications?: Publication[],
-  status: Status
   editor: User
+}
+
+export interface Fossil extends Specimen {
+  type: Category.FOSSIL
+  classification: FossilClassification
+  portion: Term
+}
+
+export interface Mineral extends Specimen {
+  type: Category.MINERAL
+  classification: MineralClassification
+}
+
+export interface Rock extends Specimen {
+  type: Category.ROCK
+  classification: RockClassification
 }

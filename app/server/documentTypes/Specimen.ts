@@ -1,24 +1,27 @@
-import { type EntityDocument, EntityFieldTypes } from "layers/mongo/types/entity"
-import { type Specimen as SpecimenBase, Category, Composition, type Storage, type Loan, LoanType, type Publication, Status, Fossil, ObjectIDType, Unmeasurability, MeasurementType } from "types/specimen"
+import { EntityFieldTypes } from "layers/mongo/types/entity"
+import { Immeasurabibility, MeasurementType, ObjectIDType, Status } from "types/specimen"
+import type { Entity, Stateful } from "@unb-libraries/nuxt-layer-entity"
+import type { Specimen as SpecimenEntity, Fossil as FossilEntity } from "types/specimen"
+import type { DocumentBase } from "~/layers/mongo/types/schema"
 
-type SpecimenDocument = EntityDocument<SpecimenBase>
-type StorageDocument = EntityDocument<Storage>
-type LoanDocument = EntityDocument<Loan>
-type PublicationDocument = EntityDocument<Publication>
+interface Specimen extends Omit<SpecimenEntity, keyof Entity>, Stateful<typeof Status>, DocumentBase {
+  classificationModel: string
+  collectorModel: string
+  sponsorModel: string
+}
 
-export type SpecimenDraft = Partial<SpecimenBase> & { status: Status.DRAFT }
+const State = Stateful({
+  values: Status,
+  default: Status.DRAFT,
+})
+
 function optionalForStatus(status: Status) {
-  return function (this: SpecimenBase) {
-    return !(this.status & status)
+  return function (this: Specimen) {
+    return !((this.status as Status) & status)
   }
 }
 
-export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
-  category: {
-    type: EntityFieldTypes.String,
-    enum: Category,
-    required: true,
-  },
+const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>({
   objectIDs: {
     type: [{
       id: {
@@ -36,10 +39,10 @@ export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
       },
     }],
     validate: {
-      validator: function (this: SpecimenDocument) {
-        return this.objectIDs.filter(objectID => objectID.primary).length > 0
+      validator: function (this: Specimen) {
+        return this.objectIDs.filter(objectID => objectID.primary).length === 1
       },
-      message: `No primary object ID provided`,
+      message: `Exactly one primary object ID must be provided.`,
     },
   },
   classification: {
@@ -50,14 +53,11 @@ export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
   classificationModel: {
     type: EntityFieldTypes.String,
     enum: [
-      Fossilogy.Classification.modelName,
-      Mineralogy.Classification.modelName,
-      Petrology.Classification.modelName,
+      Classification.Fossil.mongoose.model.modelName,
+      Classification.Mineral.mongoose.model.modelName,
+      Classification.Rock.mongoose.model.modelName,
     ],
     required: true,
-    default: function (this: SpecimenDocument) {
-      return getClassificationModel(this.category).modelName
-    },
   },
   description: {
     type: EntityFieldTypes.String,
@@ -68,28 +68,60 @@ export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
     ref: `File.Image`,
     required: false,
   }],
-  unmeasureable: {
-    type: EntityFieldTypes.String,
-    enum: Unmeasurability,
-    required: false,
-  },
-  measurements: [{
-    type: {
-      type: EntityFieldTypes.String,
-      enum: MeasurementType,
-      default: MeasurementType.INDIVIDUAL,
-      required: true,
-    },
-    dimensions: {
-      type: [{
-        type: EntityFieldTypes.Number,
-        required: function (this: SpecimenDocument) {
-          return !this.unmeasureable
+  measurements: {
+    type: [{
+      type: {
+        type: EntityFieldTypes.String,
+        enum: MeasurementType,
+        default: MeasurementType.INDIVIDUAL,
+        required: true,
+      },
+      dimensions: {
+        type: [EntityFieldTypes.Number],
+      },
+      reason: {
+        type: EntityFieldTypes.String,
+        enum: Immeasurabibility,
+      },
+    }],
+    required: optionalForStatus(Status.IMPORTED | Status.DRAFT),
+    validate: [
+      [
+        function (measurements: Specimen[`measurements`]) {
+          return measurements.length > 0
         },
-      }],
-      required: false,
-    },
-  }],
+        `At least one measurement must be provided.`,
+      ],
+      [
+        function (measurements: Specimen[`measurements`]) {
+          return measurements.every(m => m.type === MeasurementType.IMMEASURABLE) || measurements.every(m => m.type !== MeasurementType.IMMEASURABLE)
+        },
+        `All measurements must be either measurable or immeasurable.`,
+      ],
+      [
+        function (measurements: Specimen[`measurements`]) {
+          return (measurements.every(m => m.type === MeasurementType.IMMEASURABLE) && measurements.length === 1) || true
+        },
+        `Only one immeasurable measurement is allowed.`,
+      ],
+      [
+        function (measurements: Specimen[`measurements`]) {
+          return measurements.every(m => m.type === MeasurementType.IMMEASURABLE
+            ? m.reason !== undefined && m.dimensions === undefined
+            : true)
+        },
+        `Immeasurable measurements must provide a reason but no dimensions.`,
+      ],
+      [
+        function (measurements: Specimen[`measurements`]) {
+          return measurements.every(m => m.type !== MeasurementType.IMMEASURABLE
+            ? m.reason === undefined && m.dimensions !== undefined
+            : true)
+        },
+        `Measurable measurements must provide dimensions but no reason.`,
+      ],
+    ],
+  },
   date: {
     type: {
       year: {
@@ -98,7 +130,9 @@ export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
       },
       month: {
         type: EntityFieldTypes.Number,
-        required: false,
+        required(this: Specimen) {
+          return this.date?.day !== undefined
+        },
       },
       day: {
         type: EntityFieldTypes.Number,
@@ -106,6 +140,14 @@ export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
       },
     },
     required: false,
+    validate: [
+      [
+        function (date: Specimen[`date`]) {
+          return (date && (date.day === undefined || date.month !== undefined)) || true
+        },
+        `Month must be provided if day is provided.`,
+      ],
+    ],
   },
   age: {
     relative: {
@@ -122,15 +164,20 @@ export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
     type: {
       latitude: {
         type: EntityFieldTypes.Number,
-        required: optionalForStatus(Status.IMPORTED | Status.DRAFT),
+        min: -90,
+        max: 90,
+        required: optionalForStatus(Status.IMPORTED),
       },
       longitude: {
         type: EntityFieldTypes.Number,
-        required: optionalForStatus(Status.IMPORTED | Status.DRAFT),
+        min: -180,
+        max: 180,
+        required: optionalForStatus(Status.IMPORTED),
       },
       accuracy: {
         type: EntityFieldTypes.Number,
         required: false,
+        min: 0,
         default: 0,
       },
       name: {
@@ -144,51 +191,51 @@ export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
     },
     required: optionalForStatus(Status.IMPORTED | Status.DRAFT),
   },
-  portion: {
-    type: EntityFieldTypes.ObjectId,
-    refPath: `portionModel`,
-    required: false,
-  },
-  portionModel: {
-    type: EntityFieldTypes.String,
-    enum: [
-      Fossilogy.Portion.modelName,
-      Mineralogy.Portion.modelName,
-      Petrology.Portion.modelName,
-    ],
-    required: false,
-    default: function (this: SpecimenDocument) {
-      return getPortionModel(this.category).modelName
-    },
-  },
   pieces: {
     type: EntityFieldTypes.Number,
+    min: 1,
     required: optionalForStatus(Status.IMPORTED | Status.DRAFT),
   },
   partial: {
     type: EntityFieldTypes.Boolean,
     required: optionalForStatus(Status.IMPORTED | Status.DRAFT),
-  },
-  composition: {
-    type: EntityFieldTypes.String,
-    enum: Composition,
-    required: optionalForStatus(Status.IMPORTED | Status.DRAFT),
+    default: false,
   },
   collector: {
     type: EntityFieldTypes.ObjectId,
-    ref: Person,
+    refPath: `collectorModel`,
     required: false,
+  },
+  collectorModel: {
+    type: EntityFieldTypes.String,
+    enum: [
+      Affiliate.Person.mongoose.model.modelName,
+      Affiliate.Organization.mongoose.model.modelName,
+    ],
+    required(this: Specimen) {
+      return this.collector !== undefined
+    },
   },
   sponsor: {
     type: EntityFieldTypes.ObjectId,
-    ref: Person,
+    refPath: `sponsorModel`,
     required: false,
   },
+  sponsorModel: {
+    type: EntityFieldTypes.String,
+    enum: [
+      Affiliate.Person.mongoose.model.modelName,
+      Affiliate.Organization.mongoose.model.modelName,
+    ],
+    required(this: Specimen) {
+      return this.sponsor !== undefined
+    },
+  },
   loans: {
-    type: [defineEmbeddedDocumentType<LoanDocument>({
+    type: [{
       type: {
         type: EntityFieldTypes.String,
-        enum: LoanType,
+        enum: [`in`, `out`],
         required: true,
       },
       contact: {
@@ -203,10 +250,26 @@ export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
         email: {
           type: EntityFieldTypes.String,
           required: true,
+          validate: [
+            {
+              validator: function (email: string) {
+                return email.match(/^.+@.+\..+$/)
+              },
+              message: `Invalid email address`,
+            },
+          ],
         },
         phone: {
           type: EntityFieldTypes.String,
           required: true,
+          validate: [
+            {
+              validator: function (phone: string) {
+                return phone.match(/^[\d-() ]+$/)
+              },
+              message: `Invalid phone number`,
+            },
+          ],
         },
       },
       start: {
@@ -217,27 +280,53 @@ export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
         type: EntityFieldTypes.Date,
         required: true,
       },
-    })],
+    }],
+    validate: [
+      function (loans: Specimen[`loans`]) {
+        return !loans || loans.every(loan => loan.start <= loan.end)
+      },
+      `Loan start date must precede end date.`,
+    ],
   },
   storage: {
-    type: [defineEmbeddedDocumentType<StorageDocument>({
+    type: [{
       location: {
         type: EntityFieldTypes.ObjectId,
-        ref: StorageLocation,
+        ref: StorageLocation.mongoose.model,
         required: true,
       },
-      dateIn: {
-        type: EntityFieldTypes.Date,
-        required: true,
-      },
-      dateOut: {
-        type: EntityFieldTypes.Date,
-        required: false,
-      },
-    })],
+      dateIn: EntityFieldTypes.Date,
+      dateOut: EntityFieldTypes.Date,
+    }],
+    validate: [
+      [
+        function (this: Specimen, storage: Specimen[`storage`]) {
+          return storage.length < 1 || this.status === Status.IMPORTED || !storage.slice(1).some(s => s.dateIn === undefined)
+        },
+        `Each entry must provide an incoming date.`,
+      ],
+      [
+        function (this: Specimen, storage: Specimen[`storage`]) {
+          return storage.length > 0 && storage.reverse().slice(1).some(s => s.dateOut === undefined)
+        },
+        `Each but the most recent entry must provide an outgoing date.`,
+      ],
+      [
+        function (this: Specimen, storage: Specimen[`storage`]) {
+          return storage.every(s => !s.dateOut || s.dateIn <= s.dateOut)
+        },
+        `Each entry's incoming date must precede its outgoing date.`,
+      ],
+      [
+        function (this: Specimen, storage: Specimen[`storage`]) {
+          return storage.slice(1).every((s, i) => s.dateIn >= storage[i].dateOut!)
+        },
+        `Each entry's incoming date must follow the previous entry's outgoing date.`,
+      ],
+    ],
   },
   publications: {
-    type: [defineEmbeddedDocumentType<PublicationDocument>({
+    type: [{
       citation: {
         type: EntityFieldTypes.String,
         required: true,
@@ -250,7 +339,7 @@ export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
         type: EntityFieldTypes.String,
         required: false,
       },
-    })],
+    }],
   },
   status: {
     type: EntityFieldTypes.Number,
@@ -260,35 +349,30 @@ export const Specimen = defineDocumentType<SpecimenDocument>(`Specimen`, {
   },
   editor: {
     type: EntityFieldTypes.ObjectId,
-    ref: User,
-    required: false,
+    ref: User.mongoose.model,
+    required: optionalForStatus(Status.IMPORTED),
   },
-}, {
-  slug: (specimen: SpecimenDocument) => {
-    const objectID = specimen.objectIDs.find(objectID => objectID.primary)
-    return objectID?.id
-  },
-  virtuals: {
-    uri: {
-      get(this: SpecimenDocument) {
-        return `/api/specimens/${this.slug}`
-      },
-    },
-  },
-  toJSON: {
-    transform(doc, ret) {
-      if (ret.origin) {
-        delete ret.origin._id
-        delete ret.origin.id
-      }
-      if (ret.dimensions) {
-        delete ret.dimensions._id
-        delete ret.dimensions.id
-      }
-      ret.id = doc.slug
+}).mixin(State)())
 
-      delete ret.classificationModel
-      delete ret.portionModel
-    },
+const Fossil = defineDocumentModel(`Fossil`, defineDocumentSchema<Omit<FossilEntity, `type` | `classification` | keyof Entity> & Specimen>({
+  portion: {
+    type: EntityFieldTypes.ObjectId,
+    ref: FossilPortion.mongoose.model,
+    required: optionalForStatus(Status.IMPORTED | Status.DRAFT),
   },
-})
+})(), Specimen)
+
+const Mineral = defineDocumentModel(`Mineral`, defineDocumentSchema({
+
+})(), Specimen)
+
+const Rock = defineDocumentModel(`Rock`, defineDocumentSchema({
+
+})(), Specimen)
+
+export default {
+  Specimen,
+  Fossil,
+  Mineral,
+  Rock,
+}
