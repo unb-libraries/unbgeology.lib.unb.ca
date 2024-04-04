@@ -10,9 +10,10 @@ export default defineMongooseMiddleware(Term, (event, query) => {
     `updated`,
   ]
 
+  const project = (field: string) => field === `type` ? `__type` : field
   query.select(`_id`, ...(select.length > 0
-    ? select.filter(field => defaultFields.includes(field))
-    : defaultFields))
+    ? select.filter(field => defaultFields.includes(field)).map(project)
+    : defaultFields.map(project)))
 
   query.sort(...sort.filter(([field]) => defaultFields.includes(field)))
 
