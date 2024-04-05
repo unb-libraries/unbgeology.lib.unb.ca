@@ -1,9 +1,9 @@
 export default defineEventHandler(async (event) => {
   const { page, pageSize } = getQueryOptions(event)
-  const handlers = getMongooseMiddleware(event)
 
-  await Term.delete()
-    .use(...handlers)
+  const query = Term.delete()
+  await useEventQuery(event, query)
+  await query
     .paginate(page, pageSize)
 
   return sendNoContent(event)

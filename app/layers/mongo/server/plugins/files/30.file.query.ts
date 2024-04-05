@@ -1,7 +1,7 @@
 import { FileState } from "@unb-libraries/nuxt-layer-entity"
 import { Date, Numeric, ObjectID, String } from "../../utils/api/filter"
 
-export default defineMongooseMiddleware(FileBase, (event, query) => {
+export default defineMongooseEventQueryHandler(FileBase, (event, query) => {
   const { select, sort, filter } = getQueryOptions(event)
   const defaultFields = [
     `filesize`,

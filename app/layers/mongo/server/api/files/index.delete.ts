@@ -2,11 +2,11 @@ import { removeFile } from "../../utils/api/files/fs"
 
 export default defineEventHandler(async (event) => {
   const { page, pageSize } = getQueryOptions(event)
-  const handlers = getMongooseMiddleware(event)
 
-  const { documents: files } = await FileBase.find()
+  const query = FileBase.find()
+  await useEventQuery(event, query)
+  const { documents: files } = await query
     .select(`filepath`)
-    .use(...handlers)
     .paginate(page, pageSize)
 
   try {

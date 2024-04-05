@@ -1,6 +1,6 @@
 import { FilterOperator } from "@unb-libraries/nuxt-layer-entity"
 import { type H3Event } from "h3"
-import { type QueryOptions, type Content, type Entity, type EntityList, type Payload, type DocumentFindQuery } from "../../../types/entity"
+import { type QueryOptions, type Content, type Entity, type EntityList, type Payload, type DocumentQueryMethod, type DocumentQuery } from "../../../types/entity"
 import { type FormatOptions, type FormatManyOptions } from "../../../types/api"
 import { type DocumentBase, type DocumentModel } from "../../../types/schema"
 import type { RenderOptions, PayloadReadOptions } from "~/layers/mongo/types"
@@ -9,16 +9,6 @@ function initMongooseContext(event: H3Event) {
   event.context.mongoose = {
     model: undefined,
   }
-}
-
-export function defineMongooseHandler<D extends DocumentBase = DocumentBase>(model: DocumentModel<D>, handler: Parameters<typeof defineEventHandler>[0]) {
-  return defineEventHandler((event) => {
-    if (!event.context.mongoose) {
-      initMongooseContext(event)
-    }
-    event.context.mongoose.model = model
-    return handler(event)
-  })
 }
 
 export function setModel(event: H3Event, model: DocumentModel<any>) {
@@ -48,12 +38,6 @@ export function setEntityQueryOptions(event: H3Event, options: Partial<{ filter:
   event.context.query = {
     ...queryOptions,
     ...options,
-  }
-}
-
-export function defineDocumentQueryHandler<TOptions>(handler: (query: DocumentQuery, options: TOptions) => void | Promise<void>) {
-  return function (query: DocumentQuery, options: TOptions) {
-    handler(query, options)
   }
 }
 
@@ -92,20 +76,18 @@ export function getQueryOptions(event: H3Event): QueryOptions {
   }
 }
 
-export function getMongooseMiddleware<D extends DocumentBase = DocumentBase>(event: H3Event): ((query: DocumentFindQuery<D>) => void)[] {
-  return event.context.mongoose?.handlers ?? []
-}
-
-export function defineMongooseMiddleware<D extends DocumentBase = DocumentBase>(Model: DocumentModel<D>, handler: (event: H3Event, query: DocumentFindQuery<D>) => void) {
-  return defineEventHandler((event) => {
-    if (getMongooseModel(event)?.mongoose.model.modelName === Model.mongoose.model.modelName) {
-      if (!event.context.mongoose.handlers) {
-        event.context.mongoose.handlers = []
+export function defineMongooseEventQueryHandler<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = DocumentQueryMethod>(Model: DocumentModel<D>, handler: (event: H3Event, query: DocumentQuery<D, M>) => void | Promise<void>) {
+  return defineNitroPlugin((nitro) => {
+    nitro.hooks.hook(`mongoose:query:event`, async (query, context) => {
+      const { event } = context
+      const eventModel = getMongooseModel(event)
+      if (eventModel && Model.fullName.startsWith(eventModel.fullName)) {
+        return await handler(event, query as DocumentQuery<D, M>)
       }
-      event.context.mongoose.handlers.push((query: DocumentFindQuery<D>) => handler(event, query))
-    }
+    })
   })
 }
+
 interface BodyReadOptions<T extends `create` | `update`> {
   op: T
 }

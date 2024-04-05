@@ -1,7 +1,7 @@
 import { Date, ObjectID, String } from "../../utils/api/filter"
 import { type Term } from "../../documentTypes/Term"
 
-export default defineMongooseMiddleware(Term, (event, query) => {
+export default defineMongooseEventQueryHandler(Term, (event, query) => {
   const { filter, select, sort } = getQueryOptions(event)
 
   if (filter.length < 1 || select.length < 1 || filter.filter(([field]) => field.startsWith(`parent`)).length > 0 || select.filter(field => field.startsWith(`parent`)).length > 0) {

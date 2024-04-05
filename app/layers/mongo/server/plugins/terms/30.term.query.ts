@@ -1,6 +1,6 @@
 import { Date, ObjectID, String } from "../../utils/api/filter"
 
-export default defineMongooseMiddleware(Term, (event, query) => {
+export default defineMongooseEventQueryHandler(Term, (event, query) => {
   const { filter, select, sort } = getQueryOptions(event)
   const defaultFields = [
     `label`,

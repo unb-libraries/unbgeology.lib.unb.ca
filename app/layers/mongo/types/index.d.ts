@@ -66,6 +66,7 @@ export interface PayloadReadOptions {
 export declare module "nitropack" {
   interface NitroRuntimeHooks {
     "mongoose:init": (mongoose: typeof Mongoose) => void | Promise<void>
+    "mongoose:query:event": <D, M>(query: DocumentQuery<D, M>, context: { event: H3Event }) => void | Promise<void>
     
     // migrate hooks
     migrate: (migrationID: string) => void | Promise<void>

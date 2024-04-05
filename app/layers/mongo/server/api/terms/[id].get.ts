@@ -1,8 +1,9 @@
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
-  const handlers = getMongooseMiddleware(event)
-  const term = await Term.findByID(id)
-    .use(...handlers)
+
+  const query = Term.findByID(id)
+  await useEventQuery(event, query)
+  const term = await query
 
   return renderOr404(event, term)
 })

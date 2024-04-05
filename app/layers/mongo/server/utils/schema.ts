@@ -1,5 +1,5 @@
 import { defu } from "defu"
-import { Schema, type SchemaDefinition, model as defineModel, Types, type FilterQuery } from "mongoose"
+import { type H3Event } from "h3"
 import type { DocumentSchema, AlterSchemaHandler, DocumentBase as IDocumentBase, DocumentModel, DocumentSchemaOptions } from "../../types/schema"
 import { type DocumentFindQuery, type DocumentQueryMethod, type DocumentFindQueryResult, type DocumentUpdateQueryResult, type DocumentDeleteQueryResult, type Join, type DocumentQueryResultItem } from "../../types/entity"
 import { type Mutable } from "../../types"
@@ -396,6 +396,15 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
   }
 
   return query
+}
+
+export async function useEventQuery<D extends IDocumentBase = IDocumentBase, M extends DocumentQueryMethod = DocumentQueryMethod>(event: H3Event, query: DocumentQuery<D, M>) {
+  const nitro = useNitroApp()
+  if (!nitro) {
+    throw new Error(`Nitro app not found`)
+  }
+
+  await nitro.hooks.callHook(`mongoose:query:event`, query, { event })
 }
 
 function findDocument<D extends IDocumentBase = IDocumentBase>(Model: DocumentModel<D>, filter: FilterQuery<D>) {

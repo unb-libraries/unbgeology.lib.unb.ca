@@ -1,4 +1,4 @@
-export default defineMongooseMiddleware(FileBase, (event, query) => {
+export default defineMongooseEventQueryHandler(FileBase, (event, query) => {
   const { select, sort } = getQueryOptions(event)
   const defaultFields = [
     `title`,
