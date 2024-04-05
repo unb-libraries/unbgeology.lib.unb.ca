@@ -1,6 +1,7 @@
 import Numeric from "./numeric"
 import { type QueryCondition } from "."
-import type { DocumentQuery } from "~/layers/mongo/types/entity"
+import { type DocumentBase } from "~/layers/mongo/types/schema"
+import { type FilterableQuery } from "~/layers/mongo/types/entity"
 
 const toMsString = (value: QueryCondition[1]) => {
   try {
@@ -11,19 +12,19 @@ const toMsString = (value: QueryCondition[1]) => {
   }
 }
 
-const fn = (fn: (field: string, condition: QueryCondition) => (query: DocumentQuery) => void) => (field: string, condition: QueryCondition) => {
+const fn = <D extends DocumentBase = DocumentBase>(fn: (field: string, condition: QueryCondition) => (query: FilterableQuery<D>) => void) => (field: string, condition: QueryCondition) => {
   const [op, value] = condition
   const ms = toMsString(value)
   return fn(field, [op, ms])
 }
 
-const DateFilter = (field: string, condition: QueryCondition) => fn(Numeric)(field, condition)
-const Range = (field: string, condition: QueryCondition) => fn(Numeric.Range)(field, condition)
-const RangeWithin = (field: string, condition: QueryCondition) => fn(Numeric.Range.Within)(field, condition)
-const RangeOutside = (field: string, condition: QueryCondition) => fn(Numeric.Range.Outside)(field, condition)
-const Greater = (field: string, condition: QueryCondition) => fn(Numeric.Greater)(field, condition)
-const Less = (field: string, condition: QueryCondition) => fn(Numeric.Less)(field, condition)
-const NoRange = (field: string, condition: QueryCondition) => fn(Numeric.NoRange)(field, condition)
+const DateFilter = <D extends DocumentBase = DocumentBase>(field: string, condition: QueryCondition) => fn<D>(Numeric)(field, condition)
+const Range = <D extends DocumentBase = DocumentBase>(field: string, condition: QueryCondition) => fn<D>(Numeric.Range)(field, condition)
+const RangeWithin = <D extends DocumentBase = DocumentBase>(field: string, condition: QueryCondition) => fn<D>(Numeric.Range.Within)(field, condition)
+const RangeOutside = <D extends DocumentBase = DocumentBase>(field: string, condition: QueryCondition) => fn<D>(Numeric.Range.Outside)(field, condition)
+const Greater = <D extends DocumentBase = DocumentBase>(field: string, condition: QueryCondition) => fn<D>(Numeric.Greater)(field, condition)
+const Less = <D extends DocumentBase = DocumentBase>(field: string, condition: QueryCondition) => fn<D>(Numeric.Less)(field, condition)
+const NoRange = <D extends DocumentBase = DocumentBase>(field: string, condition: QueryCondition) => fn<D>(Numeric.NoRange)(field, condition)
 
 Range.Within = RangeWithin
 Range.Outside = RangeOutside

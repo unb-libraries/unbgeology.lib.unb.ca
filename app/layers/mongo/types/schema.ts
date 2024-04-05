@@ -33,15 +33,15 @@ export interface DocumentModel<D extends DocumentBase = DocumentBase> {
     model: Model<D>
   }
   find: () => DocumentFindQuery<D>
-  findOne: () => DocumentFindQuery<D, `findOne`>
-  findByID: (id: string) => Pick<DocumentFindQuery<D, `findOne`>, `select` | `use` | `then`>
-  create: (body: Omit<D, keyof DocumentBase> | Omit<D, keyof DocumentBase>[]) => Promise<Document<D> | Document<D>[]>
+  findOne: () => DocumentFindOneQuery<D>
+  findByID: (id: string) => DocumentIDQuery<D>
+  create: <T extends CreateBody<D> | CreateBody<D>[]>(body: T) => Promise<T extends CreateBody<D> ? D : T extends CreateBody<D>[] ? D[] : D | D[]>
   update: (body: Partial<Mutable<D>>) => DocumentUpdateQuery<D>
-  updateOne: (body: Partial<Mutable<D>>) => DocumentUpdateQuery<D, `findOne`>
-  updateByID: (id: string, body: Partial<Mutable<D>>) => DocumentUpdateQuery<D, `findOne`>
+  updateOne: (body: Partial<Mutable<D>>) => DocumentUpdateOneQuery<D>
+  updateByID: (id: string, body: Partial<Mutable<D>>) => DocumentUpdateOneQuery<D>
   delete: () => DocumentDeleteQuery<D>
-  deleteOne: () => DocumentDeleteQuery<D, `findOne`>
-  deleteByID: (id: string) => DocumentDeleteQuery<D, `findOne`>
+  deleteOne: () => DocumentDeleteOneQuery<D>
+  deleteByID: (id: string) => DocumentDeleteOneQuery<D>
 }
 
 export type AlterSchemaHandler<D = any> = (schema: Schema<D>) => void

@@ -126,9 +126,9 @@ export type DocumentDeleteQueryResult<D extends DocumentBase = DocumentBase, M e
   }
   : D | undefined
 
-  interface DocumentQuery<Q, R> {
+export interface DocumentBaseQuery<Q, R> {
   join: <J extends DocumentBase = DocumentBase>(field: string, model: DocumentModel<J>) => Q
-  and: DocumentQuery<Q, R>[`where`]
+  and: DocumentBaseQuery<Q, R>[`where`]
   where: (field: string) => {
     eq: (value: any) => Q
     ne: (value: any) => Q
@@ -146,13 +146,19 @@ export type DocumentDeleteQueryResult<D extends DocumentBase = DocumentBase, M e
   select: (...fields: string[]) => Q
   sort: (...fields: (string | [string, boolean])[]) => Q
   paginate(page: number, pageSize: number): Q
-  use: (...handlers: ((query: Q) => void)[]) => Q
+  use: <S = Q>(...handlers: ((query: S) => void)[]) => Q
   then: (resolve: (result: R) => void, reject: (err: any) => void) => void
 }
 
-export type DocumentFindQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> = DocumentQuery<DocumentFindQuery<D, M>, DocumentFindQueryResult<D, M>>
-export type DocumentUpdateQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> = DocumentQuery<DocumentUpdateQuery<D, M>, DocumentUpdateQueryResult<D, M>>
-export type DocumentDeleteQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> = DocumentQuery<DocumentDeleteQuery<D, M>, DocumentDeleteQueryResult<D, M>>
+export type DocumentFindQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> = DocumentBaseQuery<DocumentFindQuery<D, M>, DocumentFindQueryResult<D, M>>
+export type DocumentFindOneQuery<D extends DocumentBase = DocumentBase> = DocumentBaseQuery<DocumentFindQuery<D, `findOne`>, DocumentFindQueryResult<D, `findOne`>>
+export type DocumentIDQuery<D extends DocumentBase = DocumentBase> = DocumentBaseQuery<Pick<DocumentFindQuery<D, `findOne`>, `select` | `use` | `then`>, DocumentFindQueryResult<D, `findOne`>>
+export type DocumentUpdateQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> = DocumentBaseQuery<DocumentUpdateQuery<D, M>, DocumentUpdateQueryResult<D, M>>
+export type DocumentUpdateOneQuery<D extends DocumentBase = DocumentBase> = DocumentBaseQuery<DocumentUpdateQuery<D, `findOne`>, DocumentUpdateQueryResult<D, `findOne`>>
+export type DocumentDeleteQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> = DocumentBaseQuery<DocumentDeleteQuery<D, M>, DocumentDeleteQueryResult<D, M>>
+export type DocumentDeleteOneQuery<D extends DocumentBase = DocumentBase> = DocumentBaseQuery<DocumentDeleteQuery<D, `findOne`>, DocumentDeleteQueryResult<D, `findOne`>>
+export type DocumentQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = DocumentQueryMethod> = DocumentFindQuery<D, M> | DocumentUpdateQuery<D, M> | DocumentDeleteQuery<D, M> | DocumentIDQuery<D> | DocumentFindOneQuery<D> | DocumentUpdateOneQuery<D> | DocumentDeleteOneQuery<D>
+export type FilterableQuery<D extends DocumentBase = DocumentBase> = Exclude<DocumentQuery<D>, DocumentIDQuery<D>>
 
 export interface Join {
   from: string
