@@ -1,7 +1,10 @@
 import { type TaxonomyTerm } from "@unb-libraries/nuxt-layer-entity"
+import { type TaxonomyTerm as MoTaxonomyTerm } from "../../documentTypes/TaxonomyTerm"
+
+type TaxonomyTermQueryResultItem = Omit<MoTaxonomyTerm, `parent`> & { parent?: TaxonomyTermQueryResultItem }
 
 export default defineMongooseFormatter(TaxonomyTerm, async (item, { event }): Promise<Partial<TaxonomyTerm>> => {
-  const { parent, type } = item
+  const { parent } = item as TaxonomyTermQueryResultItem
 
   const fetchParent = async (pid: string) => {
     const { select } = getQueryOptions(event)
@@ -24,7 +27,6 @@ export default defineMongooseFormatter(TaxonomyTerm, async (item, { event }): Pr
   }
 
   return {
-    type: type ? `taxonomy` : undefined,
     parent: parent?._id ? await fetchParent(`${parent._id}`) : undefined,
   }
 })

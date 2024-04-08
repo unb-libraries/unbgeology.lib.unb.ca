@@ -1,17 +1,14 @@
-import { type Term } from "@unb-libraries/nuxt-layer-entity"
-import { optional, requireIf, StringValidator as String, URIMatchValidator as URI, validateBody } from "../../utils/api/payload"
-
-const options = { validate: expectDistriminatorType(`taxonomy`) }
-
-export default defineMongooseReader(TaxonomyTerm, async (body, options) => {
+export default defineMongooseReader(TaxonomyTerm, async (payload, options) => {
   const create = options?.op === `create`
-  const { parent } = await validateBody(body, {
-    type: requireIf(create, String),
-    parent: optional(URI<Term>(/\/api\/terms/)),
+  const { type } = await validateBody(payload, {
+    type: requireIf(create, StringValidator),
+  })
+
+  const { parent } = await validateBody(payload, {
+    parent: optional(URIEntityTypeValidator(type!)),
   })
 
   return {
-    type: TaxonomyTerm.fullName,
     parent: parent ? parseObjectID(parent.id) : undefined,
   }
-}, options)
+})
