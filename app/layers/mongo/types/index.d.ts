@@ -1,9 +1,11 @@
 import { H3Event } from "h3"
-import type { DocumentQuery, EntityDocument } from "./entity"
+import type { Entity, EntityJSON, EntityJSONBody, Migration, MigrationItem, MigrationStatus } from "@unb-libraries/nuxt-layer-entity"
+import type { DocumentFindQuery, DocumentBaseQuery, DocumentQueryMethod, EntityDocument, DocumentQuery } from "./entity"
 import type { SourceItem } from "./migrate"
 import type Mongoose from "mongoose"
 import type { DocumentBase, DocumentModel } from "./schema"
 import type { EntityBodyReaderOptions } from "./api"
+import type { Document } from "@unb-libraries/nuxt-layer-entity"
 
 type IfEquals<X, Y, A = X, B = never> =
   (<T>() => T extends X ? 1 : 2) extends
@@ -54,14 +56,20 @@ export interface MigrateOptions {
   chunkSize?: number
 }
 
+export interface PluginOptions<F extends function = any> {
+  enable: (...params: Parameters<F>) => boolean
+  strict: boolean
+}
+
 export interface RenderOptions {
   event: H3Event
 }
 
-export interface PayloadReadOptions {
+export interface PayloadReadOptions<P extends `create` | `update` = `create` | `update`> {
   event: H3Event
-  op: `create` | `update`
+  op: P
 }
+
 
 export declare module "nitropack" {
   interface NitroRuntimeHooks {
@@ -81,8 +89,8 @@ export declare module "nitropack" {
     "migrate:pause": (migration: Migration) => void | Promise<void>
     
     // Entity hooks
-    "entity:render": (item: any | any[], options: RenderOptions) => any
-    "body:read": (payload: any | any[], options: PayloadReadOptions) => any
+    "entity:render": (item: any, options: RenderOptions) => any | Promise<any>
+    "body:read": (payload: any, options: PayloadReadOptions) => any | Promise<any>
   }
 }
 

@@ -3,7 +3,7 @@ import { type H3Event } from "h3"
 import { type QueryOptions, type Content, type Entity, type EntityList, type Payload, type DocumentQueryMethod, type DocumentQuery } from "../../../types/entity"
 import { type FormatOptions, type FormatManyOptions } from "../../../types/api"
 import { type DocumentBase, type DocumentModel } from "../../../types/schema"
-import type { RenderOptions, PayloadReadOptions } from "~/layers/mongo/types"
+import type { RenderOptions, PayloadReadOptions, PluginOptions } from "~/layers/mongo/types"
 
 function initMongooseContext(event: H3Event) {
   event.context.mongoose = {
@@ -88,46 +88,42 @@ export function defineMongooseEventQueryHandler<D extends DocumentBase = Documen
   })
 }
 
-interface BodyReadOptions<T extends `create` | `update`> {
-  op: T
-}
-
-export function defineBodyReader<T extends object = object, P extends `create` | `update` = `create` | `update`>(reader: (body: any, options?: Partial<BodyReadOptions<P>>) => Payload<T, P> | Promise<Payload<T, P>>, options?: { validate?: (payload: any, options: PayloadReadOptions) => boolean }) {
-  const validate = options?.validate
+export function defineBodyReader<T extends object = object, P extends `create` | `update` = `create` | `update`>(reader: (body: any, options: PayloadReadOptions<P>) => Payload<T, P> | Promise<Payload<T, P>>, options?: Partial<PluginOptions<typeof reader>>) {
+  const enable = options?.enable
   return defineNitroPlugin((nitro) => {
-    nitro.hooks.hook(`body:read`, async (payload, options) => {
-      const { op } = options
-      if (!validate || validate(payload, options)) {
-        return await reader(payload, { op } as BodyReadOptions<P>)
+    nitro.hooks.hook(`body:read`, async (body, options) => {
+      if (!enable || enable(body, options as PayloadReadOptions<P>)) {
+        return await reader(body, options as PayloadReadOptions<P>)
       }
       return {}
     })
   })
 }
 
-export function defineMongooseReader<D extends DocumentBase, P extends `create` | `update`>(Model: DocumentModel<D>, reader: (body: any, options?: Partial<BodyReadOptions<P>>) => Payload<Omit<D, keyof DocumentBase>, P> | Promise<Payload<Omit<D, keyof DocumentBase>, P>>, options?: { validate?: (payload: any, options: PayloadReadOptions & { modelName: string }) => boolean }) {
-  const validate = options?.validate || expectModel(Model.fullName)
-  return defineBodyReader<Omit<D, keyof DocumentBase>, P>(reader, { validate: (payload, options) => validate(payload, { ...options, modelName: Model.fullName }) })
+export function defineMongooseReader<D extends DocumentBase, P extends `create` | `update`>(Model: DocumentModel<D>, reader: (body: any, options: PayloadReadOptions<P>) => Payload<Omit<D, keyof DocumentBase>, P> | Promise<Payload<Omit<D, keyof DocumentBase>, P>>, options?: Partial<PluginOptions<typeof reader>>) {
+  const { enable, strict } = options || {}
+  return defineBodyReader<Omit<D, keyof DocumentBase>, P>(reader, {
+    enable: (body, options) => {
+      const eventModel = getMongooseModel(options.event)
+      return eventModel && matchInputModel(Model, strict ? eventModel.fullName : new RegExp(`^${eventModel.fullName}`)) && (!enable || enable(body, options))
+    },
+    ...options,
+  })
 }
 
-export function expectModel(modelName: string, options?: Partial<{ strict: boolean }>) {
-  return (payload: any, readOptions: PayloadReadOptions & { modelName: string }): boolean => {
-    const eventModel = getMongooseModel(readOptions.event)
-    return eventModel
-      ? options?.strict
-        ? modelName === eventModel.fullName
-        : modelName.startsWith(eventModel.fullName)
-      : false
-  }
+export function matchInputModel<D extends DocumentBase>(Model: DocumentModel<D>, modelOrName: DocumentModel<any> | string | RegExp) {
+  return typeof modelOrName === `object` && `fullName` in modelOrName
+    ? Model.fullName === modelOrName.fullName
+    : typeof modelOrName === `string`
+      ? Model.fullName === modelOrName
+      : modelOrName.test(Model.fullName)
 }
 
-export function expectDistriminatorType(type: string | RegExp) {
-  return (payload: any, options: PayloadReadOptions & { modelName: string }): boolean => {
-    return expectModel(options.modelName)(payload, options) && (typeof type === `string` ? payload.type === type : type.test(payload.type))
-  }
+export function matchInputType(input: any, type: string | RegExp) {
+  return typeof type === `string` ? input.type === type : type.test(input.type)
 }
 
-async function readOr400<T extends object = object, P extends `create` | `update` = `create`>(event: H3Event, modelName: string, payload: any, options?: Partial<BodyReadOptions<P>>): Promise<Payload<T, P> | Payload<T, P>[]> {
+async function readOr400<T extends object = object, P extends `create` | `update` = `create`>(event: H3Event, payload: any, options?: Partial<PayloadReadOptions<P>>): Promise<Payload<T, P> | Payload<T, P>[]> {
   const nitro = useNitroApp()
   try {
     const bodies = await nitro.hooks.callHookParallel(`body:read`, payload, {
@@ -141,7 +137,7 @@ async function readOr400<T extends object = object, P extends `create` | `update
   }
 }
 
-export async function readBodyOr400<T extends object = object, P extends `create` | `update` = `create`>(event: H3Event, options?: Partial<BodyReadOptions<P>>): Promise<Payload<T, P> | Payload<T, P>[]> {
+export async function readBodyOr400<T extends object = object, P extends `create` | `update` = `create`>(event: H3Event, options?: Partial<PayloadReadOptions<P>>): Promise<Payload<T, P> | Payload<T, P>[]> {
   const payload = await readBody(event)
   if (Array.isArray(payload)) {
     return await readBodyListOr400<T, P>(event, options)
@@ -149,28 +145,27 @@ export async function readBodyOr400<T extends object = object, P extends `create
   return await readOneBodyOr400<T, P>(event, options)
 }
 
-export async function readOneBodyOr400<T extends object = object, P extends `create` | `update` = `create`>(event: H3Event, options?: Partial<BodyReadOptions<P>>): Promise<Payload<T, P>> {
+export async function readOneBodyOr400<T extends object = object, P extends `create` | `update` = `create`>(event: H3Event, options?: Partial<PayloadReadOptions<P>>): Promise<Payload<T, P>> {
   const payload = await readBody(event)
   if (Array.isArray(payload)) {
     throw new TypeError(`Body must be of type object.`)
   }
-  return await readOr400<T, P>(event, getMongooseModel(event).mongoose.model.modelName, payload, options) as T
+  return await readOr400<T, P>(event, payload, options) as T
 }
 
-export async function readBodyListOr400<T extends object = object, P extends `create` | `update` = `create`>(event: H3Event, options?: Partial<BodyReadOptions<P>>): Promise<Payload<T, P>[]> {
+export async function readBodyListOr400<T extends object = object, P extends `create` | `update` = `create`>(event: H3Event, options?: Partial<PayloadReadOptions<P>>): Promise<Payload<T, P>[]> {
   const payloads = await readBody<T[]>(event)
   if (!Array.isArray(payloads)) {
     throw new TypeError(`Body must be of type array.`)
   }
-  const modelName = getMongooseModel(event).name
-  return await Promise.all(payloads.map(payload => readOr400<T, P>(event, modelName, payload, options))) as T[]
+  return await Promise.all(payloads.map(payload => readOr400<T, P>(event, payload, options))) as T[]
 }
 
-export function defineEntityFormatter<T = any, C extends Content = Content>(formatter: (item: T, options: RenderOptions) => Partial<C> | Promise<Partial<C>>, options?: { validate?: (content: T, options: RenderOptions) => boolean }) {
-  const validate = options?.validate
+export function defineEntityFormatter<T = any, C extends Content = Content>(formatter: (item: T, options: RenderOptions) => Partial<C> | Promise<Partial<C>>, options?: Partial<PluginOptions<typeof formatter>>) {
+  const enable = options?.enable
   return defineNitroPlugin((nitro) => {
     nitro.hooks.hook(`entity:render`, (item: T, options) => {
-      if (!validate || validate(item, options)) {
+      if (!enable || enable(item, options)) {
         return formatter(item, options)
       }
       return {}
@@ -178,9 +173,15 @@ export function defineEntityFormatter<T = any, C extends Content = Content>(form
   })
 }
 
-export function defineMongooseFormatter<D extends DocumentBase, T extends Content>(Model: DocumentModel<D>, formatter: (doc: D, options: RenderOptions) => Partial<T> | Promise<Partial<T>>, options?: { validate?: (content: D, options: RenderOptions) => boolean }) {
-  const validate = options?.validate || ((document: D, options: RenderOptions): boolean => document.__type?.startsWith(Model.fullName))
-  return defineEntityFormatter<D, T>(formatter, { validate })
+export function defineMongooseFormatter<D extends DocumentBase, T extends Content>(Model: DocumentModel<D>, formatter: (doc: D, options: RenderOptions) => Partial<T> | Promise<Partial<T>>, options?: Partial<PluginOptions<typeof formatter>>) {
+  const { enable } = options || {}
+  return defineEntityFormatter<D, T>(formatter, {
+    enable: (doc, options) => {
+      const eventModel = getMongooseModel(options.event)
+      return eventModel && matchInputType(doc, new RegExp(`^${Model.fullName}`)) && (!enable || enable(doc, options))
+    },
+    ...options,
+  })
 }
 
 export async function render<C extends Content = Content, D = any>(event: H3Event, data: D, options?: Partial<FormatOptions<C>>): Promise<Entity<C>> {
