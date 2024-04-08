@@ -1,7 +1,11 @@
 import ImageFile from "../../documentTypes/Image"
 import { requireIf, StringValidator as String, validateBody } from "../../utils/api/payload"
 
-const options = { validate: expectDistriminatorType(/[a-z]{3,}\/image/) }
+const pluginOptions = {
+  enable: (body: any) => {
+    return body.mimetype?.match(/\/image$/)
+  },
+}
 
 export default defineMongooseReader(ImageFile, async (body, options) => {
   const create = options?.op === `create`
@@ -16,4 +20,4 @@ export default defineMongooseReader(ImageFile, async (body, options) => {
     title,
     alt,
   }
-}, options)
+}, pluginOptions)
