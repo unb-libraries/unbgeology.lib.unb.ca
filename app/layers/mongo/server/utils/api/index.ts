@@ -119,8 +119,9 @@ export function matchInputModel<D extends DocumentBase>(Model: DocumentModel<D>,
       : modelOrName.test(Model.fullName)
 }
 
-export function matchInputType(input: any, type: string | RegExp) {
-  return typeof type === `string` ? input.type === type : type.test(input.type)
+export function matchInputType(input: any, type: string | RegExp, options?: { typeField: string}) {
+  const typeField = options?.typeField ?? `type`
+  return typeof type === `string` ? input[typeField] === type : type.test(input[typeField])
 }
 
 async function readOr400<T extends object = object, P extends `create` | `update` = `create`>(event: H3Event, payload: any, options?: Partial<PayloadReadOptions<P>>): Promise<Payload<T, P> | Payload<T, P>[]> {
@@ -178,7 +179,7 @@ export function defineMongooseFormatter<D extends DocumentBase, T extends Conten
   return defineEntityFormatter<D, T>(formatter, {
     enable: (doc, options) => {
       const eventModel = getMongooseModel(options.event)
-      return eventModel && matchInputType(doc, new RegExp(`^${Model.fullName}`)) && (!enable || enable(doc, options))
+      return eventModel && matchInputType(doc, new RegExp(`^${Model.fullName}`), { typeField: `__type` }) && (!enable || enable(doc, options))
     },
     ...options,
   })
