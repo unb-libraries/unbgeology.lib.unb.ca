@@ -67,12 +67,22 @@ export function URIMatchValidator<E extends Entity = Entity>(pattern: RegExp) {
   return async (input: any) => await URIValidator<E>(MatchValidator(pattern)(input))
 }
 
+export function URIEntityTypeValidator<E extends Entity = Entity>(type: string) {
+  return async (input: any) => {
+    const entity = await URIValidator<E>(input)
+    if (entity?.type === type) {
+      return input as E
+    }
+    throw new TypeError(`"${input}" must be an entity or type ${type}`)
+  }
+}
+
 enum Enum {}
 export function EnumValidator<E extends typeof Enum>(e: E) {
   return (input: any) => {
     const keys = Object.keys(e).map(key => `${key}`.toUpperCase())
     if (keys.includes(`${input}`.toUpperCase())) {
-      return input as keyof E
+      return useEnum(e).valueOf(input)
     }
     throw new TypeError(`"${input}" must be any of ${keys.join(`,`)}`)
   }
