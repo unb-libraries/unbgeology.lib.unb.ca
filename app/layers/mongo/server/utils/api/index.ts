@@ -88,6 +88,34 @@ export function defineMongooseEventQueryHandler<D extends DocumentBase = Documen
   })
 }
 
+interface QueryFieldDescriptor<D extends DocumentBase = DocumentBase> {
+  default: boolean
+  select?: string | false
+  sort?: string | false
+  filter?: ((field: string, condition: QueryCondition) => (q: FilterableQuery<D>) => void) | false
+}
+
+export function defineEventQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = DocumentQueryMethod>(definition: Record<string, QueryFieldDescriptor<D>>) {
+  return (event: H3Event, query: DocumentQuery<D, M>) => {
+    const { select: selectedFields, filter: filterFields, sort: sortFields } = getQueryOptions(event)
+    Object.entries(definition).forEach(([id, field]) => {
+      const { select = id, sort = id, filter } = field
+      if (filter && (filterFields.find(([field]) => field === id))) {
+        const [, op, value] = filterFields.find(([field]) => field === id)!
+        query.use(filter(id, [op, value]))
+      }
+
+      if (select && (selectedFields.includes(id) || (selectedFields.length < 1 && field.default))) {
+        query.select(select)
+      }
+
+      if (sort && (sortFields.find(([field]) => field === id))) {
+        query.sort(sort)
+      }
+    })
+  }
+}
+
 export function defineBodyReader<T extends object = object, P extends `create` | `update` = `create` | `update`>(reader: (body: any, options: PayloadReadOptions<P>) => Payload<T, P> | Promise<Payload<T, P>>, options?: Partial<PluginOptions<typeof reader>>) {
   const enable = options?.enable
   return defineNitroPlugin((nitro) => {
