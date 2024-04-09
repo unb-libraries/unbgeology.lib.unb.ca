@@ -1,5 +1,6 @@
 import type { QueryOptions, FilterableQuery } from "../../../../types/entity"
 import Date from "./date"
+import Enum from "./enum"
 import Numeric from "./numeric"
 import ObjectID from "./objectid"
 import String from "./string"
@@ -10,6 +11,7 @@ export type Filter = <D extends DocumentBase = DocumentBase>(query: FilterableQu
 
 export {
   Date,
+  Enum,
   Numeric,
   ObjectID,
   String,
