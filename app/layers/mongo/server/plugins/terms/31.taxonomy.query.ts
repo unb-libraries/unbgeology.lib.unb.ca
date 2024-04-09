@@ -34,7 +34,7 @@ export default defineMongooseEventQueryHandler(Term, (event, query) => {
         return query.use(Array.isArray(value)
           ? String<Term>(field, [op, [TaxonomyTerm.fullName]])
           : String<Term>(field, [op, TaxonomyTerm.fullName]))
-      } else {
+      } else if (field.startsWith(`parent`)) {
         query.where(`parent`).ex()
         switch (field.replace(`parent.`, ``)) {
           case `id`: query.use(ObjectID(`parent._id`, condition)); break
