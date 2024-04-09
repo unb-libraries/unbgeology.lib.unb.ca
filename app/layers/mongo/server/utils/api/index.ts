@@ -1,4 +1,5 @@
 import { FilterOperator } from "@unb-libraries/nuxt-layer-entity"
+import { consola } from "consola"
 import { type H3Event } from "h3"
 import { type QueryOptions, type Content, type Entity, type EntityList, type Payload, type DocumentQueryMethod, type DocumentQuery } from "../../../types/entity"
 import { type FormatOptions, type FormatManyOptions } from "../../../types/api"
@@ -74,6 +75,19 @@ export function getQueryOptions(event: H3Event): QueryOptions {
     search: Array.isArray(search) ? search.at(-1) : search,
     sort: queryOptions.sort && sort ? (Array.isArray(sort) ? sort : [sort]).map(field => field.startsWith(`-`) ? [field.substring(1), false] : [field, true]) : [],
   }
+}
+
+export function loadDocumentModel(Models: DocumentModel<any> | DocumentModel<any>[], options?: Partial<{ path: string | RegExp }>) {
+  return defineEventHandler((event: H3Event) => {
+    const { pathname } = getRequestURL(event)
+    if ((options?.path && (typeof options.path === `string` ? pathname === options.path : options.path.test(pathname))) || !options?.path) {
+      if (Array.isArray(Models)) {
+        Models.forEach(m => consola.log(`${m.fullName} model loaded on ${pathname}`))
+      } else {
+        consola.log(`${Models.fullName} model loaded on ${pathname}`)
+      }
+    }
+  })
 }
 
 export function defineMongooseEventQueryHandler<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = DocumentQueryMethod>(Model: DocumentModel<D>, handler: (event: H3Event, query: DocumentQuery<D, M>) => void | Promise<void>) {
