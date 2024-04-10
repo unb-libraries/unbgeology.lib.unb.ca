@@ -1,9 +1,10 @@
 import { FilterOperator } from "@unb-libraries/nuxt-layer-entity"
 import { consola } from "consola"
 import { type H3Event } from "h3"
-import { type QueryOptions, type Content, type Entity, type EntityList, type Payload, type DocumentQueryMethod, type DocumentQuery } from "../../../types/entity"
+import { type QueryOptions, type Content, type Entity, type EntityList, type Payload, type DocumentQueryMethod, type DocumentQuery, type FilterableQuery } from "../../../types/entity"
 import { type FormatOptions, type FormatManyOptions } from "../../../types/api"
 import { type DocumentBase, type DocumentModel } from "../../../types/schema"
+import type { QueryCondition } from "./filter"
 import type { RenderOptions, PayloadReadOptions, PluginOptions } from "~/layers/mongo/types"
 
 function initMongooseContext(event: H3Event) {
@@ -96,7 +97,7 @@ export function defineMongooseEventQueryHandler<D extends DocumentBase = Documen
       const { event } = context
       const eventModel = getMongooseModel(event)
       if (eventModel && Model.fullName.startsWith(eventModel.fullName)) {
-        return await handler(event, query as DocumentQuery<D, M>)
+        await handler(event, query as DocumentQuery<D, M>)
       }
     })
   })
@@ -146,10 +147,14 @@ export function defineMongooseReader<D extends DocumentBase, P extends `create` 
   const { enable, strict } = options || {}
   return defineBodyReader<Omit<D, keyof DocumentBase>, P>(reader, {
     enable: (body, options) => {
-      const eventModel = getMongooseModel(options.event)
-      return eventModel && matchInputModel(Model, strict ? eventModel.fullName : new RegExp(`^${eventModel.fullName}`)) && (!enable || enable(body, options))
+      const { event } = options
+      const eventModel = getMongooseModel(event)
+      return eventModel &&
+        matchInputModel(Model, strict
+          ? eventModel.fullName
+          : new RegExp(`^${eventModel.fullName}`)) &&
+        (!enable || enable(body, options))
     },
-    ...options,
   })
 }
 
@@ -170,11 +175,14 @@ async function readOr400<T extends object = object, P extends `create` | `update
   const nitro = useNitroApp()
   try {
     const bodies = await nitro.hooks.callHookParallel(`body:read`, payload, {
-      op: `create`,
+      op: [`POST`, `PUT`].includes(event.method) ? `create` : `update`,
       event,
       ...options,
     })
-    return bodies.reduce((body, input) => ({ ...body, ...input }), {})
+    return bodies.reduce((body, input) => {
+      const definedInputEntries = Object.entries(input).filter(([, value]) => value !== undefined)
+      return { ...body, ...Object.fromEntries(definedInputEntries) }
+    }, {})
   } catch (err) {
     throw createError({ statusCode: 400, statusMessage: `Invalid payload: ${(err as Error).message}` })
   }
@@ -217,13 +225,16 @@ export function defineEntityFormatter<T = any, C extends Content = Content>(form
 }
 
 export function defineMongooseFormatter<D extends DocumentBase, T extends Content>(Model: DocumentModel<D>, formatter: (doc: D, options: RenderOptions) => Partial<T> | Promise<Partial<T>>, options?: Partial<PluginOptions<typeof formatter>>) {
-  const { enable } = options || {}
+  const { enable, strict } = options || {}
   return defineEntityFormatter<D, T>(formatter, {
     enable: (doc, options) => {
       const eventModel = getMongooseModel(options.event)
-      return eventModel && matchInputType(doc, new RegExp(`^${Model.fullName}`), { typeField: `__type` }) && (!enable || enable(doc, options))
+      return eventModel &&
+      matchInputModel(Model, strict
+        ? eventModel.fullName
+        : new RegExp(`^${eventModel.fullName}`)) &&
+        (!enable || enable(doc, options))
     },
-    ...options,
   })
 }
 
