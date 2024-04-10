@@ -103,31 +103,65 @@ export function defineMongooseEventQueryHandler<D extends DocumentBase = Documen
   })
 }
 
-interface QueryFieldDescriptor<D extends DocumentBase = DocumentBase> {
+type QueryFieldDescriptor<D extends DocumentBase = DocumentBase> = {
   default: boolean
   select?: string | false
   sort?: string | false
   filter?: ((field: string, condition: QueryCondition) => (q: FilterableQuery<D>) => void) | false
 }
 
-export function defineEventQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = DocumentQueryMethod>(definition: Record<string, QueryFieldDescriptor<D>>) {
+type NestedDescriptor<Q> = {
+  [K: string]: Q | NestedDescriptor<Q>
+}
+
+export function defineEventQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = DocumentQueryMethod>(definition: NestedDescriptor<QueryFieldDescriptor<D>>) {
   return (event: H3Event, query: DocumentQuery<D, M>) => {
     const { select: selectedFields, filter: filterFields, sort: sortFields } = getQueryOptions(event)
-    Object.entries(definition).forEach(([id, field]) => {
-      const { select = id, sort = id, filter } = field
+
+    const doFilter = (id: string, field: QueryFieldDescriptor<D>) => {
+      const { filter } = field
       if (filter && (filterFields.find(([field]) => field === id))) {
         const [, op, value] = filterFields.find(([field]) => field === id)!
         query.use(filter(id, [op, value]))
       }
+    }
 
-      if (select && (selectedFields.includes(id) || (selectedFields.length < 1 && field.default))) {
-        query.select(select)
+    const doSelect = (id: string, field: QueryFieldDescriptor<D>) => {
+      const { default: selectedByDefault, select = id } = field
+      if (!select) { return }
+
+      const parentID = id.substring(0, id.lastIndexOf(`.`))
+      const isSelected = (id: string) => {
+        return selectedFields.includes(id) || (selectedFields.length < 1 && field.default)
       }
 
+      if (isSelected(id)) {
+        query.select(id)
+      } else if (parentID !== `` && isSelected(parentID) && selectedByDefault) {
+        query.select(id)
+      }
+    }
+
+    const doSort = (id: string, field: QueryFieldDescriptor<D>) => {
+      const { sort = id } = field
       if (sort && (sortFields.find(([field]) => field === id))) {
         query.sort(sort)
       }
-    })
+    }
+
+    const traverse = (definition: NestedDescriptor<QueryFieldDescriptor<D>>, prefix: string = ``) => {
+      Object.entries(definition).forEach(([key, field]) => {
+        const id = prefix ? `${prefix}.${key}` : key
+        if (Object.keys(field).every(k => [`default`, `select`, `sort`, `filter`].includes(k))) {
+          doFilter(id, field as QueryFieldDescriptor<D>)
+          doSelect(id, field as QueryFieldDescriptor<D>)
+          doSort(id, field as QueryFieldDescriptor<D>)
+        } else {
+          traverse(field as NestedDescriptor<QueryFieldDescriptor<D>>, id)
+        }
+      })
+    }
+    traverse(definition)
   }
 }
 

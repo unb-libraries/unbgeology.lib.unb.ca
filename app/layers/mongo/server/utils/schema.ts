@@ -251,7 +251,6 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
     }
 
     // project stage
-    const projection = { __type: `$type` }
     if (selection.length > 0) {
       type Selection = { [K: string]: 1 | Selection[keyof Selection] }
       const reduce = (s: string[]): Selection => {
@@ -263,9 +262,8 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
         }, {} as Record<string, string[]>)
         return Object.fromEntries(Object.entries(reduced).map(([p, v]) => [p, v.length > 0 ? reduce(v) : 1])) as Selection
       }
-      Object.assign(projection, reduce(selection))
+      aggregate.project({ ...reduce(selection), __type: `$type` })
     }
-    aggregate.project(projection)
 
     const [page, pageSize] = paginator
     aggregate
