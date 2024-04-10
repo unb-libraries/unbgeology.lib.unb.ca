@@ -20,8 +20,7 @@ export enum Title {
 export interface Affiliate extends Term, Stateful<typeof Status> {}
 
 export interface Organization extends Affiliate {
-  name: string
-  address?: {
+  address: {
     line1: string
     line2?: string
     city: string

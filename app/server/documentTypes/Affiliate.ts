@@ -91,10 +91,6 @@ export default {
   }).mixin(MxStateful)(), Term),
 
   Organization: defineDocumentModel(`Organization`, defineDocumentSchema<Organization>({
-    name: {
-      type: EntityFieldTypes.String,
-      required: true,
-    },
     address: {
       type: {
         line1: {
@@ -122,21 +118,24 @@ export default {
           required: true,
         },
       },
-      required: false,
+      required: optionalOnImport,
     },
     contact: {
-      name: {
-        type: EntityFieldTypes.String,
-        required: optionalOnImport,
+      type: {
+        name: {
+          type: EntityFieldTypes.String,
+          required: true,
+        },
+        email: {
+          type: EntityFieldTypes.String,
+          required: true,
+        },
+        phone: {
+          type: EntityFieldTypes.String,
+          required: true,
+        },
       },
-      email: {
-        type: EntityFieldTypes.String,
-        required: optionalOnImport,
-      },
-      phone: {
-        type: EntityFieldTypes.String,
-        required: optionalOnImport,
-      },
+      required: optionalOnImport,
     },
     web: [{
       type: EntityFieldTypes.String,

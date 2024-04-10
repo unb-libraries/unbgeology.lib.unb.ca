@@ -11,7 +11,13 @@ export interface Content {
   readonly type?: string
 }
 
-export type Payload<C extends object = object> = C | Partial<Mutable<C>>
+export type Payload<C extends object = object, P extends `create` | `update` = `create`> = P extends `create` ? C : Partial<Mutable<{
+  [K in keyof C]:
+    C[K] extends Array<object> | undefined ? Payload<NonNullable<C[K]>, P> | undefined :
+      C[K] extends Array<any> | undefined ? C[K] :
+        C[K] extends object | undefined ? Payload<NonNullable<C[K]>, P> | undefined :
+          C[K]
+}>>
 
 export type Diff<T extends Content = Content> = {
   previous: Partial<T>
@@ -158,7 +164,10 @@ export type DocumentUpdateOneQuery<D extends DocumentBase = DocumentBase> = Docu
 export type DocumentDeleteQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> = DocumentBaseQuery<DocumentDeleteQuery<D, M>, DocumentDeleteQueryResult<D, M>>
 export type DocumentDeleteOneQuery<D extends DocumentBase = DocumentBase> = DocumentBaseQuery<DocumentDeleteQuery<D, `findOne`>, DocumentDeleteQueryResult<D, `findOne`>>
 export type DocumentQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = DocumentQueryMethod> = DocumentFindQuery<D, M> | DocumentUpdateQuery<D, M> | DocumentDeleteQuery<D, M> | DocumentIDQuery<D> | DocumentFindOneQuery<D> | DocumentUpdateOneQuery<D> | DocumentDeleteOneQuery<D>
-export type FilterableQuery<D extends DocumentBase = DocumentBase> = Exclude<DocumentQuery<D>, DocumentIDQuery<D>>
+export type FilterableQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = DocumentQueryMethod> =
+  M extends `findMany` | `findOne` ? Exclude<DocumentQuery<D, M>, DocumentIDQuery<D>> :
+    M extends `findMany` ? DocumentFindQuery<D> | DocumentUpdateQuery<D> | DocumentDeleteQuery<D> :
+      DocumentFindOneQuery<D> | DocumentUpdateOneQuery<D> | DocumentDeleteOneQuery<D>
 
 export interface Join {
   from: string

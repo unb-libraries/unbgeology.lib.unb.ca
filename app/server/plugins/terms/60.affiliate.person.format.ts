@@ -28,4 +28,6 @@ export default defineMongooseFormatter(Affiliate.Person, (doc) => {
       ? `person`
       : undefined,
   }
+}, {
+  enable: (doc: any) => matchInputType(doc, Affiliate.Person.fullName, { typeField: `__type` }),
 })
