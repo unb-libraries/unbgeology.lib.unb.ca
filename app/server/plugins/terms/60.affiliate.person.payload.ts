@@ -1,26 +1,24 @@
 import { type Image } from "@unb-libraries/nuxt-layer-entity"
 import { Pronouns, Status, Title } from "~/types/affiliate"
 
-const pluginOptions = { enable: (body: any) => matchInputType(body, `person`) }
-
 export default defineMongooseReader(Affiliate.Person, async (payload, options) => {
-  const create = options?.op === `create`
+  const create = options.op === `create`
   const { status } = await validateBody(payload, {
     status: optional(EnumValidator(Status)),
   })
-  const migrate = create && status === Status.MIGRATED
+  const migrate = status === Status.MIGRATED
 
   const { image, phone, ...body } = await validateBody(payload, {
     firstName: requireIf(create, StringValidator),
     lastName: requireIf(create, StringValidator),
     pronouns: requireIf(create, EnumValidator(Pronouns)),
     title: optional(EnumValidator(Title)),
-    occupation: requireIf(!migrate, StringValidator),
-    position: requireIf(!migrate, StringValidator),
+    occupation: requireIf(create && !migrate, StringValidator),
+    position: requireIf(create && !migrate, StringValidator),
     image: optional(URIEntityTypeValidator<Image>(`Image`)),
     bio: optional(StringValidator),
-    email: requireIf(!migrate, MatchValidator(/^.+@.+\..+$/)),
-    phone: requireIf(!migrate, MatchValidator(/^\+?[\d\s\-()]+$/)),
+    email: requireIf(create && !migrate, MatchValidator(/^.+@.+\..+$/)),
+    phone: requireIf(create && !migrate, MatchValidator(/^\+?[\d\s\-()]+$/)),
     web: optional(ArrayValidator(MatchValidator(/^(http|https):\/\/[^ "]+$/))),
     active: optional(BooleanValidator),
   })
@@ -32,4 +30,6 @@ export default defineMongooseReader(Affiliate.Person, async (payload, options) =
     status,
     type: Affiliate.Person.fullName,
   }
-}, pluginOptions)
+}, {
+  enable: (body: any, { op }) => op === `update` || matchInputType(body, `person`),
+})

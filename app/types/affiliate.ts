@@ -13,12 +13,8 @@ export enum Pronouns {
 }
 
 export enum Title {
-  NONE = 1,
-  MR = 2,
-  MS = 4,
-  MRS = 8,
-  DR = 16,
-  PROF = 32,
+  DR = 1,
+  PROF = 2,
 }
 
 export interface Affiliate extends Term, Stateful<typeof Status> {}

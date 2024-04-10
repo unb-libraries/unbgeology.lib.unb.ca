@@ -1,7 +1,7 @@
 import { Pronouns, Title } from "~/types/affiliate"
 
 export default defineMongooseFormatter(Affiliate.Person, (doc) => {
-  const { firstName, lastName, pronouns, title, occupation, position, image, bio, email, phone, type } = doc
+  const { firstName, lastName, pronouns, title, occupation, position, image, bio, email, phone, web, active, type } = doc
 
   return {
     firstName,
@@ -9,7 +9,7 @@ export default defineMongooseFormatter(Affiliate.Person, (doc) => {
     pronouns: pronouns
       ? useEnum(Pronouns).labelOf(pronouns).toLowerCase()
       : undefined,
-    title: title && title !== Title.NONE
+    title: title
       ? useEnum(Title).labelOf(title).toLowerCase()
       : undefined,
     occupation,
@@ -20,6 +20,10 @@ export default defineMongooseFormatter(Affiliate.Person, (doc) => {
     bio,
     email,
     phone,
+    web,
+    active: active !== undefined
+      ? active
+      : undefined,
     type: type
       ? `person`
       : undefined,

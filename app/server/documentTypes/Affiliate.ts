@@ -1,17 +1,24 @@
-import { type Entity } from "@unb-libraries/nuxt-layer-entity"
-import { type Organization, type Person, Status, Pronouns, Title } from "types/affiliate"
+import { type Entity, type Stateful } from "@unb-libraries/nuxt-layer-entity"
+import { type Organization as OrganizationEntity, type Person as PersonEntity, Status, Pronouns, Title } from "types/affiliate"
 import { EntityFieldTypes } from "~/layers/mongo/types/entity"
 import { type Term } from "~/layers/mongo/server/documentTypes/Term"
 import Image from "~/layers/mongo/server/documentTypes/Image"
 
-type Affiliate<T> = Omit<T, keyof Entity> & Term
+type Affiliate<T> = Omit<T, keyof Entity> & Term & Stateful<typeof Status>
+const MxStateful = Stateful({
+  values: Status,
+  default: Status.DRAFT,
+})
+
+export type Person = Affiliate<Omit<PersonEntity, `image`> & { image?: string }>
+export type Organization = Affiliate<OrganizationEntity>
 
 function optionalOnImport(this: Affiliate<any>) {
   return this.status as Status > Status.MIGRATED
 }
 
 export default {
-  Person: defineDocumentModel(`Person`, defineDocumentSchema<Affiliate<Person>>({
+  Person: defineDocumentModel(`Person`, defineDocumentSchema<Person>({
     firstName: {
       type: EntityFieldTypes.String,
       required: true,
@@ -29,7 +36,6 @@ export default {
       type: EntityFieldTypes.Mixed,
       enum: Title,
       required: false,
-      default: Title.NONE,
     },
     occupation: {
       type: EntityFieldTypes.String,
@@ -51,21 +57,40 @@ export default {
     email: {
       type: EntityFieldTypes.String,
       required: optionalOnImport,
+      validate: {
+        validator: function (email: string) {
+          return /^.+@.+\..+$/.test(email)
+        },
+        message: `Invalid email address`,
+      },
     },
     phone: {
       type: EntityFieldTypes.String,
       required: optionalOnImport,
+      validate: {
+        validator: function (phone: string) {
+          return /^\+?[\d\s\-()]+$/.test(phone)
+        },
+        message: `Invalid phone number`,
+      },
     },
     web: [{
       type: EntityFieldTypes.String,
+      validate: {
+        validator: function (url: string) {
+          return /^(http|https):\/\/[^ "]+$/.test(url)
+        },
+        message: `Invalid web URL`,
+      },
     }],
     active: {
       type: EntityFieldTypes.Boolean,
       required: false,
+      default: true,
     },
-  })(), Term),
+  }).mixin(MxStateful)(), Term),
 
-  Organization: defineDocumentModel(`Organization`, defineDocumentSchema<Affiliate<Organization>>({
+  Organization: defineDocumentModel(`Organization`, defineDocumentSchema<Organization>({
     name: {
       type: EntityFieldTypes.String,
       required: true,
@@ -116,5 +141,5 @@ export default {
     web: [{
       type: EntityFieldTypes.String,
     }],
-  })(), Term),
+  }).mixin(MxStateful)(), Term),
 }
