@@ -102,10 +102,11 @@ export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B e
         : DocumentQuery(this as unknown as DocumentModel<NonNullable<B>>, { method: `findOne` })
     },
     findByID(id: string) {
-      const { select, use, then } = !base
+      const { join, select, use, then } = !base
         ? (this as DocumentModel<D>).findOne().where(`_id`).eq(new Types.ObjectId(id))
         : (this as unknown as DocumentModel<NonNullable<B>>).findOne().where(`_id`).eq(new Types.ObjectId(id))
       return {
+        join,
         select,
         use,
         then,
