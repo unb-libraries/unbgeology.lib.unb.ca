@@ -105,39 +105,62 @@ export function defineMongooseEventQueryHandler<D extends DocumentBase = Documen
 
 type QueryFieldDescriptor<D extends DocumentBase = DocumentBase> = {
   default: boolean
+  join?: DocumentModel<any> | {
+    documentType: DocumentModel<any>
+    cardinality?: `one` | `many`
+  }
   select?: string | false
   sort?: string | false
   filter?: ((field: string, condition: QueryCondition) => (q: FilterableQuery<D>) => void) | false
+  definition?: Record<string, QueryFieldDescriptor<D>>
 }
 
-type NestedDescriptor<Q> = {
-  [K: string]: Q | NestedDescriptor<Q>
-}
-
-export function defineEventQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = DocumentQueryMethod>(definition: NestedDescriptor<QueryFieldDescriptor<D>>) {
+export function defineEventQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = DocumentQueryMethod>(definition: Record<string, QueryFieldDescriptor<D>>) {
   return (event: H3Event, query: DocumentQuery<D, M>) => {
     const { select: selectedFields, filter: filterFields, sort: sortFields } = getQueryOptions(event)
 
     const doFilter = (id: string, field: QueryFieldDescriptor<D>) => {
       const { filter } = field
-      if (filter && (filterFields.find(([field]) => field === id))) {
+      if (!filter) { return }
+
+      if (filterFields.find(([field]) => field === id)) {
         const [, op, value] = filterFields.find(([field]) => field === id)!
         query.use(filter(id, [op, value]))
       }
     }
 
+    const getDescriptor = (id: string, root = definition): QueryFieldDescriptor<D> => {
+      const [head, ...tail] = id.split(`.`)
+      return tail.length > 0 ? getDescriptor(tail.join(`.`), root[head].definition) : root[head]
+    }
+
     const doSelect = (id: string, field: QueryFieldDescriptor<D>) => {
-      const { default: selectedByDefault, select = id } = field
+      const { select = id } = field
       if (!select) { return }
 
-      const parentID = id.substring(0, id.lastIndexOf(`.`))
-      const isSelected = (id: string) => {
-        return selectedFields.includes(id) || (selectedFields.length < 1 && field.default)
+      const isDefault = (id: string, options?: Partial<{ prefix: string, respectParents: boolean }>): boolean => {
+        const { prefix, respectParents } = options || { prefix: ``, respectParents: true }
+
+        const [head, ...tail] = id.split(`.`)
+        const $default = getDescriptor(prefix ? `${prefix}.${head}` : head).default
+
+        if (tail.length < 1) {
+          return $default
+        } else if (!respectParents || $default) {
+          return isDefault(tail.join(`.`), { prefix: head })
+        } else {
+          return false
+        }
+      }
+
+      const isSelected = (id: string): boolean => {
+        const parentID = id.substring(0, id.lastIndexOf(`.`))
+        return selectedFields.includes(id) ||
+          (parentID && selectedFields.includes(parentID) && isDefault(id, { respectParents: false })) ||
+          (selectedFields.length < 1 && isDefault(id))
       }
 
       if (isSelected(id)) {
-        query.select(id)
-      } else if (parentID !== `` && isSelected(parentID) && selectedByDefault) {
         query.select(id)
       }
     }
@@ -149,18 +172,18 @@ export function defineEventQuery<D extends DocumentBase = DocumentBase, M extend
       }
     }
 
-    const traverse = (definition: NestedDescriptor<QueryFieldDescriptor<D>>, prefix: string = ``) => {
+    const traverse = (definition: Record<string, QueryFieldDescriptor<D>>, prefix: string = ``) => {
       Object.entries(definition).forEach(([key, field]) => {
         const id = prefix ? `${prefix}.${key}` : key
-        if (Object.keys(field).every(k => [`default`, `select`, `sort`, `filter`].includes(k))) {
-          doFilter(id, field as QueryFieldDescriptor<D>)
-          doSelect(id, field as QueryFieldDescriptor<D>)
-          doSort(id, field as QueryFieldDescriptor<D>)
-        } else {
-          traverse(field as NestedDescriptor<QueryFieldDescriptor<D>>, id)
+        doFilter(id, field)
+        doSelect(id, field)
+        doSort(id, field)
+        if (field.definition) {
+          traverse(field.definition, id)
         }
       })
     }
+
     traverse(definition)
   }
 }
