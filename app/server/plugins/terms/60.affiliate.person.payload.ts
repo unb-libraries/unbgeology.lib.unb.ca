@@ -27,7 +27,7 @@ export default defineMongooseReader(Affiliate.Person, async (payload, options) =
     ...body,
     image: image?.id,
     phone: phone?.replace(/[^\d+]/g, ``),
-    status,
+    status: status && useEnum(Status).valueOf(status),
     type: Affiliate.Person.fullName,
   }
 }, {

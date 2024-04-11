@@ -34,7 +34,7 @@ export default defineMongooseReader(Affiliate.Organization, async (payload, opti
       ...contact,
       phone: contact.phone?.replace(/[^\d+]/g, ``),
     },
-    status,
+    status: status && useEnum(Status).valueOf(status),
     type: Affiliate.Organization.fullName,
   }
 }, {

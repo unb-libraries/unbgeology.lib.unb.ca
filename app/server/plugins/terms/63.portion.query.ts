@@ -1,6 +1,11 @@
-import String from "~/layers/mongo/server/utils/api/filter/string"
+import { String, Enum } from "~/layers/mongo/server/utils/api/filter"
+import { Status } from "~/types/portion"
 
 export default defineMongooseEventQueryHandler(FossilPortion, defineEventQuery({
+  status: {
+    default: false,
+    filter: Enum(Status),
+  },
   type: {
     default: false,
     filter: (field, [op, value]) => (query) => {

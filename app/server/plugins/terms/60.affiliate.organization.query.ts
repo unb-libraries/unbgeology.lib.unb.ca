@@ -1,4 +1,5 @@
-import { String } from "~/layers/mongo/server/utils/api/filter"
+import { String, Enum } from "~/layers/mongo/server/utils/api/filter"
+import { Status } from "~/types/affiliate"
 
 export default defineMongooseEventQueryHandler(Affiliate.Organization, defineEventQuery({
   address: {
@@ -57,6 +58,10 @@ export default defineMongooseEventQueryHandler(Affiliate.Organization, defineEve
     default: false,
     sort: false,
     filter: false,
+  },
+  status: {
+    default: false,
+    filter: Enum(Status),
   },
   type: {
     default: false,

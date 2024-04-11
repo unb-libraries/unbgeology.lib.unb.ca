@@ -1,9 +1,14 @@
-import { String } from "~/layers/mongo/server/utils/api/filter"
+import { String, Enum } from "~/layers/mongo/server/utils/api/filter"
+import { Status } from "~/types/classification"
 
 export default defineMongooseEventQueryHandler(Classification.Mineral, defineEventQuery({
   composition: {
     default: false,
     filter: String,
+  },
+  status: {
+    default: false,
+    filter: Enum(Status),
   },
   type: {
     default: false,

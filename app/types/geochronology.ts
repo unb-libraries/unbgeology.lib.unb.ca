@@ -1,9 +1,8 @@
 import { type Stateful, type TaxonomyTerm } from "@unb-libraries/nuxt-layer-entity"
 
 export enum Status {
-  MIGRATED = 1,
-  DRAFT = 2,
-  PUBLISHED = 4,
+  DRAFT = 1,
+  PUBLISHED = 2,
 }
 
 export enum Division {

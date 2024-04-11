@@ -1,5 +1,5 @@
 import { Boolean, Date, Enum, String } from "~/layers/mongo/server/utils/api/filter"
-import { Pronouns, Title } from "~/types/affiliate"
+import { Pronouns, Status, Title } from "~/types/affiliate"
 
 export default defineMongooseEventQueryHandler(Affiliate.Person, defineEventQuery({
   firstName: {
@@ -47,6 +47,10 @@ export default defineMongooseEventQueryHandler(Affiliate.Person, defineEventQuer
   web: {
     default: false,
     filter: false,
+  },
+  status: {
+    default: false,
+    filter: Enum(Status),
   },
   type: {
     default: false,

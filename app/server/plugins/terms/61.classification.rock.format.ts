@@ -1,6 +1,9 @@
+import { Status } from "~/types/classification"
+
 export default defineMongooseFormatter(Classification.Rock, (doc) => {
-  const { type } = doc
+  const { status, type } = doc
   return {
+    status: status && useEnum(Status).valueOf(status),
     type: type && `classification/rock`,
   }
 }, {

@@ -1,5 +1,5 @@
 import { Boolean, Enum, Numeric, String } from "~/layers/mongo/server/utils/api/filter"
-import { Division } from "~/types/geochronology"
+import { Division, Status } from "~/types/geochronology"
 
 export default defineMongooseEventQueryHandler(Geochronology, defineEventQuery({
   division: {
@@ -32,6 +32,10 @@ export default defineMongooseEventQueryHandler(Geochronology, defineEventQuery({
   color: {
     default: false,
     filter: String,
+  },
+  status: {
+    default: false,
+    filter: Enum(Status),
   },
   type: {
     default: false,

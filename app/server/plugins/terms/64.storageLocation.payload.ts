@@ -1,12 +1,16 @@
+import { Status } from "~/types/storagelocation"
+
 export default defineMongooseReader(StorageLocation, async (payload, options) => {
   if (options.op === `update` || payload.type !== `storageLocation`) { return {} }
 
-  const { public: $public } = await validateBody(payload, {
+  const { public: $public, status } = await validateBody(payload, {
     public: optional(BooleanValidator),
+    status: optional(EnumValidator(Status)),
   })
 
   return {
     public: $public,
+    status: status && useEnum(Status).valueOf(status),
     type: StorageLocation.fullName,
   }
 })
