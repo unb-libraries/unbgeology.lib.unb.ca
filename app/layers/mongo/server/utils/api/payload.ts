@@ -67,13 +67,13 @@ export function URIMatchValidator<E extends Entity = Entity>(pattern: RegExp) {
   return async (input: any) => await URIValidator<E>(MatchValidator(pattern)(input))
 }
 
-export function URIEntityTypeValidator<E extends Entity = Entity>(type: string) {
+export function URIEntityTypeValidator<E extends Entity = Entity>(...type: string[]) {
   return async (input: any) => {
     const entity = await URIValidator<E>(input)
-    if (entity?.type === type) {
+    if (entity && type.includes(entity.type ?? ``)) {
       return input as E
     }
-    throw new TypeError(`"${input}" must be an entity or type ${type}`)
+    throw new TypeError(`"${input}" must be an entity of type ${type}`)
   }
 }
 
