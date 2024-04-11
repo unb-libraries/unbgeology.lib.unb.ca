@@ -158,7 +158,7 @@ export interface DocumentBaseQuery<Q, R> {
 
 export type DocumentFindQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> = DocumentBaseQuery<DocumentFindQuery<D, M>, DocumentFindQueryResult<D, M>>
 export type DocumentFindOneQuery<D extends DocumentBase = DocumentBase> = DocumentBaseQuery<DocumentFindQuery<D, `findOne`>, DocumentFindQueryResult<D, `findOne`>>
-export type DocumentIDQuery<D extends DocumentBase = DocumentBase> = DocumentBaseQuery<Pick<DocumentFindQuery<D, `findOne`>, `select` | `use` | `then`>, DocumentFindQueryResult<D, `findOne`>>
+export type DocumentIDQuery<D extends DocumentBase = DocumentBase> = Pick<DocumentBaseQuery<DocumentFindQuery<D, `findOne`>, DocumentFindQueryResult<D, `findOne`>>, `join` | `select` | `use` | `then`>
 export type DocumentUpdateQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> = DocumentBaseQuery<DocumentUpdateQuery<D, M>, DocumentUpdateQueryResult<D, M>>
 export type DocumentUpdateOneQuery<D extends DocumentBase = DocumentBase> = DocumentBaseQuery<DocumentUpdateQuery<D, `findOne`>, DocumentUpdateQueryResult<D, `findOne`>>
 export type DocumentDeleteQuery<D extends DocumentBase = DocumentBase, M extends DocumentQueryMethod = `findMany`> = DocumentBaseQuery<DocumentDeleteQuery<D, M>, DocumentDeleteQueryResult<D, M>>

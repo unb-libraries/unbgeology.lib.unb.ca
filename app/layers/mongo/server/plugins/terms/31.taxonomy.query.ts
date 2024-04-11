@@ -9,12 +9,14 @@ export default defineMongooseEventQueryHandler(Term, (event, query) => {
     query.select(`parent`)
   }
 
-  query.sort(...sort.map<[string, boolean]>(([field, asc]) => {
-    if (field === `parent`) {
-      return asc ? [`__l`, true] : [`__r`, false]
-    }
-    return [field, asc]
-  }))
+  if (`sort` in query) {
+    query.sort(...sort.map<[string, boolean]>(([field, asc]) => {
+      if (field === `parent`) {
+        return asc ? [`__l`, true] : [`__r`, false]
+      }
+      return [field, asc]
+    }))
+  }
 
   const filterableFields = [
     `type`,
@@ -34,7 +36,7 @@ export default defineMongooseEventQueryHandler(Term, (event, query) => {
         return query.use(Array.isArray(value)
           ? String<Term>(field, [op, [TaxonomyTerm.fullName]])
           : String<Term>(field, [op, TaxonomyTerm.fullName]))
-      } else if (field.startsWith(`parent`)) {
+      } else if (field.startsWith(`parent`) && `where` in query) {
         query.where(`parent`).ex()
         switch (field.replace(`parent.`, ``)) {
           case `id`: query.use(ObjectID(`parent._id`, condition)); break

@@ -15,7 +15,9 @@ export default defineMongooseEventQueryHandler(Term, (event, query) => {
     ? select.filter(field => defaultFields.includes(field)).map(project)
     : defaultFields.map(project)))
 
-  query.sort(...sort.filter(([field]) => defaultFields.includes(field)))
+  if (`sort` in query) {
+    query.sort?.(...sort.filter(([field]) => defaultFields.includes(field)))
+  }
 
   filter
     .filter(([field]) => [`id`, ...defaultFields].includes(field))
@@ -27,7 +29,9 @@ export default defineMongooseEventQueryHandler(Term, (event, query) => {
         case `slug`: query.use(String(field, condition)); break
         case `type`:
           if ((Array.isArray(value) && value.includes(`term`)) || value === `term`) {
-            query.expr({ [field]: { $exists: 0 } })
+            if (`expr` in query) {
+              query.expr({ [field]: { $exists: 0 } })
+            }
             break
           }; break
         case `created`:

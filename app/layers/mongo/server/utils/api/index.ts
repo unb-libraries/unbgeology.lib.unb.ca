@@ -125,7 +125,9 @@ export function defineEventQuery<D extends DocumentBase = DocumentBase, M extend
 
       if (filterFields.find(([field]) => field === id)) {
         const [, op, value] = filterFields.find(([field]) => field === id)!
-        query.use(filter(id, [op, value]))
+        if (`where` in query) {
+          query.use(filter(id, [op, value]))
+        }
       }
     }
 
@@ -167,7 +169,7 @@ export function defineEventQuery<D extends DocumentBase = DocumentBase, M extend
 
     const doSort = (id: string, field: QueryFieldDescriptor<D>) => {
       const { sort = id } = field
-      if (sort && (sortFields.find(([field]) => field === id))) {
+      if (`sort` in query && sort && (sortFields.find(([field]) => field === id))) {
         query.sort(sort)
       }
     }
