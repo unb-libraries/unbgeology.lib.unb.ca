@@ -119,14 +119,29 @@ export function defineEventQuery<D extends DocumentBase = DocumentBase, M extend
   return (event: H3Event, query: DocumentQuery<D, M>) => {
     const { select: selectedFields, filter: filterFields, sort: sortFields } = getQueryOptions(event)
 
+    const doJoin = (id: string, field: QueryFieldDescriptor<D>) => {
+      if (!field.join) { return }
+
+      const join = {
+        documentType: `documentType` in field.join ? field.join.documentType : field.join as DocumentModel<any>,
+        cardinality: `cardinality` in field.join && field.join.cardinality ? field.join.cardinality : `one`,
+      }
+
+      const { documentType, cardinality } = join
+      query.join(id, documentType, { cardinality })
+    }
+
     const doFilter = (id: string, field: QueryFieldDescriptor<D>) => {
-      const { filter } = field
+      const { filter, join } = field
       if (!filter) { return }
 
       if (filterFields.find(([field]) => field === id)) {
         const [, op, value] = filterFields.find(([field]) => field === id)!
         if (`where` in query) {
           query.use(filter(id, [op, value]))
+          if (join) {
+            doJoin(id, field)
+          }
         }
       }
     }
@@ -137,7 +152,7 @@ export function defineEventQuery<D extends DocumentBase = DocumentBase, M extend
     }
 
     const doSelect = (id: string, field: QueryFieldDescriptor<D>) => {
-      const { select = id } = field
+      const { select = id, join } = field
       if (!select) { return }
 
       const isDefault = (id: string, options?: Partial<{ prefix: string, respectParents: boolean }>): boolean => {
@@ -164,6 +179,9 @@ export function defineEventQuery<D extends DocumentBase = DocumentBase, M extend
 
       if (isSelected(id)) {
         query.select(id)
+        if (join) {
+          doJoin(id, field)
+        }
       }
     }
 
