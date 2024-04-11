@@ -13,10 +13,11 @@ export interface Content {
 
 export type Payload<C extends object = object, P extends `create` | `update` = `create`> = P extends `create` ? C : Partial<Mutable<{
   [K in keyof C]:
-    C[K] extends Array<object> | undefined ? Payload<NonNullable<C[K]>, P> | undefined :
-      C[K] extends Array<any> | undefined ? C[K] :
-        C[K] extends object | undefined ? Payload<NonNullable<C[K]>, P> | undefined :
-          C[K]
+    C[K] extends C[] ? Payload<C[K][number], P>[] :
+      C[K] extends object[] ? Payload<C[K][number], P>[] :
+        C[K] extends any[] ? C[K] :
+          C[K] extends object ? Payload<C[K], P> :
+            C[K]
 }>>
 
 export type Diff<T extends Content = Content> = {
