@@ -102,12 +102,22 @@ export function BooleanValidator(input: any) {
   throw new TypeError(`"${input}" must be of type boolean`)
 }
 
-export function ArrayValidator<T = any>(validator: (input: any) => T) {
+export function ArrayValidator<T = any>(validator: (input: any) => T | Promise<T>, options?: Partial<{ maxLength: number, minLength: number }>) {
   return (input: T[]) => {
-    if (Array.isArray(input) && input.every(validator)) {
-      return input
+    if (!Array.isArray(input)) {
+      throw new TypeError(`"${input}" must be of type array`)
     }
-    throw new TypeError(`"${input}" must be of type array`)
+
+    if (options?.maxLength && input.length > options.maxLength) {
+      throw new TypeError(`"${input}" must not exceed ${options.maxLength} items`)
+    }
+
+    if (options?.minLength && input.length < options.minLength) {
+      throw new TypeError(`"${input}" must not be less than ${options.minLength} items`)
+    }
+
+    input.every(validator)
+    return input
   }
 }
 
