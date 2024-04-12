@@ -1,7 +1,7 @@
 import { FilterOperator } from "@unb-libraries/nuxt-layer-entity"
 import { consola } from "consola"
 import { type H3Event } from "h3"
-import { type QueryOptions, type Content, type Entity, type EntityList, type Payload, type DocumentQueryMethod, type DocumentQuery, type FilterableQuery } from "../../../types/entity"
+import { type QueryOptions, type Content, type Entity, type EntityList, type Payload, type DocumentQueryMethod, type DocumentQuery, type FilterableQuery, type DocumentPayload } from "../../../types/entity"
 import { type FormatOptions, type FormatManyOptions } from "../../../types/api"
 import { type DocumentBase, type DocumentModel } from "../../../types/schema"
 import type { QueryCondition } from "./filter"
@@ -208,7 +208,7 @@ export function defineEventQuery<D extends DocumentBase = DocumentBase, M extend
   }
 }
 
-export function defineBodyReader<T extends object = object, P extends `create` | `update` = `create` | `update`>(reader: (body: any, options: PayloadReadOptions<P>) => Payload<T, P> | Promise<Payload<T, P>>, options?: Partial<PluginOptions<typeof reader>>) {
+export function defineBodyReader<T extends object = object, P extends `create` | `update` = `create` | `update`, L = Payload<T, P>>(reader: (body: any, options: PayloadReadOptions<P>) => L | Promise<L>, options?: Partial<PluginOptions<typeof reader>>) {
   const enable = options?.enable
   return defineNitroPlugin((nitro) => {
     nitro.hooks.hook(`body:read`, async (body, options) => {
@@ -220,9 +220,9 @@ export function defineBodyReader<T extends object = object, P extends `create` |
   })
 }
 
-export function defineMongooseReader<D extends DocumentBase, P extends `create` | `update`>(Model: DocumentModel<D>, reader: (body: any, options: PayloadReadOptions<P>) => Payload<Omit<D, keyof DocumentBase>, P> | Promise<Payload<Omit<D, keyof DocumentBase>, P>>, options?: Partial<PluginOptions<typeof reader>>) {
+export function defineMongooseReader<D extends DocumentBase, P extends `create` | `update`>(Model: DocumentModel<D>, reader: (body: any, options: PayloadReadOptions<P>) => DocumentPayload<Omit<D, keyof DocumentBase>, P> | Promise<DocumentPayload<Omit<D, keyof DocumentBase>, P>>, options?: Partial<PluginOptions<typeof reader>>) {
   const { enable, strict } = options || {}
-  return defineBodyReader<Omit<D, keyof DocumentBase>, P>(reader, {
+  return defineBodyReader<Omit<D, keyof DocumentBase>, P, DocumentPayload<Omit<D, keyof DocumentBase>, P>>(reader, {
     enable: (body, options) => {
       const { event } = options
       const eventModel = getMongooseModel(event)

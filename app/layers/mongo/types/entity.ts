@@ -1,4 +1,4 @@
-import { Schema, type SchemaOptions, type Model, type HydratedDocument, type UpdateQuery, type QueryOptions as MongooseQueryOptions, type QueryWithHelpers } from "mongoose"
+import { Types } from "mongoose"
 import { FilterOperator, type EntityJSON } from "@unb-libraries/nuxt-layer-entity"
 import type { DocumentBase, DocumentModel } from "./schema"
 import { type Mutable } from "."
@@ -19,6 +19,20 @@ export type Payload<C extends object = object, P extends `create` | `update` = `
           C[K] extends object ? Payload<C[K], P> :
             C[K]
 }>>
+
+type KeysOfType<T, U> = {
+  [K in keyof T]: T[K] extends U ? K : never
+}[keyof T]
+
+export type DocumentPayload<C extends object = object, P extends `create` | `update` = `create`> = Payload<Omit<C, KeysOfType<C, object>>, P> & {
+  [K in P extends `create` ? keyof Pick<C, KeysOfType<C, object>> : keyof Partial<Mutable<Pick<C, KeysOfType<C, object>>>>]:
+    C[K] extends DocumentBase | undefined ? Types.ObjectId | undefined :
+      C[K] extends DocumentBase ? Types.ObjectId :
+        C[K] extends DocumentBase[] | undefined ? Types.ObjectId[] | undefined :
+          C[K] extends DocumentBase[] ? Types.ObjectId[] :
+            // @ts-ignore
+            DocumentPayload<C[K], P>
+}
 
 export type Diff<T extends Content = Content> = {
   previous: Partial<T>
