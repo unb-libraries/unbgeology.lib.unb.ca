@@ -148,6 +148,15 @@ export function ObjectValidator<T extends object = object>(input: { [K in keyof 
   }
 }
 
+export function CustomValidator<T = any>(validator: Validator<T>, options?: { message: string }) {
+  return (input: any) => {
+    if (validator(input)) {
+      return input as T
+    }
+    throw new TypeError(options?.message || `Invalid input: "${input}"`)
+  }
+}
+
 export async function validateBody<T extends object = object>(body: any, validate: { [K in keyof T]: (input: any) => T[K] | Promise<T[K]> }) {
   return await ObjectValidator<T>(validate)(body)
 }
