@@ -71,7 +71,7 @@ export function URIEntityTypeValidator<E extends Entity = Entity>(...type: strin
   return async (input: any) => {
     const entity = await URIValidator<E>(input)
     if (entity && type.includes(entity.type ?? ``)) {
-      return input as E
+      return entity
     }
     throw new TypeError(`"${input}" must be an entity of type ${type}`)
   }
@@ -103,7 +103,7 @@ export function BooleanValidator(input: any) {
 }
 
 export function ArrayValidator<T = any>(validator: (input: any) => T | Promise<T>, options?: Partial<{ maxLength: number, minLength: number }>) {
-  return (input: T[]) => {
+  return async (input: T[]) => {
     if (!Array.isArray(input)) {
       throw new TypeError(`"${input}" must be of type array`)
     }
@@ -116,8 +116,7 @@ export function ArrayValidator<T = any>(validator: (input: any) => T | Promise<T
       throw new TypeError(`"${input}" must not be less than ${options.minLength} items`)
     }
 
-    input.every(validator)
-    return input
+    return await Promise.all(input.map(validator))
   }
 }
 
