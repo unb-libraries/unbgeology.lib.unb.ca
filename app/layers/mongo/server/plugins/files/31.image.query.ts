@@ -9,5 +9,7 @@ export default defineMongooseEventQueryHandler(FileBase, (event, query) => {
     ? select.filter(field => defaultFields.includes(field))
     : defaultFields))
 
-  query.sort(...sort.filter(([field]) => defaultFields.includes(field)))
+  if (`sort` in query) {
+    query.sort(...sort.filter(([field]) => defaultFields.includes(field)))
+  }
 })

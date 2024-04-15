@@ -20,7 +20,9 @@ export default defineMongooseEventQueryHandler(FileBase, (event, query) => {
       .map(project)
     : defaultFields.map(project)))
 
-  query.sort(...sort.filter(([field]) => defaultFields.includes(field)))
+  if (`sort` in query) {
+    query.sort(...sort.filter(([field]) => defaultFields.includes(field)))
+  }
 
   filter
     .filter(([field]) => [`id`, ...defaultFields].includes(field))
