@@ -299,6 +299,10 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
         as: field,
         cardinality: options?.cardinality ?? `one`,
       })
+
+      this.select(`${field}._id`)
+      this.select([`${field}.__type`, `$${field}.type`])
+
       return this
     },
     and(field: string) {
