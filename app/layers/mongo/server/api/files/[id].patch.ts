@@ -39,5 +39,5 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  return renderDiffOr404(event, await file.update(update))
+  return renderDiffOr404(await file.update(update))
 })

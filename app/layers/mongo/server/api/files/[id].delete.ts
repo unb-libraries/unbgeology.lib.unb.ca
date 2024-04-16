@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
       await FileBase.delete()
       return sendNoContent(event)
     } else {
-      return create404(event)
+      return create404()
     }
   } catch (err: any) {
     return sendError(event, createError({

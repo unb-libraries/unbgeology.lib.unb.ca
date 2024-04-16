@@ -315,42 +315,66 @@ export function defineMongooseFormatter<D extends DocumentBase, T extends Conten
   })
 }
 
-export async function render<C extends Content = Content, D = any>(event: H3Event, data: D, options?: Partial<FormatOptions<C>>): Promise<Entity<C>> {
+const uriFromEventPathname = <D extends object = object>(data: D) => {
+  const event = useEvent()
+  if (event) {
+    return getRequestURL(event).pathname
+  }
+  return ``
+}
+
+export async function render<C extends Content = Content, D extends object = object>(data: D, options?: Partial<FormatOptions<D>>): Promise<Entity<C>> {
   const nitro = useNitroApp()
-  const formattedContent = await nitro.hooks.callHookParallel(`entity:render`, data, { event })
+  const renderOptions = {
+    self: uriFromEventPathname,
+    ...options,
+  }
+
+  const formattedContent = await nitro.hooks.callHookParallel(`entity:render`, data, renderOptions)
+  const self = renderOptions.self(data)
+
   const entity = Object
     .entries(formattedContent.reduce((content, formatted) => ({ ...content, ...formatted }), {}))
     .filter(([_, value]) => (value !== undefined))
     .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {}) as Omit<Entity<C>, `self`>
-  const self = options?.self ? options.self(entity) : getRequestURL(event).pathname
+
   return { self, ...entity } as Entity<C>
 }
 
-export async function renderOr404<C extends Content = Content, D = any>(event: H3Event, data?: D, options?: Partial<FormatOptions<C> & { message: string }>) {
+export async function renderOr404<C extends Content = Content, D extends object = object>(data?: D, options?: Partial<FormatOptions<D> & { message: string }>) {
   if (data) {
-    return await render(event, data, options)
+    return await render<C, D>(data, options)
   }
-  return create404(event)
+  return create404(options?.message)
 }
 
-export async function renderList<C extends Content = Content, D = any>(event: H3Event, data: D[], options?: Partial<FormatManyOptions<C> & { format?: typeof render }>): Promise<EntityList<C>> {
-  const { pathname } = getRequestURL(event)
+export async function renderList<C extends Content = Content, D extends object = object>(data: D[], options?: Partial<FormatManyOptions<D> & { renderFn?: typeof render }>): Promise<EntityList<C>> {
+  const event = useEvent()
+  const queryOptions = event ? getQueryOptions(event) : { page: 1, pageSize: 25 }
 
-  const queryOptions = getQueryOptions(event)
-  const self = options?.self?.list ?? pathname
-
-  const canonicalSelf = options?.self?.canonical ?? ((entity: Omit<Entity<C>, `self`>) => self.trim().split(`/`).concat(entity.id).join(`/`))
-  const formatOptions = { self: canonicalSelf }
-  const entities = await Promise.all(data.map(async (item: any) => options?.format?.(event, item, formatOptions) ?? await render(event, item, formatOptions)))
-
-  const paginator = usePaginator({
-    total: options?.total ? options.total : entities.length,
-    page: options?.page ?? queryOptions.page,
-    pageSize: options?.pageSize ?? queryOptions.pageSize,
+  const renderOptions = defu(options, {
+    self: {
+      canonical: (data: D) => {
+        if (`id` in data) {
+          return uriFromEventPathname(data).trim().split(`/`).concat(`${data.id}`).join(`/`)
+        }
+        return uriFromEventPathname(data)
+      },
+      list: uriFromEventPathname<D[]>,
+    },
+    total: data.length,
+    page: queryOptions.page,
+    pageSize: queryOptions.pageSize,
   })
 
+  const formatOptions = { self: renderOptions.self.canonical }
+  const entities = await Promise.all(data.map(async (item: any) => options?.renderFn?.<C, D>(item, formatOptions) ?? await render<C, D>(item, formatOptions)))
+
+  const { total, page, pageSize } = renderOptions
+  const paginator = usePaginator({ total, page, pageSize })
+
   return {
-    self,
+    self: renderOptions.self.list(data),
     entities,
     ...paginator,
   }
@@ -369,33 +393,46 @@ export function diff<T extends object = object>(obj: T, clone: T, options?: { ke
   ]
 }
 
-export async function renderDiffOr404<C extends Content = Content, D = any>(event: H3Event, data?: [D, D], options?: Partial<FormatOptions<C> & { message: string }>) {
+export async function renderDiffOr404<C extends Content = Content, D extends object = object>(data?: [D, D], options?: Partial<FormatOptions<D> & { message: string }>) {
   if (data) {
-    return await renderDiff<C>(event, data, options)
+    return await renderDiff<C, D>(data, options)
   }
-  return create404(event)
+  return create404(options?.message)
 }
 
-export async function renderDiff<C extends Content = Content, D = any>(event: H3Event, data: [D, D], options?: Partial<FormatOptions<C>>): Promise<Entity<Partial<C>>> {
-  const [before, after] = await Promise.all(data.map(d => render(event, d, options)))
-  const [diffBefore, diffAfter] = diff(before, after, { keep: [`id`, `self`] }) as [Entity<Partial<C>>, Entity<Partial<C>>]
+export async function renderDiff<C extends Content = Content, D extends object = object>(data: [D, D], options?: Partial<FormatOptions<D>>): Promise<Entity<Partial<C>>> {
+  const rendered = await Promise.all(data.map(d => render<C, D>(d, options)))
+
+  const [before, after] = rendered
+  const [diffBefore, diffAfter] = diff(before, after).map((d, index) => ({
+    ...d,
+    id: rendered[index].id,
+    self: rendered[index].self,
+  }))
+
   return {
     previous: diffBefore,
     ...diffAfter,
   }
 }
 
-export async function renderDiffList<C extends Content = Content, D = any>(event: H3Event, data: [D, D][], options?: Partial<FormatManyOptions<C>>): Promise<EntityList<Partial<C>>> {
+export async function renderDiffList<C extends Content = Content, D extends object = object>(data: [D, D][], options?: Partial<FormatManyOptions<D>>): Promise<EntityList<Partial<C>>> {
   const beforeData = data.map(([before]) => before)
   const afterData = data.map(([, after]) => after)
-  const [beforeList, afterList] = await Promise.all([beforeData, afterData].map(async data => await renderList(event, data, options)))
+  const [beforeList, afterList] = await Promise.all([beforeData, afterData].map(async data => await renderList<C, D>(data, options)))
 
   const { entities: beforeEntities, ...list } = beforeList
   const { entities: afterEntities } = afterList
   const diffs = beforeEntities
     .map((before, index) => [before, afterEntities[index]])
-    .map(([before, after]) => {
-      const [diffBefore, diffAfter] = diff(before, after, { keep: [`id`, `self`] }) as [Entity<Partial<C>>, Entity<Partial<C>>]
+    .map((rendered) => {
+      const [before, after] = rendered
+      const [diffBefore, diffAfter] = diff(before, after).map((d, index) => ({
+        ...d,
+        id: rendered[index].id,
+        self: rendered[index].self,
+      }))
+
       return {
         previous: diffBefore,
         ...diffAfter,
@@ -408,11 +445,18 @@ export async function renderDiffList<C extends Content = Content, D = any>(event
   }
 }
 
-export function create404(event: H3Event, message?: string) {
-  const params = Object.entries(getRouterParams(event))
-  if (params.length > 0) {
-    const [param, value] = params.at(-1)!
-    return createError({ statusCode: 404, statusMessage: message ?? `The resource with ${param} "${value}" does not exist.` })
+export function create404(message?: string) {
+  if (message) {
+    return createError({ statusCode: 404, statusMessage: message })
   }
-  return createError({ statusCode: 404, statusMessage: message ?? `The resource does not exist.` })
+
+  const event = useEvent()
+  if (event) {
+    const params = Object.entries(getRouterParams(event))
+    if (params.length > 0) {
+      const [param, value] = params.at(-1)!
+      return createError({ statusCode: 404, statusMessage: `The resource with ${param} "${value}" does not exist.` })
+    }
+  }
+  return createError({ statusCode: 404, statusMessage: `The resource does not exist.` })
 }

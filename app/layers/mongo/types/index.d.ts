@@ -61,9 +61,7 @@ export interface PluginOptions<F extends function = any> {
   strict: boolean
 }
 
-export interface RenderOptions {
-  event: H3Event
-}
+export type RenderOptions = Record<string, any>
 
 export interface PayloadReadOptions<P extends `create` | `update` = `create` | `update`> {
   event: H3Event

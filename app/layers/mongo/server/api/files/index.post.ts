@@ -21,5 +21,5 @@ export default defineEventHandler(async (event) => {
     await FileBase.updateByID(`${doc._id}`, { filepath, filename })
   }))
 
-  return renderList(event, docs.map(({ _id }) => ({ _id })))
+  return renderList(docs.map(({ _id }) => ({ _id })))
 })

@@ -5,5 +5,5 @@ export default defineEventHandler(async (event) => {
   await useEventQuery(event, query)
   const file = await query
 
-  return renderOr404(event, file)
+  return renderOr404(file)
 })

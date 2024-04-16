@@ -5,5 +5,5 @@ export default defineEventHandler(async (event) => {
   const body = await readOneBodyOr400<Term>(event)
   const update = await Term.updateByID(id, body)
 
-  return renderDiffOr404(event, update)
+  return renderDiffOr404(update)
 })
