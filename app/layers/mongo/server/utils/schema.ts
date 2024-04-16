@@ -199,7 +199,7 @@ type AggregateResult<D extends IDocumentBase = IDocumentBase> = Pick<DocumentFin
 export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends DocumentQueryMethod = `findMany`>(documentType: DocumentModel<D>, options?: { method: M }) {
   const joins: Join[] = []
   const filters: [string, any][] = []
-  const selection: string[] = []
+  const selection: [string, string | 1 | true][] = []
   const sort: [string, boolean][] = []
   const paginator: [number, number] = [1, 25]
   const handlers: ((query: DocumentFindQuery<D, M>) => void)[] = []
@@ -253,17 +253,25 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
 
     // project stage
     if (selection.length > 0) {
-      type Selection = { [K: string]: 1 | Selection[keyof Selection] }
-      const reduce = (s: string[]): Selection => {
-        const reduced = s.reduce((group: Record<string, string[]>, field: string) => {
-          const [root, ...tail] = field.split(`.`)
-          return tail.length > 0
-            ? { ...group, [root]: [...(group[root] ?? []), tail.join(`.`)] }
-            : { ...group, [root]: [...(group[root] ?? [])] }
-        }, {} as Record<string, string[]>)
-        return Object.fromEntries(Object.entries(reduced).map(([p, v]) => [p, v.length > 0 ? reduce(v) : 1])) as Selection
+      type Field = [string, string | 1 | true]
+      type Selection = { [K: string]: 1 | string | Selection }
+
+      selection.push([`__type`, `$type`])
+      const emptyKey = ([key]: Field) => key === ``
+      const reduce = (s: Field[]): Selection => {
+        const reduced = s.reduce((group, field) => {
+          const [key, projection] = field
+          const [root, ...tail] = key.split(`.`)
+          if (tail.length > 0) {
+            group[root] = [...(group[root] ?? []).filter(f => !emptyKey(f)), [tail.join(`.`), projection]]
+          } else if (!group[root] || group[root].every(emptyKey)) {
+            group[root] = [[``, projection]]
+          }
+          return group
+        }, {} as Record<string, Field[]>)
+        return Object.fromEntries(Object.entries(reduced).map(([key, nested]) => [key, nested.every(f => !emptyKey(f)) ? reduce(nested) : nested[0][1]])) as Selection
       }
-      aggregate.project({ ...reduce(selection), __type: `$type` })
+      aggregate.project(reduce(selection))
     }
 
     const [page, pageSize] = paginator
@@ -347,8 +355,8 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
       filters.push([``, expr])
       return this
     },
-    select(...fields: string[]) {
-      selection.push(...fields)
+    select(...fields: (string | [string, string | 1 | true])[]) {
+      selection.push(...fields.map<[string, string | 1 | true]>(field => Array.isArray(field) ? field : [field, 1]))
       return this
     },
     sort(...fields: (string | [string, boolean])[]) {
