@@ -3,10 +3,13 @@ import { type TaxonomyTerm as MoTaxonomyTerm } from "../../documentTypes/Taxonom
 
 type TaxonomyTermQueryResultItem = Omit<MoTaxonomyTerm, `parent`> & { parent?: TaxonomyTermQueryResultItem }
 
-export default defineMongooseFormatter(TaxonomyTerm, async (item, { event }): Promise<Partial<TaxonomyTerm>> => {
-  const { parent } = item as TaxonomyTermQueryResultItem
+export default defineMongooseFormatter(TaxonomyTerm, async (doc): Promise<Partial<TaxonomyTerm> | void> => {
+  if (!doc.__type.startsWith(TaxonomyTerm.fullName)) { return }
+
+  const { parent } = doc as TaxonomyTermQueryResultItem
 
   const fetchParent = async (pid: string) => {
+    const event = useEvent()
     const { select } = getQueryOptions(event)
     const sparams: string[] = []
     if (select.length < 1) {
