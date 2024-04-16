@@ -1,11 +1,11 @@
 import { FilterOperator } from "@unb-libraries/nuxt-layer-entity"
 import { consola } from "consola"
+import { defu } from "defu"
 import { type H3Event } from "h3"
 import { type QueryOptions, type Content, type Entity, type EntityList, type Payload, type DocumentQueryMethod, type DocumentQuery, type FilterableQuery, type DocumentPayload } from "../../../types/entity"
-import { type FormatOptions, type FormatManyOptions } from "../../../types/api"
 import { type DocumentBase, type DocumentModel } from "../../../types/schema"
 import type { QueryCondition } from "./filter"
-import type { RenderOptions, PayloadReadOptions, PluginOptions } from "~/layers/mongo/types"
+import type { PayloadReadOptions, PluginOptions, RenderOptions, RenderListOptions, RenderDocumentOptions, RenderDocumentListOptions } from "~/layers/mongo/types"
 
 function initMongooseContext(event: H3Event) {
   event.context.mongoose = {
@@ -289,29 +289,25 @@ export async function readBodyListOr400<T extends object = object, P extends `cr
   return await Promise.all(payloads.map(payload => readOr400<T, P>(event, payload, options))) as T[]
 }
 
-export function defineEntityFormatter<T = any, C extends Content = Content>(formatter: (item: T, options: RenderOptions) => Partial<C> | Promise<Partial<C>>, options?: Partial<PluginOptions<typeof formatter>>) {
-  const enable = options?.enable
+export function defineEntityFormatter<T = any, C extends Content = Content, O extends RenderOptions = RenderOptions>(formatter: (item: T, options: O) => Partial<C> | Promise<Partial<C> | void> | void) {
   return defineNitroPlugin((nitro) => {
     nitro.hooks.hook(`entity:render`, (item: T, options) => {
-      if (!enable || enable(item, options)) {
-        return formatter(item, options)
+      const formatted = formatter(item, options as O)
+      if (formatted) {
+        return formatted
       }
       return {}
     })
   })
 }
 
-export function defineMongooseFormatter<D extends DocumentBase, T extends Content>(Model: DocumentModel<D>, formatter: (doc: D, options: RenderOptions) => Partial<T> | Promise<Partial<T>>, options?: Partial<PluginOptions<typeof formatter>>) {
-  const { enable, strict } = options || {}
-  return defineEntityFormatter<D, T>(formatter, {
-    enable: (doc, options) => {
-      const eventModel = getMongooseModel(options.event)
-      return eventModel &&
-      matchInputModel(Model, strict
-        ? eventModel.fullName
-        : new RegExp(`^${eventModel.fullName}`)) &&
-        (!enable || enable(doc, options))
-    },
+export function defineMongooseFormatter<D extends DocumentBase, T extends Content>(Model: DocumentModel<D>, formatter: (doc: D, options: RenderDocumentOptions<D>) => Partial<T> | Promise<Partial<T> | void> | void, options?: Partial<PluginOptions<typeof formatter>>) {
+  const { strict } = options || {}
+  return defineEntityFormatter<D, T, RenderDocumentOptions<D>>((doc, options) => {
+    const modelName = options.model?.fullName
+    if ((strict && modelName === Model.fullName) || Model.fullName.match(RegExp(`^${modelName}`))) {
+      return formatter(doc, options)
+    }
   })
 }
 
@@ -323,12 +319,11 @@ const uriFromEventPathname = <D extends object = object>(data: D) => {
   return ``
 }
 
-export async function render<C extends Content = Content, D extends object = object>(data: D, options?: Partial<FormatOptions<D>>): Promise<Entity<C>> {
+export async function render<C extends Content = Content, D extends object = object>(data: D, options?: Partial<RenderOptions<D>>): Promise<Entity<C>> {
   const nitro = useNitroApp()
-  const renderOptions = {
-    self: uriFromEventPathname,
-    ...options,
-  }
+  const renderOptions: RenderOptions<D> = defu(options, {
+    self: uriFromEventPathname<D>,
+  })
 
   const formattedContent = await nitro.hooks.callHookParallel(`entity:render`, data, renderOptions)
   const self = renderOptions.self(data)
@@ -341,40 +336,39 @@ export async function render<C extends Content = Content, D extends object = obj
   return { self, ...entity } as Entity<C>
 }
 
-export async function renderOr404<C extends Content = Content, D extends object = object>(data?: D, options?: Partial<FormatOptions<D> & { message: string }>) {
+export async function renderOr404<C extends Content = Content, D extends object = object>(data?: D, options?: Partial<RenderOptions<D> & { message: string }>) {
   if (data) {
     return await render<C, D>(data, options)
   }
   return create404(options?.message)
 }
 
-export async function renderList<C extends Content = Content, D extends object = object>(data: D[], options?: Partial<FormatManyOptions<D> & { renderFn?: typeof render }>): Promise<EntityList<C>> {
+export async function renderList<C extends Content = Content, D extends object = object>(data: D[], options?: Partial<RenderListOptions<D> & { renderFn?: typeof render }>): Promise<EntityList<C>> {
   const event = useEvent()
   const queryOptions = event ? getQueryOptions(event) : { page: 1, pageSize: 25 }
 
   const renderOptions = defu(options, {
-    self: {
-      canonical: (data: D) => {
+    canonical: {
+      self: (data: D) => {
         if (`id` in data) {
           return uriFromEventPathname(data).trim().split(`/`).concat(`${data.id}`).join(`/`)
         }
         return uriFromEventPathname(data)
       },
-      list: uriFromEventPathname<D[]>,
     },
+    self: uriFromEventPathname<D[]>,
     total: data.length,
     page: queryOptions.page,
     pageSize: queryOptions.pageSize,
+    renderFn: render,
   })
 
-  const formatOptions = { self: renderOptions.self.canonical }
-  const entities = await Promise.all(data.map(async (item: any) => options?.renderFn?.<C, D>(item, formatOptions) ?? await render<C, D>(item, formatOptions)))
-
+  const entities = await Promise.all(data.map(async (item: any) => await renderOptions.renderFn<C, D>(item, renderOptions.canonical)))
   const { total, page, pageSize } = renderOptions
   const paginator = usePaginator({ total, page, pageSize })
 
   return {
-    self: renderOptions.self.list(data),
+    self: renderOptions.self(data),
     entities,
     ...paginator,
   }
@@ -393,14 +387,14 @@ export function diff<T extends object = object>(obj: T, clone: T, options?: { ke
   ]
 }
 
-export async function renderDiffOr404<C extends Content = Content, D extends object = object>(data?: [D, D], options?: Partial<FormatOptions<D> & { message: string }>) {
+export async function renderDiffOr404<C extends Content = Content, D extends object = object>(data?: [D, D], options?: Partial<RenderOptions<D> & { message: string }>) {
   if (data) {
     return await renderDiff<C, D>(data, options)
   }
   return create404(options?.message)
 }
 
-export async function renderDiff<C extends Content = Content, D extends object = object>(data: [D, D], options?: Partial<FormatOptions<D>>): Promise<Entity<Partial<C>>> {
+export async function renderDiff<C extends Content = Content, D extends object = object>(data: [D, D], options?: Partial<RenderOptions<D>>): Promise<Entity<Partial<C>>> {
   const rendered = await Promise.all(data.map(d => render<C, D>(d, options)))
 
   const [before, after] = rendered
@@ -416,7 +410,7 @@ export async function renderDiff<C extends Content = Content, D extends object =
   }
 }
 
-export async function renderDiffList<C extends Content = Content, D extends object = object>(data: [D, D][], options?: Partial<FormatManyOptions<D>>): Promise<EntityList<Partial<C>>> {
+export async function renderDiffList<C extends Content = Content, D extends object = object>(data: [D, D][], options?: Partial<RenderListOptions<D>>): Promise<EntityList<Partial<C>>> {
   const beforeData = data.map(([before]) => before)
   const afterData = data.map(([, after]) => after)
   const [beforeList, afterList] = await Promise.all([beforeData, afterData].map(async data => await renderList<C, D>(data, options)))
@@ -443,6 +437,37 @@ export async function renderDiffList<C extends Content = Content, D extends obje
     ...list,
     entities: diffs,
   }
+}
+
+export async function renderDocument<C extends Content = Content, D extends DocumentBase = DocumentBase>(doc: D, options?: Partial<RenderDocumentOptions<D>>): Promise<Entity<C>> {
+  return await render<C, D>(doc, options)
+}
+export async function renderDocumentOr404<C extends Content = Content, D extends DocumentBase = DocumentBase>(doc?: D, options?: Partial<RenderDocumentOptions<D> & { message: string }>) {
+  return await renderOr404<C, D>(doc, options)
+}
+export async function renderDocumentList<C extends Content = Content, D extends DocumentBase = DocumentBase>(docs: D[], options?: Partial<RenderDocumentListOptions<D>>): Promise<EntityList<C>> {
+  return await renderList<C, D>(docs, defu(options, {
+    canonical: {
+      self: (doc: D) => uriFromEventPathname(doc).trim().concat(`/${doc._id}`),
+      renderFn: renderDocument,
+      model: options?.model,
+    },
+  }))
+}
+export async function renderDocumentDiff<C extends Content = Content, D extends DocumentBase = DocumentBase>(docs: [D, D], options?: Partial<RenderDocumentOptions<D>>): Promise<Entity<Partial<C>>> {
+  return await renderDiff<C, D>(docs, options)
+}
+export async function renderDocumentDiffOr404<C extends Content = Content, D extends DocumentBase = DocumentBase>(docs?: [D, D], options?: Partial<RenderDocumentOptions<D> & { message: string }>) {
+  return await renderDiffOr404<C, D>(docs, options)
+}
+export async function renderDocumentDiffList<C extends Content = Content, D extends DocumentBase = DocumentBase>(docs: [D, D][], options?: Partial<RenderDocumentListOptions<D>>): Promise<EntityList<Partial<C>>> {
+  return await renderDiffList<C, D>(docs, defu(options, {
+    canonical: {
+      self: (doc: D) => uriFromEventPathname(doc).trim().concat(`/${doc._id}`),
+      renderFn: renderDocumentDiff,
+      model: options?.model,
+    },
+  }))
 }
 
 export function create404(message?: string) {

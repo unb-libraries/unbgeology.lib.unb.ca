@@ -10,5 +10,5 @@ export default defineEventHandler(async (event) => {
   const { documents: updates, total } = await query
     .paginate(page, pageSize)
 
-  return renderDiffList(updates, { total })
+  return renderDocumentDiffList(updates, { total, model: Term })
 })

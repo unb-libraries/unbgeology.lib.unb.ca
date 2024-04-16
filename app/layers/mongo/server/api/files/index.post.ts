@@ -21,5 +21,7 @@ export default defineEventHandler(async (event) => {
     await FileBase.updateByID(`${doc._id}`, { filepath, filename })
   }))
 
-  return renderList(docs.map(({ _id }) => ({ _id })))
+  return docs.length > 1
+    ? renderList(docs.map(({ _id }) => ({ _id })))
+    : renderDocument(docs[0], { model: FileBase })
 })

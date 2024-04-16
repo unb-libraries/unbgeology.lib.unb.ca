@@ -7,5 +7,5 @@ export default defineEventHandler(async (event) => {
   const { documents: terms, total } = await query
     .paginate(page, pageSize)
 
-  return renderList(terms, { total })
+  return renderDocumentList(terms, { total, model: Term })
 })

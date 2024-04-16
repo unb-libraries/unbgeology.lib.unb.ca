@@ -61,7 +61,21 @@ export interface PluginOptions<F extends function = any> {
   strict: boolean
 }
 
-export type RenderOptions = Record<string, any>
+export interface RenderOptions<T extends object = object> {
+  self: (data: T) => string
+}
+export interface RenderListOptions<T extends object = object, O extends RenderOptions = RenderOptions<T>> {
+  canonical: O
+  self: (data: T[]) => string
+  total: number
+  page: number
+  pageSize: number
+}
+export interface RenderDocumentOptions<D extends DocumentBase = DocumentBase> extends RenderOptions {
+  model?: DocumentModel<D>
+}
+
+export type RenderDocumentListOptions<D extends DocumentBase = DocumentBase> = RenderDocumentOptions<D> & RenderListOptions<D, RenderDocumentOptions<D>>
 
 export interface PayloadReadOptions<P extends `create` | `update` = `create` | `update`> {
   event: H3Event
@@ -87,7 +101,7 @@ export declare module "nitropack" {
     "migrate:pause": (migration: Migration) => void | Promise<void>
     
     // Entity hooks
-    "entity:render": (item: any, options: RenderOptions) => any | Promise<any>
+    "entity:render": (item: any, options: RenderOptions<any>) => any | Promise<any>
     "body:read": (payload: any, options: PayloadReadOptions) => any | Promise<any>
   }
 }
