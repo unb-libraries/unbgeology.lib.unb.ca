@@ -377,7 +377,7 @@ export async function renderList<C extends Content = Content, D extends object =
 export function diff<T extends object = object>(obj: T, clone: T, options?: { keep: (keyof T)[] }): [Partial<T>, Partial<T>] {
   const diffs: [keyof T, [T[keyof T], T[keyof T]]][] = Object.entries(obj)
     .filter(([path, value]) => options?.keep?.includes(path as keyof T) || JSON.stringify(value) !== JSON.stringify(clone[path as keyof T]))
-    .map(([path, value]) => [path, typeof value !== `object`
+    .map(([path, value]) => [path, typeof value !== `object` || Array.isArray(value)
       ? [value, clone[path as keyof T]]
       : diff(value as object, clone[path as keyof T] as object)]) as [keyof T, [T[keyof T], T[keyof T]]][]
 
