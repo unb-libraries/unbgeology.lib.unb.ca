@@ -17,7 +17,7 @@ const returnOnSomeSuccess = <D extends DocumentBase = DocumentBase>(fns: ((field
 
 const Within = <D extends DocumentBase = DocumentBase>(field: string, condition: QueryCondition) => {
   const [op, value] = condition
-  if (!Array.isArray(value) || value.length < 2) {
+  if (!Array.isArray(value) || value.length < 2 || value.some(v => isNaN(parseInt(v)))) {
     throw new Error(`Invalid value: must provide numeric range`)
   }
 
@@ -37,7 +37,7 @@ const Within = <D extends DocumentBase = DocumentBase>(field: string, condition:
 
 const Outside = <D extends DocumentBase = DocumentBase>(field: string, condition: QueryCondition) => {
   const [op, value] = condition
-  if (!Array.isArray(value) || value.length < 2) {
+  if (!Array.isArray(value) || value.length < 2 || value.some(v => isNaN(parseInt(v)))) {
     throw new Error(`Invalid value: must provide numeric range`)
   }
 
@@ -70,9 +70,9 @@ Range.Outside = Outside
 
 const Greater = <D extends DocumentBase = DocumentBase>(field: string, condition: QueryCondition) => {
   const [op, value] = condition
-  const number = Array.isArray(value) ? value.length > 0 ? parseInt(value.at(-1)!) : undefined : value ? parseInt(value) : undefined
-  if (!number) {
-    throw new Error(`Invalid value: must provide a number`)
+  const number = Array.isArray(value) ? value.length > 0 ? parseInt(value.at(-1)!) : NaN : parseInt(value)
+  if (isNaN(number)) {
+    throw new TypeError(`Invalid value: must provide a number`)
   }
 
   switch (op) {
@@ -88,9 +88,9 @@ const Greater = <D extends DocumentBase = DocumentBase>(field: string, condition
 
 const Less = <D extends DocumentBase = DocumentBase>(field: string, condition: QueryCondition) => {
   const [op, value] = condition
-  const number = Array.isArray(value) ? value.length > 0 ? parseInt(value.at(-1)!) : undefined : value ? parseInt(value) : undefined
-  if (!number) {
-    throw new Error(`Invalid value: must provide a number`)
+  const number = Array.isArray(value) ? value.length > 0 ? parseInt(value.at(-1)!) : NaN : parseInt(value)
+  if (isNaN(number)) {
+    throw new TypeError(`Invalid value: must provide a number`)
   }
 
   switch (op) {
@@ -106,9 +106,9 @@ const Less = <D extends DocumentBase = DocumentBase>(field: string, condition: Q
 
 const Equals = <D extends DocumentBase = DocumentBase>(field: string, condition: QueryCondition) => {
   const [op, value] = condition
-  const number = Array.isArray(value) ? value.length > 0 ? value.map(parseInt) : undefined : value ? parseInt(value) : undefined
-  if (!number) {
-    throw new Error(`Invalid value: must provide a number`)
+  const number = Array.isArray(value) ? value.length > 0 ? parseInt(value.at(-1)!) : NaN : parseInt(value)
+  if (isNaN(number)) {
+    throw new TypeError(`Invalid value: must provide a number`)
   }
 
   if (op === FilterOperator.EQUALS) {

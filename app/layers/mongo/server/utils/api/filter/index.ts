@@ -1,5 +1,6 @@
 import type { QueryOptions, FilterableQuery } from "../../../../types/entity"
 import Boolean from "./boolean"
+import Count from "./count"
 import Date from "./date"
 import Enum from "./enum"
 import Numeric from "./numeric"
@@ -11,6 +12,7 @@ export type QueryCondition = [QueryOptions[`filter`][number][1], QueryOptions[`f
 export type Filter = <D extends DocumentBase = DocumentBase>(query: FilterableQuery<D>) => void
 
 export {
+  Count,
   Boolean,
   Date,
   Enum,
