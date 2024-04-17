@@ -1,17 +1,13 @@
-import { type Specimen, ObjectIDType, type ObjectID } from "types/specimen"
+import { type Specimen } from "document-types/Specimen"
+import { type Specimen as SpecimenEntity } from "~/types/specimen"
 
 export default defineEventHandler(async (event) => {
-  const specimenBody = await readSpecimenBody(event)
-  if (!specimenBody.objectIDs) {
-    specimenBody.objectIDs = [] as ObjectID[]
-  }
-  specimenBody.objectIDs.push({
-    id: createObjectID(),
-    primary: specimenBody.objectIDs.find(({ primary }) => primary) === undefined,
-    type: ObjectIDType.INTERNAL,
-  })
+  const body = await readBodyOr400<Specimen>(event)
+  const specimenOrSpecimens = await Specimen.Base.create(body)
+  const specimens = Array.isArray(specimenOrSpecimens) ? specimenOrSpecimens : [specimenOrSpecimens]
 
-  const specimen = await Specimen.create(specimenBody)
-
-  return sendEntity<Specimen>(event, specimen)
+  return (await Promise.all(specimens.map(async specimen => await renderDocument<SpecimenEntity, Specimen>(specimen, {
+    model: Specimen.Base,
+    self: specimen => `/api/specimens/${specimen.slug}`,
+  })))).map(({ id, self }) => ({ id, self }))
 })

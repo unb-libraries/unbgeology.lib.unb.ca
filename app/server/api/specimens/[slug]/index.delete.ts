@@ -1,9 +1,11 @@
 export default defineEventHandler(async (event) => {
   const { slug } = getRouterParams(event)
 
-  const specimen = await Specimen.findBySlugAndDelete(slug)
+  const specimen = await Specimen.Base.deleteOne()
+    .where(`slug`).eq(slug)
+
   if (specimen) {
     return sendNoContent(event)
   }
-  throw createError({ statusCode: 404, statusMessage: `Specimen entity "${slug}" not found.` })
+  throw create404(`Specimen entity "${slug}" not found.`)
 })

@@ -1,19 +1,10 @@
-import { type Specimen } from "types/specimen"
-
 export default defineEventHandler(async (event) => {
   const { slug } = getRouterParams(event)
-  const { select, filterSelect } = getQueryOptions(event)
 
-  const specimen = await Specimen.findBySlug(slug)
-    .select(getSelectedFields(select))
-    .populate(`images`, filterSelect({ root: `images`, default: [`_id`, `filename`, `filepath`] }))
-    .populate(`classification`, filterSelect({ root: `classification`, default: [`_id`, `label`] }))
-    .populate(`age.relative`, filterSelect({ root: `age.relative`, default: [`_id`, `label`, `boundaries`] }))
-    .populate(`portion`, filterSelect({ root: `portion`, default: [`_id`, `label`] }))
-    .populate(`collector`, filterSelect({ root: `collector`, default: [`_id`, `firstName`, `lastName`] }))
-    .populate(`sponsor`, filterSelect({ root: `sponsor`, default: [`_id`, `firstName`, `lastName`] }))
-    .populate(`storage.location`, filterSelect({ root: `storage.location` }))
-    .populate(`editor`, filterSelect({ root: `editor`, default: [`_id`, `username`] }))
+  const query = Specimen.Base.findOne()
+  await useEventQuery(event, query)
+  const specimen = await query
+    .where(`slug`).eq(slug)
 
-  return sendEntityOr404<Specimen>(event, specimen)
+  return renderDocumentOr404(specimen, { model: Specimen.Base })
 })
