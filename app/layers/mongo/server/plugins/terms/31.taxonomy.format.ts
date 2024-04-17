@@ -4,7 +4,7 @@ import { type TaxonomyTerm as MoTaxonomyTerm } from "../../documentTypes/Taxonom
 type TaxonomyTermQueryResultItem = Omit<MoTaxonomyTerm, `parent`> & { parent?: TaxonomyTermQueryResultItem }
 
 export default defineMongooseFormatter(TaxonomyTerm, async (doc): Promise<Partial<TaxonomyTerm> | void> => {
-  if (!doc.__type.startsWith(TaxonomyTerm.fullName)) { return }
+  if (!(doc.__type && doc.__type.startsWith(TaxonomyTerm.fullName))) { return }
 
   const { parent } = doc as TaxonomyTermQueryResultItem
 

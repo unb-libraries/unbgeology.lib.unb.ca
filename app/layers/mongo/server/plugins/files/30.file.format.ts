@@ -1,7 +1,9 @@
 import { FileState, type File } from "@unb-libraries/nuxt-layer-entity"
 
-export default defineMongooseFormatter(FileBase, (item): Partial<File> => {
-  const { _id, filename, filesize, mimetype, status, type, created, updated } = item
+export default defineMongooseFormatter(FileBase, (doc): Partial<File> | void => {
+  if (!(doc.__type && doc.__type.startsWith(FileBase.fullName))) { return }
+
+  const { _id, filename, filesize, mimetype, status, type, created, updated } = doc
   return {
     id: `${_id}`,
     filename,
