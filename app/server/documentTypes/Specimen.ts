@@ -1,13 +1,40 @@
 import { EntityFieldTypes } from "layers/mongo/types/entity"
 import { Immeasurabibility, MeasurementType, ObjectIDType, Status } from "types/specimen"
 import type { Entity, Stateful as IStateful } from "@unb-libraries/nuxt-layer-entity"
-import type { Specimen as SpecimenEntity, Fossil as FossilEntity } from "types/specimen"
-import type { DocumentBase } from "~/layers/mongo/types/schema"
+import type { Specimen as SpecimenEntity, Loan, Fossil as FossilEntity } from "types/specimen"
+import type { Person, Organization } from "./Affiliate"
+import type { GeochronologicUnit } from "./Geochronology"
+import type { StorageLocation as IStorageLocation } from "./StorageLocation"
+import type { DocumentBase as IDocumentBase } from "~/layers/mongo/types/schema"
+import ImageFile, { type Image } from "~/layers/mongo/server/documentTypes/Image"
+import { type User } from "~/layers/mongo/server/documentTypes/User"
 
-interface Specimen extends Omit<SpecimenEntity, keyof Entity>, IStateful<typeof Status>, DocumentBase {
+export interface Specimen extends Omit<SpecimenEntity, keyof Entity | `images` | `age` | `measurements` | `collector` | `sponsor` | `loans` | `storage` | `creator` | `editor`>, IStateful<typeof Status>, IDocumentBase {
   classificationModel: string
+  images: Image[]
+  age: {
+    relative: GeochronologicUnit
+  } & Pick<SpecimenEntity[`age`], `numeric`>
+  measurements: {
+    type: MeasurementType
+    dimensions?: number[]
+    reason?: Immeasurabibility
+  }[]
+  collector?: Person | Organization
   collectorModel: string
+  sponsor?: Person | Organization
   sponsorModel: string
+  loans: Array<Omit<Loan, `start` | `end`> & {
+    start: number
+    end: number
+  }>
+  storage: {
+    location: IStorageLocation
+    dateIn: number
+    dateOut?: number
+  }[]
+  creator: User
+  editor: User
 }
 
 const State = Stateful({
@@ -19,6 +46,14 @@ function optionalForStatus(status: Status) {
   return function (this: Specimen) {
     return !((this.status as Status) & status)
   }
+}
+
+export const validationPatterns = {
+  doi: /^10\.\d{4,9}\/[-._;()/:a-zA-Z0-9]+$/,
+  email: /^.+@.+\..+$/,
+  phone: /^\+?[\d\s\-()]+$/,
+  date: /^\d{4}-\d{2}-\d{2}$/,
+  partialDate: /^\d{4}(-\d{2}(-\d{2})?)?$/,
 }
 
 const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>({
@@ -47,7 +82,7 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
   },
   classification: {
     type: EntityFieldTypes.ObjectId,
-    required: optionalForStatus(Status.IMPORTED | Status.DRAFT),
+    required: optionalForStatus(Status.MIGRATED | Status.DRAFT),
     refPath: `classificationModel`,
   },
   classificationModel: {
@@ -61,11 +96,11 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
   },
   description: {
     type: EntityFieldTypes.String,
-    required: optionalForStatus(Status.IMPORTED | Status.DRAFT),
+    required: optionalForStatus(Status.MIGRATED | Status.DRAFT),
   },
   images: [{
     type: EntityFieldTypes.ObjectId,
-    ref: `File.Image`,
+    ref: ImageFile.mongoose.model.modelName,
     required: false,
   }],
   measurements: {
@@ -74,7 +109,6 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
         type: EntityFieldTypes.String,
         enum: MeasurementType,
         default: MeasurementType.INDIVIDUAL,
-        required: true,
       },
       dimensions: {
         type: [EntityFieldTypes.Number],
@@ -84,7 +118,7 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
         enum: Immeasurabibility,
       },
     }],
-    required: optionalForStatus(Status.IMPORTED | Status.DRAFT),
+    required: optionalForStatus(Status.MIGRATED | Status.DRAFT),
     validate: [
       {
         validator: function (measurements: Specimen[`measurements`]) {
@@ -123,40 +157,50 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
     ],
   },
   date: {
-    type: {
-      year: {
-        type: EntityFieldTypes.Number,
-        required: true,
-      },
-      month: {
-        type: EntityFieldTypes.Number,
-        required(this: Specimen) {
-          return this.date?.day !== undefined
-        },
-      },
-      day: {
-        type: EntityFieldTypes.Number,
-        required: false,
-      },
-    },
+    type: EntityFieldTypes.String,
     required: false,
     validate: {
-      validator: function (date: Specimen[`date`]) {
-        return (date && (date.day === undefined || date.month !== undefined)) || true
+      validator: function (dateStr: Specimen[`date`]) {
+        if (!dateStr) { return true }
+        try {
+          const date = new Date(dateStr)
+          return date !== undefined && !isNaN(date.getTime())
+        } catch {
+          return false
+        }
       },
-      message: `Month must be provided if day is provided.`,
+      message: `Invalid date. Expected format YYYY, YYYY-MM, or YYYY-MM-DD`,
     },
   },
   age: {
-    relative: {
-      type: EntityFieldTypes.ObjectId,
-      ref: Geochronology.mongoose.model,
-      required: optionalForStatus(Status.IMPORTED | Status.DRAFT),
+    type: {
+      relative: {
+        type: EntityFieldTypes.ObjectId,
+        ref: Geochronology.mongoose.model,
+      },
+      numeric: {
+        type: EntityFieldTypes.Number,
+      },
     },
-    numeric: {
-      type: EntityFieldTypes.Number,
-      required: false,
-    },
+    validate: [
+      {
+        validator: function (age: Specimen[`age`]) {
+          return age.relative !== undefined || age.numeric !== undefined
+        },
+        message: `Either a relative or numeric age must be provided.`,
+      },
+      {
+        validator: async function ({ relative, numeric }: Specimen[`age`]) {
+          if (!(relative && numeric)) {
+            return true
+          }
+          const unit = await Geochronology.findByID(`${relative}`).select(`boundaries`)
+          const { lower, upper } = unit!.boundaries
+          return numeric > lower && numeric < upper
+        },
+        message: `The numeric age does not match the geochronologi unit.`,
+      },
+    ],
   },
   origin: {
     type: {
@@ -164,13 +208,13 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
         type: EntityFieldTypes.Number,
         min: -90,
         max: 90,
-        required: optionalForStatus(Status.IMPORTED),
+        required: optionalForStatus(Status.MIGRATED),
       },
       longitude: {
         type: EntityFieldTypes.Number,
         min: -180,
         max: 180,
-        required: optionalForStatus(Status.IMPORTED),
+        required: optionalForStatus(Status.MIGRATED),
       },
       accuracy: {
         type: EntityFieldTypes.Number,
@@ -187,16 +231,16 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
         required: false,
       },
     },
-    required: optionalForStatus(Status.IMPORTED | Status.DRAFT),
+    required: optionalForStatus(Status.MIGRATED | Status.DRAFT),
   },
   pieces: {
     type: EntityFieldTypes.Number,
     min: 1,
-    required: optionalForStatus(Status.IMPORTED | Status.DRAFT),
+    required: optionalForStatus(Status.MIGRATED | Status.DRAFT),
   },
   partial: {
     type: EntityFieldTypes.Boolean,
-    required: optionalForStatus(Status.IMPORTED | Status.DRAFT),
+    required: optionalForStatus(Status.MIGRATED | Status.DRAFT),
     default: false,
   },
   collector: {
@@ -231,9 +275,8 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
   },
   loans: {
     type: [{
-      type: {
-        type: EntityFieldTypes.String,
-        enum: [`in`, `out`],
+      received: {
+        type: EntityFieldTypes.Boolean,
         required: true,
       },
       contact: {
@@ -247,39 +290,31 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
         },
         email: {
           type: EntityFieldTypes.String,
+          match: validationPatterns.email,
           required: true,
-          validate: {
-            validator: function (email: string) {
-              return email.match(/^.+@.+\..+$/)
-            },
-            message: `Invalid email address`,
-          },
         },
         phone: {
           type: EntityFieldTypes.String,
+          match: validationPatterns.phone,
           required: true,
-          validate: {
-            validator: function (phone: string) {
-              return phone.match(/^[\d-() ]+$/)
-            },
-            message: `Invalid phone number`,
-          },
         },
       },
       start: {
-        type: EntityFieldTypes.Date,
+        type: EntityFieldTypes.Number,
         required: true,
       },
       end: {
-        type: EntityFieldTypes.Date,
+        type: EntityFieldTypes.Number,
         required: true,
       },
     }],
     validate: [
-      function (loans: Specimen[`loans`]) {
-        return !loans || loans.every(loan => loan.start <= loan.end)
+      {
+        validator: function (loans: Specimen[`loans`]) {
+          return !loans || loans.every(loan => loan.start <= loan.end)
+        },
+        message: `Loan start date must precede end date.`,
       },
-      `Loan start date must precede end date.`,
     ],
   },
   storage: {
@@ -289,31 +324,37 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
         ref: StorageLocation.mongoose.model,
         required: true,
       },
-      dateIn: EntityFieldTypes.Date,
-      dateOut: EntityFieldTypes.Date,
+      dateIn: EntityFieldTypes.Number,
+      dateOut: EntityFieldTypes.Number,
     }],
     validate: [
       {
         validator: function (this: Specimen, storage: Specimen[`storage`]) {
-          return storage.length < 1 || this.status === Status.IMPORTED || !storage.slice(1).some(s => s.dateIn === undefined)
+          return storage.length > 0 || (this.status as Status) & (Status.MIGRATED | Status.DRAFT)
+        },
+        message: `Storage is required.`,
+      },
+      {
+        validator: function (this: Specimen, storage: Specimen[`storage`]) {
+          return storage.length < 1 || this.status === Status.MIGRATED || !storage.slice(1).some(s => s.dateIn === undefined)
         },
         message: `Each entry must provide an incoming date.`,
       },
       {
         validator: function (this: Specimen, storage: Specimen[`storage`]) {
-          return storage.length > 0 && storage.reverse().slice(1).some(s => s.dateOut === undefined)
+          return storage.length < 1 || storage.reverse().slice(1).some(s => s.dateOut === undefined)
         },
         message: `Each but the most recent entry must provide an outgoing date.`,
       },
       {
         validator: function (this: Specimen, storage: Specimen[`storage`]) {
-          return storage.every(s => !s.dateOut || s.dateIn <= s.dateOut)
+          return storage.length < 1 || storage.every(s => !s.dateOut || s.dateIn <= s.dateOut)
         },
         message: `Each entry's incoming date must precede its outgoing date.`,
       },
       {
         validator: function (this: Specimen, storage: Specimen[`storage`]) {
-          return storage.slice(1).every((s, i) => s.dateIn >= storage[i].dateOut!)
+          return storage.length < 1 || storage.slice(1).every((s, i) => s.dateIn >= storage[i].dateOut!)
         },
         message: `Each entry's incoming date must follow the previous entry's outgoing date.`,
       },
@@ -331,6 +372,7 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
       },
       doi: {
         type: EntityFieldTypes.String,
+        match: validationPatterns.doi,
         required: false,
       },
     }],
@@ -341,18 +383,30 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
     enum: Status,
     default: Status.DRAFT,
   },
+  creator: {
+    type: EntityFieldTypes.ObjectId,
+    ref: User.mongoose.model,
+    required: optionalForStatus(Status.MIGRATED),
+  },
   editor: {
     type: EntityFieldTypes.ObjectId,
     ref: User.mongoose.model,
-    required: optionalForStatus(Status.IMPORTED),
+    required: optionalForStatus(Status.MIGRATED),
+    default(this: Specimen) {
+      return this.creator
+    },
   },
-}).mixin(State)())
+}).mixin(Slugified<Specimen>({
+  path: doc => doc.objectIDs.find(id => id.primary)!.id,
+}))
+  .mixin(State)
+  .mixin(DocumentBase())())
 
 const Fossil = defineDocumentModel(`Fossil`, defineDocumentSchema<Omit<FossilEntity, `type` | `classification` | keyof Entity> & Specimen>({
   portion: {
     type: EntityFieldTypes.ObjectId,
     ref: FossilPortion.mongoose.model,
-    required: optionalForStatus(Status.IMPORTED | Status.DRAFT),
+    required: optionalForStatus(Status.MIGRATED | Status.DRAFT),
   },
 })(), Specimen)
 
@@ -365,7 +419,7 @@ const Rock = defineDocumentModel(`Rock`, defineDocumentSchema({
 })(), Specimen)
 
 export default {
-  Specimen,
+  Base: Specimen,
   Fossil,
   Mineral,
   Rock,

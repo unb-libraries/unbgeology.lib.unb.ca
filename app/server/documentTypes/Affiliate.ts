@@ -2,7 +2,7 @@ import { type Entity, type Stateful } from "@unb-libraries/nuxt-layer-entity"
 import { type Organization as OrganizationEntity, type Person as PersonEntity, Status, Pronouns, Title } from "types/affiliate"
 import { EntityFieldTypes } from "~/layers/mongo/types/entity"
 import { type Term } from "~/layers/mongo/server/documentTypes/Term"
-import Image from "~/layers/mongo/server/documentTypes/Image"
+import ImageFile, { type Image } from "~/layers/mongo/server/documentTypes/Image"
 
 type Affiliate<T> = Omit<T, keyof Entity> & Term & Stateful<typeof Status>
 const MxStateful = Stateful({
@@ -10,7 +10,7 @@ const MxStateful = Stateful({
   default: Status.DRAFT,
 })
 
-export type Person = Affiliate<Omit<PersonEntity, `image`> & { image?: string }>
+export type Person = Affiliate<Omit<PersonEntity, `image`> & { image?: Image }>
 export type Organization = Affiliate<OrganizationEntity>
 
 function optionalOnImport(this: Affiliate<any>) {
@@ -47,7 +47,7 @@ export default {
     },
     image: {
       type: EntityFieldTypes.ObjectId,
-      ref: Image.mongoose.model,
+      ref: ImageFile.mongoose.model,
       required: false,
     },
     bio: {

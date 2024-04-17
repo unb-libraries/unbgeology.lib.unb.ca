@@ -1,4 +1,4 @@
-import type { Image, Entity, User, Term, Stateful } from "@unb-libraries/nuxt-layer-entity"
+import type { Image, Entity, User, Term, Stateful, EntityJSONList } from "@unb-libraries/nuxt-layer-entity"
 import type { Affiliate } from "types/affiliate"
 import type { StorageLocation } from "types/storagelocation"
 import type { Unit } from "types/geochronology"
@@ -10,7 +10,7 @@ import type {
 } from "types/classification"
 
 export enum Status {
-  IMPORTED = 1,
+  MIGRATED = 1,
   DRAFT = 2,
   REVIEW = 4,
   PUBLISHED = 8,
@@ -40,8 +40,8 @@ export enum Immeasurabibility {
 
 export interface Measurement {
   type: MeasurementType
-  dimensions: Measurement[`type`] extends MeasurementType.IMMEASURABLE ? undefined : [number, number, number]
-  reason: Measurement[`type`] extends MeasurementType.IMMEASURABLE ? Immeasurabibility : undefined
+  dimensions?: [number, number, number]
+  reason?: Immeasurabibility
 }
 
 export interface Place {
@@ -52,26 +52,26 @@ export interface Place {
   description?: string
 }
 
-export interface Loan extends Entity {
-  type: `in` | `out`
+export interface Loan {
+  received: boolean
   contact: {
     name: string
     affiliation: string
     email: string
     phone: string
   }
-  start: Date
-  end: Date
+  start: string
+  end: string
   contract: string
 }
 
-export interface Storage extends Entity {
+export interface Storage {
   location: StorageLocation
-  dateIn: Date
-  dateOut?: Date
+  dateIn: string
+  dateOut?: string
 }
 
-export interface Publication extends Entity {
+export interface Publication {
   citation: string
   abstract?: string
   doi?: string
@@ -83,7 +83,7 @@ export enum ObjectIDType {
   LEGACY = `legacy`,
 }
 export interface ObjectID {
-  id: string | number
+  id: string
   type?: ObjectIDType
   source?: string
   primary?: boolean
@@ -94,16 +94,10 @@ export interface Specimen extends Entity, Stateful<typeof Status> {
   objectIDs: ObjectID[]
   slug: string
   description: string
-  images: Image[]
+  images: EntityJSONList<Image>
   classification: Classification
   measurements: Measurement[]
-  date?: {
-    day?: string
-    month?: Specimen[`date`] extends object ?
-      Specimen[`date`][`day`] extends undefined ?
-        undefined | string : string : undefined
-    year: string
-  }
+  date?: string
   age: {
     relative: Unit
     numeric?: number
@@ -116,6 +110,7 @@ export interface Specimen extends Entity, Stateful<typeof Status> {
   loans?: Loan[],
   storage: Storage[],
   publications?: Publication[],
+  creator: User
   editor: User
 }
 

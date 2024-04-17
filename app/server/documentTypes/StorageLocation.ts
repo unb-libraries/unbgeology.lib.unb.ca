@@ -2,7 +2,7 @@ import { EntityFieldTypes } from "layers/mongo/types/entity"
 import { type StorageLocation as TxStorageLocation, Status } from "types/storagelocation"
 import type { TaxonomyTerm } from "~/layers/mongo/server/documentTypes/TaxonomyTerm"
 
-type StorageLocation = Omit<TxStorageLocation, keyof TaxonomyTerm> & TaxonomyTerm
+export type StorageLocation = Omit<TxStorageLocation, keyof TaxonomyTerm> & TaxonomyTerm
 const State = Stateful({
   values: Status,
   default: Status.DRAFT,

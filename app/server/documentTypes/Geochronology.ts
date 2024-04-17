@@ -3,7 +3,7 @@ import { type Unit, Status, Division } from "types/geochronology"
 import { type TaxonomyTerm as TaxonomyTermEntity } from "@unb-libraries/nuxt-layer-entity"
 import { type TaxonomyTerm } from "~/layers/mongo/server/documentTypes/TaxonomyTerm"
 
-type GeochronologicUnit = Omit<Unit, keyof TaxonomyTermEntity> & TaxonomyTerm
+export type GeochronologicUnit = Omit<Unit, keyof TaxonomyTermEntity> & TaxonomyTerm
 const State = Stateful({
   values: Status,
   default: Status.DRAFT,
