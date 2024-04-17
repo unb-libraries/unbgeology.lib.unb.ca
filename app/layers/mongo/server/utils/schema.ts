@@ -198,6 +198,7 @@ type AggregateResult<D extends IDocumentBase = IDocumentBase> = Pick<DocumentFin
 
 export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends DocumentQueryMethod = `findMany`>(documentType: DocumentModel<D>, options?: { method: M }) {
   const joins: Join[] = []
+  const virtuals: [string, any][] = []
   const filters: [string, any][] = []
   const selection: [string, string | 1 | true][] = []
   const sort: [string, boolean][] = []
@@ -217,6 +218,9 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
     joins.forEach(({ from, foreignField, localField, as }) => {
       aggregate.lookup({ from, foreignField, localField, as })
     })
+
+    // addFields stage
+    virtuals.forEach(([field, value]) => aggregate.addFields({ [field]: value }))
 
     // match stage
     const findJoin = (field: string) => joins.find(({ localField }) => localField === field)
@@ -303,6 +307,9 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
       this.select(`${field}._id`)
       this.select([`${field}.__type`, `$${field}.type`])
 
+    },
+    addVirtual(field: string, value: any) {
+      virtuals.push([field, value])
       return this
     },
     and(field: string) {

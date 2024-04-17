@@ -149,6 +149,7 @@ export type DocumentDeleteQueryResult<D extends DocumentBase = DocumentBase, M e
 
 export interface DocumentBaseQuery<Q, R> {
   join: <J extends DocumentBase = DocumentBase>(field: string, model: DocumentModel<J>, options?: { cardinality: `one` | `many` }) => Q
+  addVirtual: (field: string, value: any) => Q
   and: DocumentBaseQuery<Q, R>[`where`]
   where: (field: string) => {
     eq: (value: any) => Q
