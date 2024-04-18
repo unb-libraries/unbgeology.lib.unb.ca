@@ -200,7 +200,7 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
   const joins: Join[] = []
   const virtuals: [string, any][] = []
   const filters: [string, any][] = []
-  const selection: [string, string | 1 | true][] = []
+  const selection: [string, string | 1 | true | object][] = []
   const sort: [string, boolean][] = []
   const paginator: [number, number] = [1, 25]
   const handlers: ((query: DocumentFindQuery<D, M>) => void)[] = []
@@ -257,8 +257,8 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
 
     // project stage
     if (selection.length > 0) {
-      type Field = [string, string | 1 | true]
-      type Selection = { [K: string]: 1 | string | Selection }
+      type Field = [string, string | 1 | true | object]
+      type Selection = { [K: string]: 1 | string | object | Selection }
 
       selection.push([`__type`, `$type`])
       const emptyKey = ([key]: Field) => key === ``
@@ -366,8 +366,8 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
       filters.push([``, expr])
       return this
     },
-    select(...fields: (string | [string, string | 1 | true])[]) {
-      selection.push(...fields.map<[string, string | 1 | true]>(field => Array.isArray(field) ? field : [field, 1]))
+    select(...fields: (string | [string, string | 1 | object])[]) {
+      selection.push(...fields.map<[string, string | 1 | true | object]>(field => Array.isArray(field) ? field : [field, 1]))
       return this
     },
     sort(...fields: (string | [string, boolean])[]) {
