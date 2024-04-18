@@ -224,13 +224,9 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
 
     // match stage
     const findJoin = (field: string) => joins.find(({ localField }) => localField === field)
-
-    // filter by non-join fields
     filters.filter(([field]) => !findJoin(field)).forEach(([field, condition]) => {
       aggregate.match(field !== `` ? { [field]: condition } : condition)
     })
-
-    // filter by join fields
     filters.filter(([field]) => findJoin(field)).map<[[string, any], Join]>(filter => [filter, findJoin(filter[0])!]).forEach(([[field, condition], { cardinality }]) => {
       aggregate.match(cardinality === `one` ? { [`${field}.0`]: condition } : { [field]: { $elemMatch: condition } })
     })
@@ -305,8 +301,13 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
       })
 
       this.select(`${field}._id`)
-      this.select([`${field}.__type`, `$${field}.type`])
+      if (options?.cardinality === `many`) {
+        this.select([`${field}.__type`, { $arrayElemAt: [`$${field}.type`, 0] }])
+      } else {
+        this.select([`${field}.__type`, `$${field}.type`])
+      }
 
+      return this
     },
     addVirtual(field: string, value: any) {
       virtuals.push([field, value])
@@ -392,7 +393,6 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
         const { documents, total } = result
 
         const assign = (document: D) => Object.assign(document, {
-          __type: document.__type ?? documentType.fullName,
           update: async (body: Partial<Mutable<D>>) => {
             return await updateDocument(documentType, `${document._id}`, body)
           },
@@ -449,7 +449,7 @@ async function updateDocument<D extends IDocumentBase = IDocumentBase>(Model: Do
   document.set(body)
   await document.save()
 
-  return [original, document.toJSON()] as [D, D]
+  return [original, document.toJSON()].map(d => ({ ...d, __type: Model.fullName })) as [D, D]
 }
 
 async function deleteDocument(Model: DocumentModel<any>, id: string) {
