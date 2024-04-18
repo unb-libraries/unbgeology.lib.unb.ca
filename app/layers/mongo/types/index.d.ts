@@ -79,6 +79,7 @@ export type RenderDocumentListOptions<D extends DocumentBase = DocumentBase> = R
 
 export interface PayloadReadOptions<P extends `create` | `update` = `create` | `update`> {
   event: H3Event
+  flat: boolean
   op: P
 }
 

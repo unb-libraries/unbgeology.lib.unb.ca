@@ -248,18 +248,34 @@ export function matchInputType(input: any, type: string | RegExp, options?: { ty
   return typeof type === `string` ? input[typeField] === type : type.test(input[typeField])
 }
 
+function flatten(body: object, prefix = ``): Record<string, any> {
+  return Object.entries(body).reduce((flattened, [key, value]) => {
+    if (typeof value === `object`) {
+      return { ...flattened, ...flatten(value, `${prefix}${key}.`) }
+    } else if (value !== undefined) {
+      return { ...flattened, [`${prefix}${key}`]: value }
+    } else {
+      return flattened
+    }
+  }, {} as Record<string, any>)
+}
+
 async function readOr400<T extends object = object, P extends `create` | `update` = `create`>(event: H3Event, payload: any, options?: Partial<PayloadReadOptions<P>>): Promise<Payload<T, P> | Payload<T, P>[]> {
   const nitro = useNitroApp()
+  const hookOptions: PayloadReadOptions<P> = {
+    op: ([`POST`, `PUT`].includes(event.method) ? `create` : `update`) as P,
+    flat: false,
+    event,
+    ...options,
+  }
+
   try {
-    const bodies = await nitro.hooks.callHookParallel(`body:read`, payload, {
-      op: [`POST`, `PUT`].includes(event.method) ? `create` : `update`,
-      event,
-      ...options,
-    })
-    return bodies.reduce((body, input) => {
+    const hookResults = await nitro.hooks.callHookParallel(`body:read`, payload, hookOptions)
+    const body = hookResults.reduce((body, input) => {
       const definedInputEntries = Object.entries(input).filter(([, value]) => value !== undefined)
       return { ...body, ...Object.fromEntries(definedInputEntries) }
     }, {})
+    return hookOptions.flat ? flatten(body) : body
   } catch (err) {
     throw createError({ statusCode: 400, statusMessage: `Invalid payload: ${(err as Error).message}` })
   }
