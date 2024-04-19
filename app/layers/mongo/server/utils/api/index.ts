@@ -250,10 +250,17 @@ export function matchInputType(input: any, type: string | RegExp, options?: { ty
   return typeof type === `string` ? input[typeField] === type : type.test(input[typeField])
 }
 
-function flatten(body: object, prefix = ``, options?: { flattenArrays: boolean }): Record<string, any> {
+function flatten(body: object, prefix = ``, options?: Partial<{ flattenArrays: boolean, flattenExcept: string[] }>): Record<string, any> {
   return Object.entries(body).reduce((flattened, [key, value]) => {
-    if (typeof value === `object` && (options?.flattenArrays || !Array.isArray(value))) {
-      return { ...flattened, ...flatten(value, `${prefix}${key}.`) }
+    const excluded = options?.flattenExcept?.includes(key)
+    if (!excluded && typeof value === `object` && (options?.flattenArrays || !Array.isArray(value))) {
+      return {
+        ...flattened,
+        ...flatten(value, `${prefix}${key}.`, {
+          ...options,
+          flattenExcept: options?.flattenExcept?.map(k => k.substring(0, k.indexOf(`.`))).filter(k => k) ?? [],
+        }),
+      }
     } else if (value !== undefined) {
       return { ...flattened, [`${prefix}${key}`]: value }
     } else {
@@ -268,6 +275,7 @@ async function readOr400<T extends object = object, P extends `create` | `update
     op: ([`POST`, `PUT`].includes(event.method) ? `create` : `update`) as P,
     flat: false,
     flattenArrays: false,
+    flattenExcept: [],
     event,
     ...options,
   }
@@ -278,7 +286,12 @@ async function readOr400<T extends object = object, P extends `create` | `update
       const definedInputEntries = Object.entries(input).filter(([, value]) => value !== undefined)
       return { ...body, ...Object.fromEntries(definedInputEntries) }
     }, {})
-    return hookOptions.flat ? flatten(body) : body
+    return hookOptions.flat
+      ? flatten(body, ``, {
+        flattenArrays: hookOptions.flattenArrays,
+        flattenExcept: hookOptions.flattenExcept,
+      })
+      : body
   } catch (err) {
     throw createError({ statusCode: 400, statusMessage: `Invalid payload: ${(err as Error).message}` })
   }

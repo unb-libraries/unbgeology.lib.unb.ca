@@ -81,6 +81,7 @@ export interface PayloadReadOptions<P extends `create` | `update` = `create` | `
   event: H3Event
   flat: boolean
   flattenArrays: boolean
+  flattenExcept: string[]
   op: P
 }
 
