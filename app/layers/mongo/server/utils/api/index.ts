@@ -248,9 +248,9 @@ export function matchInputType(input: any, type: string | RegExp, options?: { ty
   return typeof type === `string` ? input[typeField] === type : type.test(input[typeField])
 }
 
-function flatten(body: object, prefix = ``): Record<string, any> {
+function flatten(body: object, prefix = ``, options?: { flattenArrays: boolean }): Record<string, any> {
   return Object.entries(body).reduce((flattened, [key, value]) => {
-    if (typeof value === `object`) {
+    if (typeof value === `object` && (options?.flattenArrays || !Array.isArray(value))) {
       return { ...flattened, ...flatten(value, `${prefix}${key}.`) }
     } else if (value !== undefined) {
       return { ...flattened, [`${prefix}${key}`]: value }
@@ -265,6 +265,7 @@ async function readOr400<T extends object = object, P extends `create` | `update
   const hookOptions: PayloadReadOptions<P> = {
     op: ([`POST`, `PUT`].includes(event.method) ? `create` : `update`) as P,
     flat: false,
+    flattenArrays: false,
     event,
     ...options,
   }

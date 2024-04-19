@@ -71,7 +71,7 @@ export interface RenderListOptions<T extends object = object, O extends RenderOp
   page: number
   pageSize: number
 }
-export interface RenderDocumentOptions<D extends DocumentBase = DocumentBase> extends RenderOptions {
+export interface RenderDocumentOptions<D extends DocumentBase = DocumentBase> extends RenderOptions<D> {
   model?: DocumentModel<D>
 }
 
@@ -80,6 +80,7 @@ export type RenderDocumentListOptions<D extends DocumentBase = DocumentBase> = R
 export interface PayloadReadOptions<P extends `create` | `update` = `create` | `update`> {
   event: H3Event
   flat: boolean
+  flattenArrays: boolean
   op: P
 }
 
