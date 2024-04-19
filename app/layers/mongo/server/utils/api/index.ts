@@ -393,16 +393,26 @@ export async function renderList<C extends Content = Content, D extends object =
   }
 }
 
-export function diff<T extends object = object>(obj: T, clone: T, options?: { keep: (keyof T)[] }): [Partial<T>, Partial<T>] {
-  const diffs: [keyof T, [T[keyof T], T[keyof T]]][] = Object.entries(obj)
-    .filter(([path, value]) => options?.keep?.includes(path as keyof T) || JSON.stringify(value) !== JSON.stringify(clone[path as keyof T]))
-    .map(([path, value]) => [path, typeof value !== `object` || Array.isArray(value)
-      ? [value, clone[path as keyof T]]
-      : diff(value as object, clone[path as keyof T] as object)]) as [keyof T, [T[keyof T], T[keyof T]]][]
+export function diff<T extends object = object>(changed: T, original: T, options?: { keep: (keyof T)[] }): [Partial<T>, Partial<T>] {
+  const mergedKeys = new Set([...Object.keys(changed), ...Object.keys(original)])
+  const map = [...mergedKeys].map<[keyof T, [T[keyof T], T[keyof T]]]>(key => [key as keyof T, [changed[key as keyof T], original[key as keyof T]]])
+
+  const difference = map
+    .filter(([_, [vChanged, vOriginal]]) => options?.keep?.includes(_ as keyof T) || JSON.stringify(vChanged) !== JSON.stringify(vOriginal))
+    .map(([_, [vChanged, vOriginal]]) => {
+      if (typeof vChanged === `object` && typeof vOriginal === `object` && !Array.isArray(vChanged) && !Array.isArray(vOriginal)) {
+        const [dChanged, dOriginal] = diff(vChanged as object, vOriginal as object)
+        return [_, [dChanged, dOriginal]]
+      } else if (vChanged === undefined || vOriginal === undefined) {
+        return [_, [vChanged || null, vOriginal || null]]
+      } else {
+        return [_, [vChanged, vOriginal]]
+      }
+    }) as [keyof T, [T[keyof T], T[keyof T]]][]
 
   return [
-    Object.fromEntries(diffs.map(([path, diffs]) => [path, diffs[0]])) as Partial<T>,
-    Object.fromEntries(diffs.map(([path, diffs]) => [path, diffs[1]])) as Partial<T>,
+    Object.fromEntries(difference.map(([path, [changed]]) => [path, changed])) as Partial<T>,
+    Object.fromEntries(difference.map(([path, [, original]]) => [path, original])) as Partial<T>,
   ]
 }
 
