@@ -436,7 +436,15 @@ function findDocumentByID<D extends IDocumentBase = IDocumentBase>(Model: Docume
 }
 
 async function createDocument<D extends IDocumentBase = IDocumentBase>(Model: DocumentModel<D>, body: Partial<D> | Partial<D>[]) {
-  return await Model.mongoose.model.create(body)
+  const docOrDocs = await Model.mongoose.model.create(body)
+  const addType = (doc: Document) => {
+    const docJSON = doc.toJSON()
+    return {
+      ...docJSON,
+      __type: docJSON.type,
+    }
+  }
+  return Array.isArray(docOrDocs) ? docOrDocs.map(addType) : addType(docOrDocs)
 }
 
 async function updateDocument<D extends IDocumentBase = IDocumentBase>(Model: DocumentModel<D>, id: string, body: Partial<Mutable<D>>) {
