@@ -16,7 +16,7 @@ export default defineMongooseFormatter(Affiliate.Person, (doc) => {
     email,
     phone,
     web,
-    active: active !== undefined && active,
+    active: active !== undefined ? active : undefined,
     status: status && useEnum(Status).valueOf(status),
     type: type && `person`,
   }

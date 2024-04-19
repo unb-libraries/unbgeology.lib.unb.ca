@@ -5,7 +5,7 @@ export default defineMongooseFormatter(StorageLocation, (doc) => {
 
   const { public: $public, status, type } = doc
   return {
-    public: $public !== undefined && $public,
+    public: ($public !== undefined && $public) || undefined,
     status: status && useEnum(Status).valueOf(status),
     type: type && `storageLocation`,
   }

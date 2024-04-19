@@ -1,7 +1,7 @@
 import { Status } from "~/types/storagelocation"
 
 export default defineMongooseReader(StorageLocation, async (payload, options) => {
-  if (options.op === `update` || payload.type !== `storageLocation`) { return {} }
+  if (options.op === `create` && payload.type !== `storageLocation`) { return {} }
 
   const { public: $public, status } = await validateBody(payload, {
     public: optional(BooleanValidator),

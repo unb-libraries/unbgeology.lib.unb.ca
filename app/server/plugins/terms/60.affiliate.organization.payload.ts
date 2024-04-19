@@ -1,13 +1,14 @@
 import { Status } from "~/types/affiliate"
 
 export default defineMongooseReader(Affiliate.Organization, async (payload, options) => {
+  if (options.op === `create` && payload.type !== `affiliate/organization`) { return {} }
+
+  const create = options.op === `create`
   const { status } = await validateBody(payload, {
     status: optional(EnumValidator(Status)),
   })
 
-  const create = options.op === `create`
   const migrate = status === Status.MIGRATED
-
   const { address, contact } = await validateBody(payload, {
     address: requireIf(create && !migrate, ObjectValidator({
       line1: requireIf(create, StringValidator),
@@ -37,6 +38,4 @@ export default defineMongooseReader(Affiliate.Organization, async (payload, opti
     status: status && useEnum(Status).valueOf(status),
     type: Affiliate.Organization.fullName,
   }
-}, {
-  enable: (body: any, { op }) => op === `update` || matchInputType(body, `organization`),
 })
