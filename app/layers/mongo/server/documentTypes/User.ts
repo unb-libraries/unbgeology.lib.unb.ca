@@ -1,15 +1,20 @@
 import { type User as UserEntity, type Entity } from "@unb-libraries/nuxt-layer-entity"
 import { EntityFieldTypes } from "../../types/entity"
-import { type DocumentBase } from "../../types/schema"
+import { DocumentBase } from "../utils/schema"
+import { type DocumentBase as IDocumentBase } from "../../types/schema"
 
-interface User extends Omit<UserEntity, keyof Entity>, DocumentBase {}
+export interface User extends Omit<UserEntity, keyof Entity>, IDocumentBase {}
 
 export default defineDocumentModel<User>(`User`, defineDocumentSchema<User>({
   username: {
     type: EntityFieldTypes.String,
     required: true,
     unique: true,
-    alias: `pk`,
+  },
+  active: {
+    type: EntityFieldTypes.Boolean,
+    required: true,
+    default: true,
   },
   profile: {
     firstName: {
@@ -29,4 +34,4 @@ export default defineDocumentModel<User>(`User`, defineDocumentSchema<User>({
       required: false,
     },
   },
-})())
+}).mixin(DocumentBase())())
