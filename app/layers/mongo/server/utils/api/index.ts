@@ -166,7 +166,7 @@ export function defineEventQuery<D extends DocumentBase = DocumentBase, M extend
         if (tail.length < 1) {
           return $default
         } else if (!respectParents || $default) {
-          return isDefault(tail.join(`.`), { prefix: head })
+          return isDefault(tail.join(`.`), { prefix: prefix ? `${prefix}.${head}` : head })
         } else {
           return false
         }
@@ -180,7 +180,7 @@ export function defineEventQuery<D extends DocumentBase = DocumentBase, M extend
       }
 
       if (isSelected(id)) {
-        query.select(id)
+        query.select(select)
         if (join) {
           doJoin(id, field)
         }
