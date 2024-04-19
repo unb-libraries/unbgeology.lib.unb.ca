@@ -11,7 +11,5 @@ export default defineMongooseReader(User, async (payload, { op }) => {
     })),
   })
 
-  return create
-    ? { username }
-    : { username, active, profile }
+  return { username, active, profile }
 })

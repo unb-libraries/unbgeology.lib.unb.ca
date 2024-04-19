@@ -2,11 +2,8 @@ import { type User } from "@unb-libraries/nuxt-layer-entity"
 
 export default defineEventHandler(async (event) => {
   const { username } = getRouterParams(event)
-
-  const query = User.findOne()
+  const body = await readOneBodyOr400<User>(event, { flat: true })
+  const user = await User.updateOne(body)
     .where(`username`).eq(username)
-  await useEventQuery(event, query)
-
-  const user = await query
-  return renderDocumentOr404(user, { model: User })
+  return renderDocumentDiffOr404(user, { model: User })
 })

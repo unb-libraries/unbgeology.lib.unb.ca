@@ -116,6 +116,7 @@ export interface EntityListResponse<E extends Entity = Entity> {
 }
 export interface User extends Entity {
     username: string;
+    active: boolean;
     profile: {
         firstName: string;
         lastName: string;
