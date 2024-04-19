@@ -108,6 +108,7 @@ type QueryFieldDescriptor<D extends DocumentBase = DocumentBase> = {
   join?: DocumentModel<any> | {
     documentType: DocumentModel<any>
     cardinality?: `one` | `many`
+    localField?: string
   }
   select?: string | false
   sort?: string | false
@@ -123,12 +124,13 @@ export function defineEventQuery<D extends DocumentBase = DocumentBase, M extend
       if (!field.join) { return }
 
       const join = {
-        documentType: `documentType` in field.join ? field.join.documentType : field.join as DocumentModel<any>,
-        cardinality: `cardinality` in field.join && field.join.cardinality ? field.join.cardinality : `one`,
+        documentType: (`documentType` in field.join && field.join.documentType) || field.join as DocumentModel<any>,
+        cardinality: (`cardinality` in field.join && field.join.cardinality) || `one`,
+        localField: (`localField` in field.join && field.join.localField) || id,
       }
 
-      const { documentType, cardinality } = join
-      query.join(id, documentType, { cardinality })
+      const { localField, documentType, cardinality } = join
+      query.join(localField, documentType, { cardinality })
     }
 
     const doFilter = (id: string, field: QueryFieldDescriptor<D>) => {
