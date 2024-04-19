@@ -15,8 +15,12 @@ const State = Stateful({
   default: Status.DRAFT,
 })
 
+export type Fossil = Classification<FossilCE>
+export type Rock = Classification<RockCE>
+export type Mineral = Classification<MineralCE>
+
 export default {
-  Fossil: defineDocumentModel(`CFossil`, defineDocumentSchema<Classification<FossilCE>>({
+  Fossil: defineDocumentModel(`CFossil`, defineDocumentSchema<Fossil>({
     rank: {
       type: EntityFieldTypes.Mixed,
       required: true,
@@ -24,10 +28,10 @@ export default {
     },
   }).mixin(State)(), TaxonomyTerm),
 
-  Rock: defineDocumentModel(`CRock`, defineDocumentSchema<Classification<RockCE>>({
+  Rock: defineDocumentModel(`CRock`, defineDocumentSchema<Rock>({
   }).mixin(State)(), TaxonomyTerm),
 
-  Mineral: defineDocumentModel(`CMineral`, defineDocumentSchema<Classification<MineralCE>>({
+  Mineral: defineDocumentModel(`CMineral`, defineDocumentSchema<Mineral>({
     composition: {
       type: EntityFieldTypes.String,
       required: false,

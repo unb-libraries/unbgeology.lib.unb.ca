@@ -5,7 +5,7 @@ import { type StorageLocation } from "~/types/storagelocation"
 import { Immeasurabibility, MeasurementType, ObjectIDType, Status } from "~/types/specimen"
 
 export default defineMongooseFormatter(Specimen.Base, async (doc) => {
-  const { slug, objectIDs, description, images, measurements, date, age, origin, pieces, partial, collector, sponsor, loans, storage, publications, status, creator, editor, created, updated } = doc
+  const { slug, objectIDs, classification, description, images, measurements, date, age, origin, pieces, partial, collector, sponsor, loans, storage, publications, status, creator, editor, created, updated } = doc
   return {
     id: slug,
     objectIDs: objectIDs && objectIDs.map(({ id, primary, type }) => ({
@@ -13,6 +13,7 @@ export default defineMongooseFormatter(Specimen.Base, async (doc) => {
       primary,
       type: useEnum(ObjectIDType).labelOf(type!).toLowerCase() as ObjectIDType,
     })),
+    classification: classification && await renderDocument(classification, { model: Term, self: term => `/api/terms/${term._id}` }),
     description,
     images: images && await renderDocumentList(images, {
       model: FileBase,

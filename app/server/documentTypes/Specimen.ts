@@ -1,7 +1,9 @@
 import { EntityFieldTypes } from "layers/mongo/types/entity"
 import { Immeasurabibility, MeasurementType, ObjectIDType, Status } from "types/specimen"
 import type { Entity, Stateful as IStateful } from "@unb-libraries/nuxt-layer-entity"
-import type { Specimen as SpecimenEntity, Loan, Fossil as FossilEntity } from "types/specimen"
+import type { Specimen as SpecimenEntity, Loan } from "types/specimen"
+import type { Fossil as FossilCD, Mineral as MineralCD, Rock as RockCD } from "./Classification"
+import type { Portion } from "./Portion"
 import type { Person, Organization } from "./Affiliate"
 import type { GeochronologicUnit } from "./Geochronology"
 import type { StorageLocation as IStorageLocation } from "./StorageLocation"
@@ -9,7 +11,8 @@ import type { DocumentBase as IDocumentBase } from "~/layers/mongo/types/schema"
 import ImageFile, { type Image } from "~/layers/mongo/server/documentTypes/Image"
 import { type User } from "~/layers/mongo/server/documentTypes/User"
 
-export interface Specimen extends Omit<SpecimenEntity, keyof Entity | `images` | `age` | `measurements` | `collector` | `sponsor` | `loans` | `storage` | `creator` | `editor`>, IStateful<typeof Status>, IDocumentBase {
+export interface Specimen extends Omit<SpecimenEntity, keyof Entity | `classification` | `images` | `age` | `measurements` | `collector` | `sponsor` | `loans` | `storage` | `creator` | `editor`>, IStateful<typeof Status>, IDocumentBase {
+  classification: FossilCD | MineralCD | RockCD
   classificationModel: string
   images: Image[]
   age: {
@@ -37,6 +40,19 @@ export interface Specimen extends Omit<SpecimenEntity, keyof Entity | `images` |
   }
   creator: User
   editor: User
+}
+
+export interface FossilSpecimen extends Omit<Specimen, `classification` | keyof Entity>, IDocumentBase {
+  classification: FossilCD
+  portion: Portion
+}
+
+export interface MineralSpecimen extends Omit<Specimen, `classification` | keyof Entity>, IDocumentBase {
+  classification: MineralCD
+}
+
+export interface RockSpecimen extends Omit<Specimen, `classification` | keyof Entity>, IDocumentBase {
+  classification: RockCD
 }
 
 const State = Stateful({
@@ -411,7 +427,7 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
   .mixin(State)
   .mixin(DocumentBase())())
 
-const Fossil = defineDocumentModel(`Fossil`, defineDocumentSchema<Omit<FossilEntity, `type` | `classification` | keyof Entity> & Specimen>({
+const Fossil = defineDocumentModel<Specimen, FossilSpecimen>(`Fossil`, defineDocumentSchema<FossilSpecimen>({
   portion: {
     type: EntityFieldTypes.ObjectId,
     ref: FossilPortion.mongoose.model,
@@ -419,11 +435,11 @@ const Fossil = defineDocumentModel(`Fossil`, defineDocumentSchema<Omit<FossilEnt
   },
 })(), Specimen)
 
-const Mineral = defineDocumentModel(`Mineral`, defineDocumentSchema({
+const Mineral = defineDocumentModel<Specimen, MineralSpecimen>(`Mineral`, defineDocumentSchema<MineralSpecimen>({
 
 })(), Specimen)
 
-const Rock = defineDocumentModel(`Rock`, defineDocumentSchema({
+const Rock = defineDocumentModel<Specimen, RockSpecimen>(`Rock`, defineDocumentSchema({
 
 })(), Specimen)
 

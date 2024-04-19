@@ -5,7 +5,7 @@ export default defineMongooseFormatter(FossilPortion, (doc) => {
 
   const { status, type } = doc
   return {
-    status: status && useEnum(Status).valueOf(status),
+    status: status && useEnum(Status).labelOf(status).toLowerCase(),
     type: type && `portion`,
   }
 })

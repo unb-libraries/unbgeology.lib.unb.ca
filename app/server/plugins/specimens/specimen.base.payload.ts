@@ -65,8 +65,8 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
       abstract: optional(StringValidator),
       doi: optional(MatchValidator(validationPatterns.doi)),
     }))),
-    creator: require(URIEntityTypeValidator<User>(`user`)),
-    editor: require(URIEntityTypeValidator<User>(`user`)),
+    creator: requireIf(create, URIEntityTypeValidator<User>(`user`)),
+    editor: requireIf(create, URIEntityTypeValidator<User>(`user`)),
     created: optional(MatchValidator(validationPatterns.date)),
     updated: optional(MatchValidator(validationPatterns.date)),
   })

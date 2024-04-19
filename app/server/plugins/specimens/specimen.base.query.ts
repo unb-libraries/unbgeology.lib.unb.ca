@@ -30,6 +30,18 @@ export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({
       },
     },
   },
+  classification: {
+    default: true,
+    join: Term,
+    sort: `classification.label`,
+    filter: ObjectID,
+    definition: {
+      label: {
+        default: true,
+        filter: String,
+      },
+    },
+  },
   description: {
     default: true,
     sort: false,
