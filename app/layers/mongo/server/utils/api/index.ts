@@ -5,7 +5,7 @@ import { type H3Event } from "h3"
 import { type QueryOptions, type Content, type Entity, type EntityList, type Payload, type DocumentQueryMethod, type DocumentQuery, type FilterableQuery, type DocumentPayload } from "../../../types/entity"
 import { type DocumentBase, type DocumentModel } from "../../../types/schema"
 import type { QueryCondition } from "./filter"
-import type { PayloadReadOptions, PluginOptions, RenderOptions, RenderListOptions, RenderDocumentOptions, RenderDocumentListOptions } from "~/layers/mongo/types"
+import type { PayloadReadOptions, PluginOptions, RenderOptions, RenderListOptions, RenderDocumentOptions, RenderDocumentListOptions, DocumentPayloadReadOptions } from "~/layers/mongo/types"
 
 function initMongooseContext(event: H3Event) {
   event.context.mongoose = {
@@ -210,30 +210,21 @@ export function defineEventQuery<D extends DocumentBase = DocumentBase, M extend
   }
 }
 
-export function defineBodyReader<T extends object = object, P extends `create` | `update` = `create` | `update`, L = Payload<T, P>>(reader: (body: any, options: PayloadReadOptions<P>) => L | Promise<L>, options?: Partial<PluginOptions<typeof reader>>) {
-  const enable = options?.enable
+export function defineBodyReader<T extends object = object, P extends `create` | `update` = `create` | `update`, L = Payload<T, P>, O extends PayloadReadOptions<P> = PayloadReadOptions<P>>(reader: (body: any, options: O) => L | Promise<L | void> | void, options?: Partial<PluginOptions<typeof reader>>) {
   return defineNitroPlugin((nitro) => {
     nitro.hooks.hook(`body:read`, async (body, options) => {
-      if (!enable || enable(body, options as PayloadReadOptions<P>)) {
-        return await reader(body, options as PayloadReadOptions<P>)
-      }
-      return {}
+      return await reader(body, options as O) || {}
     })
   })
 }
 
-export function defineMongooseReader<D extends DocumentBase, P extends `create` | `update`>(Model: DocumentModel<D>, reader: (body: any, options: PayloadReadOptions<P>) => DocumentPayload<Omit<D, keyof DocumentBase>, P> | Promise<DocumentPayload<Omit<D, keyof DocumentBase>, P>>, options?: Partial<PluginOptions<typeof reader>>) {
-  const { enable, strict } = options || {}
-  return defineBodyReader<Omit<D, keyof DocumentBase>, P, DocumentPayload<Omit<D, keyof DocumentBase>, P>>(reader, {
-    enable: (body, options) => {
-      const { event } = options
-      const eventModel = getMongooseModel(event)
-      return eventModel &&
-        matchInputModel(Model, strict
-          ? eventModel.fullName
-          : new RegExp(`^${eventModel.fullName}`)) &&
-        (!enable || enable(body, options))
-    },
+export function defineMongooseReader<D extends DocumentBase, P extends `create` | `update`>(Model: DocumentModel<D>, reader: (body: any, options: DocumentPayloadReadOptions<D, P>) => DocumentPayload<Omit<D, keyof DocumentBase>, P> | Promise<DocumentPayload<Omit<D, keyof DocumentBase>, P> | void> | void, options?: Partial<PluginOptions<typeof reader>>) {
+  const { strict } = options || {}
+  return defineBodyReader<Omit<D, keyof DocumentBase>, P, DocumentPayload<Omit<D, keyof DocumentBase>, P>, DocumentPayloadReadOptions<D, P>>((body, options) => {
+    const modelName = options.model?.fullName
+    if (!modelName || (strict && modelName === Model.fullName) || Model.fullName.match(RegExp(`^${modelName}($|\\..*)`))) {
+      return reader(body, options)
+    }
   })
 }
 
@@ -310,7 +301,7 @@ export async function readOneBodyOr400<T extends object = object, P extends `cre
   if (Array.isArray(payload)) {
     throw new TypeError(`Body must be of type object.`)
   }
-  return await readOr400<T, P>(event, payload, options) as T
+  return await readOr400<T, P>(event, payload, options) as Payload<T, P>
 }
 
 export async function readBodyListOr400<T extends object = object, P extends `create` | `update` = `create`>(event: H3Event, options?: Partial<PayloadReadOptions<P>>): Promise<Payload<T, P>[]> {
@@ -318,10 +309,20 @@ export async function readBodyListOr400<T extends object = object, P extends `cr
   if (!Array.isArray(payloads)) {
     throw new TypeError(`Body must be of type array.`)
   }
-  return await Promise.all(payloads.map(payload => readOr400<T, P>(event, payload, options))) as T[]
+  return await Promise.all(payloads.map(payload => readOr400<T, P>(event, payload, options))) as Payload<T, P>[]
 }
 
-export function defineEntityFormatter<T = any, C extends Content = Content, O extends RenderOptions = RenderOptions>(formatter: (item: T, options: O) => Partial<C> | Promise<Partial<C> | void> | void) {
+export async function readDocumentBodyOr400<D extends DocumentBase = DocumentBase, P extends `create` | `update` = `create`>(event: H3Event, options?: Partial<DocumentPayloadReadOptions<D, P>>): Promise<Payload<D, P> | Payload<D, P>[]> {
+  return await readBodyOr400<D, P>(event, options)
+}
+export async function readOneDocumentBodyOr400<D extends DocumentBase = DocumentBase, P extends `create` | `update` = `create`>(event: H3Event, options?: Partial<DocumentPayloadReadOptions<D, P>>): Promise<Payload<D, P>> {
+  return await readOneBodyOr400<D, P>(event, options)
+}
+export async function readDocumentBodyListOr400<D extends DocumentBase = DocumentBase, P extends `create` | `update` = `create`>(event: H3Event, options?: Partial<DocumentPayloadReadOptions<D, P>>): Promise<Payload<D, P>[]> {
+  return await readBodyListOr400<D, P>(event, options)
+}
+
+export function defineEntityFormatter<T extends object = object, C extends Content = Content, O extends RenderOptions<T> = RenderOptions<T>>(formatter: (item: T, options: O) => Partial<C> | Promise<Partial<C> | void> | void) {
   return defineNitroPlugin((nitro) => {
     nitro.hooks.hook(`entity:render`, (item: T, options) => {
       const formatted = formatter(item, options as O)

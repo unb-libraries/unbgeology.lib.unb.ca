@@ -2,7 +2,7 @@ import { type Specimen } from "document-types/Specimen"
 import { type Specimen as SpecimenEntity } from "~/types/specimen"
 
 export default defineEventHandler(async (event) => {
-  const body = await readBodyOr400<Specimen>(event)
+  const body = await readDocumentBodyOr400(event, { model: Specimen.Base })
   const specimenOrSpecimens = await Specimen.Base.create(body)
   const specimens = Array.isArray(specimenOrSpecimens) ? specimenOrSpecimens : [specimenOrSpecimens]
 

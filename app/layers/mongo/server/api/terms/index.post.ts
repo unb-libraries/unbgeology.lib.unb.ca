@@ -1,10 +1,8 @@
-import { type Term } from "../../documentTypes/Term"
-
 export default defineEventHandler(async (event) => {
-  const body = await readBodyOr400<Term>(event)
+  const body = await readDocumentBodyOr400(event, { model: Term })
   const termOrTerms = await Term.create(body)
 
   return Array.isArray(termOrTerms)
-    ? renderList(termOrTerms.map(({ _id }) => _id))
+    ? renderDocumentList(termOrTerms, { model: Term, pageSize: termOrTerms.length })
     : renderDocument(termOrTerms, { model: Term })
 })

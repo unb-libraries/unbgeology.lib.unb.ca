@@ -5,5 +5,5 @@ export default defineEventHandler(async (event) => {
   await useEventQuery(event, query)
   const term = await query
 
-  return renderOr404(term)
+  return renderDocumentOr404(term, { model: Term })
 })

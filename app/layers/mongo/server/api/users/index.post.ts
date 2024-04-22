@@ -1,7 +1,5 @@
-import { type User } from "@unb-libraries/nuxt-layer-entity"
-
 export default defineEventHandler(async (event) => {
-  const body = await readBodyOr400<User>(event)
+  const body = await readDocumentBodyOr400(event, { model: User })
   const userOrUsers = await User.create(body)
 
   const self = (user: { username: string }) => `/api/users/${user.username}`

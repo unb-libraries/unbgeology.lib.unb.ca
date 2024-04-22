@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const update: Partial<File> = {}
-  const { filename: newFilename, status: newStatus } = await readOneBodyOr400<File>(event)
+  const { filename: newFilename, status: newStatus } = await readOneDocumentBodyOr400<File>(event, { model: FileBase })
 
   if (newFilename) {
     update.filename = newFilename

@@ -1,7 +1,7 @@
 export default defineEventHandler(async (event) => {
   const { page, pageSize } = getQueryOptions(event)
 
-  const body = await readOneBodyOr400(event, { flat: true })
+  const body = await readOneDocumentBodyOr400(event, { model: Specimen.Base, flat: true })
 
   const query = Specimen.Base.update(body)
   await useEventQuery(event, query)

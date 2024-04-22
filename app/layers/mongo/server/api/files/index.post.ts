@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
     return Array.isArray(docs) ? docs : [docs]
   }
 
-  const body = await readBodyOr400(event)
+  const body = await readDocumentBodyOr400(event, { model: FileBase })
   const docs = await createExisting((Array.isArray(body) ? body : [body]))
 
   await Promise.all(docs.map(async (doc): Promise<void> => {
@@ -22,6 +22,6 @@ export default defineEventHandler(async (event) => {
   }))
 
   return docs.length > 1
-    ? renderList(docs.map(({ _id }) => ({ _id })))
+    ? renderDocumentList(docs, { model: FileBase })
     : renderDocument(docs[0], { model: FileBase })
 })

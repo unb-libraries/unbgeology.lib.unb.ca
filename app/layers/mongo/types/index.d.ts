@@ -85,6 +85,10 @@ export interface PayloadReadOptions<P extends `create` | `update` = `create` | `
   op: P
 }
 
+export interface DocumentPayloadReadOptions<D extends DocumentBase = DocumentBase, P extends `create` | `update` = `create` | `update`> extends PayloadReadOptions<P> {
+  model: DocumentModel<D>
+}
+
 
 export declare module "nitropack" {
   interface NitroRuntimeHooks {

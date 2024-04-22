@@ -1,5 +1,5 @@
-import { Schema, type SchemaDefinition, type ObjectId, type Model, type Document } from "mongoose"
-import { type DocumentFindQuery, type DocumentDeleteQuery, type DocumentUpdateQuery } from "./entity"
+import { Schema, type SchemaDefinition, type Model, type ObjectId } from "mongoose"
+import { type DocumentFindQuery, type DocumentDeleteQuery, type DocumentUpdateQuery, type DocumentIDQuery, type DocumentFindOneQuery, type DocumentUpdateOneQuery, type DocumentDeleteOneQuery } from "./entity"
 import { type Mutable } from "."
 
 export interface DocumentUpdate<D = any> {
@@ -24,6 +24,7 @@ export type ObjectProperties<T extends object = object> = Pick<T, {
   [K in keyof T]: T[K] extends Function ? never : K
 }[keyof T]>
 
+type CreateBody<D extends DocumentBase = DocumentBase> = Omit<D, keyof DocumentBase>
 export interface DocumentModel<D extends DocumentBase = DocumentBase> {
   name: string
   fullName: string

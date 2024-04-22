@@ -1,7 +1,7 @@
 export default defineEventHandler(async (event) => {
   const { page, pageSize } = getQueryOptions(event)
 
-  const body = await readOneBodyOr400(event, { flat: true })
+  const body = await readOneDocumentBodyOr400(event, { model: User, flat: true })
   const query = User.update(body)
   await useEventQuery(event, query)
   const { documents: updates, total } = await query

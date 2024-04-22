@@ -1,9 +1,7 @@
-import { type Term } from "../../documentTypes/Term"
-
 export default defineEventHandler(async (event) => {
   const { page, pageSize } = getQueryOptions(event)
 
-  const body = await readOneBodyOr400<Term>(event)
+  const body = await readOneDocumentBodyOr400(event, { model: Term, flat: true })
   const query = Term.update(body)
   await useEventQuery(event, query)
 
