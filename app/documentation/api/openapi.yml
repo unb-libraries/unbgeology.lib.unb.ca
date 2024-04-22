@@ -13,15 +13,15 @@ paths:
       tags:
         - Term
       parameters:
-        - $ref: "#/components/parameters/Page"
-        - $ref: "#/components/parameters/PageSize"
-        - $ref: "#/components/parameters/Sort"
-        - $ref: "#/components/parameters/Select"
-        - $ref: "#/components/parameters/Filter"
-        - $ref: "#/components/parameters/Search"
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/pageSize"
+        - $ref: "#/components/parameters/sort"
+        - $ref: "#/components/parameters/select"
+        - $ref: "#/components/parameters/filter"
+        - $ref: "#/components/parameters/search"
       responses:
         200:
-          $ref: "./classifications.yml#/components/responses/TermQueryResult"
+          $ref: "#/components/responses/TermQueryResult"
         400:
           $ref: "#/components/responses/BadRequest"
         500:
@@ -32,10 +32,28 @@ paths:
       security:
         - Session: []
       requestBody:
-        $ref: "./classifications.yml#/components/requestBodies/Term"
+        content:
+          application/json:
+            schema:
+              allOf:
+                - type: object
+                  properties:
+                    label:
+                      type: string
+                      example: Sample term
+                    type:
+                      type: string
+                      example: term
+                - type: object
+                  anyOf:
+                    - properties:
+                      parent:
+                        type: string
+                        format: uri
+                        example: /api/terms/65ffb4e4ca21b3e99f821003
       responses:
         201:
-          $ref: "./classifications.yml#/components/responses/TermCreated"
+          $ref: "#/components/responses/TermCreated"
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -50,17 +68,22 @@ paths:
       security:
         - Session: []
       parameters:
-        - $ref: "#/components/parameters/Page"
-        - $ref: "#/components/parameters/PageSize"
-        - $ref: "#/components/parameters/Sort"
-        - $ref: "#/components/parameters/Select"
-        - $ref: "#/components/parameters/Filter"
-        - $ref: "#/components/parameters/Search"
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/pageSize"
+        - $ref: "#/components/parameters/sort"
+        - $ref: "#/components/parameters/select"
+        - $ref: "#/components/parameters/filter"
+        - $ref: "#/components/parameters/search"
       requestBody:
-        $ref: "./classifications.yml#/components/requestBodies/Term"
+        content:
+          application/json:
+            schema:
+              anyOf:
+                - $ref: "#/components/schemas/TaxonomyTermBody"
+        required: true
       responses:
         201:
-          $ref: "./classifications.yml#/components/responses/TermUpdated"
+          $ref: "#/components/responses/TermUpdated"
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -75,12 +98,12 @@ paths:
       security:
         - Session: []
       parameters:
-        - $ref: "#/components/parameters/Page"
-        - $ref: "#/components/parameters/PageSize"
-        - $ref: "#/components/parameters/Sort"
-        - $ref: "#/components/parameters/Select"
-        - $ref: "#/components/parameters/Filter"
-        - $ref: "#/components/parameters/Search"
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/pageSize"
+        - $ref: "#/components/parameters/sort"
+        - $ref: "#/components/parameters/select"
+        - $ref: "#/components/parameters/filter"
+        - $ref: "#/components/parameters/search"
       responses:
         204:
           $ref: "#/components/responses/Deleted"
@@ -92,17 +115,16 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         500:
           $ref: "#/components/responses/ServerError"
-
   /api/terms/{id}:
     get:
       tags:
         - Term
       operationId: classification.canonical
       parameters:
-        - $ref: "./classifications.yml#/components/parameters/ID"
+        - $ref: "#/components/parameters/id"
       responses:
         200:
-          $ref: "./classifications.yml#/components/responses/TermFound"
+          $ref: "#/components/responses/TermFound"
         400:
           $ref: "#/components/responses/BadRequest"
         404:
@@ -114,13 +136,13 @@ paths:
       tags:
         - Term
       parameters:
-        - $ref: "./classifications.yml#/components/parameters/ID"
+        - $ref: "#/components/parameters/id"
       security:
         - Session: []
       
       responses:
         200:
-          $ref: "./classifications.yml#/components/responses/TermUpdated"
+          $ref: "#/components/responses/TermUpdated"
         400:
           $ref: "#/components/responses/BadRequest"
         404:
@@ -136,7 +158,7 @@ paths:
       tags:
         - Term
       parameters:
-        - $ref: "./classifications.yml#/components/parameters/ID"
+        - $ref: "#/components/parameters/id"
       security:
         - Session: []
       
@@ -153,15 +175,14 @@ paths:
           $ref: "#/components/responses/NotFound"
         500:
           $ref: "#/components/responses/ServerError"
-
-
+  
   /specimens:
     get:
       tags:
         - Specimen
       parameters:
-        - $ref: "#/components/parameters/Page"
-        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/pageSize"
       responses:
         200:
           $ref: "./specimens.yml#/components/responses/SpecimenQueryResult"
@@ -191,7 +212,6 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         default:
           $ref: "#/components/responses/ServerError"
-
   /specimens/{id}:
     get:
       tags:
@@ -263,10 +283,10 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         default:
           $ref: "#/components/responses/ServerError"
-                  
+
 components:
   schemas:
-    QueryResult:
+    EntityList:
       type: object
       properties:
         total:
@@ -285,7 +305,7 @@ components:
             first:
               type: string
               format: uri
-            previous:
+            prev:
               type: string
               format: uri
             next:
@@ -297,6 +317,66 @@ components:
         entities:
           type: array
           items: {}
+    Term:
+      type: object
+      required:
+        - id
+        - self
+      properties:
+        id:
+          type: string
+          example: 65ffb4e4ca21b3e99f821003
+        self:
+          type: string
+          format: uri
+          example: /api/terms/65ffb4e4ca21b3e99f821003
+        label:
+          type: string
+          example: Sample term
+        slug:
+          type: string
+          example: sample-term
+        type:
+          type: string
+          example: term
+    TermBody:
+      type: object
+      properties:
+        label:
+          type: string
+          example: Sample term
+        type:
+          type: string
+          example: term
+    TaxonomyTerm:
+      allOf:
+        - $ref: "#/components/schemas/Term"
+        - type: object
+          properties:
+            parents:
+              type: array
+              items:
+                $ref: "#/components/schemas/TaxonomyTerm"
+    TaxonomyTermBody:
+      allOf:
+        - $ref: "#/components/schemas/TermBody"
+        - type: object
+          properties:
+            parent:
+              type: string
+              format: uri
+              example: /api/terms/65ffb4e4ca21b3e99f821003
+    TermList:
+      allOf:
+        - $ref: "#/components/schemas/EntityList"
+        - type: object
+          properties:
+            entities:
+              type: array
+              items:
+                anyOf:
+                  - $ref: "#/components/schemas/Term"
+                  - $ref: "#/components/schemas/TaxonomyTerm"
     Error:
       type: object
       properties:
@@ -304,56 +384,128 @@ components:
           type: string
 
   parameters:
-    Page:
+    id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      example: 65ffb4e4ca21b3e99f821003
+    page:
       name: page
+      description: Page number to return.
       in: query
       schema:
         type: integer
         minimum: 1
         default: 1
       required: false
-    PageSize:
+    pageSize:
       name: pageSize
+      description: Maximum number of entities to return per page.
       in: query
       schema:
         type: integer
         minimum: 1
         default: 25
       required: false
-    Sort:
+    sort:
       name: sort
+      description: Field to sort by. Use "-" prefix for descending order.
       in: query
       schema:
         type: string
       required: false
-    Select:
+      example:
+        - label
+        - -label
+    select:
       name: select
+      description: Field to include in the response. Use dotted notation for nested fields.
       in: query
       schema:
         type: string
       required: false
-    Filter:
+      example:
+        - label
+        - parent.label
+    filter:
       name: filter
       in: query
       schema:
         type: string
+        description: Expressions of the form "field:operator:value", where operator is one of "equals", "match", "greater", "less", "and", "or", "not", or any combination thereof.
+        example:
+          - "label:equals_not:Sample term"
+          - "slug:match:^Sample"
       required: false
-    Search:
+    search:
       name: search
       in: query
       schema:
         type: string
       required: false
-
+  
   responses:
+    Term:
+      description: Term entity.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Term"      
+    TermFound:
+      description: Term entity found.
+      $ref: "#/components/responses/Term"
+    TermQueryResult:
+      description: Term entities found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/TermList"
+          example:
+            total: 9
+            page: 3
+            pages: 5
+            pageSize: 2
+            entities:
+              - id: 65ffb4e4ca21b3e99f821003
+                self: /api/terms/65ffb4e4ca21b3e99f821003
+                label: Sample term 4
+                slug: sample-term-4
+              - id: 65ffb552feed9350b3ea266a
+                self: /api/terms/65ffb552feed9350b3ea266a
+                label: Taxonomy term 2
+                slug: taxonomy-term-2
+                parents:
+                  self: /api/terms/taxonomy-term-2/parents
+            self: /api/terms?page=3
+            nav:
+              first: /api/terms?page=1
+              previous: /api/terms?page=2
+              next: /api/terms?page=4
+              last: /api/terms?page=5
+    TermCreated:
+      description: Term entity created.
+      $ref: "#/components/responses/Term"
+    TermUpdated:
+      description: Term entity created.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/Term"
+              - type: object
+                properties:
+                  previous:
+                    $ref: "#/components/schemas/Term"
+    Deleted:
+      description: Entity deleted.
     Error:
       description: Error response.
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
-    Deleted:
-      description: Entity deleted.
     BadRequest:
       description: Bad request.
       $ref: "#/components/responses/Error"
