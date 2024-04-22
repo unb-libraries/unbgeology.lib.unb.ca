@@ -1,8 +1,8 @@
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
 
-  await MigrationItem.deleteMany({ migration: id })
-  await Migration.findByPKAndDelete(id)
+  const migration = await Migration.deleteOne()
+    .where(`_id`).eq(parseObjectID(id))
 
-  return sendNoContent(event)
+  return migration ? sendNoContent(event) : create404()
 })

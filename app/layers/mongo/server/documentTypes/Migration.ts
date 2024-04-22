@@ -1,9 +1,11 @@
 import { type Entity, type Migration as MigrationEntity, MigrationStatus } from "@unb-libraries/nuxt-layer-entity"
 import { EntityFieldTypes } from "../../types/entity"
-import { type DocumentBase } from "../../types/schema"
+import { type DocumentBase as IDocumentBase } from "../../types/schema"
+import type { File } from "./FileBase"
 
-interface Migration extends Omit<MigrationEntity, keyof Entity>, DocumentBase {
-
+export interface Migration extends Omit<MigrationEntity, keyof Entity | `source` | `dependencies`>, IDocumentBase {
+  source: File[]
+  dependencies: Migration[]
 }
 
 export default defineDocumentModel(`Migration`, defineDocumentSchema<Migration>({
@@ -14,7 +16,6 @@ export default defineDocumentModel(`Migration`, defineDocumentSchema<Migration>(
   },
   entityType: {
     type: EntityFieldTypes.String,
-    enum: Object.keys(useAppConfig().entityTypes),
     required: true,
   },
   source: [{
@@ -47,12 +48,10 @@ export default defineDocumentModel(`Migration`, defineDocumentSchema<Migration>(
   errored: {
     type: EntityFieldTypes.Number,
     min: 0,
-    required: 0,
+    required: true,
     default: 0,
   },
-  status: {
-    type: EntityFieldTypes.Number,
-    enum: [MigrationStatus.IDLE, MigrationStatus.RUNNING],
-    default: MigrationStatus.IDLE,
-  },
-})())
+}).mixin(Stateful({
+  values: MigrationStatus,
+  default: MigrationStatus.IDLE,
+})).mixin(DocumentBase())())

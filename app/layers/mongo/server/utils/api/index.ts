@@ -337,7 +337,7 @@ export function defineMongooseFormatter<D extends DocumentBase, T extends Conten
   const { strict } = options || {}
   return defineEntityFormatter<D, T, RenderDocumentOptions<D>>((doc, options) => {
     const modelName = options.model?.fullName
-    if ((strict && modelName === Model.fullName) || Model.fullName.match(RegExp(`^${modelName}`))) {
+    if ((strict && modelName === Model.fullName) || Model.fullName.match(RegExp(`^${modelName}($|\\..*)`))) {
       return formatter(doc, options)
     }
   })

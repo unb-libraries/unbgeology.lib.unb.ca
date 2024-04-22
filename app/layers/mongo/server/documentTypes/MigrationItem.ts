@@ -1,8 +1,8 @@
-import { type MigrationItem as MigrationItemEntity, MigrationStatus, type Entity } from "@unb-libraries/nuxt-layer-entity"
+import { type MigrationItem as MigrationItemEntity, type Entity, MigrationItemStatus } from "@unb-libraries/nuxt-layer-entity"
 import { EntityFieldTypes } from "../../types/entity"
-import type { DocumentBase } from "../../types/schema"
+import type { DocumentBase as IDocumentBase } from "../../types/schema"
 
-interface MigrationItem extends Omit<MigrationItemEntity, keyof Entity>, DocumentBase {}
+interface MigrationItem extends Omit<MigrationItemEntity, keyof Entity>, IDocumentBase {}
 
 export default defineDocumentModel<MigrationItem>(`MigrationItem`, defineDocumentSchema<MigrationItem>({
   sourceID: {
@@ -28,7 +28,10 @@ export default defineDocumentModel<MigrationItem>(`MigrationItem`, defineDocumen
   },
   status: {
     type: EntityFieldTypes.Number,
-    enum: [MigrationStatus.INITIAL, MigrationStatus.QUEUED, MigrationStatus.PENDING, MigrationStatus.IMPORTED, MigrationStatus.SKIPPED, MigrationStatus.ERRORED],
-    default: MigrationStatus.INITIAL,
+    enum: MigrationItemStatus,
+    default: MigrationItemStatus.INITIAL,
   },
-})())
+}).mixin(Stateful({
+  values: MigrationItemStatus,
+  default: MigrationItemStatus.INITIAL,
+})).mixin(DocumentBase())())

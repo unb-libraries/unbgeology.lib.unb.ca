@@ -1,21 +1,35 @@
 import { readFile } from "fs/promises"
 import { parseFile } from "@fast-csv/parse"
+import { type Migration as MigrationEntity } from "@unb-libraries/nuxt-layer-entity"
+import { type Migration as MigrationDoc } from "../../documentTypes/Migration"
 
 export default defineEventHandler(async (event) => {
-  const body = await readEntityBody(event, migrationBodyReader)
-
+  const body = await readOneBodyOr400<MigrationDoc>(event)
   const migration = await Migration.create(body)
-  await migration.populate(`source`)
-  await migration.populate(`dependencies`, `name entityType`)
 
-  migration.source.forEach(async (source) => {
-    switch (source.filetype) {
-      case `json`: {
+  const { source: sourceIDs } = migration
+  const { documents: sources } = await FileBase.find()
+    .where(`_id`).in(sourceIDs)
+
+  // const migration = await Migration.findByID(`${created._id}`)
+  //   .join(`source`, FileBase, { cardinality: `many` })
+  //   .join(`dependencies`, Migration, { cardinality: `many` })
+  //   .select(`source.filepath`, `source.mimetype`)
+
+  const rendered = await renderDocument<MigrationEntity, MigrationDoc>(migration, {
+    model: Migration,
+    self: migration => `/api/migrations/${migration._id}`,
+  })
+
+  sources.forEach(async (source) => {
+    switch (source.mimetype) {
+      case `application/json`: {
         const json = await readFile(source.filepath, { encoding: `utf8` })
         const items = JSON.parse(json)
-        useNitroApp().hooks.callHook(`migrate:init`, migration, items)
+        useNitroApp().hooks.callHook(`migrate:init`, rendered.self, items)
       }; break
-      case `csv`:{
+
+      case `application/csv`:{
         const items: any[] = []
         let header: string[] = []
         parseFile(source.filepath)
@@ -28,12 +42,12 @@ export default defineEventHandler(async (event) => {
             }
           })
           .on(`end`, (count: number) => {
-            useNitroApp().hooks.callHook(`migrate:init`, migration, items)
+            useNitroApp().hooks.callHook(`migrate:init`, rendered.self, items)
           })
       }; break
       default:
     }
   })
 
-  return sendEntity(event, migration)
+  return rendered
 })
