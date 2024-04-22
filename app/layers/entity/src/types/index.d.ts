@@ -1,4 +1,4 @@
-import { type AppConfigInput, type AppConfig } from "nuxt/schema";
+import { type AppConfigInput } from "nuxt/schema";
 import { type Ref, type ComputedRef } from "vue";
 export declare enum Status {
 }
@@ -164,33 +164,32 @@ export interface Document extends File {
 export type JDocument = EntityJSON<Document>;
 export type JDocumentList = EntityJSONList<Document>;
 export declare enum MigrationStatus {
-    INITIAL = 1,
-    IDLE = 2,
-    PENDING = 4,
-    RUNNING = 8,
-    IMPORTED = 16,
-    ERRORED = 32,
-    SKIPPED = 64,
-    QUEUED = 128
+    IDLE = 1,
+    RUNNING = 2
 }
-export interface Migration extends Entity {
+export interface Migration extends Stateful<typeof MigrationStatus>, Entity {
     name: string;
-    entityType: keyof AppConfig[`entityTypes`];
-    source: File[];
+    entityType: string;
     dependencies: Migration[];
     total: number;
     imported: number;
     skipped: number;
     errored: number;
-    status: MigrationStatus.IDLE | MigrationStatus.RUNNING;
 }
 export type JMigration = EntityJSON<Migration>;
 export type JMigrationList = EntityJSONList<Migration>;
-export interface MigrationItem extends Entity {
+export declare enum MigrationItemStatus {
+    INITIAL = 1,
+    QUEUED = 2,
+    PENDING = 4,
+    IMPORTED = 8,
+    ERRORED = 16,
+    SKIPPED = 32
+}
+export interface MigrationItem extends Stateful<typeof MigrationItemStatus>, Entity {
     sourceID: number;
     data: any[];
     entityURI?: string;
     migration: Migration;
     error?: string;
-    status: MigrationStatus.INITIAL | MigrationStatus.QUEUED | MigrationStatus.PENDING | MigrationStatus.IMPORTED | MigrationStatus.SKIPPED | MigrationStatus.ERRORED;
 }

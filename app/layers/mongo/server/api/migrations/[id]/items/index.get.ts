@@ -1,12 +1,22 @@
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
-  const { sort, pageSize, page } = getQueryOptions(event)
+  const { pageSize, page } = getQueryOptions(event)
 
-  const items = await MigrationItem
-    .find({ migration: id })
-    .populate(`migration`)
-    .sort(sort.join(` `))
+  const query = MigrationItem.find()
+    .where(`migration`).eq(parseObjectID(id))
+    .select(`migration`)
+    .select([`_sourceID`, `$sourceID`])
+  await useEventQuery(event, query)
+  const { documents: items, total } = await query
     .paginate(page, pageSize)
 
-  return sendEntityList(event, items)
+  return renderDocumentList(items, {
+    total,
+    model: MigrationItem,
+    canonical: {
+      // @ts-ignore
+      self: item => `/api/migrations/${id}/items/${item._sourceID}`,
+    },
+    self: () => `/api/migrations/${id}/items`,
+  })
 })

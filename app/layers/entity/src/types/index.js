@@ -20,12 +20,15 @@ export var FileState;
 })(FileState || (FileState = {}));
 export var MigrationStatus;
 (function (MigrationStatus) {
-    MigrationStatus[MigrationStatus["INITIAL"] = 1] = "INITIAL";
-    MigrationStatus[MigrationStatus["IDLE"] = 2] = "IDLE";
-    MigrationStatus[MigrationStatus["PENDING"] = 4] = "PENDING";
-    MigrationStatus[MigrationStatus["RUNNING"] = 8] = "RUNNING";
-    MigrationStatus[MigrationStatus["IMPORTED"] = 16] = "IMPORTED";
-    MigrationStatus[MigrationStatus["ERRORED"] = 32] = "ERRORED";
-    MigrationStatus[MigrationStatus["SKIPPED"] = 64] = "SKIPPED";
-    MigrationStatus[MigrationStatus["QUEUED"] = 128] = "QUEUED";
+    MigrationStatus[MigrationStatus["IDLE"] = 1] = "IDLE";
+    MigrationStatus[MigrationStatus["RUNNING"] = 2] = "RUNNING";
 })(MigrationStatus || (MigrationStatus = {}));
+export var MigrationItemStatus;
+(function (MigrationItemStatus) {
+    MigrationItemStatus[MigrationItemStatus["INITIAL"] = 1] = "INITIAL";
+    MigrationItemStatus[MigrationItemStatus["QUEUED"] = 2] = "QUEUED";
+    MigrationItemStatus[MigrationItemStatus["PENDING"] = 4] = "PENDING";
+    MigrationItemStatus[MigrationItemStatus["IMPORTED"] = 8] = "IMPORTED";
+    MigrationItemStatus[MigrationItemStatus["ERRORED"] = 16] = "ERRORED";
+    MigrationItemStatus[MigrationItemStatus["SKIPPED"] = 32] = "SKIPPED";
+})(MigrationItemStatus || (MigrationItemStatus = {}));

@@ -18,11 +18,6 @@ export default defineDocumentModel(`Migration`, defineDocumentSchema<Migration>(
     type: EntityFieldTypes.String,
     required: true,
   },
-  source: [{
-    type: EntityFieldTypes.ObjectId,
-    ref: FileBase,
-    required: true,
-  }],
   dependencies: [{
     type: EntityFieldTypes.ObjectId,
     ref: `Migration`,
@@ -50,6 +45,12 @@ export default defineDocumentModel(`Migration`, defineDocumentSchema<Migration>(
     min: 0,
     required: true,
     default: 0,
+  },
+}, {
+  alterSchema(schema) {
+    schema.post(`deleteOne`, { document: true, query: false }, async function () {
+      await MigrationItem.mongoose.model.deleteMany({ migration: this._id })
+    })
   },
 }).mixin(Stateful({
   values: MigrationStatus,
