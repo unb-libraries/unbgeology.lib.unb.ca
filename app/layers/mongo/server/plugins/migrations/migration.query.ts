@@ -15,11 +15,6 @@ export default defineMongooseEventQueryHandler(Migration, defineEventQuery({
     default: true,
     filter: String,
   },
-  source: {
-    default: false,
-    join: FileBase,
-    filter: ObjectID,
-  },
   dependencies: {
     default: false,
     join: {

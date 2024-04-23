@@ -1,8 +1,11 @@
 import { type MigrationItem as MigrationItemEntity, type Entity, MigrationItemStatus } from "@unb-libraries/nuxt-layer-entity"
 import { EntityFieldTypes } from "../../types/entity"
 import type { DocumentBase as IDocumentBase } from "../../types/schema"
+import type { Migration as IMigration } from "./Migration"
 
-export interface MigrationItem extends Omit<MigrationItemEntity, keyof Entity>, IDocumentBase {}
+export interface MigrationItem extends Omit<MigrationItemEntity, keyof Entity | `migration`>, IDocumentBase {
+  migration: IMigration
+}
 
 export default defineDocumentModel<MigrationItem>(`MigrationItem`, defineDocumentSchema<MigrationItem>({
   sourceID: {
@@ -19,7 +22,7 @@ export default defineDocumentModel<MigrationItem>(`MigrationItem`, defineDocumen
   },
   migration: {
     type: EntityFieldTypes.ObjectId,
-    ref: Migration.mongoose.model.modelName,
+    ref: `Migration`,
     required: true,
   },
   error: {

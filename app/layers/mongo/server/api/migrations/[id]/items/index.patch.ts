@@ -7,7 +7,8 @@ export default defineEventHandler(async (event) => {
   const query = MigrationItem.update(body)
   await useEventQuery(event, query)
   const { documents: updates, total } = await query
-    .where(`migration`).eq(parseObjectID(id))
+    .join(`migration`, Migration)
+    .where(`migration._id`).eq(parseObjectID(id))
 
   if (updates.length > 0) {
     const countUpdate = updates

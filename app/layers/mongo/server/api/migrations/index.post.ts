@@ -1,11 +1,19 @@
-import { readFile } from "fs/promises"
-import { parseFile } from "@fast-csv/parse"
+// import { readFile } from "fs/promises"
+// import { parseFile } from "@fast-csv/parse"
 import { type Migration as MigrationEntity } from "@unb-libraries/nuxt-layer-entity"
 import { type Migration as MigrationDoc } from "../../documentTypes/Migration"
 
 export default defineEventHandler(async (event) => {
-  const body = await readOneDocumentBodyOr400<MigrationDoc>(event, { model: Migration })
+  const body = await readOneDocumentBodyOr400(event, { model: Migration })
   const migration = await Migration.create(body)
+
+  const { items } = await readBody(event)
+  if (items) {
+    await $fetch(`/api/migrations/${migration._id}/items`, {
+      method: `POST`,
+      body: items,
+    })
+  }
 
   // const { source: sourceIDs } = migration
   // const { documents: sources } = await FileBase.find()

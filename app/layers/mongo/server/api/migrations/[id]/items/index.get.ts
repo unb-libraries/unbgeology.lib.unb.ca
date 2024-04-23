@@ -3,8 +3,8 @@ export default defineEventHandler(async (event) => {
   const { pageSize, page } = getQueryOptions(event)
 
   const query = MigrationItem.find()
-    .where(`migration`).eq(parseObjectID(id))
-    .select(`migration`)
+    .join(`migration`, Migration)
+    .where(`migration._id`).eq(parseObjectID(id))
     .select([`_sourceID`, `$sourceID`])
   await useEventQuery(event, query)
   const { documents: items, total } = await query

@@ -1,19 +1,20 @@
 import { MigrationItemStatus } from "@unb-libraries/nuxt-layer-entity"
 
-export default defineMongooseFormatter(MigrationItem, (doc) => {
-  const { data, sourceID, status, created, updated } = doc
+export default defineMongooseFormatter(MigrationItem, async (doc, { self }) => {
+  // @ts-ignore
+  const { data, sourceID, migration, entityURI, error, status, created, updated } = doc
   return {
     id: sourceID,
     data: data && {
       ...data,
-      self: (() => {
-        const event = useEvent()
-        if (event) {
-          const { id, sourceID } = getRouterParams(event)
-          return `/api/migrations/${id}/items/${sourceID}/data`
-        }
-      })(),
+      self: `${self(doc)}/data`,
     },
+    migration: migration && await renderDocument(migration, {
+      model: Migration,
+      self: migration => `/api/migrations/${migration._id}`,
+    }),
+    entityURI,
+    error,
     status: status && useEnum(MigrationItemStatus).labelOf(status).toLowerCase(),
     created: (created && !isNaN(created) && new Date(created).toISOString()) || undefined,
     updated: (updated && !isNaN(updated) && new Date(updated).toISOString()) || undefined,
