@@ -1,5 +1,5 @@
-import { MigrationItemStatus } from "@unb-libraries/nuxt-layer-entity"
-import type { MigrationItem, EntityJSONList, EntityJSON } from "@unb-libraries/nuxt-layer-entity"
+import { MigrationItemStatus, MigrationStatus } from "@unb-libraries/nuxt-layer-entity"
+import type { Migration, MigrationItem, EntityJSONList, EntityJSON } from "@unb-libraries/nuxt-layer-entity"
 import { Status } from "~/types/affiliate"
 
 export default defineTask({
@@ -14,6 +14,17 @@ export default defineTask({
 
     const { items } = payload as { items: EntityJSONList<MigrationItem> }
     const nitro = useNitroApp()
+
+    const { entities } = items
+    if (entities.length === 0) {
+      return { result: { importing: 0 } }
+    }
+
+    await $fetch(entities[0].migration.self, { method: `PATCH`, body: { status: MigrationStatus.RUNNING } })
+    if (nitro) {
+      const updated = await $fetch<Migration>(entities[0].migration.self)
+      nitro.hooks.callHook(`migrate:import:start`, updated)
+    }
 
     async function queue(uri: string): Promise<number> {
       const { entities, nav } = await $fetch<EntityJSONList>(uri, {
@@ -74,8 +85,14 @@ export default defineTask({
         }
       }))
 
-      if (total > 0) {
+      if (total > entities.length) {
         doImport()
+      } else {
+        await $fetch(entities[0].migration.self, { method: `PATCH`, body: { status: MigrationStatus.IDLE } })
+        if (nitro) {
+          const updated = await $fetch<Migration>(entities[0].migration.self)
+          nitro.hooks.callHook(`migrate:import:done`, updated)
+        }
       }
 
       return total
