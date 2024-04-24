@@ -31,12 +31,12 @@ export default defineTask({
         },
       })
 
-      await Promise.all(entities.map(async (item) => {
+      await Promise.all(entities.map(async (item): Promise<void> => {
         try {
           await $fetch(item.self, { method: `PATCH`, body: { status: MigrationItemStatus.PENDING } })
-          const entityType = useAppConfig().entityTypes[item.migration.entityType]
+          const entityType = useAppConfig().entityTypes[item.migration.entityType.split(`.`)[0]]
           const body = await nitro.hooks.callHook(`migrate:import:item`, item)
-          const { self } = await $fetch<EntityJSON>(entityType.baseURI, {
+          const entity = await $fetch<EntityJSON>(entityType.baseURI, {
             method: `POST`,
             body: {
               ...body,
@@ -47,7 +47,7 @@ export default defineTask({
             method: `PATCH`,
             body: {
               status: MigrationItemStatus.IMPORTED,
-              entityURI: self,
+              entityURI: entity.self,
             },
           })
         } catch (err: unknown) {
@@ -58,6 +58,19 @@ export default defineTask({
               error: (err as Error).message,
             },
           })
+        } finally {
+          if (nitro) {
+            const updated = await $fetch<MigrationItem>(item.self)
+            const status = useEnum(MigrationItemStatus).valueOf(updated.status)
+            switch (status) {
+              case MigrationItemStatus.IMPORTED:
+                nitro.hooks.callHook(`migrate:import:item:imported`, updated); break
+              case MigrationItemStatus.SKIPPED:
+                nitro.hooks.callHook(`migrate:import:item:skipped`, updated); break
+              case MigrationItemStatus.ERRORED:
+                nitro.hooks.callHook(`migrate:import:item:error`, updated); break
+            }
+          }
         }
       }))
 

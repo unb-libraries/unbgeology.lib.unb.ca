@@ -97,13 +97,13 @@ export declare module "nitropack" {
     
     // migrate hooks
     migrate: (migrationID: string) => void | Promise<void>
-    "migrate:init": (migration: Migration, items: SourceItem[]) => void | Promise<void>
-    "migrate:import": (migration: Migration, options?: MigrateOptions) => void | Promise<void>
-    "migrate:import:item": MigrateHandler
-    "migrate:import:item:done": (item: MigrationItem, entity?: EntityJSON<E>, error?: string) => void | Promise<void>
-    "migrate:import:item:imported": <E extends Entity = Entity>(item: MigrationItem, entity: EntityJSON<E>) => void | Promise<void>
-    "migrate:import:item:error": (item: MigrationItem, error: string) => void | Promise<void>
-    "migrate:import:item:skipped": (item: MigrationItem) => void | Promise<void>
+    "migrate:init": (migration: Migration | string, items: SourceItem[]) => void | Promise<void>
+    "migrate:import": (migration: Migration | string, options?: Partial<MigrateOptions>) => void | Promise<void>
+    "migrate:import:item": (item: EntityJSON<MigrationItem>) => any | Promise<any>
+    "migrate:import:item:done": (item: EntityJSON<MigrationItem>, entity?: EntityJSON<E>, error?: string) => void | Promise<void>
+    "migrate:import:item:imported": <E extends Entity = Entity>(item: EntityJSON<MigrationItem>) => void | Promise<void>
+    "migrate:import:item:error": (item: EntityJSON<MigrationItem>) => void | Promise<void>
+    "migrate:import:item:skipped": (item: EntityJSON<MigrationItem>) => void | Promise<void>
     "migrate:rollback": (migration: Migration) => void | Promise<void>
     "migrate:pause": (migration: Migration) => void | Promise<void>
     

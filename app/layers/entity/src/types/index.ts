@@ -29,7 +29,7 @@ export interface EntityType<E extends Entity = Entity> {
   extends?: keyof AppConfigInput[`entityTypes`]
 }
 
-export type EntityJSON<E extends Entity = Entity> = Partial<Omit<E, `id` | `self`>> & Required<Pick<E, `id` | `self`>>
+export type EntityJSON<E extends Entity = Entity, K extends keyof E | undefined = undefined> = Pick<E, K extends undefined ? keyof Omit<E, `id` | `self`> : K> & Pick<E, `id` | `self`>
 export type EntityJSONPropertyValue = string | number | boolean | EntityJSON
 
 export type EntityJSONProperties<E extends Entity = Entity, P extends keyof Omit<E, keyof Entity> = keyof Omit<E, keyof Entity>> = Pick<EntityJSON<E>, P>
@@ -221,7 +221,7 @@ export enum MigrationItemStatus {
 
 export interface MigrationItem extends Stateful<typeof MigrationItemStatus>, Entity {
   sourceID: number
-  data: any[]
+  data: any
   entityURI?: string
   migration: Migration
   error?: string

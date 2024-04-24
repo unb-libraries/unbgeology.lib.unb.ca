@@ -16,12 +16,31 @@ export default defineMongooseEventQueryHandler(Migration, defineEventQuery({
     filter: String,
   },
   dependencies: {
-    default: false,
+    default: true,
     join: {
       documentType: Migration,
       cardinality: `many`,
     },
     filter: ObjectID,
+    definition: {
+      id: {
+        default: false,
+        select: `dependencies._id`,
+        filter: ObjectID,
+      },
+      name: {
+        default: false,
+        filter: String,
+      },
+      entityType: {
+        default: false,
+        filter: String,
+      },
+      status: {
+        default: false,
+        filter: Enum(MigrationStatus),
+      },
+    },
   },
   total: {
     default: true,

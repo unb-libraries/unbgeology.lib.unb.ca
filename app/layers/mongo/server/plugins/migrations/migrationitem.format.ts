@@ -4,7 +4,7 @@ export default defineMongooseFormatter(MigrationItem, async (doc, { self }) => {
   // @ts-ignore
   const { data, sourceID, migration, entityURI, error, status, created, updated } = doc
   return {
-    id: sourceID,
+    id: `${sourceID}`,
     data: data && {
       ...data,
       self: `${self(doc)}/data`,

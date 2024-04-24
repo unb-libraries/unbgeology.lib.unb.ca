@@ -2,7 +2,8 @@ export default defineEventHandler(async (event) => {
   const { id, sourceID } = getRouterParams(event)
 
   const query = MigrationItem.findOne()
-    .where(`migration`).eq(parseObjectID(id))
+    .join(`migration`, Migration)
+    .where(`migration._id`).eq(parseObjectID(id))
     .and(`sourceID`).eq(parseInt(sourceID))
     .select(`_sourceID, $sourceID`)
   await useEventQuery(event, query)

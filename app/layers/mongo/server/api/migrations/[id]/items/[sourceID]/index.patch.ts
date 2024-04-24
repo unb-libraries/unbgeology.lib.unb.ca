@@ -5,7 +5,8 @@ export default defineEventHandler(async (event) => {
 
   const body = await readOneDocumentBodyOr400(event, { model: MigrationItem, flat: true })
   const update = await MigrationItem.updateOne(body)
-    .where(`migration`).eq(parseObjectID(id))
+    .join(`migration`, Migration)
+    .where(`migration._id`).eq(parseObjectID(id))
     .and(`sourceID`).eq(parseInt(sourceID))
 
   if (update) {

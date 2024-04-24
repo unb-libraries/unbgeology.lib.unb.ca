@@ -1,4 +1,4 @@
-import { MigrationItemStatus } from "@unb-libraries/nuxt-layer-entity"
+import { MigrationItemStatus, MigrationStatus } from "@unb-libraries/nuxt-layer-entity"
 import { Date, Enum, Numeric, ObjectID, String } from "../../utils/api/filter"
 
 export default defineMongooseEventQueryHandler(MigrationItem, defineEventQuery({
@@ -9,7 +9,7 @@ export default defineMongooseEventQueryHandler(MigrationItem, defineEventQuery({
     filter: (_, condition) => Numeric(`sourceID`, condition),
   },
   migration: {
-    default: false,
+    default: true,
     join: Migration,
     filter: ObjectID,
     definition: {
@@ -32,11 +32,30 @@ export default defineMongooseEventQueryHandler(MigrationItem, defineEventQuery({
           cardinality: `many`,
         },
         filter: ObjectID,
+        definition: {
+          id: {
+            default: false,
+            select: `migration.dependencies._id`,
+            filter: ObjectID,
+          },
+          name: {
+            default: false,
+            filter: String,
+          },
+          entityType: {
+            default: false,
+            filter: String,
+          },
+          status: {
+            default: false,
+            filter: Enum(MigrationStatus),
+          },
+        },
       },
     },
   },
   data: {
-    default: false,
+    default: true,
     sort: false,
     filter: false,
   },

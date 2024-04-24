@@ -1,31 +1,18 @@
+import { MigrationItemStatus, MigrationStatus } from "@unb-libraries/nuxt-layer-entity"
 import { defu } from "defu"
-import { MigrationStatus, type Migration, type MigrationItem, type EntityJSON, Status } from "@unb-libraries/nuxt-layer-entity"
-import { type SourceItem } from "../../types/migrate"
-import { type MigrateOptions } from "../../types"
+import type { Migration, MigrationItem, EntityJSON, EntityJSONList } from "@unb-libraries/nuxt-layer-entity"
 
 export default defineNitroPlugin((nitroApp) => {
-  // REFACTOR "migrate:init" hook to be implemented as nitro task (once feature becomes available)
-  nitroApp.hooks.hook(`migrate:init`, async (migration: Migration, items: SourceItem[]) => {
-    await Promise.all(items.map(async (item) => {
-      const { id: sourceID, ...data } = item
-      if (!sourceID) {
-        throw new Error(`Invalid source. No "id" found.`)
-      }
-
-      await MigrationItem.findOneAndUpdate({ sourceID, migration }, { $set: { sourceID, migration }, $push: { data } }, { upsert: true })
-    }))
-
-    const total = await MigrationItem.find({ migration }).count()
-    await Migration.updateOne({ _id: migration }, { total })
-  })
-
   // REFACTOR "migrate:import" hook to be implemented as nitro task (once feature becomes available)
-  nitroApp.hooks.hook(`migrate:import`, async (migration: Migration, config?: MigrateOptions) => {
-    const options = defu(config ?? {}, { chunkSize: 20 })
+  nitroApp.hooks.hook(`migrate:import`, async (uriOrMigration, config) => {
+    const options = defu(config ?? {}, { limit: 100, chunkSize: 25, statusValue: `migrated` })
+    const migration = typeof uriOrMigration === `string` ? await $fetch<Migration>(uriOrMigration) : uriOrMigration
 
     if (migration.status !== MigrationStatus.RUNNING) {
-      migration.status = MigrationStatus.RUNNING
-      await migration.save()
+      await $fetch(migration.self, {
+        method: `PATCH`,
+        body: { status: useEnum(MigrationStatus).labelOf(MigrationStatus.RUNNING) },
+      })
     }
 
     let pendingCount = 0
@@ -39,22 +26,25 @@ export default defineNitroPlugin((nitroApp) => {
       }
     }
 
-    const items = await MigrationItem
-      .find({ migration, status: MigrationStatus.QUEUED })
-      .sort(`sourceID`)
-      .populate({ path: `migration`, populate: { path: `dependencies` } })
-      .limit(options.chunkSize)
+    const { entities: items } = await $fetch<EntityJSONList<MigrationItem>>(`${migration.self}/items`, {
+      query: {
+        filter: [`status:equals:${MigrationItemStatus.QUEUED}`],
+        select: [`id`, `data`, `status`],
+      },
+    })
 
-    items.forEach((item) => {
+    items.forEach(async (item) => {
       async function ready(data: any) {
-        const { baseURI: uri } = useAppConfig().entityTypes[item.migration.entityType]
+        const { baseURI: uri } = useAppConfig().entityTypes[migration.entityType]
 
         try {
-          const entity = await $fetch<EntityJSON>(uri, { method: `POST`, body: { status: Status.IMPORTED, ...data } })
-          const updatedItem = await MigrationItem.findOneAndUpdate(
-            { _id: item.id },
-            { entityURI: entity.self, status: MigrationStatus.IMPORTED }, { new: true })
-          await updatedItem.populate(`migration`)
+          const entity = await $fetch<EntityJSON>(uri, { method: `POST`, body: { status: options.statusValue, ...data } })
+          await $fetch<EntityJSON<MigrationItem & { previous: EntityJSON<MigrationItem> }>>(item.self, {
+            method: `PATCH`,
+            body: { status: MigrationItemStatus.IMPORTED, entityURI: entity.self },
+          })
+
+          const updatedItem = await $fetch<EntityJSON<MigrationItem>>(item.self)
           nitroApp.hooks.callHook(`migrate:import:item:imported`, updatedItem, entity)
           nitroApp.hooks.callHook(`migrate:import:item:done`, updatedItem, entity)
           done()
@@ -64,63 +54,72 @@ export default defineNitroPlugin((nitroApp) => {
       }
 
       async function skip() {
-        const updatedItem = await MigrationItem.findOneAndUpdate(
-          { _id: item.id },
-          { status: MigrationStatus.SKIPPED }, { new: true })
-        await updatedItem.populate(`migration`)
-        nitroApp.hooks.callHook(`migrate:import:item:skipped`, item)
-        nitroApp.hooks.callHook(`migrate:import:item:done`, item)
+        await $fetch<EntityJSON<MigrationItem>>(item.self, {
+          method: `PATCH`,
+          body: { status: MigrationItemStatus.SKIPPED },
+        })
+
+        const updatedItem = await $fetch<EntityJSON<MigrationItem>>(item.self)
+        nitroApp.hooks.callHook(`migrate:import:item:skipped`, updatedItem)
+        nitroApp.hooks.callHook(`migrate:import:item:done`, updatedItem)
         done()
       }
 
       async function error(errorMessage: string) {
-        const updatedItem = await MigrationItem.findOneAndUpdate(
-          { _id: item.id },
-          { error: errorMessage, status: MigrationStatus.ERRORED })
-        await updatedItem.populate(`migration`)
+        await $fetch<EntityJSON<MigrationItem>>(item.self, {
+          method: `PATCH`,
+          body: { status: MigrationItemStatus.ERRORED, error: errorMessage },
+        })
         nitroApp.hooks.callHook(`migrate:import:item:error`, item, errorMessage)
-        nitroApp.hooks.callHook(`migrate:import:item:done`, item, null, errorMessage)
+        nitroApp.hooks.callHook(`migrate:import:item:done`, item, undefined, errorMessage)
         done()
       }
 
-      item.status = MigrationStatus.PENDING
-      item.save()
+      await $fetch(item.self, { method: `PATCH`, body: { status: MigrationItemStatus.PENDING } })
       start()
-      nitroApp.hooks.callHook(`migrate:import:item`, defu(...item.data), item.migration, { ready, error, skip })
+      nitroApp.hooks.callHook(`migrate:import:item`, item.data, migration, { ready, error, skip })
     })
   })
 
-  nitroApp.hooks.hook(`migrate:import:item:imported`, async (item) => {
-    await Migration.findOneAndUpdate({ _id: item.migration }, { $inc: { imported: 1 } }, { new: true })
-  })
-
-  nitroApp.hooks.hook(`migrate:import:item:error`, async (item) => {
-    await Migration.findOneAndUpdate({ _id: item.migration }, { $inc: { errored: 1 } }, { new: true })
-  })
-
-  nitroApp.hooks.hook(`migrate:import:item:skipped`, async (item) => {
-    await Migration.findOneAndUpdate({ _id: item.migration }, { $inc: { skipped: 1 } }, { new: true })
-  })
-
   nitroApp.hooks.hook(`migrate:import:item:done`, async (item) => {
-    const pendingCount = await MigrationItem
-      .where(`migration`).equals(item.migration)
-      .where(`status`).in([MigrationStatus.QUEUED, MigrationStatus.PENDING])
-      .countDocuments()
-    if (pendingCount === 0) {
-      await Migration.updateOne({ _id: item.migration }, { status: MigrationStatus.IDLE })
+    const migrationURI = item.migration?.self
+    if (migrationURI) {
+      const { total: pendingCount } = await $fetch<EntityJSONList>(migrationURI, {
+        query: {
+          filter: [
+            `status:equals:${MigrationItemStatus.PENDING}`,
+            `status:equals:${MigrationItemStatus.QUEUED}`,
+          ],
+        },
+      })
+      if (pendingCount === 0) {
+        await $fetch(migrationURI, {
+          method: `PATCH`,
+          body: {
+            status: MigrationStatus.IDLE,
+          },
+        })
+      }
     }
   })
 
   // REFACTOR "migrate:rollback" hook to be implemented as nitro task (once feature becomes available)
   nitroApp.hooks.hook(`migrate:rollback`, async (migration) => {
-    await Migration.updateOne({ _id: migration }, { status: MigrationStatus.RUNNING })
-    const items = await MigrationItem
-      .find({ migration })
-      .select(`_id entityURI`)
-
-    await Promise.all(items.map(async item => item.entityURI ? await $fetch(item.entityURI, { method: `DELETE` }) : null))
-    await MigrationItem.updateMany({ migration }, { $set: { status: MigrationStatus.INITIAL }, $unset: { entityURI: 1, error: 1 } })
-    await Migration.updateOne({ _id: migration }, { imported: 0, errored: 0, skipped: 0, status: MigrationStatus.IDLE })
+    await $fetch(migration.self, { method: `PATCH`, body: { status: MigrationStatus.RUNNING } })
+    const { entities: items } = await $fetch<EntityJSONList<MigrationItem>>(`${migration.self}/items`, {
+      query: {
+        filter: [`status:equals:${MigrationItemStatus.IMPORTED}`],
+        select: [`id`, `entityURI`, `status`],
+      },
+    })
+    await Promise.all(items.filter(item => item.entityURI).map(({ entityURI }) => $fetch(entityURI!, { method: `DELETE` })))
+    await $fetch(`${migration.self}/items`, {
+      method: `PATCH`,
+      body: {
+        status: useEnum(MigrationItemStatus).labelOf(MigrationItemStatus.INITIAL),
+        error: null,
+      },
+    })
+    $fetch(migration.self, { method: `PATCH`, body: { status: MigrationStatus.IDLE } })
   })
 })
