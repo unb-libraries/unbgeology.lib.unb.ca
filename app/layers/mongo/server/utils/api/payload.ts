@@ -26,7 +26,9 @@ export const require = <T = any>(validator: Validator<T>) => {
 }
 
 export const optional = <T = any>(validator: Validator<T>) => {
-  const $return = async (input: any) => await validate(input, validator, { required: false })
+  const $return = async (input: any) => input !== null
+    ? await validate(input, validator, { required: false })
+    : null
   $return.expected = false
   return $return as Validator<T | undefined>
 }

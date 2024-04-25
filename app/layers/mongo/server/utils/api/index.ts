@@ -244,7 +244,7 @@ export function matchInputType(input: any, type: string | RegExp, options?: { ty
 function flatten(body: object, prefix = ``, options?: Partial<{ flattenArrays: boolean, flattenExcept: string[] }>): Record<string, any> {
   return Object.entries(body).reduce((flattened, [key, value]) => {
     const excluded = options?.flattenExcept?.includes(key)
-    if (!excluded && typeof value === `object` && (options?.flattenArrays || !Array.isArray(value))) {
+    if (!excluded && value && typeof value === `object` && (options?.flattenArrays || !Array.isArray(value))) {
       return {
         ...flattened,
         ...flatten(value, `${prefix}${key}.`, {
