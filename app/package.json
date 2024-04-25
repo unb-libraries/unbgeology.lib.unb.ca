@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@types/formidable": "^3.4.4",
+    "casbin": "^5.29.0",
     "doi-regex": "^0.1.13",
     "h3-formidable": "^0.3.8",
     "leaflet": "^1.9.4",
