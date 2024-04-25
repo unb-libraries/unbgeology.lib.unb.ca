@@ -18,7 +18,7 @@ export function useEnum<E extends typeof Enumerator = typeof Enumerator>(e: E) {
     },
 
     valueOf(value: keyof E | E[keyof E] | Lowercase<Extract<keyof E, string>>): E[keyof E] {
-      return typeof value === `number`
+      return !isNaN(Number(value))
         ? value as E[keyof E]
         : String(value).toUpperCase().split(`_`)
           .reduce((acc, cur, index) => index > 0 ? acc | e[cur as keyof E] as number : e[cur as keyof E] as number, 0) as E[keyof E]

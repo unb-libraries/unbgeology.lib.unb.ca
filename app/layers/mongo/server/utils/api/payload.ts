@@ -80,10 +80,11 @@ export function URIEntityTypeValidator<E extends Entity = Entity>(...type: strin
 enum Enum {}
 export function EnumValidator<E extends typeof Enum>(e: E) {
   return (input: any) => {
-    const keys = Object.keys(e).map(key => `${key}`.toUpperCase())
-    if (keys.includes(`${input}`.toUpperCase())) {
-      return useEnum(e).valueOf(input)
+    const value = useEnum(e).valueOf(input)
+    if (value) {
+      return value
     }
+    const keys = Object.keys(e).map(key => `${key.toLowerCase()}`)
     throw new TypeError(`"${input}" must be any of ${keys.join(`,`)}`)
   }
 }
