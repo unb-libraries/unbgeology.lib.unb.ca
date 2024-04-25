@@ -5,6 +5,7 @@ export default defineMongooseEventQueryHandler(FileBase, (event, query) => {
   const { select, sort, filter } = getQueryOptions(event)
   const defaultFields = [
     `filesize`,
+    `filepath`,
     `mimetype`,
     `uri`,
     `status`,

@@ -14,6 +14,6 @@ export default defineMongooseReader(FileBase, async (body, options) => {
 
   return {
     ...validatedBody,
-    status: status ? useEnum(FileState).valueOf(status) : undefined,
+    status: status && useEnum(FileState).valueOf(status),
   }
 })
