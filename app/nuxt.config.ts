@@ -6,9 +6,9 @@ const { DEPLOY_ENV } = process.env
 export default defineNuxtConfig({
   extends: [
     `./config/${DEPLOY_ENV}`,
-    `./layers/primevue`,
-    `./layers/mongo`,
     `./layers/base`,
+    `./layers/mongo`,
+    `./layers/primevue`,
   ],
   alias: {
     "document-types": url.fileURLToPath(new URL(`./server/documentTypes`, import.meta.url)),
