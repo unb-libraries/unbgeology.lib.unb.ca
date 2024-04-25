@@ -1,0 +1,7 @@
+p, anonymous, /api/terms/:id, slug|label, GET
+p, anonymous, /api/terms/3, slug|label, GET, deny
+p, editor, /api/terms/:id, slug|label|created|updated, GET|POST|PATCH|DELETE
+
+g, editor, anonymous
+g, user1, anonymous
+g, user2, editor
