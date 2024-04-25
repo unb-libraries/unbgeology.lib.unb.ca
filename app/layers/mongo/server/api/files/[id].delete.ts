@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
     const file = await FileBase.findByID(id)
     if (file) {
       await removeFile(file.filepath)
-      await FileBase.delete()
+      await FileBase.deleteOne().where(`_id`).eq(id)
       return sendNoContent(event)
     } else {
       return create404()
