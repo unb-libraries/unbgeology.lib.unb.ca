@@ -13,7 +13,7 @@
     "@types/leaflet": "^1.9.3",
     "@types/lodash": "^4.14.194",
     "@unb-libraries/nuxt-layer-entity": "./layers/entity",
-    "nuxt": "^3.9.0"
+    "nuxt": "^3.11.2"
   },
   "dependencies": {
     "@types/formidable": "^3.4.4",
