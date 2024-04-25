@@ -455,8 +455,7 @@ async function updateDocument<D extends IDocumentBase = IDocumentBase>(Model: Do
 
   const original = document.toJSON()
   document.set(body)
-  await document.save()
-
+  await document.save({ validateModifiedOnly: true })
   return [original, document.toJSON()].map(d => ({ ...d, __type: Model.fullName })) as [D, D]
 }
 
