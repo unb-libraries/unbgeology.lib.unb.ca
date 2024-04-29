@@ -114,6 +114,11 @@ export interface EntityListResponse<E extends Entity = Entity> {
     remove: (entity: EntityJSON) => Promise<EntityDeleteResponse>;
     errors: any[];
 }
+export interface Permission {
+    action: string | string[];
+    resource: string;
+    fields?: string[];
+}
 export interface User extends Entity {
     username: string;
     active: boolean;

@@ -1,5 +1,5 @@
+import { type Permission } from "@unb-libraries/nuxt-layer-entity"
 import { createUserRole } from "../utils/casbin"
-import { type Permission } from "../../types/casbin"
 
 export default defineNitroPlugin((nitro) => {
   nitro.hooks.hook(`mongoose:init`, async () => {
