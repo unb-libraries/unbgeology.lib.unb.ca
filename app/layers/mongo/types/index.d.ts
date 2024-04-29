@@ -62,6 +62,7 @@ export interface PluginOptions<F extends function = any> {
 }
 
 export interface RenderOptions<T extends object = object> {
+  type?: string
   self: (data: T) => string
 }
 export interface RenderListOptions<T extends object = object, O extends RenderOptions = RenderOptions<T>> {
@@ -79,6 +80,7 @@ export type RenderDocumentListOptions<D extends DocumentBase = DocumentBase> = R
 
 export interface PayloadReadOptions<P extends `create` | `update` = `create` | `update`> {
   event: H3Event
+  type: string
   flat: boolean
   flattenArrays: boolean
   flattenExcept: string[]

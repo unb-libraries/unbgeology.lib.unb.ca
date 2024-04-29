@@ -1,6 +1,6 @@
 export default defineMongooseReader(User, async (payload, { op }) => {
   const create = op === `create`
-  const { username, active, profile } = await validateBody(payload, {
+  return await validateBody(payload, {
     username: requireIf(create, StringValidator),
     active: optional(BooleanValidator),
     profile: optional(ObjectValidator({
@@ -10,6 +10,4 @@ export default defineMongooseReader(User, async (payload, { op }) => {
       phone: optional(StringValidator),
     })),
   })
-
-  return { username, active, profile }
 })

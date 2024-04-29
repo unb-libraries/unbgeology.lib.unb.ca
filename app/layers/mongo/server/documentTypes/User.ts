@@ -3,7 +3,7 @@ import { EntityFieldTypes } from "../../types/entity"
 import { DocumentBase } from "../utils/schema"
 import { type DocumentBase as IDocumentBase } from "../../types/schema"
 
-export interface User extends Omit<UserEntity, keyof Entity>, IDocumentBase {}
+export interface User extends Omit<UserEntity, keyof Entity | `roles` | `permissions`>, IDocumentBase {}
 
 export default defineDocumentModel<User>(`User`, defineDocumentSchema<User>({
   username: {

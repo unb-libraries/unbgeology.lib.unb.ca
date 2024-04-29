@@ -128,6 +128,8 @@ export interface User extends Entity {
         email: string;
         phone: string;
     };
+    roles: string[];
+    permissions: string[];
 }
 export type JUser = EntityJSON<User>;
 export type JUserList = EntityJSONList<User>;
