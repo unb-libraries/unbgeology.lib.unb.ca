@@ -3,7 +3,8 @@ export default defineEventHandler(async (event) => {
 
   const query = User.delete()
   await useEventQuery(event, query)
-  await query.paginate(page, pageSize)
+  const { documents: deletedUsers } = await query.paginate(page, pageSize)
+  await Promise.all(deletedUsers.map(({ username }) => removeUser(username)))
 
   return sendNoContent(event)
 })
