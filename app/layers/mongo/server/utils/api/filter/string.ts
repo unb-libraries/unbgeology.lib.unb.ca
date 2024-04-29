@@ -13,7 +13,7 @@ export default function <D extends DocumentBase = DocumentBase> (field: string, 
 
   if (op & (FilterOperator.EQUALS | FilterOperator.NOT)) {
     return (query: FilterableQuery<D>) => {
-      if (op & FilterOperator.EQUALS & FilterOperator.NOT) {
+      if (op & FilterOperator.EQUALS && op & FilterOperator.NOT) {
         Array.isArray(value) ? query.where(field).nin(value) : query.where(field).ne(value)
       } else {
         Array.isArray(value) ? query.where(field).in(value) : query.where(field).eq(value)
