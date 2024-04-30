@@ -9,5 +9,6 @@ export default defineMongooseReader(User, async (payload, { op }) => {
       email: optional(StringValidator),
       phone: optional(StringValidator),
     })),
+    roles: optional(ArrayValidator(StringValidator)),
   })
 })

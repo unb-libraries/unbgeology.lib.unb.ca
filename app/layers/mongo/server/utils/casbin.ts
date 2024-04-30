@@ -67,16 +67,49 @@ export async function removeUser(username: string) {
   await enforcer.deleteUser(username)
 }
 
-export async function getUserPermissions(username: string): Promise<Permission[]> {
-  const enforcer = await getCasbinEnforcer()
-  const roles = (await enforcer.getFilteredGroupingPolicy(0, username)).flat()
-  const policies = (await Promise.all(roles.map(role => enforcer.getFilteredPolicy(0, role)))).reduceRight((acc, val) => acc.concat(val), [])
+export function createPermission(action: string, resource: string, fields?: string[]): Permission
+export function createPermission(str: string): Permission
+export function createPermission(actionOrPermission: string, resource?: string, fields?: string[]) {
+  if (resource) {
+    return {
+      action: actionOrPermission,
+      resource,
+      fields,
+    }
+  }
 
-  const reducePolicy = (obj: Record<string, Permission>, permission: Permission) => {
-    const key = `${permission.action}:${permission.resource}`
+  const action = actionOrPermission.substring(0, actionOrPermission.indexOf(`:`))
+  const res = actionOrPermission.substring(actionOrPermission.indexOf(`:`) + 1, actionOrPermission.lastIndexOf(`:`))
+  const fieldStr = actionOrPermission.substring(actionOrPermission.lastIndexOf(`:`) + 1)
+  return {
+    action,
+    resource: res,
+    fields: fieldStr === `*` ? [] : fieldStr.split(`_`),
+  }
+}
+
+export function createPermissionKey(permission: Permission) {
+  const base = `${permission.action}:${permission.resource}`
+  const fields = permission.fields ?? []
+  return fields.length > 0
+    ? `${base}:${fields.join(`_`)}`
+    : base
+}
+
+export function createFieldPermissionKeys(permission: Permission) {
+  const base = `${permission.action}:${permission.resource}`
+  const fields = permission.fields ?? []
+  return fields.length > 0
+    ? fields.map(field => `${base}:${field}`)
+    : [base]
+}
+
+function createPermissionsMap(policies: string[][]) {
+  const reducer = (obj: Record<string, Permission>, permission: Permission) => {
+    const key = createPermissionKey(permission)
     return {
       ...obj,
-      [key]: {
+      [key.substring(0, key.lastIndexOf(`:`))]: {
         ...permission,
         fields: [...obj[key]?.fields ?? [], ...permission.fields ?? []].filter((field, index, arr) => arr.indexOf(field) === index),
       },
@@ -87,9 +120,26 @@ export async function getUserPermissions(username: string): Promise<Permission[]
     return action.split(`|`).map(action => ({
       action,
       resource,
-      fields: (fields && fields.split(`|`).filter(f => f)) || [`*`],
+      fields: (fields && fields.split(`|`).filter(f => f)) || [],
     }))
-  }).flat().reduce(reducePolicy, {}))
+  }).flat().reduce(reducer, {}))
+}
+
+export async function getRolePermissions(role: string) {
+  const enforcer = await getCasbinEnforcer()
+  const policies = (await enforcer.getFilteredPolicy(0, role))
+  return createPermissionsMap(policies)
+}
+
+export async function getRolePermissionsKey(role: string) {
+  return (await getRolePermissions(role)).map(createPermissionKey)
+}
+
+export async function getUserPermissions(username: string): Promise<Permission[]> {
+  const enforcer = await getCasbinEnforcer()
+  const roles = (await enforcer.getFilteredGroupingPolicy(0, username)).flat()
+  const policies = (await Promise.all(roles.map(role => enforcer.getFilteredPolicy(0, role)))).reduceRight((acc, val) => acc.concat(val), [])
+  return createPermissionsMap(policies)
 }
 
 function arrayRegexMatch(keys: string[], pattern: string) {

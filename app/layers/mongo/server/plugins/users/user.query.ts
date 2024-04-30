@@ -36,6 +36,14 @@ export default defineMongooseEventQueryHandler(User, defineEventQuery({
       },
     },
   },
+  roles: {
+    default: true,
+    filter: String,
+  },
+  permissions: {
+    default: false,
+    filter: false,
+  },
   created: {
     default: true,
     filter: Date,
