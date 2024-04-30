@@ -30,9 +30,16 @@ export async function createUserRole(role: string, permissions: Permission[], op
     await enforcer.addRoleForUser(role, options.base)
   }
 
-  await Promise.all(permissions.map((permission) => {
-    const [action, resource, fields] = [permission.action, permission.resource, permission.fields]
-    return enforcer.addPolicy(role, resource, fields?.includes(`*`) ? `*` : fields?.join(`|`) ?? `*`, (Array.isArray(action) ? action : [action]).join(`|`))
+  return await Promise.all(permissions.map(async (permission) => {
+    const { resource } = permission
+    const action = (Array.isArray(permission.action) ? permission.action : [permission.action]).join(`|`)
+    const fields = permission.fields?.includes(`*`) ? `*` : permission.fields?.join(`|`) ?? `*`
+    let success = await enforcer.addPolicy(role, resource, fields, action)
+    if (!success) {
+      await enforcer.removeFilteredPolicy(0, role)
+      success = await enforcer.addPolicy(role, resource, fields, action)
+    }
+    return success
   }))
 }
 
