@@ -9,11 +9,13 @@ export default defineNitroPlugin((nitro) => {
       editor: [{ action: [`read`, `create`, `update`, `delete`], resource: `person`, fields: [] }],
     }
 
-    const results = await Promise.all(Object.entries(roles).map(([role, permissions]) => createUserRole(role, permissions)))
-    results.forEach((success) => {
+    await Promise.all(Object.entries(roles).map(async ([roleID, permissions]) => {
+      const [base, role] = roleID.indexOf(`.`) > 0 ? roleID.split(`.`) : [null, roleID]
+      const success = await createUserRole(role, permissions, base ? { base } : {}) || await updateUserRole(role, permissions)
       if (!success) {
         consola.error(`Failed to create role`)
       }
-    })
+      return success
+    }))
   })
 })

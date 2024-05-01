@@ -1,7 +1,7 @@
 import { newEnforcer } from "casbin"
 import { MongooseAdapter } from "casbin-mongoose-adapter"
 import { type HTTPMethod } from "h3"
-import { type Permission } from "@unb-libraries/nuxt-layer-entity"
+import { type User, type EntityJSONList, type Permission } from "@unb-libraries/nuxt-layer-entity"
 
 let adapter: ReturnType<typeof MongooseAdapter[`newAdapter`]>
 let enforcer: ReturnType<typeof newEnforcer>
@@ -30,17 +30,45 @@ export async function createUserRole(role: string, permissions: Permission[], op
     await enforcer.addRoleForUser(role, options.base)
   }
 
-  return await Promise.all(permissions.map(async (permission) => {
+  return (await Promise.all(permissions.map(async (permission) => {
     const { resource } = permission
     const action = (Array.isArray(permission.action) ? permission.action : [permission.action]).join(`|`)
     const fields = permission.fields?.includes(`*`) ? `*` : permission.fields?.join(`|`) ?? `*`
-    let success = await enforcer.addPolicy(role, resource, fields, action)
-    if (!success) {
-      await enforcer.removeFilteredPolicy(0, role)
-      success = await enforcer.addPolicy(role, resource, fields, action)
+    return await enforcer.addPolicy(role, resource, fields, action)
+  }))).every(success => success)
+}
+
+export async function updateUserRole(role: string, permissions: Permission[]) {
+  const enforcer = await getCasbinEnforcer()
+  return (await Promise.all(permissions.map(async (permission) => {
+    const { resource } = permission
+    const action = (Array.isArray(permission.action) ? permission.action : [permission.action]).join(`|`)
+    const fields = permission.fields?.includes(`*`) ? `*` : permission.fields?.join(`|`) ?? `*`
+
+    await enforcer.removeFilteredPolicy(0, role)
+    await enforcer.addPolicy(role, resource, fields, action)
+
+    const updateUsers = async (): Promise<boolean> => {
+      try {
+        const { entities: users, nav } = await $fetch<EntityJSONList<User>>(`/api/users`, { query: { filter: `roles:equals:${role}`, select: `roles` } })
+        Promise.all(users.map(({ self, roles }) => $fetch(self, {
+          method: `PATCH`,
+          body: {
+            roles: [...roles, role].filter((role, i, arr) => arr.indexOf(role) === i),
+          },
+        })))
+
+        if (nav?.next) {
+          return await updateUsers()
+        }
+      } catch (err: unknown) {
+        return false
+      }
+      return true
     }
-    return success
-  }))
+
+    return await updateUsers()
+  }))).every(success => success)
 }
 
 export async function addUserRole(username: string, ...roles: string[]) {
@@ -100,7 +128,7 @@ export function createPermissionKey(permission: Permission) {
   const fields = permission.fields ?? []
   return fields.length > 0
     ? `${base}:${fields.join(`_`)}`
-    : base
+    : `${base}:*`
 }
 
 export function createFieldPermissionKeys(permission: Permission) {
@@ -108,7 +136,7 @@ export function createFieldPermissionKeys(permission: Permission) {
   const fields = permission.fields ?? []
   return fields.length > 0
     ? fields.map(field => `${base}:${field}`)
-    : [base]
+    : [`${base}:*`]
 }
 
 function createPermissionsMap(policies: string[][]) {
