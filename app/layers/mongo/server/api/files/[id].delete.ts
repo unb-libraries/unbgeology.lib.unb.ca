@@ -2,12 +2,17 @@ import { removeFile } from "../../utils/api/files/fs"
 
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
+  const resources = getAuthorizedResources(event, r => /^file(:\w)*$/.test(r))
 
   try {
     const file = await FileBase.findByID(id)
+    if (file && !file.authTags.some(t => resources.includes(t))) {
+      return create403()
+    }
+
     if (file) {
       await removeFile(file.filepath)
-      await FileBase.deleteOne().where(`_id`).eq(id)
+      await FileBase.deleteByID(id)
       return sendNoContent(event)
     } else {
       return create404()

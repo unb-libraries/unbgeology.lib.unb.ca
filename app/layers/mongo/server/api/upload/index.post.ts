@@ -27,5 +27,8 @@ export default defineEventHandler(async (event) => {
           })
         return file
       }),
+    headers: {
+      Cookie: `sessionId=${getCookie(event, `sessionId`)!}`,
+    },
   })
 })

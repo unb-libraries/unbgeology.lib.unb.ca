@@ -1,4 +1,4 @@
-import { type Entity, type Image as ImageEntity } from "@unb-libraries/nuxt-layer-entity"
+import { type Entity, type Image as ImageEntity, FileState } from "@unb-libraries/nuxt-layer-entity"
 import { EntityFieldTypes } from "../../types/entity"
 import FileBase, { type File, Mimetyped } from "./FileBase"
 
@@ -8,7 +8,6 @@ export default defineDocumentModel<File, Image>(`Image`, defineDocumentSchema<Im
   alt: {
     type: EntityFieldTypes.String,
     required: false,
-    default: `untitle`,
   },
   title: {
     type: EntityFieldTypes.String,
@@ -18,4 +17,14 @@ export default defineDocumentModel<File, Image>(`Image`, defineDocumentSchema<Im
   accept: [
     `image/jpeg`,
   ],
+})).mixin(Authorize<File>({
+  paths: (file) => {
+    const status = useEnum(FileState).labelOf(file.status).toLowerCase()
+    return [
+      `file`,
+      `file:${status}`,
+      `file:image`,
+      `file:image:${status}`,
+    ]
+  },
 }))(), FileBase)

@@ -5,8 +5,15 @@ import type { File } from "../../documentTypes/FileBase"
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
 
+  const resources = getAuthorizedResources(event, r => /^file(:\w)*$/.test(r))
+  const fields = getAuthorizedFields(event, ...resources)
+
   const file = await FileBase.findByID(id)
-    .select(`filename`, `filepath`, `status`)
+    .select(`filename`, `filepath`, `status`, `authTags`)
+
+  if (file && !file.authTags.some(t => resources.includes(t))) {
+    return create403()
+  }
 
   if (!file) {
     return sendError(event, createError({
@@ -39,5 +46,5 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  return renderDocumentDiffOr404(await file.update(update), { model: FileBase })
+  return renderDocumentDiffOr404(await file.update(update), { model: FileBase, fields })
 })

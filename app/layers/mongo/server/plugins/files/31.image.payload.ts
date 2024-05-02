@@ -6,7 +6,7 @@ export default defineMongooseReader(ImageFile, async (body, options) => {
   const { mimetype } = await validateBody(body, {
     mimetype: requireIf(create, String),
   })
-  if (create && !mimetype!.match(/\/image$/)) { return {} }
+  if (create && !mimetype!.match(/^image\//)) { return {} }
 
   const { title, alt } = await validateBody(body, {
     title: optional(String),

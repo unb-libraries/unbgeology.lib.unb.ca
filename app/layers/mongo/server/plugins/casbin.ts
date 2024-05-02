@@ -7,9 +7,11 @@ export default defineNitroPlugin((nitro) => {
     const roles: Record<string, Permission[]> = {
       public: [
         { action: `read`, resource: `term:published`, fields: [`label`] },
+        { action: `read`, resource: `file:persisted`, fields: [`filename`, `uri`] },
       ],
       editor: [
         { action: [`read`, `create`, `update`, `delete`], resource: `term`, fields: [] },
+        { action: [`read`, `create`, `update`, `delete`], resource: `file`, fields: [] },
       ],
     }
 

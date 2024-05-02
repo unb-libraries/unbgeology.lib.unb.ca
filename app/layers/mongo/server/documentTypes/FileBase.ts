@@ -2,8 +2,9 @@ import { EntityFieldTypes } from "layers/mongo/types/entity"
 import { type File as FileEntity, type Entity, FileState } from "@unb-libraries/nuxt-layer-entity"
 import { Stateful } from "../utils/mixins"
 import { type DocumentBase as Base } from "../../types/schema"
+import type { Authorize as IAuthorize } from "../utils/mixins/Authorize"
 
-export interface File extends Omit<FileEntity, keyof Entity | `uri`>, Base {
+export interface File extends Omit<FileEntity, keyof Entity | `uri`>, IAuthorize, Base {
   filepath: string
   uploadName: string
 }

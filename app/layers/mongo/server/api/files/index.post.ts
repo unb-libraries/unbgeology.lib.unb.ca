@@ -3,6 +3,11 @@ import { fileExists, getUploadDir, moveFile } from "../../utils/api/files/fs"
 import { type File } from "../../documentTypes/FileBase"
 
 export default defineEventHandler(async (event) => {
+  const resources = getAuthorizedResources(event, r => /^file(:\w)*$/.test(r))
+  if (!resources.length) {
+    return create403()
+  }
+
   const createExisting = async (bodies: File[]) => {
     const docs = await FileBase.create(
       bodies.filter(async ({ filepath }) => filepath && await fileExists(filepath)))
