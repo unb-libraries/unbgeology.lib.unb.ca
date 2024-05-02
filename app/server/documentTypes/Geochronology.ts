@@ -38,4 +38,15 @@ export default defineDocumentModel(`GeochronologicUnit`, defineDocumentSchema<Ge
     type: EntityFieldTypes.String,
     required: false,
   },
-}).mixin(State)(), TaxonomyTerm)
+}).mixin(State)
+  .mixin(Authorize<GeochronologicUnit>({
+    paths: (unit) => {
+      const status = useEnum(Status).labelOf(unit.status).toLowerCase()
+      return [
+        `term`,
+        `term:${status}`,
+        `term:geochronology`,
+        `term:geochronology:${status}`,
+      ]
+    },
+  }))(), TaxonomyTerm)

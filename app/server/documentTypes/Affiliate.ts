@@ -10,6 +10,20 @@ const MxStateful = Stateful({
   default: Status.DRAFT,
 })
 
+const MxAuthorize = <T>(type: string) => Authorize<Affiliate<T>>({
+  paths: (affiliate) => {
+    const status = useEnum(Status).labelOf(affiliate.status).toLowerCase()
+    return [
+      `term`,
+      `term:${status}`,
+      `term:affiliate`,
+      `term:affiliate:${status}`,
+      `term:affiliate:${type}`,
+      `term:affiliate:${type}:${status}`,
+    ]
+  },
+})
+
 export type Person = Affiliate<Omit<PersonEntity, `image`> & { image?: Image }>
 export type Organization = Affiliate<OrganizationEntity>
 
@@ -88,7 +102,8 @@ export default {
       required: false,
       default: true,
     },
-  }).mixin(MxStateful)(), Term),
+  }).mixin(MxStateful)
+    .mixin(MxAuthorize<Person>(`person`))(), Term),
 
   Organization: defineDocumentModel(`Organization`, defineDocumentSchema<Organization>({
     address: {
@@ -140,5 +155,6 @@ export default {
     web: [{
       type: EntityFieldTypes.String,
     }],
-  }).mixin(MxStateful)(), Term),
+  }).mixin(MxStateful)
+    .mixin(MxAuthorize<Organization>(`organization`))(), Term),
 }

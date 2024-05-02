@@ -9,4 +9,15 @@ const State = Stateful({
 })
 
 export const FossilPortion = defineDocumentModel(`Portion.Fossil`, defineDocumentSchema<Portion>({
-}).mixin(State)(), Term)
+}).mixin(State)
+  .mixin(Authorize<Portion>({
+    paths: (portion) => {
+      const status = useEnum(Status).labelOf(portion.status).toLowerCase()
+      return [
+        `term`,
+        `term:${status}`,
+        `term:portion`,
+        `term:portion:${status}`,
+      ]
+    },
+  }))(), Term)

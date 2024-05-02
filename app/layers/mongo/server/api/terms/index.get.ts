@@ -1,6 +1,5 @@
 export default defineEventHandler(async (event) => {
-  const resources = getAuthorizedResources(event)
-  const pattern = new RegExp(resources.map(res => `^${res}`).join(`|`))
+  const resources = getAuthorizedResources(event, r => /^term(:\w)*$/.test(r))
   const fields = getAuthorizedFields(event, ...resources)
 
   if (resources.length < 1) {
@@ -8,7 +7,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const query = Term.find()
-    .where(`authTags`).match(pattern)
+    .where(`authTags`).in(resources)
   await useEventQuery(event, query)
 
   const { page, pageSize } = getQueryOptions(event)

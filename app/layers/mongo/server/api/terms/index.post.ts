@@ -1,5 +1,5 @@
 export default defineEventHandler(async (event) => {
-  const resources = getAuthorizedResources(event)
+  const resources = getAuthorizedResources(event, r => /^term(:\w)*$/.test(r))
   if (resources.length < 1) {
     return create403(`Unauthorized to create term entities.`)
   }

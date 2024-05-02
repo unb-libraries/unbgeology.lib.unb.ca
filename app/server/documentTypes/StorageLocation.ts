@@ -13,4 +13,15 @@ export default defineDocumentModel(`StorageLocation`, defineDocumentSchema<Stora
     type: EntityFieldTypes.Boolean,
     default: false,
   },
-}).mixin(State)(), TaxonomyTerm)
+}).mixin(State)
+  .mixin(Authorize<StorageLocation>({
+    paths: (location) => {
+      const status = useEnum(Status).labelOf(location.status).toLowerCase()
+      return [
+        `term`,
+        `term:${status}`,
+        `term:storagelocation`,
+        `term:storagelocation:${status}`,
+      ]
+    },
+  }))(), TaxonomyTerm)

@@ -10,9 +10,24 @@ import {
 } from "~/types/classification"
 
 type Classification<T> = Omit<T, keyof TaxonomyTermEntity> & TaxonomyTerm
+
 const State = Stateful({
   values: Status,
   default: Status.DRAFT,
+})
+
+const MxAuthorize = <T>(type: string) => Authorize<Classification<T>>({
+  paths: (classification: Classification<any>) => {
+    const status = useEnum(Status).labelOf(classification.status).toLowerCase()
+    return [
+      `term`,
+      `term:${status}`,
+      `term:classification`,
+      `term:classification:${status}`,
+      `term:classification:${type}`,
+      `term:classification:${type}:${status}`,
+    ]
+  },
 })
 
 export type Fossil = Classification<FossilCE>
@@ -26,15 +41,18 @@ export default {
       required: true,
       enum: Rank,
     },
-  }).mixin(State)(), TaxonomyTerm),
+  }).mixin(State)
+    .mixin(MxAuthorize<Fossil>(`fossil`))(), TaxonomyTerm),
 
   Rock: defineDocumentModel(`CRock`, defineDocumentSchema<Rock>({
-  }).mixin(State)(), TaxonomyTerm),
+  }).mixin(State)
+    .mixin(MxAuthorize<Rock>(`rock`))(), TaxonomyTerm),
 
   Mineral: defineDocumentModel(`CMineral`, defineDocumentSchema<Mineral>({
     composition: {
       type: EntityFieldTypes.String,
       required: false,
     },
-  }).mixin(State)(), TaxonomyTerm),
+  }).mixin(State)
+    .mixin(MxAuthorize<Mineral>(`mineral`))(), TaxonomyTerm),
 }
