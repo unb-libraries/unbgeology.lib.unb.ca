@@ -1,7 +1,7 @@
 import { FilterOperator } from "@unb-libraries/nuxt-layer-entity"
 import { consola } from "consola"
 import { defu } from "defu"
-import { type H3Event } from "h3"
+import { type H3Event, type HTTPMethod } from "h3"
 import { type QueryOptions, type Content, type Entity, type EntityList, type Payload, type DocumentQueryMethod, type DocumentQuery, type FilterableQuery, type DocumentPayload } from "../../../types/entity"
 import { type DocumentBase, type DocumentModel } from "../../../types/schema"
 import type { QueryCondition } from "./filter"
@@ -277,8 +277,10 @@ async function readOr400<T extends object = object, P extends `create` | `update
       const definedInputEntries = Object.entries(input).filter(([, value]) => value !== undefined)
       return { ...body, ...Object.fromEntries(definedInputEntries) }
     }, {})
+
+    const filteredBody = hookOptions.fields?.length ? Object.fromEntries(hookOptions.fields.map(field => [field, body[field as keyof T]])) : body
     return hookOptions.flat
-      ? flatten(body, ``, {
+      ? flatten(filteredBody, ``, {
         flattenArrays: hookOptions.flattenArrays,
         flattenExcept: hookOptions.flattenExcept,
       })
@@ -366,7 +368,16 @@ export async function render<C extends Content = Content, D extends object = obj
     .filter(([_, value]) => (value !== undefined))
     .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {}) as Omit<Entity<C>, `self`>
 
-  return { self, ...entity } as Entity<C>
+  return options?.fields?.length
+    ? {
+        id: entity.id,
+        self,
+        ...Object.fromEntries(options.fields.map(field => [field, entity[field as keyof Omit<Entity<C>, `self`>]])),
+      }
+    : {
+        ...entity,
+        self,
+      }
 }
 
 export async function renderOr404<C extends Content = Content, D extends object = object>(data?: D, options?: Partial<RenderOptions<D> & { message: string }>) {
@@ -388,6 +399,8 @@ export async function renderList<C extends Content = Content, D extends object =
         }
         return uriFromEventPathname(data)
       },
+      type: options?.canonical?.type,
+      fields: options?.canonical?.fields,
     },
     self: uriFromEventPathname<D[]>,
     total: data.length,
@@ -527,4 +540,22 @@ export function create404(message?: string) {
     }
   }
   return createError({ statusCode: 404, statusMessage: `The resource does not exist.` })
+}
+
+export function create403(message?: string) {
+  if (message) {
+    return createError({ statusCode: 403, statusMessage: message })
+  }
+
+  const event = useEvent()
+  if (event) {
+    const params = Object.entries(getRouterParams(event))
+    const op = (method: HTTPMethod) => method === `GET` ? `read` : method === `POST` ? `create` : method === `PUT` ? `update` : method === `PATCH` ? `update` : method === `DELETE` ? `delete` : `access`
+    if (params.length > 0) {
+      const [param, value] = params.at(-1)!
+      return createError({ statusCode: 403, statusMessage: `Unauthorized to ${op(event.method)} the resource with ${param} "${value}".` })
+    }
+    return createError({ statusCode: 403, statusMessage: `Unauthorized to ${op(event.method)} the requested resource.` })
+  }
+  return createError({ statusCode: 403, statusMessage: `Unauthorized to access the requested resource.` })
 }

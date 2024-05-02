@@ -63,6 +63,7 @@ export interface PluginOptions<F extends function = any> {
 
 export interface RenderOptions<T extends object = object> {
   type?: string
+  fields?: string[]
   self: (data: T) => string
 }
 export interface RenderListOptions<T extends object = object, O extends RenderOptions = RenderOptions<T>> {
@@ -76,11 +77,12 @@ export interface RenderDocumentOptions<D extends DocumentBase = DocumentBase> ex
   model?: DocumentModel<D>
 }
 
-export type RenderDocumentListOptions<D extends DocumentBase = DocumentBase> = RenderDocumentOptions<D> & RenderListOptions<D, RenderDocumentOptions<D>>
+export type RenderDocumentListOptions<D extends DocumentBase = DocumentBase> = Omit<RenderDocumentOptions<D>, `fields`> & RenderListOptions<D, Partial<RenderDocumentOptions<D>>>
 
 export interface PayloadReadOptions<P extends `create` | `update` = `create` | `update`> {
   event: H3Event
-  type: string
+  type?: string
+  fields?: string[]
   flat: boolean
   flattenArrays: boolean
   flattenExcept: string[]
