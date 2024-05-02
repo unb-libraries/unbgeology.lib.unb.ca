@@ -5,8 +5,11 @@ import { createUserRole } from "../utils/casbin"
 export default defineNitroPlugin((nitro) => {
   nitro.hooks.hook(`mongoose:init`, async () => {
     const roles: Record<string, Permission[]> = {
-      visitor: [{ action: `read`, resource: `person`, fields: [] }],
-      editor: [{ action: [`read`, `create`, `update`, `delete`], resource: `person`, fields: [] }],
+      visitor: [{ action: `read`, resource: `person`, fields: [`id`, `label`] }],
+      editor: [
+        { action: [`read`, `create`, `delete`], resource: `person`, fields: [] },
+        { action: [`update`], resource: `person`, fields: [`firstName`, `lastName`] },
+      ],
     }
 
     await Promise.all(Object.entries(roles).map(async ([roleID, permissions]) => {

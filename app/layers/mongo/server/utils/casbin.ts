@@ -40,35 +40,36 @@ export async function createUserRole(role: string, permissions: Permission[], op
 
 export async function updateUserRole(role: string, permissions: Permission[]) {
   const enforcer = await getCasbinEnforcer()
-  return (await Promise.all(permissions.map(async (permission) => {
+
+  const createPermissions = async () => await Promise.all(permissions.map(async (permission) => {
     const { resource } = permission
     const action = (Array.isArray(permission.action) ? permission.action : [permission.action]).join(`|`)
     const fields = permission.fields?.includes(`*`) ? `*` : permission.fields?.join(`|`) ?? `*`
+    return await enforcer.addPolicy(role, resource, fields, action)
+  }))
 
-    await enforcer.removeFilteredPolicy(0, role)
-    await enforcer.addPolicy(role, resource, fields, action)
+  const updateUsers = async (): Promise<boolean> => {
+    try {
+      const { entities: users, nav } = await $fetch<EntityJSONList<User>>(`/api/users`, { query: { filter: `roles:equals:${role}`, select: `roles` } })
+      Promise.all(users.map(({ self, roles }) => $fetch(self, {
+        method: `PATCH`,
+        body: {
+          roles: [...roles, role].filter((role, i, arr) => arr.indexOf(role) === i),
+        },
+      })))
 
-    const updateUsers = async (): Promise<boolean> => {
-      try {
-        const { entities: users, nav } = await $fetch<EntityJSONList<User>>(`/api/users`, { query: { filter: `roles:equals:${role}`, select: `roles` } })
-        Promise.all(users.map(({ self, roles }) => $fetch(self, {
-          method: `PATCH`,
-          body: {
-            roles: [...roles, role].filter((role, i, arr) => arr.indexOf(role) === i),
-          },
-        })))
-
-        if (nav?.next) {
-          return await updateUsers()
-        }
-      } catch (err: unknown) {
-        return false
+      if (nav?.next) {
+        return await updateUsers()
       }
-      return true
+    } catch (err: unknown) {
+      return false
     }
+    return true
+  }
 
-    return await updateUsers()
-  }))).every(success => success)
+  return await enforcer.removeFilteredPolicy(0, role) &&
+    (await createPermissions()).every(success => success) &&
+    await updateUsers()
 }
 
 export async function addUserRole(username: string, ...roles: string[]) {
