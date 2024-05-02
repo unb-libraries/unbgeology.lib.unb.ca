@@ -12,6 +12,10 @@ export default defineNitroPlugin((nitro) => {
       editor: [
         { action: [`read`, `create`, `update`, `delete`], resource: `term`, fields: [] },
         { action: [`read`, `create`, `update`, `delete`], resource: `file`, fields: [] },
+        { action: [`read`], resource: `user`, fields: [`username`, `profile`] },
+      ],
+      sysadmin: [
+        { action: [`read`, `create`, `update`, `delete`], resource: `user`, fields: [] },
       ],
     }
 
