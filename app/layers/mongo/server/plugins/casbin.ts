@@ -5,20 +5,27 @@ import { createUserRole } from "../utils/casbin"
 export default defineNitroPlugin((nitro) => {
   nitro.hooks.hook(`mongoose:init`, async () => {
     const roles: Record<string, Permission[]> = {
-      public: [
-        { action: `read`, resource: `term:published`, fields: [`label`] },
-        { action: `read`, resource: `file:persisted`, fields: [`filename`, `uri`] },
+      sudo: [
+        { action: [`create`], resource: `session` },
+      ],
+      sysadmin: [
+        { action: [`read`, `create`, `update`, `delete`], resource: `user`, fields: [] },
+      ],
+      migrator: [
+        { action: [`read`, `create`, `update`, `delete`], resource: `migration`, fields: [] },
+        { action: [`read`, `create`, `update`, `delete`], resource: `migrationitem`, fields: [] },
+        { action: [`create`, `delete`], resource: `term`, fields: [] },
+        { action: [`create`, `delete`], resource: `specimen`, fields: [] },
       ],
       editor: [
         { action: [`read`, `create`, `update`, `delete`], resource: `term`, fields: [] },
         { action: [`read`, `create`, `update`, `delete`], resource: `file`, fields: [] },
         { action: [`read`], resource: `user`, fields: [`username`, `profile`] },
+        { action: [`read`], resource: `migrationitem:imported`, fields: [] },
       ],
-      sysadmin: [
-        { action: [`read`, `create`, `update`, `delete`], resource: `user`, fields: [] },
-      ],
-      sudo: [
-        { action: [`create`], resource: `session` },
+      public: [
+        { action: `read`, resource: `term:published`, fields: [`label`] },
+        { action: `read`, resource: `file:persisted`, fields: [`filename`, `uri`] },
       ],
     }
 

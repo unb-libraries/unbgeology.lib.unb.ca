@@ -62,8 +62,8 @@ export function getCurrentUserPermissions(event: H3Event, options?: Partial<{ ac
     }), {} as Record<string, Permission>)
 }
 
-export function getAuthorizedResources(event: H3Event, match?: (res: string) => boolean) {
-  return Object.values(getCurrentUserPermissions(event))
+export function getAuthorizedResources(event: H3Event, match?: (res: string) => boolean, options?: Parameters<typeof getCurrentUserPermissions>[1]) {
+  return Object.values(getCurrentUserPermissions(event, { action: options?.action }))
     .filter(({ resource }) => !match || match(resource))
     .map(({ resource }) => resource)
 }
