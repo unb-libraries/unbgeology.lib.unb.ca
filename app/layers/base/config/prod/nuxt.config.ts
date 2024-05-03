@@ -58,6 +58,7 @@ export default defineNuxtConfig({
         name: `sessionId`,
       },
     },
+    defaultUser: `anonymous`,
     session: {
       maxAge: 24 * 60 * 60, // 1 day
       password: ``,

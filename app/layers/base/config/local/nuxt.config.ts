@@ -4,6 +4,7 @@ export default defineNuxtConfig({
     `../prod`,
   ],
   runtimeConfig: {
+    defaultUser: `admin`,
     session: {
       cookie: {
         secure: false,
