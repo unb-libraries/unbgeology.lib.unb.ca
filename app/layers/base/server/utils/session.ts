@@ -1,13 +1,34 @@
 import type { Permission } from '@unb-libraries/nuxt-layer-entity'
 import type { H3Event, Session, HTTPMethod } from 'h3'
 
+type UserSession = Session<{
+  user: string
+  permissions: string[]
+  validUntil: number
+}>
+
 export function useCurrentServerSession(event: H3Event) {
   const { name } = useServerSessionConfig()
-  return event.context.sessions?.[name] as Session<{
-    user: string
-    permissions: string[]
-    validUntil: number
-  }>
+  return event.context.sessions?.[name] as UserSession
+}
+
+export async function createUserSession(event: H3Event, username: string, options?: Partial<{ sessionName: string }>) {
+  const { name } = useServerSessionConfig()
+  const { sessionName } = options ?? { sessionName: name }
+
+  let responseCookie
+  await $fetch(`/api/session`, {
+    method: `POST`,
+    body: { username, sessionName },
+    headers: getProxyRequestHeaders(event),
+    onResponse: (res) => {
+      responseCookie = res.response.headers
+        .getSetCookie()
+        .findLast(cookie => cookie.startsWith(`${sessionName}=`))
+    },
+  })
+
+  return responseCookie ?? `${sessionName}=`
 }
 
 export function getCurrentUserPermissions(event: H3Event, options?: Partial<{ action: `read` | `write` | `update` | `delete` | `method` | `*` }>) {

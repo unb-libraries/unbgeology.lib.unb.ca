@@ -17,6 +17,9 @@ export default defineNitroPlugin((nitro) => {
       sysadmin: [
         { action: [`read`, `create`, `update`, `delete`], resource: `user`, fields: [] },
       ],
+      sudo: [
+        { action: [`create`], resource: `session` },
+      ],
     }
 
     await Promise.all(Object.entries(roles).map(async ([roleID, permissions]) => {
