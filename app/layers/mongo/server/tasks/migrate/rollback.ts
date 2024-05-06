@@ -1,5 +1,6 @@
 import { MigrationItemStatus } from "@unb-libraries/nuxt-layer-entity"
 import type { MigrationItem, EntityJSONList } from "@unb-libraries/nuxt-layer-entity"
+import type { H3Event } from "h3"
 
 export default defineTask({
   meta: {
@@ -11,17 +12,18 @@ export default defineTask({
       throw new Error(`No items provided`)
     }
 
-    const { items } = payload as { items: EntityJSONList<MigrationItem> }
+    const { items, headers } = payload as { items: EntityJSONList<MigrationItem>, headers: H3Event[`headers`] }
 
     async function rollback(uri: string): Promise<number> {
       const { entities, nav } = await $fetch<EntityJSONList<MigrationItem>>(uri, {
         query: {
           select: [`id`, `entityURI`, `status`],
         },
+        headers,
       })
 
       entities.filter(item => item.entityURI).map(item => item.entityURI!).forEach((entityURI) => {
-        $fetch(entityURI, { method: `DELETE` })
+        $fetch(entityURI, { method: `DELETE`, headers })
       })
       $fetch(uri, {
         method: `PATCH`,
@@ -30,6 +32,7 @@ export default defineTask({
           error: null,
           entityURI: null,
         },
+        headers,
       })
 
       return nav.next ? entities.length + await rollback(nav.next) : entities.length

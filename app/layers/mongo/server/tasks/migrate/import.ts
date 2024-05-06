@@ -1,5 +1,6 @@
 import { MigrationItemStatus, MigrationStatus } from "@unb-libraries/nuxt-layer-entity"
 import type { Migration, MigrationItem, EntityJSONList, EntityJSON } from "@unb-libraries/nuxt-layer-entity"
+import { type H3Event } from "h3"
 import { Status } from "~/types/affiliate"
 
 export default defineTask({
@@ -12,7 +13,7 @@ export default defineTask({
       throw new Error(`No items provided`)
     }
 
-    const { items } = payload as { items: EntityJSONList<MigrationItem> }
+    const { items, headers } = payload as { items: EntityJSONList<MigrationItem>, headers: H3Event[`headers`] }
     const nitro = useNitroApp()
 
     const { entities } = items
@@ -20,9 +21,9 @@ export default defineTask({
       return { result: { importing: 0 } }
     }
 
-    await $fetch(entities[0].migration.self, { method: `PATCH`, body: { status: MigrationStatus.RUNNING } })
+    await $fetch(entities[0].migration.self, { method: `PATCH`, body: { status: MigrationStatus.RUNNING }, headers })
     if (nitro) {
-      const updated = await $fetch<Migration>(entities[0].migration.self)
+      const updated = await $fetch<Migration>(entities[0].migration.self, { headers })
       nitro.hooks.callHook(`migrate:import:start`, updated)
     }
 
@@ -30,6 +31,7 @@ export default defineTask({
       const { entities, nav } = await $fetch<EntityJSONList>(uri, {
         method: `PATCH`,
         body: { status: MigrationItemStatus.QUEUED },
+        headers,
       })
       return nav.next ? entities.length + await queue(nav.next) : entities.length
     }
@@ -40,11 +42,12 @@ export default defineTask({
           filter: [`status:equals:${MigrationItemStatus.QUEUED}`],
           select: [`id`, `data`, `migration`, `status`],
         },
+        headers,
       })
 
       await Promise.all(entities.map(async (item): Promise<void> => {
         try {
-          await $fetch(item.self, { method: `PATCH`, body: { status: MigrationItemStatus.PENDING } })
+          await $fetch(item.self, { method: `PATCH`, body: { status: MigrationItemStatus.PENDING }, headers })
           const entityType = useAppConfig().entityTypes[item.migration.entityType.split(`.`)[0]]
           const body = await nitro.hooks.callHook(`migrate:import:item`, item)
           const entity = await $fetch<EntityJSON>(entityType.baseURI, {
@@ -53,6 +56,7 @@ export default defineTask({
               ...body,
               status: Status.MIGRATED,
             },
+            headers,
           })
           await $fetch(item.self, {
             method: `PATCH`,
@@ -60,6 +64,7 @@ export default defineTask({
               status: MigrationItemStatus.IMPORTED,
               entityURI: entity.self,
             },
+            headers,
           })
         } catch (err: unknown) {
           await $fetch(item.self, {
@@ -68,10 +73,11 @@ export default defineTask({
               status: MigrationItemStatus.ERRORED,
               error: (err as Error).message,
             },
+            headers,
           })
         } finally {
           if (nitro) {
-            const updated = await $fetch<MigrationItem>(item.self)
+            const updated = await $fetch<MigrationItem>(item.self, { headers })
             const status = useEnum(MigrationItemStatus).valueOf(updated.status)
             switch (status) {
               case MigrationItemStatus.IMPORTED:
@@ -88,9 +94,9 @@ export default defineTask({
       if (total > entities.length) {
         doImport()
       } else {
-        await $fetch(entities[0].migration.self, { method: `PATCH`, body: { status: MigrationStatus.IDLE } })
+        await $fetch(entities[0].migration.self, { method: `PATCH`, body: { status: MigrationStatus.IDLE }, headers })
         if (nitro) {
-          const updated = await $fetch<Migration>(entities[0].migration.self)
+          const updated = await $fetch<Migration>(entities[0].migration.self, { headers })
           nitro.hooks.callHook(`migrate:import:done`, updated)
         }
       }

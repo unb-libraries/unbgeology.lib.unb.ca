@@ -12,6 +12,9 @@ export default defineEventHandler(async (event) => {
     return create403()
   }
 
+  const sessionName = useRuntimeConfig().public.session.name
+  const Cookie = `${sessionName}=${getCookie(event, sessionName)}`
+
   const query = MigrationItem.find()
     .join(`migration`, Migration)
     .where(`migration._id`).eq(parseObjectID(id))
@@ -33,6 +36,9 @@ export default defineEventHandler(async (event) => {
         },
         self: () => `/api/migrations/${id}/items`,
       }),
+      headers: {
+        Cookie,
+      },
     },
   })
 })
