@@ -1,10 +1,10 @@
 <template>
-  <FormMineralClassification :entity="mineral" :parents="minerals" @save="onUpdate" @cancel="navigateTo(`/dashboard/terms/mineral`)" />
+  <FormMineralClassification :entity="mineral!" :parents="minerals" @save="onUpdate" @cancel="navigateTo(`/dashboard/terms/mineral`)" />
 </template>
 
 <script setup lang="ts">
 import type { EntityJSONBody } from '@unb-libraries/nuxt-layer-entity'
-import { type Classification } from '~/types/vocabularies/mineral'
+import { type MineralClassification as Classification } from '~/types/classification'
 
 definePageMeta({
   layout: `dashboard`,

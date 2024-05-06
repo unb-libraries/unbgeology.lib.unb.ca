@@ -35,8 +35,8 @@
 </template>
 
 <script setup lang="ts">
-import { type Unit } from 'types/vocabularies/geochronology'
-import { type EntityJSONBody } from "@unb-libraries/nuxt-layer-entity"
+import { type Unit } from 'types/geochronology'
+import { FilterOperator, type EntityJSONBody } from "@unb-libraries/nuxt-layer-entity"
 import { GeochronologyForm } from '#components'
 
 definePageMeta({
@@ -45,7 +45,7 @@ definePageMeta({
 
 const { content, close: closeModal } = useModal()
 
-const { list: unitList, entities: units, add: addUnit, update: updateUnit, remove: removeUnit } = await fetchEntityList<Unit>(`Geochronology`)
+const { list: unitList, entities: units, add: addUnit, update: updateUnit, remove: removeUnit } = await fetchEntityList<Unit>(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `geochronology`]] })
 async function onCreateUnit(unit: EntityJSONBody<Unit>) {
   await addUnit(unit)
   closeModal()

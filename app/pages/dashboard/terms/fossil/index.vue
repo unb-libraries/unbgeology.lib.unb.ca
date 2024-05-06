@@ -61,8 +61,9 @@
 </template>
 
 <script setup lang="ts">
-import { type EntityJSONBody } from "@unb-libraries/nuxt-layer-entity"
-import { type Classification, type Portion } from "types/vocabularies/mineral"
+import { FilterOperator, type EntityJSONBody } from "@unb-libraries/nuxt-layer-entity"
+import { type FossilClassification as Classification } from "types/classification"
+import { type Portion } from "types/portion"
 import { TermForm, TaxonomyTermForm } from "#components"
 
 definePageMeta({
@@ -71,13 +72,13 @@ definePageMeta({
 
 const { content, close: closeModal } = useModal()
 
-const { list: classificationList, entities: classifications, add: addClassification, update: updateClassification, remove: removeClassification } = await fetchEntityList<Classification>(`Fossil.Classification`)
+const { list: classificationList, entities: classifications, add: addClassification, update: updateClassification, remove: removeClassification } = await fetchEntityList<Classification>(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `classification/fossil`]] })
 async function onCreateMineral(mineral: EntityJSONBody<Classification>) {
   await addClassification(mineral)
   closeModal()
 }
 
-const { list: portionList, entities: portions, add: addPortion, update: updatePortion, remove: removePortion } = await fetchEntityList<Portion>(`Fossil.Portion`)
+const { list: portionList, entities: portions, add: addPortion, update: updatePortion, remove: removePortion } = await fetchEntityList<Portion>(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `portion`]] })
 async function onCreatePortion(portion: EntityJSONBody<Portion>) {
   await addPortion(portion)
   closeModal()

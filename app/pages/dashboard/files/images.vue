@@ -1,7 +1,7 @@
 <template>
   <div v-if="selectedImage" class="mb-2 h-96">
     <nuxt-img
-      :src="`/image/${selectedImage.filename}`"
+      :src="selectedImage.uri"
       :alt="selectedImage.alt"
       :title="selectedImage.title"
       class="h-full object-contain"
@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import { type EntityJSON, type EntityJSONList, type File as IFile, type Image as IImage } from "@unb-libraries/nuxt-layer-entity"
+import { FileState, FilterOperator, type EntityJSON, type EntityJSONList, type File as IFile, type Image as IImage } from "@unb-libraries/nuxt-layer-entity"
 
 definePageMeta({
   layout: `dashboard`,
@@ -35,5 +35,10 @@ async function onAccepted(formData: FormData, upload: (formData: FormData) => Pr
   refresh()
 }
 
-const { entities: images, refresh } = await fetchEntityList<IImage>(`Image`)
+const { entities: images, refresh } = await fetchEntityList<IImage>(`File`, {
+  filter: [
+    [`type`, FilterOperator.EQUALS, `image`],
+    [`status`, FilterOperator.EQUALS, FileState.PERSISTED],
+  ],
+})
 </script>

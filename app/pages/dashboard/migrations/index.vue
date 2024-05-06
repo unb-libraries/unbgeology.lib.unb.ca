@@ -84,17 +84,17 @@ function canPause({ status }: EntityJSONBody<Migration>) {
 }
 
 async function onImportMigration(migration: EntityJSON<Migration>) {
-  await useFetch(`/api/migrations/${migration.id}/import`, { method: `POST` })
+  await useFetch(`/api/migrations/${migration.id}/items/import`, { method: `POST` })
   refresh()
 }
 
 async function onRollbackMigration(migration: EntityJSON<Migration>) {
-  await useFetch(`/api/migrations/${migration.id}/rollback`, { method: `POST` })
+  await useFetch(`/api/migrations/${migration.id}/items/rollback`, { method: `POST` })
   refresh()
 }
 
 async function onPauseMigration(migration: EntityJSON<Migration>) {
-  await useFetch(`/api/migrations/${migration.id}/pause`, { method: `POST` })
+  await useFetch(`/api/migrations/${migration.id}/items/pause`, { method: `POST` })
   refresh()
 }
 </script>

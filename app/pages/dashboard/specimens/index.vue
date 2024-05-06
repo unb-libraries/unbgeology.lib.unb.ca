@@ -37,6 +37,14 @@
           <label class="form-label" for="filter-category">Categories</label>
           <PvMultipleChoice v-model="categoryFilter" :options="categoryOptions" class="rounded-lg p-1" />
         </div>
+        <div class="form-field">
+          <label for="fiter-test">Test</label>
+          <PvInputText v-model="test" class="dark:bg-primary border-primary-80 rounded-lg border p-1.5">
+            <template #before>
+              <PvIconSort class="h-4 w-4" />
+            </template>
+          </PvInputText>
+        </div>
         <div class="space-x-2">
           <button type="submit" class="form-action form-action-submit" @click.prevent="applyFilter()">
             Apply
@@ -111,21 +119,34 @@
     selected-row-class="dark:bg-accent-dark/40 even:dark:bg-accent-dark/40 hover:dark:bg-accent-dark/60 even:hover:dark:bg-accent-dark/60"
   >
     <template #id="{ entity: specimen }">
-      <NuxtLink :to="`/dashboard/specimens/${specimen.id.toLowerCase()}`" class="hover:underline">
+      <NuxtLink :to="`/dashboard/specimens/${specimen.id.toLowerCase()}`" class="hover:underline" @click.stop="">
         {{ specimen.id.toUpperCase() }}
       </NuxtLink>
     </template>
-    <template #category="{ entity: specimen }">
-      {{ specimen.category.substring(0, 1).toUpperCase() + specimen.category.substring(1).toLowerCase() }}
+    <template #type="{ entity: specimen }">
+      {{ specimen.type.substring(0, 1).toUpperCase() + specimen.type.substring(1).toLowerCase() }}
     </template>
     <template #classification="{ entity: specimen }">
       <template v-if="specimen.classification">
         {{ specimen.classification.label }}
       </template>
     </template>
+    <template #images="{ entity: specimen }">
+      <nuxt-img
+        v-if="specimen.images?.total > 0"
+        :src="specimen.images?.entities[0].uri"
+        format="webp"
+        fit="cover"
+        width="100"
+        height="100"
+      />
+      <div v-else class="bg-primary-80 border-primary-60 grid h-[100px] w-[100px] grid-cols-1 place-items-center border">
+        <PvIconNoImage />
+      </div>
+    </template>
     <template #measurements="{ entity: specimen }">
-      <ol v-if="specimen.measurements?.length">
-        <li v-for="(dimensions, index) in specimen.measurements.map(m => m.dimensions)" :key="index">
+      <ol v-if="specimen.measurements?.filter(m => m.type !== MeasurementType.IMMEASURABLE).length > 0">
+        <li v-for="(dimensions, index) in specimen.measurements.map<NonNullable<Specimen[`measurements`][number][`dimensions`]>>(m => m.dimensions!)" :key="index">
           {{ dimensions.map(d => `${d / 10}cm`).join(` x `) }}
         </li>
       </ol>
@@ -146,24 +167,28 @@
 
 <script setup lang="ts">
 import { FilterOperator, type EntityJSON } from '@unb-libraries/nuxt-layer-entity'
-import { type Specimen } from 'types/specimen'
+import { type Specimen, MeasurementType } from 'types/specimen'
 
 definePageMeta({
   layout: `dashboard`,
 })
 
-const { list, entities: specimens, query } = await fetchEntityList<Specimen>(`Specimen`)
-const { filter, search, page, pageSize, sort } = query
-
-const filterMenuVisible = ref(false)
-
 const columns = ref<(string | [string, string])[]>([
+  [`images`, `Image`],
   [`id`, `ID`],
-  [`category`, `Category`],
+  [`type`, `Category`],
   [`classification`, `Classification`],
   [`pieces`, `Pieces`],
   [`measurements`, `Dimensions`],
 ])
+
+const { list, entities: specimens, query } = await fetchEntityList<Specimen>(`Specimen`, {
+  select: columns.value.map(([id]) => id),
+})
+
+const { filter, search, page, pageSize, sort } = query
+
+const filterMenuVisible = ref(false)
 
 const columnMenuVisible = ref(false)
 const columnsOptions = ref<[string, string, boolean][]>(columns.value.map(([id, label], index) => [id, label, index < 4]))
@@ -183,10 +208,12 @@ watch(sortedColumnIDs, () => {
 
 const selected = ref<EntityJSON<Specimen>[]>([])
 
+const test = ref(``)
+
 const { create: createFilter, apply: applyFilter } = useFilters(filter)
 
 const categoryOptions = [`fossil`, `mineral`, `rock`]
-const categoryFilter = createFilter<string[]>(`category`, FilterOperator.EQ, {
+const categoryFilter = createFilter<string[]>(`category`, FilterOperator.EQUALS, {
   input: values => values,
   output: values => values,
   empty: value => value.length === 0 || value.length === categoryOptions.length,

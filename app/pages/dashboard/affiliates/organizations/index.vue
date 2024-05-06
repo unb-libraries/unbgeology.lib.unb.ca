@@ -1,6 +1,6 @@
 <template>
-  <PvEntityTable :entities="organizations" :columns="[`name`, `address`]">
-    <template #name="{ entity: org }">
+  <PvEntityTable :entities="organizations" :columns="[`label`, `address`]">
+    <template #label="{ entity: org }">
       <NuxtLink :to="`/dashboard/affiliates/organizations/${org.id}`" class="hover:underline">
         {{ org.name }}
       </NuxtLink>
@@ -19,11 +19,12 @@
 </template>
 
 <script setup lang="ts">
-import { type Organization } from '~/types/affiliation'
+import { FilterOperator } from '@unb-libraries/nuxt-layer-entity'
+import { type Organization } from 'types/affiliate'
 
 definePageMeta({
   layout: `dashboard`,
 })
 
-const { entities: organizations } = await fetchEntityList<Organization>(`Organization`)
+const { entities: organizations } = await fetchEntityList<Organization>(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `organization`]] })
 </script>

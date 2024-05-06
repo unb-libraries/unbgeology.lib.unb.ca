@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { type Person } from 'types/affiliation'
+import { type Person } from 'types/affiliate'
 import { type EntityJSONBody, type EntityJSONProperties } from "@unb-libraries/nuxt-layer-entity"
 
 const person = ref<EntityJSONProperties<Person>>({

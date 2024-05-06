@@ -1,5 +1,5 @@
 <template>
-  <PvEntityTable entity-type-id="User" :columns="[[`id`, `Username`], [`created`, `Member since`], `updated`]">
+  <PvEntityTable :entities="users" :columns="[`username`, [`created`, `Member since`], `updated`]">
     <template #updated="{ value, entity }">
       {{ entity.created !== value ? value : `never` }}
     </template>
@@ -7,7 +7,11 @@
 </template>
 
 <script setup lang="ts">
+import { type User } from '@unb-libraries/nuxt-layer-entity'
+
 definePageMeta({
   layout: `dashboard`,
 })
+
+const { entities: users } = await fetchEntityList<User>(`User`)
 </script>

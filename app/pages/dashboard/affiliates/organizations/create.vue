@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { type Address, type Organization } from 'types/affiliation'
+import { type Organization } from 'types/affiliate'
 import { type EntityJSONProperties, type EntityJSONBody } from "@unb-libraries/nuxt-layer-entity"
 
 definePageMeta({
@@ -11,8 +11,8 @@ definePageMeta({
 })
 
 const organization = ref<EntityJSONProperties<Organization>>({
-  name: ``,
-  address: {} as Address,
+  label: ``,
+  address: {} as Organization[`address`],
 })
 
 function onCreate(organization: EntityJSONBody<Organization>) {

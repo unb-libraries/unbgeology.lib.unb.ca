@@ -32,8 +32,8 @@
 </template>
 
 <script setup lang="ts">
-import { type StorageLocation } from 'types/vocabularies'
-import { type EntityJSONBody } from "@unb-libraries/nuxt-layer-entity"
+import { type StorageLocation } from 'types/storagelocation'
+import { FilterOperator, type EntityJSONBody } from "@unb-libraries/nuxt-layer-entity"
 import { StorageLocationForm } from '#components'
 
 definePageMeta({
@@ -42,7 +42,7 @@ definePageMeta({
 
 const { content, close: closeModal } = useModal()
 
-const { list: locationList, entities: locations, add: addLocation, update: updateLocation, remove: removeLocation } = await fetchEntityList<StorageLocation>(`StorageLocation`)
+const { list: locationList, entities: locations, add: addLocation, update: updateLocation, remove: removeLocation } = await fetchEntityList<StorageLocation>(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `storagelocation`]] })
 async function onCreateLocation(location: EntityJSONBody<StorageLocation>) {
   await addLocation(location)
   closeModal()
