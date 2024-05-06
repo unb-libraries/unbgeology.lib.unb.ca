@@ -1,13 +1,21 @@
-import { type Specimen } from "document-types/Specimen"
-import { type Specimen as SpecimenEntity } from "~/types/specimen"
-
 export default defineEventHandler(async (event) => {
-  const body = await readDocumentBodyOr400(event, { model: Specimen.Base })
-  const specimenOrSpecimens = await Specimen.Base.create(body)
-  const specimens = Array.isArray(specimenOrSpecimens) ? specimenOrSpecimens : [specimenOrSpecimens]
+  const resources = getAuthorizedResources(event, r => /^specimen(:\w)*$/.test(r))
+  const fields = getAuthorizedFields(event, ...resources)
+  if (!resources.length) {
+    return create403()
+  }
 
-  return (await Promise.all(specimens.map(async specimen => await renderDocument<SpecimenEntity, Specimen>(specimen, {
-    model: Specimen.Base,
-    self: specimen => `/api/specimens/${specimen.slug}`,
-  })))).map(({ id, self }) => ({ id, self }))
+  const body = await readDocumentBodyOr400(event, { model: Specimen.Base, fields })
+  const specimenOrSpecimens = await Specimen.Base.create(body)
+
+  return Array.isArray(specimenOrSpecimens)
+    ? renderDocumentList(specimenOrSpecimens, {
+      model: Specimen.Base,
+      canonical: {
+        fields,
+        self: specimen => `/api/specimens/${specimen.slug}`,
+      },
+      self: () => `/api/specimens`,
+    })
+    : renderDocument(specimenOrSpecimens, { model: Specimen.Base, fields })
 })
