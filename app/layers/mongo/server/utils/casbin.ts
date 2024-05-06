@@ -48,28 +48,8 @@ export async function updateUserRole(role: string, permissions: Permission[]) {
     return await enforcer.addPolicy(role, resource, fields, action)
   }))
 
-  const updateUsers = async (): Promise<boolean> => {
-    try {
-      const { entities: users, nav } = await $fetch<EntityJSONList<User>>(`/api/users`, { query: { filter: `roles:equals:${role}`, select: `roles` } })
-      Promise.all(users.map(({ self, roles }) => $fetch(self, {
-        method: `PATCH`,
-        body: {
-          roles: [...roles, role].filter((role, i, arr) => arr.indexOf(role) === i),
-        },
-      })))
-
-      if (nav?.next) {
-        return await updateUsers()
-      }
-    } catch (err: unknown) {
-      return false
-    }
-    return true
-  }
-
   return await enforcer.removeFilteredPolicy(0, role) &&
-    (await createPermissions()).every(success => success) &&
-    await updateUsers()
+    (await createPermissions()).every(success => success)
 }
 
 export async function addUserRole(username: string, ...roles: string[]) {

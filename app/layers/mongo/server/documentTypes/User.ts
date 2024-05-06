@@ -41,27 +41,8 @@ export default defineDocumentModel<User>(`User`, defineDocumentSchema<User>({
     type: [EntityFieldTypes.String],
     required: false,
   },
-  permissions: {
-    type: [{
-      action: EntityFieldTypes.String,
-      resource: EntityFieldTypes.String,
-      fields: [{
-        type: EntityFieldTypes.String,
-        required: false,
-        default: [],
-      }],
-    }],
-    required: false,
-  },
 }, {
   alterSchema(schema) {
-    schema.pre(`save`, async function () {
-      this.permissions = (await Promise.all(this.roles
-        .map(async role => (await getRolePermissions(role))
-          .flat())))
-        .flat()
-    })
-
     schema.post(`save`, async function () {
       await setUserRoles(this.username, ...this.roles)
     })
