@@ -6,6 +6,7 @@ export default defineEventHandler(async (event) => {
 
   const query = User.findOne()
     .where(`username`).eq(username)
+    .select(`authTags`)
   await useEventQuery(event, query)
 
   const user = await query

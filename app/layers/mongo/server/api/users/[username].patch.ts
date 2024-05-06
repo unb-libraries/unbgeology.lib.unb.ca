@@ -8,7 +8,9 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readOneDocumentBodyOr400(event, { model: User, flat: true, fields })
-  const user = await User.findOne().where(`username`).eq(username)
+  const user = await User.findOne()
+    .where(`username`).eq(username)
+    .select(`authTags`)
   if (user && !user.authTags.some(t => resources.includes(t))) {
     return create403()
   }
