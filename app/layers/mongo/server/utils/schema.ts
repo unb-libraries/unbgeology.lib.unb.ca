@@ -112,6 +112,11 @@ export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B e
         then,
       }
     },
+    search(term: string) {
+      return !base
+        ? DocumentQuery<D>(this as DocumentModel<D>, { method: `findMany`, search: term })
+        : DocumentQuery<NonNullable<B>>(this as unknown as DocumentModel<NonNullable<B>>, { method: `findMany`, search: term })
+    },
     async create(body: B extends undefined ? Partial<D> | Partial<D>[] : Partial<B> | Partial<B>[]) {
       return !base
         ? await createDocument<D>(this as DocumentModel<D>, body as Partial<D> | Partial<D>[])
@@ -196,7 +201,7 @@ export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B e
 
 type AggregateResult<D extends IDocumentBase = IDocumentBase> = Pick<DocumentFindQueryResult<D>, `documents`> & { total: [{ total: number }] }
 
-export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends DocumentQueryMethod = `findMany`>(documentType: DocumentModel<D>, options?: { method: M }) {
+export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends DocumentQueryMethod = `findMany`>(documentType: DocumentModel<D>, options?: { method: M, search?: string }) {
   const joins: Join[] = []
   const virtuals: [string, any][] = []
   const filters: [string, any][] = []
@@ -223,6 +228,10 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
     virtuals.forEach(([field, value]) => aggregate.addFields({ [field]: value }))
 
     // match stage
+    if (options?.search) {
+      aggregate.match({ $text: { $search: options.search } })
+    }
+
     const findJoin = (field: string) => joins.find(({ localField }) => localField === field)
     filters.filter(([field]) => !findJoin(field)).forEach(([field, condition]) => {
       aggregate.match(field !== `` ? { [field]: condition } : condition)

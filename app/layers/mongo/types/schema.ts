@@ -36,6 +36,7 @@ export interface DocumentModel<D extends DocumentBase = DocumentBase> {
   find: () => DocumentFindQuery<D>
   findOne: () => DocumentFindOneQuery<D>
   findByID: (id: string) => DocumentIDQuery<D>
+  search: (term: string) => DocumentFindQuery<D>
   create: <T extends CreateBody<D> | CreateBody<D>[]>(body: T) => Promise<T extends CreateBody<D> ? D : T extends CreateBody<D>[] ? D[] : D | D[]>
   update: (body: Partial<Mutable<D>>) => DocumentUpdateQuery<D>
   updateOne: (body: Partial<Mutable<D>>) => DocumentUpdateOneQuery<D>
