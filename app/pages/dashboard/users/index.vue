@@ -11,6 +11,7 @@ import { type User } from '@unb-libraries/nuxt-layer-entity'
 
 definePageMeta({
   layout: `dashboard`,
+  name: `Users`,
 })
 
 const { entities: users } = await fetchEntityList<User>(`User`)

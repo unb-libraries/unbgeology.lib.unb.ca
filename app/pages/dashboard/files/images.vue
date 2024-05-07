@@ -16,6 +16,7 @@ import { FileState, FilterOperator, type EntityJSON, type EntityJSONList, type F
 
 definePageMeta({
   layout: `dashboard`,
+  name: `Images`,
 })
 
 const selectedImage = ref<EntityJSON<IImage>>()

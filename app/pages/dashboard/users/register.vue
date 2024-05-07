@@ -21,6 +21,7 @@ import { type EntityJSONBody, type EntityJSONProperties, type User } from "@unb-
 
 definePageMeta({
   layout: `dashboard`,
+  name: `Add user`,
 })
 
 const returnUrl = `/dashboard/users`

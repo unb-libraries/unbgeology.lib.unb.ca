@@ -20,6 +20,7 @@ import { Title } from "types/affiliate"
 
 definePageMeta({
   layout: `dashboard`,
+  name: `People`,
 })
 
 const { entities: people } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `person`]] })

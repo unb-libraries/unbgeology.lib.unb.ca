@@ -8,6 +8,7 @@ import { type EntityJSONProperties, type EntityJSONBody } from "@unb-libraries/n
 
 definePageMeta({
   layout: `dashboard`,
+  name: `Create organization`,
 })
 
 const organization = ref<EntityJSONProperties<Organization>>({

@@ -38,6 +38,7 @@ import { TaxonomyTermForm } from '#components'
 
 definePageMeta({
   layout: `dashboard`,
+  name: `Rocks`,
 })
 
 const { content, close: closeModal } = useModal()

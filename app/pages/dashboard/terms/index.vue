@@ -5,5 +5,6 @@ definePageMeta({
       return navigateTo(`/dashboard/terms/fossil`)
     },
   ],
+  name: `Terms`,
 })
 </script>

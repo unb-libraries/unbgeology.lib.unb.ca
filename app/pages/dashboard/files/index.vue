@@ -20,6 +20,7 @@ import { PvEntityDeleteConfirm } from "#components"
 
 definePageMeta({
   layout: `dashboard`,
+  name: `Files`,
 })
 
 const { entities: files, remove, refresh } = await fetchEntityList<File>(`File`)

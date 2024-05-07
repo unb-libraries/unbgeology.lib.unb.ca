@@ -17,6 +17,7 @@ const person = ref<EntityJSONProperties<Person>>({
 
 definePageMeta({
   layout: `dashboard`,
+  name: `Create person`,
 })
 
 function onCreate(person: EntityJSONBody<Person>) {

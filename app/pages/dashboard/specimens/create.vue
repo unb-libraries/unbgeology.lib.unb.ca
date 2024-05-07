@@ -8,6 +8,7 @@ import { type Specimen } from 'types/specimen'
 
 definePageMeta({
   layout: `dashboard`,
+  name: `Create specimen`,
 })
 
 const category = useRoute().query.category as string ?? `fossil`

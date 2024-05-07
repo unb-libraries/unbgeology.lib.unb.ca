@@ -5,5 +5,6 @@ definePageMeta({
       return navigateTo(`/dashboard/affiliates/people`)
     },
   ],
+  name: `Collectors & Sponsors`,
 })
 </script>

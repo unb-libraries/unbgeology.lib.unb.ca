@@ -171,6 +171,7 @@ import { type Specimen, MeasurementType } from 'types/specimen'
 
 definePageMeta({
   layout: `dashboard`,
+  name: `Specimens`,
 })
 
 const columns = ref<(string | [string, string])[]>([
