@@ -254,6 +254,9 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
       })
 
     // sort stage
+    if (options?.search) {
+      aggregate.sort({ score: { $meta: `textScore` } })
+    }
     if (sort.length > 0) {
       aggregate.sort(sort.map(([field, asc]) => `no${field} ${asc ? `` : `-`}${field}`).join(` `))
     } else {
@@ -261,6 +264,9 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
     }
 
     // project stage
+    if (options?.search) {
+      selection.push([`_score`, { $meta: `textScore` }])
+    }
     if (selection.length > 0) {
       type Field = [string, string | 1 | true | object]
       type Selection = { [K: string]: 1 | string | object | Selection }
