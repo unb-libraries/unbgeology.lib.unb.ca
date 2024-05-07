@@ -1,4 +1,5 @@
 import { Types } from "mongoose"
+import { Schema, type SchemaOptions, type Model, type HydratedDocument, type UpdateQuery, type QueryOptions as MongooseQueryOptions, type QueryWithHelpers, type ObjectId } from "mongoose"
 import { FilterOperator, type EntityJSON } from "@unb-libraries/nuxt-layer-entity"
 import type { DocumentBase, DocumentModel } from "./schema"
 import { type Mutable } from "."
@@ -57,6 +58,12 @@ export type EntityList<T extends Content = Content> = {
   page: number
   pageSize: number
   total: number
+}
+
+export type Document<C extends Content = Content> = Omit<C, `created` | `updated`> & {
+  readonly _id: ObjectId
+  readonly created: number
+  readonly updated: number
 }
 
 export type EntityDocument<E extends Entity = Entity> = {
@@ -122,7 +129,7 @@ export interface QueryOptions {
 export type DocumentUpdate<D extends DocumentBase = DocumentBase> = Pick<DocumentBase, `_id`> & Partial<Omit<D, `_id`>>
 export type DocumentDiff<D extends DocumentBase = DocumentBase> = [DocumentUpdate<D>, DocumentUpdate<D>]
 
-export type DocumentQueryResultItem<D = any> = {
+export type DocumentQueryResultItem<D extends DocumentBase = DocumentBase> = {
   update: (body: Partial<Mutable<D>>) => Promise<[D, D]>
   delete: () => Promise<void>
 } & D
@@ -165,7 +172,7 @@ export interface DocumentBaseQuery<Q, R> {
     lte: (value: number) => Q
   }
   expr: (expr: object) => Q
-  select: (...fields: string[]) => Q
+  select: (...fields: (string | [string, string | 1 | object])[]) => Q
   sort: (...fields: (string | [string, boolean])[]) => Q
   paginate(page: number, pageSize: number): Q
   use: <S = Q>(...handlers: ((query: S) => void)[]) => Q

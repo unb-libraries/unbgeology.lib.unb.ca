@@ -1,7 +1,8 @@
 import { defu } from "defu"
 import { type H3Event } from "h3"
+import { Schema, type SchemaDefinition, model as defineModel, Types, type FilterQuery, type ObjectId, Document } from "mongoose"
 import type { DocumentSchema, AlterSchemaHandler, DocumentBase as IDocumentBase, DocumentModel, DocumentSchemaOptions } from "../../types/schema"
-import { type DocumentFindQuery, type DocumentQueryMethod, type DocumentFindQueryResult, type DocumentUpdateQueryResult, type DocumentDeleteQueryResult, type Join, type DocumentQueryResultItem } from "../../types/entity"
+import { type DocumentFindQuery, type DocumentQueryMethod, type DocumentFindQueryResult, type DocumentUpdateQueryResult, type DocumentDeleteQueryResult, type Join, type DocumentQueryResultItem, type DocumentQuery } from "../../types/entity"
 import { type Mutable } from "../../types"
 
 type DefineDocumentSchema<D = any, TOptions extends any | undefined = undefined> =
@@ -13,7 +14,7 @@ export function defineDocumentSchema<D = any, TOptions extends any | undefined =
   const modifiers: AlterSchemaHandler[] = []
 
   const mapMixinPaths = (mixin: DocumentSchema) => mixin.paths
-  const createPaths = (options?: TOptions) => defu(typeof definition === `function` ? definition(options!) : definition, ...mixins.map(mapMixinPaths))
+  const createPaths = (options?: TOptions) => defu(typeof definition === `function` ? definition(options!) : definition, ...mixins.map(mapMixinPaths)) as SchemaDefinition<D>
 
   const alterSchema = (schema: Schema<D>) => {
     modifiers.forEach(alter => alter(schema))
@@ -66,7 +67,7 @@ export const DocumentBase = defineDocumentSchema<IDocumentBase>({
 })
 
 export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B extends D | undefined = undefined>(name: string, definition: B extends undefined ? DocumentSchema<D> : DocumentSchema<NonNullable<B>>, base?: DocumentModel<D>): B extends undefined ? DocumentModel<D> : DocumentModel<NonNullable<B>> {
-  const fullName = base ? `${base.name}.${name}` : name
+  const fullName = base ? `${base.fullName}.${name}` : name
 
   const getRoot = (model: DocumentModel): DocumentModel => model.base ? getRoot(model.base) : model
   const getRootModel = (model: DocumentModel) => getRoot(model).mongoose.model
@@ -151,8 +152,9 @@ export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B e
                 ? await (document as DocumentQueryResultItem<D>).update(body as Partial<Mutable<D>>)
                 : await (document as DocumentQueryResultItem<NonNullable<B>>).update(body as Partial<Mutable<NonNullable<B>>>)
               resolve(update as B extends undefined ? [D, D] : [NonNullable<B>, NonNullable<B>])
+            } else {
+              reject()
             }
-            resolve(undefined as B extends undefined ? undefined : undefined)
           }, reject)
         },
       }
@@ -185,8 +187,9 @@ export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B e
             if (document) {
               await document.delete()
               resolve(document)
+            } else {
+              reject()
             }
-            resolve(undefined)
           }, reject)
         },
       }
