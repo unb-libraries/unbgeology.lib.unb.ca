@@ -11,11 +11,14 @@
         <label class="sr-only" for="search">Search</label>
         <input v-model="search" placeholder="Search" name="search" class="placeholder:text-primary dark:placeholder:text-primary-20 form-input form-input-text grow p-2 placeholder:italic">
       </div>
+      <button v-if="selectedColumns" id="button-columns" class="form-action form-action-submit bg-primary-80/40 hover:bg-primary-60/40 grow-0 p-2" @click.prevent="columnMenuVisible = !columnMenuVisible">
+        Columns
+      </button>
       <button id="button-sort" class="form-action form-action-submit bg-primary-80/40 hover:bg-primary-60/40 grow-0 p-2" @click.prevent="sortMenuVisible = !sortMenuVisible">
         Sort
       </button>
-      <button v-if="selectedColumns" id="button-columns" class="form-action form-action-submit bg-primary-80/40 hover:bg-primary-60/40 grow-0 p-2" @click.prevent="columnMenuVisible = !columnMenuVisible">
-        Columns
+      <button id="button-filter" class="form-action form-action-submit bg-primary-80/40 hover:bg-primary-60/40 grow-0 p-2" @click.prevent="filterMenuVisible = !filterMenuVisible">
+        Filter
       </button>
 
       <PvContextualDropdown v-if="toggableColumns.length > 0" v-model="columnMenuVisible" trigger-id="button-columns" class="bg-primary border-primary-60/40 right-0 top-12 z-50 w-96 rounded-md border p-4">
@@ -34,6 +37,19 @@
           @moved="onItemSorted"
           @item-changed="onItemSorted"
         />
+      </PvContextualDropdown>
+
+      <PvContextualDropdown v-model="filterMenuVisible" trigger-id="button-filter" class="bg-primary border-primary-60/40 right-0 top-12 z-50 w-96 space-y-4 rounded-md border p-6" @click.prevent.stop="filterMenuVisible = !filterMenuVisible">
+        <div class="form-field">
+          <label class="form-label" for="filter-category">Role</label>
+          <PvInputDropdown v-model="role" :options="roles" />
+        </div>
+        <div class="space-x-2">
+          <button type="submit" class="form-action form-action-submit" @click.prevent="onSubmitFilterForm()">
+            Apply
+          </button>
+          <a class="cursor-pointer p-2 hover:underline" @click.prevent="onResetFilterForm">Reset</a>
+        </div>
       </PvContextualDropdown>
     </div>
 
@@ -57,6 +73,8 @@
 </template>
 
 <script setup lang="ts">
+import { FilterOperator } from '@unb-libraries/nuxt-layer-entity'
+
 interface Column {
   label: string
   toggable: boolean
@@ -109,7 +127,7 @@ const columns = ref<[string, Column][]>(
 const { list, entities, query } = await fetchEntityList(props.entityType, {
   select: columns.value.map(([id]) => id),
 })
-const { page, pageSize, search, sort } = query
+const { filter, page, pageSize, search, sort } = query
 
 const onToggleColumn = ([id, , selected]: [string, string, boolean]) => {
   const index = columns.value.findIndex(([key]) => key === id)
@@ -121,10 +139,12 @@ const onToggleColumn = ([id, , selected]: [string, string, boolean]) => {
 
 const actions = computed(() => props.actions.map(action => Array.isArray(action) ? action : [action, `${action.split(`/`).at(-1)} ${props.entityType}`]))
 
+// Columns
 const toggableColumns = computed<[string, string, boolean][]>(() => columns.value.filter(([_, { toggable }]) => toggable).map(([id, { label, selected }]) => [id, label, selected]))
 const selectedColumns = computed<[string, string][]>(() => columns.value.filter(([, { selected }]) => selected).map(([id, { label }]) => [id, label]))
 const columnMenuVisible = ref(false)
 
+// Sort
 const sortableColumns = computed<[string, [string, 1 | 0 | -1]][]>(() => columns.value
   .filter(([, { sort }]) => sort !== false)
   .map(([id, { label, sort }]) => [id, [label, sort as 1 | 0 | -1]]),
@@ -140,5 +160,23 @@ const sortMenuVisible = ref(false)
 const onItemSorted = (item: [string, [string, 1 | 0 | -1]], items: [string, [string, 1 | 0 | -1]][]) => {
   columns.value = columns.value.map(([id, column]) => id !== item[0] ? [id, column] : [id, { ...column, sort: items.find(([key]) => key === id)?.[1][1] ?? 0 }])
   sort.value = items.filter(([, [, direction]]) => direction).map(([id, [, direction]]) => `${direction < 0 ? `-` : ``}${id}`)
+}
+
+// Filter
+const filterMenuVisible = ref(false)
+const roles = [`sudo`, `sysadmin`, `migrator`, `curator`, `editor`, `public`]
+const role = ref()
+
+const onSubmitFilterForm = () => {
+  if (role.value) {
+    filter.value = [[`roles`, FilterOperator.EQUALS, role.value]]
+  } else {
+    filter.value = []
+  }
+}
+
+const onResetFilterForm = () => {
+  filter.value = []
+  role.value = undefined
 }
 </script>

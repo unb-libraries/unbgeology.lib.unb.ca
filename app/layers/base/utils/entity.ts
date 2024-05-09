@@ -169,7 +169,7 @@ export async function fetchEntityList <E extends Entity = Entity>(entityTypeOrId
 
   const fetchOptions: UseFetchOptions<EntityJSONList<E>> = {
     query: {
-      filter: computed(() => filter.value.map(f => f.join(`__`))),
+      filter: computed(() => filter.value.map(f => f.join(`:`))),
       page,
       pageSize,
       search,
