@@ -4,7 +4,7 @@
     <li v-for="([key, item], index) in normItems" :key="key" class="group cursor-pointer" :class="itemClass">
       <slot
         :key="key"
-        :item="item"
+        :item="(item as T)"
         :index="index"
         :move="move"
         :move-top="moveTop"
@@ -19,17 +19,17 @@
   </ul>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" generic="T = any">
 const props = defineProps<{
-  items:(string|[string, any])[]
-  itemClass?: string
+  items:(string|[string, T])[]
+  itemClass?: string | string[]
 }>()
 
 const emits = defineEmits<{
-  sorted: [item: [string, any], list: [string, any][]]
+  moved: [item: [string, T], index: number, list: [string, T][]]
 }>()
 
-const normItems = computed<[string, any][]>(() => props.items.map(item => Array.isArray(item) ? item : [item, item]))
+const normItems = computed<[string, T][]>(() => props.items.map(item => Array.isArray(item) ? item : [item, item as T]))
 function move(id: string, offset: number) {
   const index = normItems.value.findIndex(([key]) => key === id)
   if (index >= 0) {
@@ -39,8 +39,9 @@ function move(id: string, offset: number) {
     const resorted = [...normItems.value]
     const [item] = resorted.splice(index, 1)
     resorted.splice(index + safeOffset, 0, item)
+    const newIndex = resorted.findIndex(([key]) => key === id)
 
-    emits(`sorted`, item, resorted)
+    emits(`moved`, item, newIndex, resorted)
   }
 }
 
