@@ -27,7 +27,7 @@ export default defineNitroPlugin((nitro) => {
         { action: [`read`, `update`], resource: `specimen:migrated`, fields: [] },
         { action: [`read`, `create`, `update`, `delete`], resource: `term`, fields: [] },
         { action: [`read`, `create`, `update`, `delete`], resource: `file`, fields: [] },
-        { action: [`read`], resource: `user`, fields: [`username`, `profile`] },
+        { action: [`read`], resource: `user`, fields: [`id`, `profile`] },
         { action: [`read`], resource: `migrationitem:imported`, fields: [] },
       ],
       public: [

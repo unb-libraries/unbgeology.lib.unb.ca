@@ -13,7 +13,7 @@ interface RouteAuthMeta extends RouteMeta {
 export default defineNuxtRouteMiddleware(async (from, to) => {
   if (process.client) { return }
 
-  const event = useRequestEvent()
+  const event = useRequestEvent()!
   const auth = {
     public: true,
     redirect: false,

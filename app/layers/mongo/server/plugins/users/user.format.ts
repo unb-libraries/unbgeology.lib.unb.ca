@@ -1,7 +1,7 @@
 export default defineMongooseFormatter(User, async (doc) => {
   const { username, active, profile, roles, permissions, created, updated } = doc
   return {
-    username,
+    id: username,
     active,
     profile: (profile && Object.keys(profile).length > 0 && {
       firstName: profile.firstName,
