@@ -9,10 +9,19 @@
     <div class="inline-flex w-full space-x-6">
       <div class="inline-flex grow justify-start space-x-2">
         <span v-if="sort.length" class="bg-yellow-dark rounded-sm px-2 py-1 text-sm">{{ sortableColumns.filter(([, [, sort]]) => sort).map(([, [label]]) => label).join(`,`) }}</span>
+        <span v-if="filter.length" class="bg-blue-dark rounded-sm px-2 py-1 text-sm">{{ Object.keys(modified).join(`,`) }}</span>
       </div>
       <div class="relative inline-flex justify-end space-x-2">
         <TableColumnsMenu :columns="toggleableColumns" @toggled="toggle" />
         <SortMenu :props="sortableColumns" @changed="(_, __, columns) => { sortableColumns = columns; sort = sortedByColumnIDs }" />
+        <FilterMenu :filters="{ roles: { ...roles, label: `Role` }, active: { ...active, label: `Status` } }" @submit="onApplyFilters" @reset="onResetFilters">
+          <template #roles>
+            <PvInputDropdown v-model="roles.value" :options="[`sudo`, `sysadmin`, `migrator`, `curator`, `editor`, `public`]" class="w-full" />
+          </template>
+          <template #active>
+            <PvInputDropdown v-model="active.value" :options="[`active`, `blocked`]" class="w-full" />
+          </template>
+        </FilterMenu>
       </div>
     </div>
 
@@ -48,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import { FilterOperator, type User } from '@unb-libraries/nuxt-layer-entity'
+import { FilterOperator, type EntityJSON, type User } from '@unb-libraries/nuxt-layer-entity'
 
 definePageMeta({
   layout: false,
@@ -68,4 +77,21 @@ const { list, entities, query, removeMany } = await fetchEntityList<User>(`User`
 const { filter, page, pageSize, search, sort } = query
 const users = ref([])
 
+const { filters: { roles, active }, modified, reset } = useFilter({
+  roles: FilterOperator.EQUALS,
+  active: FilterOperator.EQUALS,
+})
+
+const onApplyFilters = () => {
+  filter.value = Object.entries(modified.value)
+    .map(([key, { op, value }]) => [key, op, value])
+    .map(([key, op, value]) => key === `active`
+      ? [key, op, value === `active`]
+      : [key, op, value])
+}
+
+const onResetFilters = () => {
+  reset()
+  filter.value = []
+}
 </script>

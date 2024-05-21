@@ -12,24 +12,10 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{
+const selected = defineModel()
+defineProps<{
   options: string[]
-  modelValue: string
 }>()
-
-const emits = defineEmits<{
-  // eslint-disable-next-line
-  "update:modelValue": [string]
-}>()
-
-const selected = computed({
-  get() {
-    return props.modelValue
-  },
-  set(value: string) {
-    emits(`update:modelValue`, value)
-  },
-})
 
 const optionsVisible = ref(false)
 
