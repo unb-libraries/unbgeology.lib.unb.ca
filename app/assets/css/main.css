@@ -24,6 +24,16 @@
 }
 
 @layer components {
+  .btn-context {
+    @apply button button-md hover:button-primary-80
+  }
+  .btn-action {
+    @apply button-lg button-accent-mid hover:button-accent-light
+  }
+  .context-menu {
+    @apply bg-primary border-primary-60/40 right-0 top-12 z-50 w-64 rounded-md border p-4
+  }
+
   .divider {
     @apply 
       flex before:flex-1 after:flex-1 before:ml-48 before:mr-6 empty:before:mr-0 before:pt-px after:mr-48 after:ml-6 empty:after:ml-0 after:pt-px items-center

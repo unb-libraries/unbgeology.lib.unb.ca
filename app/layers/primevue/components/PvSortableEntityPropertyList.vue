@@ -1,74 +1,78 @@
 <template>
-  <div>
-    <PvSortableList v-if="sortedItems.length" :items="sortedItems" :class="[listClass, sortedListClass].join(` `)" :item-class="[itemClass, sortedItemClass].join(` `)" @moved="onMoved">
-      <template #default="{ key, item: [label, direction], index, moveTop, move }">
-        <div class="flex w-full flex-row justify-between rounded-sm px-3 py-2">
-          <div class="space-x-2">
-            <span>{{ label }}</span>
-            <a class="text-primary-40 cursor-pointer text-xs hover:underline" @click.stop.prevent="update(key, direction * -1 as SortDirection)">
-              {{ (direction > 0 && `ASC`) || (direction < 0 && `DESC`) || `` }}
-            </a>
-          </div>
-          <div class="invisible inline-flex space-x-2 group-hover:visible">
-            <a v-if="index > 0" class="cursor-pointer hover:underline" @click.stop.prevent="move(key, -1)">Up</a>
-            <a v-if="index > 0" class="cursor-pointer hover:underline" @click.stop.prevent="moveTop(key)">Top</a>
-            <a class="cursor-pointer hover:underline" @click.stop.prevent="remove(key)">Remove</a>
-          </div>
+  <ul class="space-y-1">
+    <li v-for="([key, [label, direction]], index) in elements" :key="key" class="bg-primary-80/60 group flex w-full cursor-pointer flex-row justify-between rounded-sm px-3 py-2" :class="itemClass">
+      <div class="space-x-2">
+        <slot :label="label" :direction="direction" :index="index">
+          <span>{{ label }}</span>
+        </slot>
+        <a v-if="direction" class="text-primary-40 cursor-pointer text-xs hover:underline" @click.stop.prevent="onSet(key, direction * -1 as SortDirection)">
+          {{ (direction > 0 && `ASC`) || (direction < 0 && `DESC`) || `` }}
+        </a>
+      </div>
+      <slot name="controls" :direction="direction" :list="list">
+        <div v-if="direction" class="invisible inline-flex space-x-2 group-hover:visible">
+          <a v-if="index > 0" class="cursor-pointer hover:underline" @click.stop.prevent="onMove(key, -1)">Up</a>
+          <a v-if="index > 0" class="cursor-pointer hover:underline" @click.stop.prevent="onMove(key, -index)">Top</a>
+          <a class="cursor-pointer hover:underline" @click.stop.prevent="onRemove(key)">Remove</a>
         </div>
-      </template>
-    </PvSortableList>
-    <ul :class="[listClass, unsortedListClass].join(` `)">
-      <li v-for="[key, label] in unsortedItems" :key="key" class="group" :class="[itemClass, unsortedItemClass]" @click.stop.prevent="add(key, 1)">
-        <div class="flex w-full flex-row justify-between rounded-sm px-3 py-2">
-          <div class="space-x-2">
-            {{ label }}
-          </div>
-          <div class="invisible inline-flex space-x-2 group-hover:visible">
-            <a class="cursor-pointer hover:underline" @click.stop.prevent="add(key, 1)">ASC</a>
-            <a class="cursor-pointer hover:underline" @click.stop.prevent="add(key, -1)">DESC</a>
-          </div>
+        <div v-else class="invisible inline-flex space-x-2 group-hover:visible">
+          <a class="cursor-pointer hover:underline" @click.stop.prevent="onAdd(key, 1)">ASC</a>
+          <a class="cursor-pointer hover:underline" @click.stop.prevent="onAdd(key, -1)">DESC</a>
         </div>
-      </li>
-    </ul>
-  </div>
+      </slot>
+    </li>
+  </ul>
 </template>
 
 <script setup lang="ts">
 type SortDirection = 1 | 0 | -1
 
 const props = defineProps<{
-  sortedItems: [string, [string, SortDirection]][]
+  items: [string, [string, SortDirection]][]
   listClass?: string
-  sortedListClass?: string
-  unsortedListClass?: string
   itemClass?: string
-  sortedItemClass?: string
-  unsortedItems: [string, string][]
-  unsortedItemClass?: string
 }>()
 
-const items = computed(() => props.sortedItems.concat(props.unsortedItems.map(([key, label]) => [key, [label, 0]])))
+const list = useSortableList(props.items)
+const { list: elements, move, moveTop, moveBottom, get, set } = list
 
 const emits = defineEmits<{
-  itemChanged: [item: [string, [string, SortDirection]], items: [string, [string, SortDirection]][]]
+  changed: [item: [string, [string, SortDirection]], items: [string, [string, SortDirection]][]]
 }>()
 
-const update = (key: string, direction: SortDirection) => {
-  const item = items.value.find(([k]) => k === key)!
-  const updatedItems = items.value
-    .map<[string, [string, SortDirection]]>(([k, item]) => k === key ? [k, [item[0], direction]] : [k, item])
-  emits(`itemChanged`, item, updatedItems)
+function onAdd(key: string, direction: 1 | -1) {
+  const item = get(key)
+  if (item) {
+    const [label] = item
+    set(key, [label, direction])
+    moveTop(key)
+    emits(`changed`, [key, [label, direction]], elements.value)
+  }
 }
 
-const add = (key: string, direction?: SortDirection) => {
-  update(key, direction ?? 1)
+function onSet(key: string, direction: SortDirection) {
+  const item = get(key)
+  if (item) {
+    const [label] = item
+    set(key, [label, direction])
+    emits(`changed`, [key, [label, direction]], elements.value)
+  }
 }
 
-const remove = (key: string) => {
-  update(key, 0)
+function onMove(key: string, offset: number) {
+  const newIndex = move(key, offset)
+  if (newIndex >= 0) {
+    emits(`changed`, elements.value[newIndex], elements.value)
+  }
 }
 
-const onMoved = (item: [string, [string, SortDirection]], index: number, items: [string, [string, SortDirection]][]) => {
-  emits(`itemChanged`, item, items)
+function onRemove(key: string) {
+  const item = get(key)
+  if (item) {
+    const [label] = item
+    set(key, [label, 0])
+    moveBottom(key)
+    emits(`changed`, [key, [label, 0]], elements.value)
+  }
 }
 </script>
