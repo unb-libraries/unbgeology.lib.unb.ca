@@ -1,11 +1,6 @@
 import type { Permission } from '@unb-libraries/nuxt-layer-entity'
-import type { H3Event, Session, HTTPMethod } from 'h3'
-
-type UserSession = Session<{
-  user: string
-  permissions: string[]
-  validUntil: number
-}>
+import type { H3Event, HTTPMethod } from 'h3'
+import { type UserSession } from '../../types/session'
 
 export function useCurrentServerSession(event: H3Event) {
   const { name } = useServerSessionConfig()

@@ -4,14 +4,13 @@ export default defineEventHandler(async (event) => {
   if (!data.user) {
     const { defaultUser } = useRuntimeConfig()
     const username = typeof defaultUser === `function` ? defaultUser(event) : defaultUser
-    if (username) {
-      await update({
-        user: username,
-        permissions: (await getUserPermissions(username))
-          .map(createFieldPermissionKeys)
-          .flat(),
-        validUntil: new Date().valueOf() + 60 * 60 * 12,
-      })
-    }
+    await update({
+      user: username || ``,
+      authenticated: username || false,
+      permissions: (await getUserPermissions(username || `anonymous`))
+        .map(createFieldPermissionKeys)
+        .flat(),
+      validUntil: new Date().valueOf() + 60 * 60 * 12,
+    })
   }
 })

@@ -1,16 +1,21 @@
-import { type SessionData } from "h3"
+import { type UserSession } from "../types/session"
 
-export async function useCurrentSession() {
-  const { name } = useSessionConfig()
-  const { data: session, refresh } = await useFetch<SessionData>(`/api/session`, {
-    headers: {
-      Cookie: `${name}=${useCookie(name)}`,
-    },
-  })
+export function useCurrentSession() {
+  return useState<UserSession>(`session`)
+}
 
+export function useCurrentUser() {
+  const session = useCurrentSession()
   return {
-    session: readonly(session),
-    refresh,
+    username: computed(() => session.value!.data.user),
+    isAuthenticated: computed(() => session.value!.data.authenticated),
+    hasPermission: (permission: string | string[] | RegExp) => {
+      return session.value!.data.permissions.some(p => permission instanceof RegExp
+        ? permission.test(p)
+        : Array.isArray(p)
+          ? p.includes(permission)
+          : p === permission)
+    },
   }
 }
 

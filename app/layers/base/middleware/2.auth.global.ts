@@ -10,7 +10,7 @@ interface RouteAuthMeta extends RouteMeta {
   auth?: AuthMeta
 }
 
-export default defineNuxtRouteMiddleware(async (from, to) => {
+export default defineNuxtRouteMiddleware((from, to) => {
   if (process.client) { return }
 
   const event = useRequestEvent()!
@@ -20,10 +20,10 @@ export default defineNuxtRouteMiddleware(async (from, to) => {
     ...(from.meta as RouteAuthMeta).auth || {},
   }
 
-  const currentUser = await useCurrentUser()
+  const currentUser = useCurrentUser()
 
   const now = new Date().valueOf()
-  const { validUntil } = (await useCurrentSession()).session.value!.data
+  const { validUntil } = useCurrentSession().value.data
   const expired = validUntil ? validUntil < now : false
 
   if (!auth.public && (!currentUser || expired)) {
