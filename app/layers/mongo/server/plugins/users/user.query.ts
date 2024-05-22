@@ -4,11 +4,8 @@ export default defineMongooseEventQueryHandler(User, defineEventQuery({
   id: {
     default: true,
     select: `username`,
+    sort: `username`,
     filter: (_, condition) => String(`username`, condition),
-  },
-  username: {
-    default: true,
-    filter: String,
   },
   active: {
     default: false,

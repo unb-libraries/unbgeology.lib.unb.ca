@@ -192,7 +192,7 @@ export function defineEventQuery<D extends DocumentBase = DocumentBase, M extend
       if (`sort` in query && sort) {
         const sortField = sortFields.find(([field]) => field === id)
         if (sortField) {
-          query.sort(sortField)
+          query.sort([sort, sortField[1]])
         }
       }
     }
