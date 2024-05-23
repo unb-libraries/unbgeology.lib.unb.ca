@@ -1,6 +1,6 @@
 <template>
   <div>
-    <a id="button-filter" class="btn-context basis-1/3" @click.prevent="visible = !visible">
+    <a id="button-filter" class="button button-md hover:button-primary-80" @click.prevent="visible = !visible">
       Filter
     </a>
     <PvContextualDropdown

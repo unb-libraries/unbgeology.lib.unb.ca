@@ -1,15 +1,15 @@
 <template>
   <div
-    class="bg-base dark:bg-primary disabled:bg-primary-80 disabled:text-primary-40 border-primary-20 dark:border-primary-60/75 hover:border-accent-light has-[:focus]:ring-2 has-[:focus]:ring-accent-light has-[:focus]:hover:border-transparent flex flex-row items-center space-x-2 rounded-lg border p-3 py-0"
     :class="classes"
   >
     <slot name="before" />
     <input
       :id="id"
       v-model="value"
+      type="text"
       :name="name"
       v-bind="attrs"
-      class="placeholder:text-primary dark:placeholder:text-primary-20 w-full border-none bg-inherit px-0 py-2 placeholder:italic focus:ring-0 dark:text-base"
+      class="input-ref"
       :class="inputClass"
     >
     <slot name="after" />

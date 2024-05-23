@@ -1,5 +1,13 @@
 /** @type {import('tailwindcss').Config} */
 import colors from "tailwindcss/colors"
+import plugin from "tailwindcss/plugin"
+import defaults from "tailwindcss/defaultTheme"
+
+const colorReduce = (prefix = ``) =>
+  (reduced, [key, value]) =>
+    typeof value === `string`
+      ? [...reduced, [prefix ? key.toLowerCase() !== `default` ? `${prefix}-${key}` : prefix : key, value]]
+      : Object.entries(value).reduce(colorReduce(key), reduced)
 
 module.exports = {
   content: [
@@ -51,5 +59,85 @@ module.exports = {
   },
   plugins: [
     require(`@tailwindcss/forms`),
+    plugin(function ({ addComponents, matchComponents, theme }) {
+      const matchComponentsBySize = (name, sizes, styles = {}) => matchComponents({
+        [name]: ({ fontSize, paddingX, paddingY, borderRadius }) => ({
+          fontSize,
+          padding: `${paddingY} ${paddingX}`,
+          borderRadius,
+          ...styles,
+        })
+      }, { values: sizes })
+
+      addComponents({
+        ".button": {
+          cursor: `pointer`,
+          flex: `1 1 auto`,
+          alignItems: `center`,
+          textAlign: `center`,
+        },
+      })
+      
+      matchComponents({
+        button: rgbColor => ({
+          backgroundColor: rgbColor,
+          color: `inherit`,
+        }),
+        "button-outline": rgbColor => ({
+          borderColor: rgbColor,
+          backgroundColor: `transparent`,
+          borderWidth: `1px`,
+          color: rgbColor,
+        })
+      }, {
+        values: Object.fromEntries(Object.entries(theme(`colors`)).reduce(colorReduce(), []))
+      })
+      
+      matchComponentsBySize(`button`, theme(`button`))
+      matchComponentsBySize(`input-text`, theme(`input`))
+    }, {
+      theme: {
+        button: {
+          sm: {
+            fontSize: defaults.fontSize.sm,
+            borderRadius: defaults.borderRadius.md,
+            paddingX: defaults.spacing[1.5],
+            paddingY: defaults.spacing[0.5],
+          },
+          md: {
+            fontSize: defaults.fontSize.md,
+            borderRadius: defaults.borderRadius.md,
+            paddingX: defaults.spacing[2],
+            paddingY: defaults.spacing[1.5],
+          },
+          lg: {
+            fontSize: defaults.fontSize.lg,
+            borderRadius: defaults.borderRadius.md,
+            paddingX: defaults.spacing[3],
+            paddingY: defaults.spacing[2],
+          },
+        },
+        input: {
+          sm: {
+            fontSize: defaults.fontSize.sm,
+            borderRadius: defaults.borderRadius.md,
+            paddingX: defaults.spacing[2],
+            paddingY: defaults.spacing[1],
+          },
+          md: {
+            fontSize: defaults.fontSize.md,
+            borderRadius: defaults.borderRadius.lg,
+            paddingX: defaults.spacing[3],
+            paddingY: defaults.spacing[1.5],
+          },
+          lg: {
+            fontSize: defaults.fontSize.lg,
+            borderRadius: defaults.borderRadius.lg,
+            paddingX: defaults.spacing[3],
+            paddingY: defaults.spacing[2],
+          },
+        }
+      },
+    }),
   ],
 }

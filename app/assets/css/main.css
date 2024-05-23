@@ -24,15 +24,25 @@
 }
 
 @layer components {
-  .btn-context {
-    @apply button button-md hover:button-primary-80
-  }
-  .btn-action {
-    @apply button-lg button-accent-mid hover:button-accent-light
-  }
   .context-menu {
     @apply bg-primary border-primary-60/40 right-0 top-12 z-50 w-64 rounded-md border p-4
   }
+
+  .input-label {
+    @apply mb-2 align-middle text-lg font-bold
+  }
+  
+  .input {
+    @apply flex flex-row items-center space-x-2
+    bg-base dark:bg-primary disabled:bg-primary-80 border border-primary-20 dark:border-primary-60/75 hover:border-accent-light
+      has-[:focus]:ring-2 has-[:focus]:ring-accent-light has-[:focus]:hover:border-transparent
+  }
+  .input-ref {
+    @apply w-full p-0 bg-inherit border-none focus:ring-0
+      text-inherit placeholder:text-primary dark:placeholder:text-primary-20 placeholder:italic;
+    font-size: inherit;
+  }
+
 
   .divider {
     @apply 
