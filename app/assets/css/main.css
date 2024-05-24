@@ -42,6 +42,13 @@
       text-inherit placeholder:text-primary dark:placeholder:text-primary-20 placeholder:italic;
     font-size: inherit;
   }
+  .input-select-empty {
+    @apply text-primary-80 dark:text-primary-20
+  }
+  .input-select-reset {}
+  .input-select-item {
+    @apply hover:bg-accent-mid hover:text-primary flex h-8 cursor-pointer items-center justify-start p-2
+  }
 
 
   .divider {

@@ -95,6 +95,10 @@ module.exports = {
       
       matchComponentsBySize(`button`, theme(`button`))
       matchComponentsBySize(`input-text`, theme(`input`))
+      matchComponentsBySize(`input-select`, theme(`input`), {
+        cursor: `pointer`,
+        justifyContent: `flex-start`,
+      })
     }, {
       theme: {
         button: {
