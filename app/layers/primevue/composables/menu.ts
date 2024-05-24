@@ -1,6 +1,8 @@
 export function getPagesMenu() {
   const { getRoutes } = useRouter()
+  const { hasPermission } = useCurrentUser()
   return getRoutes()
+    .filter(({ meta }) => !meta?.auth?.permission || hasPermission(meta.auth.permission))
     .map(({ path, meta, name }) => ({
       id: path.substring(1).split(`/`).join(`.`),
       parent: path.substring(1).split(`/`).slice(0, -1).join(`.`),
