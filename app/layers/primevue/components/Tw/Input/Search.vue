@@ -8,7 +8,7 @@
     <button
       v-if="submit"
       type="submit"
-      class="bg-accent-mid hover:bg-accent-light cursor-pointer rounded-md p-2 text-base"
+      class="button button-accent-mid hover:button-accent-light"
       :class="buttonClass"
       @click.prevent.stop="update?.()"
     >

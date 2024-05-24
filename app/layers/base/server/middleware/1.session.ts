@@ -1,12 +1,12 @@
 export default defineEventHandler(async (event) => {
   const { data, update } = await useSession(event, useServerSessionConfig())
 
-  if (!data.user) {
-    const { defaultUser } = useRuntimeConfig()
+  if (!data?.user) {
+    const { defaultUser } = useRuntimeConfig(event).nitro
     const username = typeof defaultUser === `function` ? defaultUser(event) : defaultUser
     await update({
       user: username || ``,
-      authenticated: username || false,
+      authenticated: Boolean(username) && username !== `anonymous`,
       permissions: (await getUserPermissions(username || `anonymous`))
         .map(createFieldPermissionKeys)
         .flat(),

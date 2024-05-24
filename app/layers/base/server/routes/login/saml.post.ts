@@ -34,6 +34,7 @@ export default defineEventHandler(async (event) => {
 
   await session.update({
     user: user.username,
+    authenticated: true,
     permissions: (await getUserPermissions(username)).map(createFieldPermissionKeys).flat(),
     validUntil: new Date().valueOf() + sessionConfig.maxAge * 1000,
   })
