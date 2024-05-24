@@ -1,25 +1,31 @@
 <template>
   <NuxtLayout name="dashboard-page">
+    <template #actions>
+      <NuxtLink v-if="hasPermission(/^create:user/)" to="/dashboard/users/register" class="button button-lg button-accent-mid hover:button-accent-light">
+        Add user
+      </NuxtLink>
+    </template>
+
     <div class="relative flex flex-row">
       <TwFormField label="Search" label-class="sr-only" class="w-full">
-        <TwInputSearch v-model="search" class="w-full" />
+        <TwInputSearch v-model="search" class="input input-text-md w-full" />
       </TwFormField>
     </div>
 
     <div class="inline-flex w-full space-x-6">
       <div class="inline-flex grow justify-start space-x-2">
-        <span v-if="sort.length" class="bg-yellow-dark rounded-sm px-2 py-1 text-sm">{{ sortableColumns.filter(([, [, sort]]) => sort).map(([, [label]]) => label).join(`,`) }}</span>
+        <span v-if="sort.length" class="bg-yellow-dark rounded-sm px-2 py-1 text-sm">{{ sortableColumns.filter(([,, sort]) => sort).map(([, label]) => label).join(`,`) }}</span>
         <span v-if="filter.length" class="bg-blue-dark rounded-sm px-2 py-1 text-sm">{{ Object.keys(modified).join(`,`) }}</span>
       </div>
       <div class="relative inline-flex justify-end space-x-2">
         <TableColumnsMenu :columns="toggleableColumns" @toggled="toggle" />
-        <SortMenu :props="sortableColumns" @changed="(_, __, columns) => { sortableColumns = columns; sort = sortedByColumnIDs }" />
-        <FilterMenu :filters="{ roles: { ...roles, label: `Role` }, active: { ...active, label: `Status` } }" @submit="onApplyFilters" @reset="onResetFilters">
+        <SortMenu :props="sortableColumns" @changed="(_, __, columns) => { sortableColumns = columns; sort = rankedIDs }" />
+        <FilterMenu :filters="{ roles: { ...roles, label: `Role` }, active: { ...active, label: `Status` } }" label-class="text-base" @submit="onApplyFilters" @reset="onResetFilters">
           <template #roles>
-            <PvInputDropdown v-model="roles.value" :options="[`sudo`, `sysadmin`, `migrator`, `curator`, `editor`, `public`]" class="w-full" />
+            <PvInputDropdown v-model="roles.value" :options="[`sudo`, `sysadmin`, `migrator`, `curator`, `editor`, `public`]" class="input-select-sm w-full" />
           </template>
           <template #active>
-            <PvInputDropdown v-model="active.value" :options="[`active`, `blocked`]" class="w-full" />
+            <PvInputDropdown v-model="active.value" :options="[`active`, `blocked`]" class="input-select-sm w-full" />
           </template>
         </FilterMenu>
       </div>
@@ -28,15 +34,23 @@
     <EntityTable
       v-model="users"
       :entities="entities"
-      :columns="toggledColumns"
+      :columns="selectedColumns"
       class="w-full"
       :multi-select="true"
-      row-class="last:border-primary-60/75 last:border-b even:dark:bg-primary-80/20 hover:bg-accent-dark/20 even:dark:hover:bg-accent-dark/20"
-      selected-row-class="dark:bg-accent-dark/40 even:dark:bg-accent-dark/40 hover:dark:bg-accent-dark/60 even:hover:dark:bg-accent-dark/60"
+      row-class="table-row"
+      selected-row-class="active"
     >
+      <template #roles="{ entity }">
+        <ul>
+          <li v-for="role in entity.roles" :key="role">
+            {{ role[0].toUpperCase() + role.slice(1).toLowerCase() }}
+          </li>
+        </ul>
+      </template>
       <template #active="{ entity }">
         <span class="rounded-md px-2 py-1 text-sm" :class="{ 'bg-green-700': entity.active, 'bg-red-600': !entity.active }">
-          {{ entity.active ? `Active` : `Blocked` }}</span>
+          {{ entity.active ? `Active` : `Blocked` }}
+        </span>
       </template>
     </EntityTable>
 
@@ -90,15 +104,23 @@ definePageMeta({
   name: `Users`,
 })
 
-const { selectedColumns, toggleableColumns, sortableColumns, sortedByColumnIDs, toggle } = useColumns([
-  [`id`, `Username`],
-  [`created`, { label: `Member since` }],
-  `roles`,
-  [`active`, { label: `Status` }],
+const schema = defineEntitySchema<User>(`User`, [
+  [`id`, { label: `Username`, toggable: false }],
+  [`roles`, { sort: false }],
+  [`created`, `Member since`],
+  [`active`, `Status`],
 ])
 
+const { hasPermission } = useCurrentUser()
+const columns = schema.filter(({ permission }) => permission ? hasPermission(permission) : false)
+
+const { columns: toggleableColumns, selected: selectedToggeableColumns, toggle } = useToggleableColumns(columns)
+const { columns: sortableColumns, rankedIDs } = useSortableColumns(columns, { defaultSort: `id` })
+const selectedColumns = computed<[string, string][]>(() => [[`id`, `Username`], ...selectedToggeableColumns.value])
+
 const { list, entities, query, removeMany } = await fetchEntityList<User>(`User`, {
-  select: [`id`, `active`, `roles`, `profile`, `created`, `updated`],
+  select: columns.keys,
+  sort: rankedIDs.value,
 })
 const { filter, page, pageSize, search, sort } = query
 
