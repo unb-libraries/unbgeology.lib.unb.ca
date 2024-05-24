@@ -48,10 +48,36 @@
     </div>
 
     <template #sidebar>
-      <div v-if="users.length > 0">
-        {{ pluralize(users.length, `user`, `users`) }} selected
-      </div>
-      <span v-else>Nothing selected.</span>
+      <EntityAdminSidebar v-if="users.length" :entities="users">
+        <PvEntityDetails v-if="users.length === 1" :entity="users[0]" :fields="columns.values.map(({ id, label }) => [id, label])" class="space-y-4" label-class="font-bold italic">
+          <template #active="{ value: status }">
+            <span class="rounded-md px-2 py-1 text-sm" :class="{ 'bg-green-700': status, 'bg-red-600': !status }">
+              {{ status ? `Active` : `Blocked` }}
+            </span>
+          </template>
+          <template #profile="{ value: profile }">
+            {{ profile.firstName }}
+          </template>
+          <template #roles>
+            <ul>
+              <li v-for="role in users[0].roles" :key="role">
+                {{ role[0].toUpperCase() + role.slice(1).toLowerCase() }}
+              </li>
+            </ul>
+          </template>
+        </PvEntityDetails>
+        <template #actions>
+          <div class="space-y-2">
+            <button v-if="hasPermission(/^update:user/)" class="button button-lg button-outline-yellow-light hover:button-yellow-light hover:text-primary w-full">
+              Edit{{ users.length > 1 ? ` ${users.length} users` : `` }}
+            </button>
+            <button v-if="hasPermission(/^delete:user/)" class="button button-lg button-outline-red-dark hover:button-red-dark w-full" @click.stop.prevent="onRemove">
+              Delete{{ users.length > 1 ? ` ${users.length} users` : `` }}
+            </button>
+          </div>
+        </template>
+      </EntityAdminSidebar>
+      <span v-else>No user selected.</span>
     </template>
   </NuxtLayout>
 </template>
@@ -75,7 +101,8 @@ const { list, entities, query, removeMany } = await fetchEntityList<User>(`User`
   select: [`id`, `active`, `roles`, `profile`, `created`, `updated`],
 })
 const { filter, page, pageSize, search, sort } = query
-const users = ref([])
+
+const users = ref<EntityJSON<User>[]>([])
 
 const { filters: { roles, active }, modified, reset } = useFilter({
   roles: FilterOperator.EQUALS,
@@ -93,5 +120,10 @@ const onApplyFilters = () => {
 const onResetFilters = () => {
   reset()
   filter.value = []
+}
+
+const onRemove = async () => {
+  await removeMany(users.value)
+  users.value = []
 }
 </script>

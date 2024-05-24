@@ -20,7 +20,7 @@
         tabindex="0"
         @click.stop="onClickRow(entity, index)"
       >
-        <td v-if="multiSelect && selection.length > 0" class="p-4 text-left leading-6">
+        <td v-if="multiSelect && selection.length > 0" class="w-16 p-4 text-left leading-6">
           <PvCheckbox v-model="checkboxes[index]" />
         </td>
         <td v-for="[column] in columns" :key="`${entity.id}-${column}`" class="p-4 text-left leading-6" :class="cellClass ?? ``">

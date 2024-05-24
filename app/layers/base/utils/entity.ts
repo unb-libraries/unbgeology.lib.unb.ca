@@ -17,6 +17,7 @@ import {
   type FetchEntityListOptions,
   type EntityJSONBodyPropertyValue,
   type EntityJSONProperties,
+  FilterOperator,
 } from "@unb-libraries/nuxt-layer-entity"
 import type { UseFetchOptions } from "nuxt/app"
 
@@ -212,6 +213,25 @@ export async function fetchEntityList <E extends Entity = Entity>(entityTypeOrId
       refresh()
       return response
     },
+    async removeMany(entities: EntityJSON<E>[]) {
+      const options = {
+        filter: entities.map<[string, FilterOperator, string]>(({ id }) => [`id`, FilterOperator.EQUALS, id]),
+      }
+      typeof entityTypeOrIdOrURI === `string`
+        ? await deleteEntityList(entityTypeOrIdOrURI, options)
+        : await deleteEntityList(entityTypeOrIdOrURI.name, options)
+      refresh()
+    },
     errors: [],
   }
+}
+
+async function deleteEntityList<E extends Entity = Entity>(entityTypeID: string, options?: FetchEntityListOptions) {
+  const { filter, page, pageSize, search, select, sort } = options ?? {}
+  const fetchOptions: UseFetchOptions<EntityJSONList<E>> = {
+    method: `DELETE`,
+    query: { filter: filter?.map(f => f.join(`:`)), page, pageSize, search, select, sort },
+  }
+  const url = useEntityType<E>(entityTypeID).definition.baseURI
+  return await useFetch<EntityJSONList<E>>(url, fetchOptions)
 }
