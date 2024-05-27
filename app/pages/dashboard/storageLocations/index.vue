@@ -39,6 +39,9 @@ import { StorageLocationForm } from '#components'
 definePageMeta({
   layout: `dashboard`,
   name: `Storage locations`,
+  menu: {
+    weight: 90,
+  },
 })
 
 const { content, close: closeModal } = useModal()

@@ -69,7 +69,6 @@ import type { Specimen } from "types/specimen"
 
 definePageMeta({
   layout: `page`,
-  name: `Specimens`,
 })
 
 const { list } = await fetchEntityList<Specimen>(`Specimen`)

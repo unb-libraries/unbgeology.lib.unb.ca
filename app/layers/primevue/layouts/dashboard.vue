@@ -1,6 +1,6 @@
 <template>
   <div class="bg-primary flex h-screen flex-col">
-    <header class="bg-primary-60/10 border-primary-40/10 mb-4 w-full flex-none border-b px-6 py-4">
+    <header class="bg-primary-60/10 border-primary-40/10 mb-4 w-full flex-none rounded-b-xl border-b px-6 py-4">
       <div class="flex flex-row justify-between">
         <h1 class="text-4xl">
           Dashboard
@@ -24,7 +24,7 @@
     </header>
     <div id="content" class="flex h-full grow overflow-y-hidden">
       <div class="flex w-full flex-row">
-        <PvPane class="twa-column min-w-min list-none text-right" header-class="bg-primary-80/40 flex justify-end p-2" :collapsible="true">
+        <PvPane class="twa-column min-w-min list-none text-right" header-class="bg-accent-dark flex justify-end p-2" :collapsible="true">
           <template #header>
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -37,17 +37,17 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
             </svg>
           </template>
-          <nav class="flex flex-col">
-            <div v-for="group in menuRoutes.filter(({ parent }) => parent === `dashboard`)" :key="group.id" class="has-[.menu-item-active]:bg-accent-dark hover:bg-accent-dark flex flex-col">
-              <NuxtLink :to="group.path" class="p-4 pl-12 text-xl uppercase" :class="{ 'bg-accent-light text-primary': $route.path.startsWith(group.path) }">
-                {{ group.name }}
+          <nav class="bg-accent-dark/60 flex h-full flex-col">
+            <div v-for="category in categories" :key="category.id" class="has-[.menu-item-active]:bg-accent-dark hover:bg-accent-dark flex flex-col">
+              <NuxtLink :to="category.path" class="p-4 pl-12 text-xl uppercase" :class="{ 'bg-accent-light text-primary': $route.path.startsWith(category.path) }">
+                {{ category.name }}
               </NuxtLink>
-              <div v-if="$route.path.startsWith(group.path)" class="flex flex-col">
-                <NuxtLink :to="group.path" class="hover:bg-accent-mid px-6 py-2" active-class="menu-item-active bg-accent-mid">
+              <div v-if="$route.path.startsWith(category.path)" class="flex flex-col">
+                <NuxtLink :to="category.path" class="hover:bg-accent-mid px-6 py-2" active-class="menu-item-active bg-accent-mid">
                   View all
                 </NuxtLink>
-                <NuxtLink v-for="route in menuRoutes.filter(({ parent }) => parent.startsWith(group.id))" :key="route.path" :to="route.path" class="hover:bg-accent-mid px-6 py-2" active-class="menu-item-active bg-accent-mid">
-                  {{ route.name }}
+                <NuxtLink v-for="page in category.children" :key="page.id" :to="page.path" class="hover:bg-accent-mid px-6 py-2" active-class="menu-item-active bg-accent-mid">
+                  {{ page.name }}
                 </NuxtLink>
               </div>
             </div>
@@ -75,14 +75,12 @@
             </svg>
           </template>
           <div class="h-full p-6">
-            <slot name="sidebar">
-              Nothing selected.
-            </slot>
+            <slot name="sidebar" />
           </div>
         </PvPane>
       </div>
     </div>
-    <footer class="bg-primary-60/10 border-primary-40/10 mt-4 flex w-full flex-none border-t px-6 py-4">
+    <footer class="bg-primary-60/10 border-primary-40/10 mt-4 flex w-full flex-none rounded-t-xl border-t px-6 py-4">
       <div class="flex flex-col justify-between md:flex-row">
         <div class="flex flex-col items-center md:flex-row md:space-x-4">
           <span>&copy;{{ new Date().getFullYear() }} University of New Brunswick</span>
@@ -98,8 +96,23 @@
 </template>
 
 <script setup lang="ts">
-const menuRoutes = getPagesMenu()
+const dashboardRoutes = getPagesMenu()
   .filter(({ id }) => id.match(/^dashboard/))
+
+const categories = dashboardRoutes
+  .filter(({ path }) => path.substring(1).split(`/`).length === 2)
+  .sort(sortByWeight)
+  .map(({ path, ...item }) => ({
+    ...item,
+    path,
+    children: dashboardRoutes
+      .filter(({ parent }) => parent === path)
+      .sort(sortByWeight),
+  }))
+
+function sortByWeight(a: { weight: number }, b: { weight: number }) {
+  return a.weight - b.weight
+}
 </script>
 
 <style scoped>

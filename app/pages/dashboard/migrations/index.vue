@@ -51,6 +51,9 @@ import { MigrationForm, PvDefaultEntityTableActions } from "#components"
 definePageMeta({
   layout: `dashboard`,
   name: `Migrations`,
+  menu: {
+    weight: 2000,
+  },
 })
 
 const { content, close: closeModal } = useModal()

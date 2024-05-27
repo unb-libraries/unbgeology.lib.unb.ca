@@ -44,6 +44,9 @@ import { TaxonomyTermForm, FormMineralClassification } from "#components"
 definePageMeta({
   layout: `dashboard`,
   name: `Minerals`,
+  menu: {
+    weight: 40,
+  },
 })
 
 const { content, close: closeModal } = useModal()

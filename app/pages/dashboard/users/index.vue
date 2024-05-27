@@ -109,6 +109,9 @@ definePageMeta({
     redirect: true,
     permission: /^(update|delete):user/,
   },
+  menu: {
+    weight: 3000,
+  },
 })
 
 const schema = defineEntitySchema<User>(`User`, [

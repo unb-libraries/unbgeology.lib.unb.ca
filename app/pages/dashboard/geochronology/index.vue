@@ -42,6 +42,9 @@ import { GeochronologyForm } from '#components'
 definePageMeta({
   layout: `dashboard`,
   name: `Geochronology`,
+  menu: {
+    weight: 60,
+  },
 })
 
 const { content, close: closeModal } = useModal()
