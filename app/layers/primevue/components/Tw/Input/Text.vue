@@ -1,19 +1,22 @@
 <template>
-  <div
-    :class="classes"
-  >
-    <slot name="before" />
-    <input
-      :id="id"
-      v-model="value"
-      type="text"
-      :name="name"
-      v-bind="attrs"
-      class="input-ref"
-      :class="inputClass"
+  <TwInput :error="error" :help="help" :wrapper-class="wrapperClass">
+    <div
+      class="input"
+      :class="classes"
     >
-    <slot name="after" />
-  </div>
+      <slot name="before" />
+      <input
+        :id="id"
+        v-model="value"
+        type="text"
+        :name="name"
+        v-bind="attrs"
+        class="input-ref"
+        :class="inputClass"
+      >
+      <slot name="after" />
+    </div>
+  </TwInput>
 </template>
 
 <script setup lang="ts">
@@ -22,15 +25,18 @@ defineOptions({
 })
 
 const props = defineProps<{
-  // label: string
+  help?: string
   labelClass?: string
   inputClass?: string
+  wrapperClass?: string
   modelValue: string
+  validator?:(value: string) => boolean | string | Promise<boolean | string>
 }>()
 
 const emits = defineEmits<{
   // eslint-disable-next-line
   'update:modelValue': [value: string]
+  validated: [id: string, valid: boolean | string, msg?: string]
 }>()
 
 const value = computed({
@@ -39,5 +45,23 @@ const value = computed({
 })
 
 const parentAttrs = inject<Partial<{ id: string, name: string }>>(`attrs`)
-const { id = parentAttrs?.id, name = parentAttrs?.name, class: classes, ...attrs } = useAttrs() as { id: string, name: string, class: string }
+const { id = parentAttrs?.id ?? useId(), name = parentAttrs?.name, class: classList, ...attrs } = useAttrs() as { id: string, name: string, class: string }
+
+const error = ref(``)
+const classes = computed(() => `${classList}${error.value ? ` border-red-600 has-[:focus]:ring-red-600 text-red-600` : ``}`)
+
+watch(() => props.modelValue, onChange)
+async function onChange(value: string) {
+  if (props.validator) {
+    try {
+      const validOrMessage = await props.validator(value)
+      const isValid = validOrMessage === true
+      error.value = typeof validOrMessage === `string` ? validOrMessage : ``
+      emits(`validated`, id, isValid, error.value)
+    } catch (err: unknown) {
+      error.value = (err as Error).message
+      emits(`validated`, id, false, error.value)
+    }
+  }
+}
 </script>

@@ -34,8 +34,8 @@ export type EntityJSONPropertyValue = string | number | boolean | EntityJSON
 
 export type EntityJSONProperties<E extends Entity = Entity, P extends keyof Omit<E, keyof Entity> = keyof Omit<E, keyof Entity>> = Pick<EntityJSON<E>, P>
 
-export interface EntityJSONList<E extends EntityJSON = EntityJSON> {
-  entities: E[]
+export interface EntityJSONList<E extends Entity = Entity> {
+  entities: EntityJSON<E>[]
   nav: {
     first?: string
     last?: string
@@ -86,6 +86,11 @@ export interface EntityDeleteResponse {
   errors: any[]
 }
 
+export interface EntityDeleteManyResponse {
+  deleted: number
+  errors: any[]
+}
+
 // REFACTOR: Move to app/layers/base/types/index.d.ts
 export enum FilterOperator {
   EQUALS = 1,
@@ -111,6 +116,10 @@ export interface FilterGroup {
   toArray: () => Filter[]
 }
 
+export interface FetchEntityOptions<E extends Entity = Entity> {
+  select?: (keyof E)[]
+}
+
 export interface FetchEntityListOptions {
   filter?: Filter[]
   page?: number
@@ -134,7 +143,9 @@ export interface EntityListResponse<E extends Entity = Entity> {
   refresh: () => void
   add: (entity: EntityJSONCreateBody<E>) => Promise<EntityCreateResponse<E>>
   update: (entity: EntityJSONBody<E>) => Promise<EntityResponse<E>>
+  updateMany: (body: EntityJSONBody<E>) => Promise<EntityUpdateList<E>>
   remove: (entity: EntityJSON) => Promise<EntityDeleteResponse>
+  removeMany: (entity: EntityJSON[]) => Promise<EntityDeleteManyResponse>
   errors: any[]
 }
 

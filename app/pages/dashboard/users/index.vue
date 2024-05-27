@@ -8,7 +8,7 @@
 
     <div class="relative flex flex-row">
       <TwFormField label="Search" label-class="sr-only" class="w-full">
-        <TwInputSearch v-model="search" class="input input-text-md w-full" />
+        <TwInputSearch v-model="search" class="input input-text-md w-full" text-wrapper-class="w-full" />
       </TwFormField>
     </div>
 
@@ -40,6 +40,11 @@
       row-class="table-row"
       selected-row-class="active"
     >
+      <template #id="{ entity }">
+        <NuxtLink :to="`/dashboard/users/${entity.id}`" class="hover:underline">
+          {{ entity.id }}
+        </NuxtLink>
+      </template>
       <template #roles="{ entity }">
         <ul>
           <li v-for="role in entity.roles" :key="role">
@@ -65,9 +70,7 @@
       <EntityAdminSidebar v-if="users.length" :entities="users">
         <PvEntityDetails v-if="users.length === 1" :entity="users[0]" :fields="columns.values.map(({ id, label }) => [id, label])" class="space-y-4" label-class="font-bold italic">
           <template #active="{ value: status }">
-            <span class="rounded-md px-2 py-1 text-sm" :class="{ 'bg-green-700': status, 'bg-red-600': !status }">
-              {{ status ? `Active` : `Blocked` }}
-            </span>
+            {{ status ? `Active` : `Blocked` }}
           </template>
           <template #profile="{ value: profile }">
             {{ profile.firstName }}
@@ -82,7 +85,7 @@
         </PvEntityDetails>
         <template #actions>
           <div class="space-y-2">
-            <button v-if="hasPermission(/^update:user/)" class="button button-lg button-outline-yellow-light hover:button-yellow-light hover:text-primary w-full">
+            <button v-if="hasPermission(/^update:user/) && users.length === 1" class="button button-lg button-outline-yellow-light hover:button-yellow-light hover:text-primary w-full">
               Edit{{ users.length > 1 ? ` ${users.length} users` : `` }}
             </button>
             <button v-if="hasPermission(/^delete:user/)" class="button button-lg button-outline-red-dark hover:button-red-dark w-full" @click.stop.prevent="onRemove">
@@ -102,6 +105,10 @@ import { FilterOperator, type EntityJSON, type User } from '@unb-libraries/nuxt-
 definePageMeta({
   layout: false,
   name: `Users`,
+  auth: {
+    redirect: true,
+    permission: /^(update|delete):user/,
+  },
 })
 
 const schema = defineEntitySchema<User>(`User`, [

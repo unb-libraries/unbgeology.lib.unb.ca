@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div :class="wrapperClass">
     <slot />
     <div class="flex h-8 text-sm leading-8" v-bind="attrs">
       <span v-if="error" class="text-red-600" :class="errorClass">
@@ -26,6 +26,7 @@ const attrs = useAttrs()
 const props = defineProps<{
   error?: string
   help?: string
+  wrapperClass?: string
   errorClass?: string
   helpClass?: string
 }>()

@@ -18,6 +18,7 @@ import {
   type EntityJSONBodyPropertyValue,
   type EntityJSONProperties,
   FilterOperator,
+  type FetchEntityOptions,
 } from "@unb-libraries/nuxt-layer-entity"
 import type { UseFetchOptions } from "nuxt/app"
 
@@ -37,8 +38,8 @@ export function useEntityType<E extends Entity = Entity>(name: keyof AppConfig<E
     async create(entity: EntityJSONCreateBody<E>) {
       return await createEntity<E>(entity, entityType)
     },
-    async fetchByPK(pk: string) {
-      return await fetchEntity<E>(pk, entityType)
+    async fetchByPK(pk: string, options?: Partial<FetchEntityOptions<E>>) {
+      return await fetchEntity<E>(pk, entityType, options)
     },
     async fetchAll() {
       return await fetchEntityList<E>(entityType)
@@ -87,13 +88,19 @@ export async function createEntity <E extends Entity = Entity>(entity: EntityJSO
   return await fetchEntity<E>((newEntity.value as EntityJSON<E>).self)
 }
 
-export async function fetchEntity <E extends Entity = Entity> (pk: string, entityType: EntityType<E>): Promise<EntityFetchResponse<E>>
-export async function fetchEntity <E extends Entity = Entity> (uri: string): Promise<EntityFetchResponse<E>>
-export async function fetchEntity <E extends Entity = Entity>(pkOrUri: string, entityType?: EntityType<E>): Promise<EntityFetchResponse<E>> {
+export async function fetchEntity <E extends Entity = Entity> (pk: string, entityType: EntityType<E>, options?: Partial<FetchEntityOptions<E>>): Promise<EntityFetchResponse<E>>
+export async function fetchEntity <E extends Entity = Entity> (uri: string, options?: Partial<FetchEntityOptions<E>>): Promise<EntityFetchResponse<E>>
+export async function fetchEntity <E extends Entity = Entity>(pkOrUri: string, entityTypeOrOptions?: EntityType<E> | Partial<FetchEntityOptions<E>>, options?: Partial<FetchEntityOptions<E>>): Promise<EntityFetchResponse<E>> {
   // REFACTOR: fetch by filtering on PK, e.g. /api/terms/?filter=slug_eq_an-example
+  const entityType = entityTypeOrOptions && [`name`, `baseURI`].every(key => key in entityTypeOrOptions) ? entityTypeOrOptions as EntityType<E> : undefined
   const url = entityType ? `${entityType?.baseURI}/${pkOrUri}` : pkOrUri
+  const selectOptions = entityTypeOrOptions && `select` in entityTypeOrOptions
+    ? entityTypeOrOptions.select
+    : options && `select` in options
+      ? options.select
+      : []
 
-  const { data, refresh } = await useFetch<EntityJSON<E>>(url)
+  const { data, refresh } = await useFetch<EntityJSON<E>>(url, { query: { select: selectOptions } })
   const entity: Ref<EntityJSON<E> | null> = data as Ref<EntityJSON<E> | null>
   return {
     entity: entity as Ref<EntityJSON<E> | null>,
@@ -117,7 +124,7 @@ export async function updateEntity <E extends Entity = Entity>(entity: EntityJSO
   const { self, ...body } = entity
   const { data: updatedEntity } = await useFetch<EntityJSON<E>>(self, {
     // @ts-ignore
-    method: `PUT`,
+    method: `PATCH`,
     body,
   })
 

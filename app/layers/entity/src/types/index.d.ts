@@ -27,8 +27,8 @@ export interface EntityType<E extends Entity = Entity> {
 export type EntityJSON<E extends Entity = Entity, K extends keyof E | undefined = undefined> = Pick<E, K extends undefined ? keyof Omit<E, `id` | `self`> : K> & Pick<E, `id` | `self`>;
 export type EntityJSONPropertyValue = string | number | boolean | EntityJSON;
 export type EntityJSONProperties<E extends Entity = Entity, P extends keyof Omit<E, keyof Entity> = keyof Omit<E, keyof Entity>> = Pick<EntityJSON<E>, P>;
-export interface EntityJSONList<E extends EntityJSON = EntityJSON> {
-    entities: E[];
+export interface EntityJSONList<E extends Entity = Entity> {
+    entities: EntityJSON<E>[];
     nav: {
         first?: string;
         last?: string;
@@ -66,6 +66,10 @@ export interface EntityDeleteResponse {
     success: boolean;
     errors: any[];
 }
+export interface EntityDeleteManyResponse {
+    deleted: number;
+    errors: any[];
+}
 export declare enum FilterOperator {
     EQUALS = 1,
     MATCH = 2,
@@ -89,6 +93,9 @@ export interface FilterGroup {
     remove: (id: string, op?: FilterOperator, value?: string) => void;
     toArray: () => Filter[];
 }
+export interface FetchEntityOptions<E extends Entity = Entity> {
+    select?: (keyof E)[];
+}
 export interface FetchEntityListOptions {
     filter?: Filter[];
     page?: number;
@@ -111,7 +118,9 @@ export interface EntityListResponse<E extends Entity = Entity> {
     refresh: () => void;
     add: (entity: EntityJSONCreateBody<E>) => Promise<EntityCreateResponse<E>>;
     update: (entity: EntityJSONBody<E>) => Promise<EntityResponse<E>>;
+    updateMany: (body: EntityJSONBody<E>) => Promise<EntityUpdateList<E>>;
     remove: (entity: EntityJSON) => Promise<EntityDeleteResponse>;
+    removeMany: (entity: EntityJSON[]) => Promise<EntityDeleteManyResponse>;
     errors: any[];
 }
 export interface Permission {

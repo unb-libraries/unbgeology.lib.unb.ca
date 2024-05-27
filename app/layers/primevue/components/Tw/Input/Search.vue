@@ -1,6 +1,13 @@
 <template>
   <div class="inline-flex space-x-2" :class="wrapperClass">
-    <TwInputText v-bind="$attrs" v-model="search" name="search" :label="label" placeholder="Search">
+    <TwInputText
+      v-bind="$attrs"
+      v-model="search"
+      name="search"
+      :label="label"
+      placeholder="Search"
+      :wrapper-class="textWrapperClass"
+    >
       <template #before>
         <slot name="before" />
       </template>
@@ -28,11 +35,13 @@ const props = withDefaults(defineProps<{
   delay?: number
   submit?: boolean
   wrapperClass?: string
+  textWrapperClass?: string
   buttonClass?: string
 }>(), {
   label: `Search`,
   delay: 500,
   wrapperClass: ``,
+  textWrapperClass: ``,
   buttonClass: ``,
 })
 
