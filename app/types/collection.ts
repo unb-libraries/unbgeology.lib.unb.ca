@@ -7,3 +7,6 @@ export enum Status {
 
 export interface Collection extends Term, Stateful<typeof Status> {
 }
+
+export type CollectionCreateBody = Pick<Collection, `label` | `type`> & Pick<Partial<Collection>, `status`>
+export type CollectionUpdateBody = Pick<Partial<Collection>, `label` | `status`>

@@ -1,21 +1,43 @@
 <template>
-  <EntityForm :entity="entity">
+  <EntityForm :entity="input" @save="onSave" @cancel="onCancel">
     <template #default="{ body }">
-      <slot name="label" :body="body">
-        <div class="form-field">
-          <label for="label">Label</label>
-          <PvInputText id="form-input-label" v-model="body.label" class="form-input form-input-text" name="Label" />
-        </div>
-      </slot>
+      <TwFormField label="Label">
+        <slot name="label" :body="body">
+          <TwInputText v-model="body.label" class="input input-text-lg" />
+        </slot>
+      </TwFormField>
       <slot :body="body" />
     </template>
   </EntityForm>
 </template>
 
-<script setup lang="ts" generic="T extends Term = Term">
-import { type EntityJSON, type EntityJSONProperties, type Term } from "@unb-libraries/nuxt-layer-entity"
+<script setup lang="ts" generic="T extends Partial<Omit<Term, keyof Entity | `slug` | `label`>> & Pick<Term, `label`>">
+import type { Entity, Term } from "@unb-libraries/nuxt-layer-entity"
 
-defineProps<{
-  entity: EntityJSONProperties<T> & Partial<EntityJSON<T>>
+const props = defineProps<{
+  entity?: T
+  type: string
 }>()
+
+const emits = defineEmits<{
+  save: [term: T]
+  cancel: [],
+}>()
+
+const input = reactive<T>({
+  label: props.entity?.label ?? ``,
+  type: props.type,
+} as T)
+
+function onSave(values: T) {
+  const term = {
+    label: values.label,
+    type: props.type,
+  } as T
+  emits(`save`, term)
+}
+
+function onCancel() {
+  emits(`cancel`)
+}
 </script>

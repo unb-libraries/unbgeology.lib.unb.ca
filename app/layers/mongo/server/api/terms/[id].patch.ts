@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
   const fields = getAuthorizedFields(event, ...resources)
 
   const term = await Term.findByID(id).select(`authTags`)
-  if (term && term.authTags.some(t => resources.includes(t))) {
+  if (term && !term.authTags.some(t => resources.includes(t))) {
     return create403()
   }
 
