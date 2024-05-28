@@ -1,4 +1,6 @@
 export default defineEventHandler(async (event) => {
+  const { page, pageSize, search } = getQueryOptions(event)
+
   const resources = getAuthorizedResources(event, r => /^term(:\w)*$/.test(r))
   const fields = getAuthorizedFields(event, ...resources)
 
@@ -6,11 +8,10 @@ export default defineEventHandler(async (event) => {
     return create403()
   }
 
-  const query = Term.find()
-    .where(`authTags`).in(resources)
+  const query = search ? Term.search(search) : Term.find()
+  query.where(`authTags`).in(resources)
   await useEventQuery(event, query)
 
-  const { page, pageSize } = getQueryOptions(event)
   const { documents: terms, total } = await query
     .paginate(page, pageSize)
 
