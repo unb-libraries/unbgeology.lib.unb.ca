@@ -1,15 +1,31 @@
-import EnumFilter from "~/layers/mongo/server/utils/api/filter/enum"
+import { Enum, ObjectID } from "~/layers/mongo/server/utils/api/filter"
 import { Rank, Status } from "~/types/classification"
 import String from "~/layers/mongo/server/utils/api/filter/string"
 
 export default defineMongooseEventQueryHandler(Classification.Fossil, defineEventQuery({
+  parent: {
+    default: true,
+    sort: `__l`,
+    filter: false,
+    definition: {
+      id: {
+        default: true,
+        sort: false,
+        filter: ObjectID,
+      },
+      label: {
+        default: true,
+        filter: String,
+      },
+    },
+  },
   rank: {
     default: false,
-    filter: EnumFilter(Rank),
+    filter: Enum(Rank),
   },
   status: {
     default: false,
-    filter: EnumFilter(Status),
+    filter: Enum(Status),
   },
   type: {
     default: false,

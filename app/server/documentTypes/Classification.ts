@@ -1,58 +1,65 @@
-import { type TaxonomyTerm as TaxonomyTermEntity } from "@unb-libraries/nuxt-layer-entity"
-import { type TaxonomyTerm } from "~/layers/mongo/server/documentTypes/TaxonomyTerm"
+import { type Term as ITerm } from "~/layers/mongo/server/documentTypes/Term"
+import { Hierarchical, type Hierarchical as IHierarchical } from "~/layers/mongo/server/utils/mixins"
 import { EntityFieldTypes } from "~/layers/mongo/types/entity"
+import type { DocumentSchema } from "~/layers/mongo/types/schema"
 import {
-  type FossilClassification as FossilCE,
-  type RockClassification as RockCE,
-  type MineralClassification as MineralCE,
+  type Classification as IClassification,
+  type Fossil as FossilCE,
+  type Rock as RockCE,
+  type Mineral as MineralCE,
   Rank,
   Status,
 } from "~/types/classification"
 
-type Classification<T> = Omit<T, keyof TaxonomyTermEntity> & TaxonomyTerm
+type Classification<T extends IClassification = IClassification> = Omit<IClassification & IHierarchical & ITerm, `parent`> & {
+  parent?: Classification<T>
+} & T
 
 const State = Stateful({
   values: Status,
   default: Status.DRAFT,
 })
 
-const MxAuthorize = <T>(type: string) => Authorize<Classification<T>>({
-  paths: (classification: Classification<any>) => {
+const MxAuthorize = <T extends IClassification>(type: string) => Authorize<Classification<T>>({
+  paths: (classification: Classification<T>) => {
     const status = useEnum(Status).labelOf(classification.status).toLowerCase()
     return [
       `term`,
       `term:${status}`,
       `term:classification`,
       `term:classification:${status}`,
-      `term:classification:${type}`,
+      `term:classification:${classification.type}`,
       `term:classification:${type}:${status}`,
     ]
   },
 })
+
+const defineClassificationSchema = <T extends IClassification = IClassification>(type: string, definition: DocumentSchema<Classification<T>>[`paths`]) =>
+  defineDocumentSchema<Classification<T>>(definition)
+    .mixin(Hierarchical<ITerm & IClassification>({ sort: `label` }))
+    .mixin(State)
+    .mixin(MxAuthorize<T>(type))
 
 export type Fossil = Classification<FossilCE>
 export type Rock = Classification<RockCE>
 export type Mineral = Classification<MineralCE>
 
 export default {
-  Fossil: defineDocumentModel(`CFossil`, defineDocumentSchema<Fossil>({
+  Fossil: defineDocumentModel(`CFossil`, defineClassificationSchema<FossilCE>(`fossil`, {
     rank: {
       type: EntityFieldTypes.Mixed,
       required: true,
       enum: Rank,
     },
-  }).mixin(State)
-    .mixin(MxAuthorize<Fossil>(`fossil`))(), TaxonomyTerm),
+  })(), Term),
 
-  Rock: defineDocumentModel(`CRock`, defineDocumentSchema<Rock>({
-  }).mixin(State)
-    .mixin(MxAuthorize<Rock>(`rock`))(), TaxonomyTerm),
+  Rock: defineDocumentModel(`CRock`, defineClassificationSchema<RockCE>(`rock`, {
+  })(), Term),
 
-  Mineral: defineDocumentModel(`CMineral`, defineDocumentSchema<Mineral>({
+  Mineral: defineDocumentModel(`CMineral`, defineClassificationSchema<MineralCE>(`mineral`, {
     composition: {
       type: EntityFieldTypes.String,
       required: false,
     },
-  }).mixin(State)
-    .mixin(MxAuthorize<Mineral>(`mineral`))(), TaxonomyTerm),
+  })(), Term),
 }

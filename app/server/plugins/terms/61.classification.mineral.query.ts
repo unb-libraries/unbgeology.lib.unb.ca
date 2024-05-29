@@ -1,7 +1,23 @@
-import { String, Enum } from "~/layers/mongo/server/utils/api/filter"
+import { String, Enum, ObjectID } from "~/layers/mongo/server/utils/api/filter"
 import { Status } from "~/types/classification"
 
 export default defineMongooseEventQueryHandler(Classification.Mineral, defineEventQuery({
+  parent: {
+    default: true,
+    sort: `__l`,
+    filter: false,
+    definition: {
+      id: {
+        default: true,
+        sort: false,
+        filter: ObjectID,
+      },
+      label: {
+        default: true,
+        filter: String,
+      },
+    },
+  },
   composition: {
     default: false,
     filter: String,

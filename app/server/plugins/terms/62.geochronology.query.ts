@@ -1,7 +1,23 @@
-import { Boolean, Enum, Numeric, String } from "~/layers/mongo/server/utils/api/filter"
+import { Boolean, Enum, Numeric, ObjectID, String } from "~/layers/mongo/server/utils/api/filter"
 import { Division, Status } from "~/types/geochronology"
 
 export default defineMongooseEventQueryHandler(Geochronology, defineEventQuery({
+  parent: {
+    default: true,
+    sort: `__l`,
+    filter: false,
+    definition: {
+      id: {
+        default: true,
+        sort: false,
+        filter: ObjectID,
+      },
+      label: {
+        default: true,
+        filter: String,
+      },
+    },
+  },
   division: {
     default: false,
     filter: Enum(Division),

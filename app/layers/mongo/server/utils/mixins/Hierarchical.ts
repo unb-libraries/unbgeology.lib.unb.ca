@@ -1,6 +1,5 @@
-import { Schema, type ObjectId, type Model } from "mongoose"
+import { Schema, type ObjectId, type Model, Document } from "mongoose"
 import type { DocumentBase } from "~/layers/mongo/types/schema"
-
 export interface Hierarchical {
   parent: Hierarchical
   parentModel: string
@@ -144,7 +143,7 @@ export default <T extends DocumentBase>(options?: { sort: keyof Omit<T, keyof Do
     type: Schema.Types.String,
     required: true,
     immutable: true,
-    default() {
+    default(this: Document) {
       return this.model().modelName
     },
   },

@@ -13,6 +13,10 @@ export interface Entity {
   readonly updated: string
 }
 
+export interface Hierarchical<E extends Entity = Entity> {
+  parent?: E
+}
+
 export interface Slugified {
   slug: string
 }

@@ -1,9 +1,13 @@
 import { EntityFieldTypes } from "layers/mongo/types/entity"
 import { type Unit, Status, Division } from "types/geochronology"
-import { type TaxonomyTerm as TaxonomyTermEntity } from "@unb-libraries/nuxt-layer-entity"
-import { type TaxonomyTerm } from "~/layers/mongo/server/documentTypes/TaxonomyTerm"
+import { type Term as TermEntity } from "@unb-libraries/nuxt-layer-entity"
+import type { Term } from "~/layers/mongo/server/documentTypes/Term"
+import { type Hierarchical } from "~/layers/mongo/server/utils/mixins/Hierarchical"
 
-export type GeochronologicUnit = Omit<Unit, keyof TaxonomyTermEntity> & TaxonomyTerm
+export type GeochronologicUnit = Omit<Unit, keyof TermEntity> & Omit<Hierarchical, `parent`> & Term & {
+  parent?: GeochronologicUnit
+}
+
 const State = Stateful({
   values: Status,
   default: Status.DRAFT,
@@ -38,7 +42,8 @@ export default defineDocumentModel(`GeochronologicUnit`, defineDocumentSchema<Ge
     type: EntityFieldTypes.String,
     required: false,
   },
-}).mixin(State)
+}).mixin(Hierarchical<GeochronologicUnit>({ sort: `label` }))
+  .mixin(State)
   .mixin(Authorize<GeochronologicUnit>({
     paths: (unit) => {
       const status = useEnum(Status).labelOf(unit.status).toLowerCase()
@@ -49,4 +54,4 @@ export default defineDocumentModel(`GeochronologicUnit`, defineDocumentSchema<Ge
         `term:geochronology:${status}`,
       ]
     },
-  }))(), TaxonomyTerm)
+  }))(), Term)

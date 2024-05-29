@@ -1,8 +1,12 @@
 import { EntityFieldTypes } from "layers/mongo/types/entity"
 import { type StorageLocation as TxStorageLocation, Status } from "types/storagelocation"
-import { type TaxonomyTerm as ITaxonomyTerm } from "~/layers/mongo/server/documentTypes/TaxonomyTerm"
+import { type Term as ITerm } from "~/layers/mongo/server/documentTypes/Term"
+import { type Hierarchical as IHierarchical } from "~/layers/mongo/server/utils/mixins/Hierarchical"
 
-export type StorageLocation = Omit<TxStorageLocation, keyof ITaxonomyTerm> & ITaxonomyTerm
+export type StorageLocation = Omit<TxStorageLocation, keyof ITerm> & Omit<IHierarchical, `parent`> & ITerm & {
+  parent?: StorageLocation
+}
+
 const State = Stateful({
   values: Status,
   default: Status.DRAFT,
@@ -13,7 +17,8 @@ export default defineDocumentModel(`StorageLocation`, defineDocumentSchema<Stora
     type: EntityFieldTypes.Boolean,
     default: false,
   },
-}).mixin(State)
+}).mixin(Hierarchical<StorageLocation>({ sort: `label` }))
+  .mixin(State)
   .mixin(Authorize<StorageLocation>({
     paths: (location) => {
       const status = useEnum(Status).labelOf(location.status).toLowerCase()
@@ -24,4 +29,4 @@ export default defineDocumentModel(`StorageLocation`, defineDocumentSchema<Stora
         `term:storagelocation:${status}`,
       ]
     },
-  }))(), TaxonomyTerm)
+  }))(), Term)

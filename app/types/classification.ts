@@ -1,4 +1,4 @@
-import { type TaxonomyTerm, type Stateful } from "@unb-libraries/nuxt-layer-entity"
+import type { Term, Hierarchical, Stateful } from "@unb-libraries/nuxt-layer-entity"
 
 export enum Status {
   DRAFT = 1,
@@ -14,16 +14,14 @@ export enum Rank {
   ORDERS = 32,
 }
 
-export interface Classification extends TaxonomyTerm, Stateful<typeof Status> {
-}
+export type Classification<T extends object = {}> = Term & Hierarchical<Term & T> & Stateful<typeof Status> & T
+export type ClassificationFormData<T extends object = {}> = Pick<Classification<T>, `label` | `parent` | `type`> & Pick<Partial<Classification>, `status`>
 
-export interface FossilClassification extends Classification {
-  rank: Rank
-}
+export type Fossil = Classification<{ rank: Rank }>
+export type FossilFormData = ClassificationFormData & Pick<Fossil, `rank`>
 
-export interface MineralClassification extends Classification {
-  composition?: string
-}
+export type Mineral = Classification<{ composition?: string }>
+export type MineralFormData = ClassificationFormData & Pick<Mineral, `composition`>
 
-export interface RockClassification extends Classification {
-}
+export type Rock = Classification
+export type RockFormData = ClassificationFormData

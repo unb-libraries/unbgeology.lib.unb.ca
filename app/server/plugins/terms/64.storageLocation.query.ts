@@ -1,7 +1,23 @@
-import { String, Boolean, Enum } from "~/layers/mongo/server/utils/api/filter"
+import { String, Boolean, Enum, ObjectID } from "~/layers/mongo/server/utils/api/filter"
 import { Status } from "~/types/storagelocation"
 
 export default defineMongooseEventQueryHandler(StorageLocation, defineEventQuery({
+  parent: {
+    default: true,
+    sort: `__l`,
+    filter: false,
+    definition: {
+      id: {
+        default: true,
+        sort: false,
+        filter: ObjectID,
+      },
+      label: {
+        default: true,
+        filter: String,
+      },
+    },
+  },
   public: {
     default: false,
     filter: Boolean,
