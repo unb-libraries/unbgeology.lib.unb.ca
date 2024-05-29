@@ -222,6 +222,11 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
       handler(query as DocumentFindQuery<D, M>)
     }
 
+    // match stage
+    if (options?.search) {
+      aggregate.match({ $text: { $search: options.search } })
+    }
+
     // lookup stage
     joins.forEach(({ from, foreignField, localField, as }) => {
       aggregate.lookup({ from, foreignField, localField, as })
@@ -229,11 +234,6 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
 
     // addFields stage
     virtuals.forEach(([field, value]) => aggregate.addFields({ [field]: value }))
-
-    // match stage
-    if (options?.search) {
-      aggregate.match({ $text: { $search: options.search } })
-    }
 
     const findJoin = (field: string) => joins.find(({ localField }) => localField === field)
     filters.filter(([field]) => !findJoin(field)).forEach(([field, condition]) => {
