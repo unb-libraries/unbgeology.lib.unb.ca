@@ -14,7 +14,7 @@ export enum Rank {
   ORDERS = 32,
 }
 
-export type Classification<T extends object = {}> = Term & Hierarchical<Term & T> & Stateful<typeof Status> & T
+export type Classification<T extends object = {}> = Term & Hierarchical<Classification<T>> & Stateful<typeof Status> & T
 export type ClassificationFormData<T extends object = {}> = Pick<Classification<T>, `label` | `parent` | `type`> & Pick<Partial<Classification>, `status`>
 
 export type Fossil = Classification<{ rank: Rank }>

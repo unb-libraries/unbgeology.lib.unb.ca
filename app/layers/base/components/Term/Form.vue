@@ -24,14 +24,11 @@ const emits = defineEmits<{
   cancel: [],
 }>()
 
-const input = reactive<T>({
-  label: props.entity?.label ?? ``,
-  type: props.type,
-} as T)
+const input = reactive<T>(props.entity ?? {} as T)
 
 function onSave(values: T) {
   const term = {
-    label: values.label,
+    ...values,
     type: props.type,
   } as T
   emits(`save`, term)

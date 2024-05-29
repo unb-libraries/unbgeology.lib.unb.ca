@@ -31,7 +31,7 @@ export function defineEntityType<E extends Entity = Entity>(name: string, defini
   })
 }
 
-export function useEntityType<E extends Entity = Entity, Bc extends Partial<E> = Partial<E>, Bu extends Partial<E> = Partial<E>>(name: keyof AppConfig<E>[`entityTypes`]) {
+export function useEntityType<E extends Entity = Entity, Bc = E, Bu = Partial<Bc>>(name: keyof AppConfig<E>[`entityTypes`]) {
   const { [name]: entityType } = useAppConfig().entityTypes
   return {
     definition: entityType,
@@ -42,18 +42,17 @@ export function useEntityType<E extends Entity = Entity, Bc extends Partial<E> =
       return await fetchEntity<E>(pk, entityType, options)
     },
     async fetchBy(condition: Partial<E>, options?: Partial<FetchEntityOptions<E>>) {
-      const { entities, refresh } = await fetchEntityList<E>(entityType, {
+      const { entities } = await fetchEntityList<E>(entityType, {
         filter: Object.entries(condition).map(([key, value]) => [key, FilterOperator.EQUALS, value]),
         select: options?.select,
       })
 
       const entity = ref(entities.value[0] ?? null)
-      return (entity && {
+      return (entity.value && {
         entity: entity as Ref<EntityJSON<E> | null>,
         update: async (body: Bu) => {
           if (entity.value) {
-            await updateEntity<E, Bu>({ self: entity.value.self, ...body })
-            refresh()
+            await updateEntity<E, Bu>({ self: entity.value!.self, ...body })
           }
         },
         remove: async () => {
@@ -65,8 +64,8 @@ export function useEntityType<E extends Entity = Entity, Bc extends Partial<E> =
         errors: [],
       }) || undefined
     },
-    async fetchAll() {
-      return await fetchEntityList<E>(entityType)
+    async fetchAll(options?: FetchEntityListOptions) {
+      return await fetchEntityList<E>(entityType, options)
     },
     async update<B extends Bu = Bu>(entity: B) {
       return await updateEntity<E, B>(entity)
@@ -97,9 +96,9 @@ export function getEntityPayload <E extends Entity = Entity, P extends keyof Omi
     })) as EntityJSONBody<E>
 }
 
-export async function createEntity <E extends Entity = Entity, B extends Partial<E> = Partial<E>> (entity: B, entityType: EntityType<E>): Promise<EntityCreateResponse<E>>
-export async function createEntity <E extends Entity = Entity, B extends Partial<E> = Partial<E>> (entity: B, entityTypeId: string): Promise<EntityCreateResponse<E>>
-export async function createEntity <E extends Entity = Entity, B extends Partial<E> = Partial<E>>(entity: B, entityTypeOrId: EntityType<E> | string): Promise<EntityCreateResponse<E>> {
+export async function createEntity <E extends Entity = Entity, B = E> (entity: B, entityType: EntityType<E>): Promise<EntityCreateResponse<E>>
+export async function createEntity <E extends Entity = Entity, B = E> (entity: B, entityTypeId: string): Promise<EntityCreateResponse<E>>
+export async function createEntity <E extends Entity = Entity, B = E>(entity: B, entityTypeOrId: EntityType<E> | string): Promise<EntityCreateResponse<E>> {
   const url = typeof entityTypeOrId === `string`
     ? useEntityType<E>(entityTypeOrId).definition.baseURI
     : entityTypeOrId.baseURI
@@ -144,7 +143,7 @@ export async function fetchEntity <E extends Entity = Entity>(pkOrUri: string, e
   }
 }
 
-export async function updateEntity <E extends Entity = Entity, B extends Partial<E> = Partial<E>>(entity: B): Promise<EntityResponse<E>> {
+export async function updateEntity <E extends Entity = Entity, B = Partial<E>>(entity: B): Promise<EntityResponse<E>> {
   const { self, ...body } = entity
   const { data: updatedEntity } = await useFetch<EntityJSON<E>>(self, {
     // @ts-ignore

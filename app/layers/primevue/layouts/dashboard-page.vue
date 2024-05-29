@@ -1,6 +1,6 @@
 <template>
   <NuxtLayout name="dashboard">
-    <div class="space-y-6">
+    <div class="space-y-3">
       <header class="mb-6 space-y-6">
         <div class="flex flex-row space-x-8">
           <h1 id="title" class="text-2xl">
@@ -15,5 +15,8 @@
       </header>
       <slot />
     </div>
+    <template #sidebar>
+      <slot name="sidebar" />
+    </template>
   </NuxtLayout>
 </template>

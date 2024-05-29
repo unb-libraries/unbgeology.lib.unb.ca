@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
     return create403()
   }
 
-  const body = await readOneDocumentBodyOr400(event, { model: Term, flat: true, fields })
+  const body = await readOneDocumentBodyOr400(event, { model: Term, flat: true, flattenExcept: [`parent`], fields })
   const update = await term?.update(body)
 
   return renderDocumentDiffOr404(update, { model: Term, fields })

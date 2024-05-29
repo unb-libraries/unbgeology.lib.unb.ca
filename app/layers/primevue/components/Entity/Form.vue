@@ -17,7 +17,7 @@
 
 <script setup lang="ts" generic="T extends object">
 const props = defineProps<{
-  entity: T
+  entity?: T
 }>()
 
 const emits = defineEmits<{
@@ -25,7 +25,7 @@ const emits = defineEmits<{
   cancel: [],
 }>()
 
-const entityBody = reactive(props.entity)
+const entityBody = reactive<T>(props.entity ?? {} as T)
 
 const validationErrors = ref<Record<string, string>>({})
 provide(`setError`, function (id: string, error: string) { validationErrors.value[id] = error })
