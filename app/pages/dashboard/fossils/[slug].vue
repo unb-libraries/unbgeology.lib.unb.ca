@@ -8,7 +8,7 @@ import type { Fossil as Classification, FossilFormData } from "~/types/classific
 const { slug } = useRoute().params
 
 definePageMeta({
-  name: `Edit Classification`,
+  name: `Edit fossil`,
   layout: `dashboard-page`,
   auth: {
     redirect: true,

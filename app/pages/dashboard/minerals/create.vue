@@ -6,7 +6,7 @@
 import type { Mineral as Classification, MineralFormData } from "~/types/classification"
 
 definePageMeta({
-  name: `Add Classification`,
+  name: `Add mineral`,
   layout: `dashboard-page`,
   auth: {
     redirect: true,

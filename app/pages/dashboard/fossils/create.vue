@@ -6,7 +6,7 @@
 import type { Fossil as Classification, FossilFormData } from "~/types/classification"
 
 definePageMeta({
-  name: `Add Classification`,
+  name: `Add fossil`,
   layout: `dashboard-page`,
   auth: {
     redirect: true,

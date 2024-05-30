@@ -8,7 +8,7 @@ import type { Mineral as Classification, MineralFormData } from "~/types/classif
 const { slug } = useRoute().params
 
 definePageMeta({
-  name: `Edit Classification`,
+  name: `Edit mineral`,
   layout: `dashboard-page`,
   auth: {
     redirect: true,
