@@ -15,17 +15,19 @@
   </form>
 </template>
 
-<script setup lang="ts" generic="T extends object">
+<script setup lang="ts" generic="E extends Entity, I extends Partial<Omit<E, keyof Entity>>">
+import type { Entity } from '@unb-libraries/nuxt-layer-entity'
+
 const props = defineProps<{
-  entity?: T
+  entity?: I
 }>()
 
 const emits = defineEmits<{
-  save: [entity: T],
+  save: [entity: E],
   cancel: [],
 }>()
 
-const entityBody = reactive<T>(props.entity ?? {} as T)
+const entityBody = reactive<I>(props.entity ?? {} as I)
 
 const validationErrors = ref<Record<string, string>>({})
 provide(`setError`, function (id: string, error: string) { validationErrors.value[id] = error })
@@ -33,6 +35,6 @@ provide(`unsetError`, function (id: string) { delete validationErrors.value[id] 
 const isValid = computed(() => Object.values(validationErrors.value).length === 0)
 
 const submit = function () {
-  emits(`save`, toRaw(entityBody) as T)
+  emits(`save`, entityBody as E)
 }
 </script>

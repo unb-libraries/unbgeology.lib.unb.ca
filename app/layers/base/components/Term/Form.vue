@@ -1,5 +1,5 @@
 <template>
-  <EntityForm :entity="input" @save="onSave" @cancel="onCancel">
+  <EntityForm :entity="input" @save="e => onSave(e as unknown as T)" @cancel="onCancel">
     <template #default="{ body }">
       <TwFormField label="Label">
         <slot name="label" :body="body">
@@ -11,11 +11,11 @@
   </EntityForm>
 </template>
 
-<script setup lang="ts" generic="T extends Partial<Omit<Term, keyof Entity | `slug` | `label`>> & Pick<Term, `label`>">
+<script setup lang="ts" generic="T extends Term, F extends Omit<Partial<T>, keyof Entity | `slug` | `type`>">
 import type { Entity, Term } from "@unb-libraries/nuxt-layer-entity"
 
 const props = defineProps<{
-  entity?: T
+  entity?: F
   type: string
 }>()
 
@@ -24,7 +24,7 @@ const emits = defineEmits<{
   cancel: [],
 }>()
 
-const input = reactive<T>(props.entity ?? {} as T)
+const input = reactive<F>(props.entity ?? { label: `` } as F)
 
 function onSave(values: T) {
   const term = {

@@ -83,7 +83,7 @@ definePageMeta({
     permission: /^(create|update|delete):term(:classification(:fossil)?)?/,
   },
   menu: {
-    weight: 20,
+    weight: 30,
   },
 })
 

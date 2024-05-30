@@ -80,7 +80,7 @@ definePageMeta({
     permission: /^(create|update|delete):term(:classification(:rock)?)?/,
   },
   menu: {
-    weight: 20,
+    weight: 50,
   },
 })
 
