@@ -43,10 +43,10 @@
                 {{ category.name }}
               </NuxtLink>
               <div v-if="$route.path.startsWith(category.path)" class="flex flex-col">
-                <NuxtLink :to="category.path" class="hover:bg-accent-mid px-6 py-2" active-class="menu-item-active bg-accent-mid">
+                <NuxtLink :to="category.path" class="hover:bg-accent-mid bg-accent-dark px-6 py-2" active-class="menu-item-active bg-accent-mid">
                   View all
                 </NuxtLink>
-                <NuxtLink v-for="page in category.children" :key="page.id" :to="page.path" class="hover:bg-accent-mid px-6 py-2" active-class="menu-item-active bg-accent-mid">
+                <NuxtLink v-for="page in category.children" :key="page.id" :to="page.path" class="hover:bg-accent-mid bg-accent-dark px-6 py-2" active-class="menu-item-active bg-accent-mid">
                   {{ page.name }}
                 </NuxtLink>
               </div>
