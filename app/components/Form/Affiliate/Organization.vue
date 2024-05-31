@@ -59,25 +59,28 @@
 
 <script setup lang="ts">
 import { type Organization } from "types/affiliate"
-import { type EntityJSONBody } from "@unb-libraries/nuxt-layer-entity"
 
 const props = defineProps<{
-  entity?: Organization
+  organization?: Organization
 }>()
 
 const emits = defineEmits<{
-  save: [organization: EntityJSONBody<Organization>]
+  save: [organization: Organization]
 }>()
 
-const organization = computed(() => ({
+const organization = reactive({
   address: {},
   // @ts-ignore
   contact: {},
-  ...(props.entity ?? {}),
-}))
+  ...(props.organization ?? {}),
+  web: props.organization?.web?.[0],
+})
 
-function onSave(organization: EntityJSONBody<Organization>) {
-  emits(`save`, organization)
+function onSave({ web, ...organization }: Organization) {
+  emits(`save`, {
+    ...organization,
+    web: web ? [web] : [],
+  })
 }
 
 </script>
