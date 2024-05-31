@@ -1,96 +1,80 @@
 <template>
-  <EntityForm :entity="organization" @save="onSave">
-    <template #default="{ body: orgBody }">
-      <div class="space-y-36">
-        <section class="form-col">
-          <div class="form-field">
-            <label for="name">Name</label>
-            <PvInputText v-model="orgBody.name" class="form-input form-input-text" name="name" />
-          </div>
-          <div class="form-field">
-            <label for="website">Website</label>
-            <PvInputText v-model="orgBody.web" class="form-input form-input-text" name="website" />
-          </div>
-        </section>
+  <TermForm type="affiliate/organization" :entity="organization" @save="onSave">
+    <template #default="{ body }">
+      <TwFormField label="Website" class="w-full">
+        <TwInputText v-model="body.web" class="input input-text-lg w-full" />
+      </TwFormField>
 
-        <section class="form-col">
-          <h2 class="divider">
-            Contact
-          </h2>
-          <div class="form-field">
-            <label for="name">Name</label>
-            <PvInputText v-model="orgBody.contact.name" class="form-input form-input-text" name="contact-name" />
+      <div class="space-y-4">
+        <h2 class="input-label">
+          Contact
+        </h2>
+        <div class="bg-primary-80/40 border-primary-80 focus:border-primary-60 hover:border-primary-60 rounded-lg border p-8">
+          <TwFormField label="Name" class="w-full">
+            <TwInputText v-model="body.contact.name" class="input input-text-lg w-full" />
+          </TwFormField>
+          <div class="flex w-full flex-row space-x-4">
+            <TwFormField label="Email" class="w-full">
+              <TwInputText v-model="body.contact.email" class="input input-text-lg w-full" />
+            </TwFormField>
+            <TwFormField label="Phone" class="w-full">
+              <TwInputText v-model="body.contact.phone" class="input input-text-lg w-full" />
+            </TwFormField>
           </div>
-          <div class="form-row form-row-2">
-            <div class="form-field">
-              <label for="contact-email">Email</label>
-              <PvInputText v-model="orgBody.contact.email" class="form-input form-input-text" name="contact-email" />
-            </div>
-            <div class="form-field">
-              <label for="contact-phone">Phone</label>
-              <PvInputText v-model="orgBody.contact.phone" class="form-input form-input-text" name="contact-phone" />
-            </div>
-          </div>
-        </section>
+        </div>
+      </div>
 
-        <section class="form-col">
-          <h2 class="divider">
-            Address
-          </h2>
-          <div class="form-row form-row-2">
-            <div class="form-field">
-              <label for="address-line1">Address line 1</label>
-              <PvInputText v-model="orgBody.address.line1" class="form-input form-input-text" name="address-line1" />
-            </div>
-            <div class="form-field">
-              <label for="address-line2">Address line 2</label>
-              <PvInputText v-model="orgBody.address.line2" class="form-input form-input-text" name="address-line2" />
-            </div>
+      <div class="space-y-4">
+        <h2 class="input-label">
+          Address
+        </h2>
+        <div class="bg-primary-80/40 border-primary-80 focus:border-primary-60 hover:border-primary-60 rounded-lg border p-8">
+          <div class="flex w-full flex-row space-x-4">
+            <TwFormField label="Address line 1" class="w-1/2">
+              <TwInputText v-model="body.address.line1" class="input input-text-lg w-full" />
+            </TwFormField>
+            <TwFormField label="Address line 2" class="w-1/2">
+              <TwInputText v-model="body.address.line2" class="input input-text-lg w-full" />
+            </TwFormField>
           </div>
-          <div class="form-row form-row-2">
-            <div class="form-field">
-              <label for="address-city">City</label>
-              <PvInputText v-model="orgBody.address.city" class="form-input form-input-text" name="address-city" />
-            </div>
-            <div class="form-field">
-              <label for="address-state">State / Province</label>
-              <PvInputText v-model="orgBody.address.state" class="form-input form-input-text" name="address-state" />
-            </div>
+          <div class="flex w-full flex-row space-x-4">
+            <TwFormField label="City" class="w-1/3">
+              <TwInputText v-model="body.address.city" class="input input-text-lg w-full" />
+            </TwFormField>
+            <TwFormField label="State / Province" class="w-1/3">
+              <TwInputText v-model="body.address.state" class="input input-text-lg w-full" />
+            </TwFormField>
+            <TwFormField label="Postal code" class="w-1/3">
+              <TwInputText v-model="body.address.postalCode" class="input input-text-lg w-full" />
+            </TwFormField>
           </div>
-          <div class="form-row form-row-2">
-            <div class="form-field">
-              <label for="address-postal-code">Postal code</label>
-              <PvInputText v-model="orgBody.address.postalCode" class="form-input form-input-text" name="address-postal-code" />
-            </div>
-            <div class="form-field">
-              <label for="address-country">Country</label>
-              <PvInputText v-model="orgBody.address.country" class="form-input form-input-text" name="address-country" />
-            </div>
-          </div>
-        </section>
+          <TwFormField label="Country" class="w-full">
+            <TwInputText v-model="body.address.country" class="input input-text-lg w-full" />
+          </TwFormField>
+        </div>
       </div>
     </template>
-  </EntityForm>
+  </TermForm>
 </template>
 
 <script setup lang="ts">
-import { type Organization } from "types/affiliation"
-import { type EntityJSONProperties, type EntityJSONBody } from "@unb-libraries/nuxt-layer-entity"
+import { type Organization } from "types/affiliate"
+import { type EntityJSONBody } from "@unb-libraries/nuxt-layer-entity"
 
 const props = defineProps<{
-  entity: EntityJSONProperties<Organization>
+  entity?: Organization
 }>()
 
 const emits = defineEmits<{
   save: [organization: EntityJSONBody<Organization>]
 }>()
 
-const organization = {
+const organization = computed(() => ({
   address: {},
   // @ts-ignore
   contact: {},
-  ...props.entity,
-}
+  ...(props.entity ?? {}),
+}))
 
 function onSave(organization: EntityJSONBody<Organization>) {
   emits(`save`, organization)

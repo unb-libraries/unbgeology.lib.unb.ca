@@ -24,7 +24,7 @@ import { type Organization } from 'types/affiliate'
 
 definePageMeta({
   layout: `dashboard`,
-  name: `Organizations`,
+  // name: `Organizations`,
 })
 
 const { entities: organizations } = await fetchEntityList<Organization>(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `organization`]] })

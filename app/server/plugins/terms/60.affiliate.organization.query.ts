@@ -55,7 +55,7 @@ export default defineMongooseEventQueryHandler(Affiliate.Organization, defineEve
     },
   },
   web: {
-    default: false,
+    default: true,
     sort: false,
     filter: false,
   },
@@ -66,7 +66,7 @@ export default defineMongooseEventQueryHandler(Affiliate.Organization, defineEve
   type: {
     default: false,
     filter: (field, [op, value]) => (query) => {
-      if ((Array.isArray(value) && value.includes(`organization`)) || value === `organization`) {
+      if ((Array.isArray(value) && value.includes(`affiliate/organization`)) || value === `affiliate/organization`) {
         return String(field, [op, Affiliate.Organization.fullName])(query)
       }
     },
