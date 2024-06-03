@@ -47,9 +47,11 @@
   }
   .input-select-reset {}
   .input-select-item {
-    @apply hover:bg-accent-mid hover:text-primary flex h-8 cursor-pointer items-center justify-start p-2
+    @apply hover:bg-accent-mid focus:bg-accent-dark hover:text-primary flex h-8 cursor-pointer items-center justify-start p-2
   }
-
+  .input-select-item-selected {
+    @apply bg-accent-mid hover:bg-accent-light text-primary
+  }
 
   .divider {
     @apply 

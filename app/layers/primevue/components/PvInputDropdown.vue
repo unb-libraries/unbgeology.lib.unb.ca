@@ -24,16 +24,19 @@
         <slot name="reset">Reset</slot>
       </a>
     </div>
-    <ul v-if="optionsVisible" class="bg-primary absolute z-[100] w-full">
+    <ul v-if="optionsVisible" class="bg-primary absolute z-[100] max-h-64 w-full overflow-y-scroll">
       <li
         v-for="[option, label] in options"
         :key="option"
         :ref="option"
         tabindex="0"
         class="input-select-item"
+        :class="{ [`${selectedItemClass ?? ``} input-select-item-selected`]: selected === option }"
         @click.stop="onSelect(option)"
       >
-        {{ label }}
+        <slot name="item" :options="[option, label]">
+          {{ label }}
+        </slot>
       </li>
     </ul>
   </div>
@@ -49,6 +52,7 @@ const props = defineProps<{
   input?: boolean
   filter?: (option: [string, string]) => boolean
   itemClass?: string
+  selectedItemClass?: string
   wrapperClass?: string
   resetActionClass?: string
 }>()
