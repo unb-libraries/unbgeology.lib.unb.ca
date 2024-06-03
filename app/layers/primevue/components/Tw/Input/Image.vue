@@ -2,16 +2,17 @@
   <div :id="id" :name="name" :class="classList">
     <div v-if="images && Object.keys(images).length > 0" class="flex flex-row space-x-2">
       <div v-for="(uri, self) of images" :key="self" class="group relative">
-        <NuxtImg
-          :src="uri"
-          width="75"
-          height="75"
-          fit="cover"
-          class="rounded-md"
-        />
+        <div class=" relative h-20 w-20 overflow-hidden">
+          <img
+            :src="uri"
+            width="75"
+            height="75"
+            class="absolute left-0 top-0 h-full w-full rounded-md object-cover"
+          >
+        </div>
         <IconCancel class="fill-primary-80 hover:fill-red stroke-1.5 absolute -right-2 -top-2 hidden h-6 w-6 cursor-pointer stroke-current group-hover:flex" @click.stop.prevent="delete images![self]" />
       </div>
-      <button class="button button-lg button-outline-primary-60 hover:button-outline-accent-mid bg-primary aspect-square w-[75px] items-center justify-center" @click.stop.prevent="onClickBrowse">
+      <button class="button button-lg button-outline-primary-60 hover:button-outline-accent-mid bg-primary aspect-square w-20 items-center justify-center" @click.stop.prevent="onClickBrowse">
         <IconImages class="h-8 w-8 fill-none stroke-current" />
         <span class="sr-only">
           Browse more images

@@ -2,15 +2,16 @@
   <form @submit.prevent="onSubmit">
     <div class="grid grid-cols-8 gap-2">
       <div v-for="(uri, self) of options" :key="self" class="bg-primary w-fit p-0">
-        <div class="group relative cursor-pointer">
-          <NuxtImg
+        <div class="group relative h-24 w-24 cursor-pointer overflow-hidden">
+          <img
             :src="uri"
             width="150"
             height="150"
-            fit="cover"
+            class="absolute left-0 top-0 h-full w-full rounded-md object-cover"
             :class="{ 'group-hover:opacity-15 opacity-25': selection[self] !== undefined }"
+            @load="onLoad"
             @click="onSelect(self, uri)"
-          />
+          >
           <IconCheck v-if="selection[self]" class="fill-accent-mid stroke-1.5 absolute right-3 top-3 h-9 w-9 stroke-current group-hover:hidden" />
           <div v-if="selection[self]" class="absolute right-3 top-3 hidden h-9 w-9 rounded-full border border-dashed group-hover:flex" />
         </div>
@@ -31,6 +32,10 @@ const props = defineProps<{
   selection?: Record<string, string>
   options: Record<string, string>
 }>()
+
+function onLoad() {
+
+}
 
 const emits = defineEmits<{
   select: [uris: Record<string, string>]

@@ -25,6 +25,7 @@ export default defineDocumentModel<File>(`File`, defineDocumentSchema<File>({
   filename: {
     type: EntityFieldTypes.String,
     required: true,
+    unique: true,
     default() {
       return this.filepath.split(`/`).at(-1)
     },
