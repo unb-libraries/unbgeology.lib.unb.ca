@@ -1,13 +1,38 @@
 <template>
   <div class="relative w-full p-0" :class="wrapperClass">
-    <div :id="id" :name="name" class="input justify-between" :class="classes" @click.stop="optionsVisible = !optionsVisible">
-      <span>{{ selectedLabel }}</span>
-      <a v-if="selected" class="input-select-reset" :class="resetActionClass" @click.stop.prevent="selected = undefined">
+    <div
+      :id="id"
+      :name="name"
+      class="input justify-between"
+      :class="classes"
+      tabindex="0"
+      @click.stop="optionsVisible = !optionsVisible"
+    >
+      <slot>
+        <input
+          v-if="input && !selected"
+          v-model="search"
+          type="text"
+          class="input-ref"
+          :class="itemClass"
+          placeholder="Search"
+          @input="$emit(`input`, search)"
+        >
+        <span v-else>{{ selectedLabel }}</span>
+      </slot>
+      <a v-if="selected" class="input-select-reset" :class="resetActionClass" @click.stop="selected = undefined">
         <slot name="reset">Reset</slot>
       </a>
     </div>
     <ul v-if="optionsVisible" class="bg-primary absolute z-[100] w-full">
-      <li v-for="[option, label] in options" :key="option" class="input-select-item" @click.stop="onSelect(option)">
+      <li
+        v-for="[option, label] in options"
+        :key="option"
+        :ref="option"
+        tabindex="0"
+        class="input-select-item"
+        @click.stop="onSelect(option)"
+      >
         {{ label }}
       </li>
     </ul>
@@ -15,15 +40,22 @@
 </template>
 
 <script setup lang="ts">
-const selected = defineModel<string | number | object>()
+const selected = defineModel<string | number | object>(`selected`)
 const props = defineProps<{
   options:(string | [string, string] | object)[] | Record<string, string | object>
   optionField?: string
   labelField?: string
   placeholder?: string
+  input?: boolean
+  filter?: (option: [string, string]) => boolean
   itemClass?: string
   wrapperClass?: string
   resetActionClass?: string
+}>()
+const search = ref(``)
+
+defineEmits<{
+  input: [value: string]
 }>()
 
 if (typeof selected.value === `object`) {
@@ -48,6 +80,7 @@ const options = computed(() => {
         ? [(props.optionField && item[props.optionField]) ?? `${index}`, item]
         : item)
     .map<[string, string]>(([key, value]) => typeof value === `object` ? [key, props.labelField && props.labelField in value ? value[props.labelField] : value] : [key, value])
+    .filter(props.filter ?? (() => true))
 })
 
 const optionsVisible = ref(false)
