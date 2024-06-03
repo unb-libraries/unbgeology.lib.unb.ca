@@ -16,6 +16,7 @@ export default defineDocumentModel<File, Image>(`Image`, defineDocumentSchema<Im
 }).mixin(Mimetyped({
   accept: [
     `image/jpeg`,
+    `image/png`,
   ],
 })).mixin(Authorize<File>({
   paths: (file) => {

@@ -55,6 +55,12 @@ module.exports = {
           dark: colors.amber[500],
         },
       },
+      minWidth: {
+        '1/3': `33%`,
+      },
+      strokeWidth: {
+        '1.5': `1.5`
+      }
     },
   },
   plugins: [
@@ -71,10 +77,11 @@ module.exports = {
 
       addComponents({
         ".button": {
+          display: `flex`,
+          width: `fit-content`,
           cursor: `pointer`,
-          flex: `1 1 auto`,
           alignItems: `center`,
-          textAlign: `center`,
+          justifyContent: `center`,
         },
       })
       
@@ -98,6 +105,13 @@ module.exports = {
       matchComponentsBySize(`input-select`, theme(`input`), {
         cursor: `pointer`,
         justifyContent: `flex-start`,
+      })
+      matchComponentsBySize(`input-textarea`, theme(`input`), {
+        padding: "2px",
+      })
+      matchComponentsBySize(`icon`, theme(`icon`), {
+        fill: "none",
+        stroke: "currentColor",
       })
     }, {
       theme: {
@@ -139,6 +153,23 @@ module.exports = {
             borderRadius: defaults.borderRadius.lg,
             paddingX: defaults.spacing[3],
             paddingY: defaults.spacing[2],
+          },
+        },
+        icon: {
+          sm: {
+            width: defaults.width[4],
+            height: defaults.height[4],
+            strokeWidth: 2,
+          },
+          md: {
+            width: defaults.width[5],
+            height: defaults.height[5],
+            strokeWidth: 1.5,
+          },
+          lg: {
+            width: defaults.width[6],
+            height: defaults.height[6],
+            strokeWidth: 1.5,
           },
         }
       },

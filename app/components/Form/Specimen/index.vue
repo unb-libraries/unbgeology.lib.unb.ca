@@ -22,6 +22,9 @@
       <TwFormField label="Description">
         <TwInputTextArea v-model="body.description" :rows="5" class="input input-textarea-lg" />
       </TwFormField>
+      <TwFormField label="Images">
+        <TwInputImage v-model="body.images" :options="imageOptions" class="w-full" @drop="files => onNewFiles(files)" />
+      </TwFormField>
       <TwFormField label="Publications">
         <TwInputText v-model="doi" placeholder="Search by DOI, e.g. 10.1111/j.1600-0536.2011.01936.x or provide ID, e.g. Timmerman2011" class="input input-text-lg" />
       </TwFormField>
@@ -33,7 +36,7 @@
 </template>
 
 <script setup lang="tsx">
-import { FilterOperator } from '@unb-libraries/nuxt-layer-entity'
+import { type Image, FilterOperator } from '@unb-libraries/nuxt-layer-entity'
 import { type Specimen, type Publication } from 'types/specimen'
 
 const props = defineProps<{
@@ -52,6 +55,7 @@ const data = reactive({
   collection: undefined as string | undefined,
   alias: [] as string[],
   description: ``,
+  images: [] as string[],
   publications: {} as Record<string, Publication>,
   sale: undefined as number | undefined,
 })
@@ -59,6 +63,10 @@ const data = reactive({
 const alias = ref(``)
 const doi = ref(``)
 const { entities: collections } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `collection`]] })
+const { entities: images, refresh } = await fetchEntityList<Image>(`File`, { filter: [[`type`, FilterOperator.EQUALS, `image`]] })
+const imageOptions = computed(() => images.value
+  .map(({ self, uri }) => ({ [self]: uri }))
+  .reduce((acc, cur) => ({ ...acc, ...cur }), {}))
 
 watch(alias, (als) => {
   if (als.at(-1) === `,`) {
@@ -67,6 +75,13 @@ watch(alias, (als) => {
     alias.value = ``
   }
 })
+
+async function onNewFiles(files: File[]) {
+  files.length > 1
+    ? await useFileUpload<Image>(files)
+    : await useFileUpload<Image>(files[0])
+  refresh()
+}
 
 function onRemoveObjectId(type: string) {
   delete data.objectID[type]

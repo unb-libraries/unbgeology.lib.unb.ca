@@ -8,7 +8,7 @@
               {{ $route.name }}
             </slot>
           </h1>
-          <div class="grow space-x-2 text-right">
+          <div class="flex grow justify-end space-x-2">
             <slot name="actions" />
           </div>
         </div>
