@@ -23,19 +23,15 @@
               name="origin"
               :zoom="2"
               :center="[body.origin?.latitude ?? 0, body.origin?.longitude ?? 0]"
-              @click="coord => {
-              // setOrigin(coord, body)
-              }"
+              @click="setOrigin"
             >
-              <!-- <LeafletSearch @item-select="item => onSearchItemSelect(item, body)" /> -->
+              <LeafletSearch v-model="location" class="input-select-md hover:border-accent-mid text-primary dark:text-primary w-80 rounded-sm bg-white dark:bg-white" />
               <LeafletMarker
                 v-if="body.origin.latitude !== undefined && body.origin?.longitude !== undefined"
                 :name="body.origin.name"
                 :center="[body.origin.latitude, body.origin.longitude]"
                 :draggable="true"
-                @dragged="coord => {
-                  // setOrigin(coord, body)
-                }"
+                @dragged="setOrigin"
               />
             </LeafletMap>
           </TwFormField>
@@ -48,18 +44,21 @@
 <script setup lang="ts">
 import { FilterOperator } from '@unb-libraries/nuxt-layer-entity'
 import { type Specimen } from 'types/specimen'
+import { type Coordinate } from '~/types/leaflet'
+import { type Location } from '~/types/nominatim'
 
-const props = defineProps<{
+defineProps<{
   specimen?: Specimen
 }>()
 
-const emits = defineEmits<{
+defineEmits<{
   save: [specimen: Specimen]
 }>()
 
 const { entities: people } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `affiliate/person`]] })
 const { entities: organizations } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `affiliate/organization`]] })
 const affiliates = computed(() => [...people.value, ...organizations.value])
+const location = ref<Location>()
 
 const data = reactive({
   origin: {
@@ -71,5 +70,20 @@ const data = reactive({
   },
   collector: undefined as string | undefined,
   sponsor: undefined as string | undefined,
+})
+
+const setOrigin = function ([lat, long]: Coordinate) {
+  data.origin.latitude = lat
+  data.origin.longitude = long
+}
+
+watch(location, (loc) => {
+  if (loc) {
+    const { lat, lon, display_name: displayName } = loc
+    setOrigin([lat, lon])
+    if (!data.origin.name) {
+      data.origin.name = displayName
+    }
+  }
 })
 </script>

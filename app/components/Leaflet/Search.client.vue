@@ -1,46 +1,60 @@
 <template>
-  <PvAutoComplete
-    id="leaflet-location-search"
-    v-model="location"
-    class="leaflet-control"
-    input-class="dark:bg-white bg-white text-primary dark:text-primary px-2 py-1 rounded-sm"
-    :suggestions="locations"
-    option-label="display_name"
-    @click.stop
-    @complete="searchLocation"
-    @item-select="$emit('itemSelect', $event.value)"
-  />
+  <PvInputDropdown
+    :id="`leaflet-name-search`"
+    v-model="placeID"
+    :options="options"
+    placeholder="Search by place name"
+    option-field="place_id"
+    label-field="display_name"
+    :input="true"
+    list-class="bottom-10 bg-white dark:bg-white"
+    @input="onSearch"
+  >
+    <template #reset>
+      <PvProgressSpinner v-if="pending" class="mr-2 h-6 w-6" stroke-width="4" />
+    </template>
+  </PvInputDropdown>
 </template>
 
 <script setup lang="ts">
 import type { Map } from "leaflet"
 import type { MapInjection } from "~/types/leaflet"
-import type { Location } from "~/types/nominatim"
+import { type Location } from '~/types/nominatim'
 
-defineEmits([`itemSelect`])
+const location = defineModel<Location>(`location`, { required: false })
+const placeID = ref()
+const options = ref<Record<string, Location>>({})
+const pending = ref(false)
 
-const location = ref(``)
-const locations = ref<Location[]>([])
+defineProps<{}>()
 
-const searchLocation = async function (event: { query: string }) {
-  const { data: results } = await useFetch(`https://nominatim.openstreetmap.org/search`, {
-    query: {
-      q: event.query,
-      format: `json`,
-    },
-    transform: (results: Location[]) => results.filter(result => result.type === `administrative`),
-  })
-
-  if (results.value) {
-    locations.value = results.value
+let timer: NodeJS.Timeout
+const { resolveName } = useNominatim()
+function onSearch(search: string) {
+  if (search.length >= 3) {
+    if (timer) {
+      clearTimeout(timer)
+    }
+    timer = setTimeout(async () => {
+      pending.value = true
+      const { results, error } = await resolveName(search)
+      pending.value = false
+      if (!error.value && results.value) {
+        options.value = results.value.reduce((all, one) => ({ ...all, [one.place_id]: one }), {})
+      }
+    }, 500)
   }
 }
+
+watch(placeID, (id) => {
+  location.value = options.value[id]
+})
 
 const onMapReady = inject(`onMapReady`) as MapInjection
 onMapReady((map, { Control, DomUtil }) => {
   const Search = Control.extend({
     onAdd(map: Map) {
-      return DomUtil.get(`leaflet-location-search`)
+      return DomUtil.get(`leaflet-name-search`)
     },
     onRemove(map: Map) {
 
