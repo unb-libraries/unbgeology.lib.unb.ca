@@ -1,7 +1,19 @@
 <template>
-  <EntityForm :entity="publication" @save="publication => emits(`save`, publication)">
+  <EntityForm :entity="data" @save="publication => $emit(`save`, publication as unknown as Publication)" @cancel="$emit(`cancel`)">
     <template #default="{ body }">
-      <div class="form-field">
+      <TwFormField label="ID">
+        <TwInputText v-model="body.id" class="input input-text-lg" />
+      </TwFormField>
+      <TwFormField label="DOI">
+        <TwInputText v-model="body.doi" class="input input-text-lg" />
+      </TwFormField>
+      <TwFormField label="Citation">
+        <TwInputTextArea v-model="body.citation" class="input-textarea-lg" />
+      </TwFormField>
+      <TwFormField label="Abstract">
+        <TwInputTextArea v-model="body.abstract" :rows="15" class="input-textarea-lg" />
+      </TwFormField>
+      <!-- <div class="form-field">
         <label for="citation">DOI</label>
         <FormInputDoiResolve class="form-input form-input-text" @success="pub => onResolve(pub, body)" @error="msg => doiResolveError = msg ?? ``" />
         <span v-if="doiResolveError" class="text-sm">DOI could not be resolved.</span>
@@ -13,38 +25,34 @@
       <div class="form-field">
         <label for="abstract">Abstract</label>
         <textarea v-model="body.abstract" rows="5" class="form-input form-input-textarea" />
-      </div>
+      </div> -->
     </template>
-    <template #more-actions>
+    <!-- <template #more-actions>
       <button class="form-action form-action-delete" @click.prevent="emits(`delete`)">
         Delete
       </button>
-    </template>
+    </template> -->
   </EntityForm>
 </template>
 
 <script setup lang="ts">
-import { type EntityJSONBody, type EntityJSONProperties } from "@unb-libraries/nuxt-layer-entity"
 import { type Publication } from 'types/specimen'
 
-const doiResolveError = ref(``)
-
-defineProps<{
-  publication: EntityJSONProperties<Publication>
+const props = defineProps<{
+  publication?: Publication
 }>()
 
-const emits = defineEmits<{
-  save: [publication: EntityJSONBody<Publication>]
-  delete: []
-}>()
+const data = reactive({
+  id: ``,
+  doi: ``,
+  citation: ``,
+  abstract: ``,
+  ...props.publication,
+})
 
-function onResolve(publication: EntityJSONProperties<Publication>, body: EntityJSONBody<Publication>) {
-  if (publication.citation) {
-    body.citation = publication.citation.trim()
-  }
-  if (publication.abstract) {
-    body.abstract = publication.abstract.trim()
-  }
-}
+defineEmits<{
+  save: [publication: Publication]
+  cancel: []
+}>()
 
 </script>

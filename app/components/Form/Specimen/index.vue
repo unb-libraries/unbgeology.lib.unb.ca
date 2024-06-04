@@ -26,7 +26,16 @@
         <TwInputImage v-model="body.images" :options="imageOptions" class="w-full" @drop="files => onNewFiles(files)" />
       </TwFormField>
       <TwFormField label="Publications">
-        <TwInputText v-model="doi" placeholder="Search by DOI, e.g. 10.1111/j.1600-0536.2011.01936.x or provide ID, e.g. Timmerman2011" class="input input-text-lg" />
+        <InputDoi v-model="doiSearch" placeholder="Search by DOI, e.g. https://doi.org/10.1111/j.1600-0536.2011.01936.x" @resolve="onResolveDoi">
+          <template #before>
+            <div v-for="(publication, id) of body.publications" :key="id" class="hover:bg-accent-light text-nowrap bg-accent-mid inline-flex cursor-pointer space-x-2 rounded-md px-1.5 text-sm leading-6" @click="setContent(PublicationModalForm(publication, { title: `Edit &quot;${id}&quot;`}))">
+              {{ id }}
+              <button @click.prevent.stop="onRemovePublication(id)">
+                <IconCancel class="fill-accent-dark hover:stroke-base hover:fill-red stroke-accent-light h-4 w-4 stroke-2" />
+              </button>
+            </div>
+          </template>
+        </InputDoi>
       </TwFormField>
       <TwFormField label="Sale value">
         <TwInputText v-model="sale" class="input input-text-lg" />
@@ -38,6 +47,7 @@
 <script setup lang="tsx">
 import { type Image, FilterOperator } from '@unb-libraries/nuxt-layer-entity'
 import { type Specimen, type Publication } from 'types/specimen'
+import { FormPublication } from '#components'
 
 const props = defineProps<{
   specimen: Specimen
@@ -46,6 +56,25 @@ const props = defineProps<{
 const emits = defineEmits<{
   save: [specimen: Specimen]
 }>()
+
+const { setContent, close: closeModal } = useModal()
+
+const doiSearch = ref<string>()
+function onResolveDoi({ citation, abstract, doi }: Publication) {
+  const id = citation.substring(0, 10)
+  setContent(PublicationModalForm({ id, doi, citation, abstract }))
+  doiSearch.value = undefined
+}
+
+const PublicationModalForm = (publication: Publication, options?: Partial<{ title: string }>) => <div class={`space-y-3`}>
+  <h1 class={`text-2xl`}>{options?.title ?? `Add publication` }</h1>
+  <FormPublication publication={publication} onSave={onSavePublication} onCancel={closeModal} />
+</div>
+
+const onSavePublication = (publication: Publication) => {
+  data.publications[publication.id] = publication
+  closeModal()
+}
 
 const data = reactive({
   objectID: {
@@ -85,6 +114,10 @@ async function onNewFiles(files: File[]) {
 
 function onRemoveObjectId(type: string) {
   delete data.objectID[type]
+}
+
+function onRemovePublication(id: string) {
+  delete data.publications[id]
 }
 
 // const { content, close: closeModal } = useModal()
