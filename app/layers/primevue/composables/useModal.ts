@@ -1,7 +1,13 @@
+import type { Component } from "nuxt/schema"
+// import type { JsxElement } from "typescript"
 import { type DynamicContent } from "../types"
 
 export default function () {
   const state = useState<DynamicContent | null>(`modal`, () => null)
+
+  const setContent = (component: JsxElement) => {
+    state.value = component
+  }
 
   const close = () => {
     state.value = null
@@ -12,6 +18,7 @@ export default function () {
   return {
     isOpen,
     content: state,
+    setContent,
     close,
   }
 }
