@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col" :class="classes">
     <label :class="labelClass" class="input-label" :for="name">
-      <slot name="label">{{ label }}</slot>
+      <slot name="label" :label="label">{{ label }}</slot>
     </label>
     <slot v-bind="{ id, name, label, ...attrs }" />
   </div>

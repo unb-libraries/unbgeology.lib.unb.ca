@@ -52,6 +52,23 @@
   .input-select-item-selected {
     @apply bg-accent-mid hover:bg-accent-light text-primary
   }
+  
+  .input-checkbox, .input-radio {
+    @apply bg-base dark:bg-primary dark:border-primary-60/75 hover:border-accent-light checked:text-accent-mid h-6 w-6 cursor-pointer rounded-md border focus:ring-0 focus:ring-offset-0
+  }
+  .input-radio {
+    @apply rounded-full
+  }
+  .input-radio-label {
+    @apply input-label mx-3 mb-0 cursor-pointer font-normal
+  }
+  .input-radio-group {
+    @apply flex flex-col
+  }
+
+  .input-checkbox-label {
+    @apply input-label mx-3 cursor-pointer
+  }
 
   .divider {
     @apply 

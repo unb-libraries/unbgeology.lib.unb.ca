@@ -5,9 +5,11 @@
       v-model="value"
       type="checkbox"
       :name="name"
-      class="bg-base dark:bg-primary dark:border-primary-60/75 hover:border-accent-light checked:text-accent-mid h-6 w-6 cursor-pointer rounded-md border focus:ring-0 focus:ring-offset-0"
+      v-bind="attrs"
+      class="input-checkbox"
+      :class="classList"
     >
-    <label :for="id" class="mx-3 cursor-pointer">{{ label }}</label>
+    <label :for="id" class="input-checkbox-label" :class="labelClass">{{ label }}</label>
   </div>
 </template>
 
@@ -18,7 +20,9 @@ defineOptions({
 
 const props = defineProps<{
   label: string
-  modelValue: boolean
+  labelClass?: string
+  wrapperClass?: string
+  modelValue?: boolean
 }>()
 
 const emits = defineEmits<{
@@ -27,7 +31,7 @@ const emits = defineEmits<{
   "update:modelValue": [value: boolean]
 }>()
 
-const { name, id, class: wrapperClass } = useAttrs() as { name: string, id: string, class: string }
+const { name, id, class: classList, ...attrs } = useAttrs() as { name: string, id: string, class: string }
 const value = computed({
   get() {
     return props.modelValue
