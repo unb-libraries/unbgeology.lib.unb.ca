@@ -92,10 +92,20 @@
     </footer>
 
     <PvModal />
+
+    <Teleport to="body">
+      <div class="absolute bottom-12 flex w-full flex-col items-center space-y-2">
+        <TwToast v-for="([Content, { type, duration }], id) of toasts" :id="id" :key="id" :type="type" :duration="duration">
+          <component :is="Content" />
+        </TwToast>
+      </div>
+    </Teleport>
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
+const { toasts } = useToasts()
+
 const dashboardRoutes = getPagesMenu()
   .filter(({ id }) => id.match(/^dashboard/))
 
