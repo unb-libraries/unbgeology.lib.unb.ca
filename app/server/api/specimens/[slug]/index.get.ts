@@ -11,6 +11,7 @@ export default defineEventHandler(async (event) => {
   await useEventQuery(event, query)
   const specimen = await query
     .where(`slug`).eq(slug)
+    .select(`authTags`)
 
   if (specimen && !specimen.authTags.some(t => resources.includes(t))) {
     return create403()

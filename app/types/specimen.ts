@@ -4,10 +4,11 @@ import type { StorageLocation } from "types/storagelocation"
 import type { Unit } from "types/geochronology"
 import type {
   Classification,
-  FossilClassification,
-  RockClassification,
-  MineralClassification,
+  Fossil,
+  Rock,
+  Mineral,
 } from "types/classification"
+import type { Collection } from "./collection"
 
 export enum Status {
   MIGRATED = 1,
@@ -72,27 +73,21 @@ export interface Storage {
 }
 
 export interface Publication {
+  id: string
   citation: string
   abstract?: string
   doi?: string
 }
 
-export enum ObjectIDType {
-  INTERNAL = `internal`,
-  EXTERNAL = `external`,
-  LEGACY = `legacy`,
-}
-export interface ObjectID {
-  id: string
-  type?: ObjectIDType
-  source?: string
-  primary?: boolean
-}
-
 export interface Specimen extends Entity, Stateful<typeof Status> {
   type: Category
-  objectIDs: ObjectID[]
+  pk: string
+  objectIDs: {
+    id: string
+    type?: string
+  }[]
   slug: string
+  collection: Collection
   description: string
   images: EntityJSONList<Image>
   classification: Classification
@@ -107,6 +102,7 @@ export interface Specimen extends Entity, Stateful<typeof Status> {
   partial: boolean
   collector?: Affiliate,
   sponsor?: Affiliate,
+  market?: number
   loans?: Loan[],
   storage: Storage[],
   publications?: Publication[],
@@ -116,16 +112,16 @@ export interface Specimen extends Entity, Stateful<typeof Status> {
 
 export interface Fossil extends Specimen {
   type: Category.FOSSIL
-  classification: FossilClassification
+  classification: Fossil
   portion: Term
 }
 
 export interface Mineral extends Specimen {
   type: Category.MINERAL
-  classification: MineralClassification
+  classification: Mineral
 }
 
 export interface Rock extends Specimen {
   type: Category.ROCK
-  classification: RockClassification
+  classification: Rock
 }

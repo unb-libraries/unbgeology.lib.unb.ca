@@ -1,5 +1,5 @@
 import { Boolean, Date, Enum, Count, Numeric, ObjectID, String } from "~/layers/mongo/server/utils/api/filter"
-import { MeasurementType, Status } from "~/types/specimen"
+import { Category, MeasurementType, Status } from "~/types/specimen"
 
 export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({
   id: {
@@ -17,11 +17,6 @@ export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({
         default: true,
         sort: false,
         filter: String,
-      },
-      primary: {
-        default: true,
-        sort: false,
-        filter: Boolean,
       },
       type: {
         default: true,
@@ -46,6 +41,18 @@ export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({
     default: true,
     sort: false,
     filter: false,
+  },
+  collection: {
+    default: true,
+    join: Term,
+    sort: `collection.label`,
+    filter: ObjectID,
+    definition: {
+      label: {
+        default: true,
+        filter: String,
+      },
+    },
   },
   images: {
     default: true,
@@ -324,6 +331,10 @@ export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({
     sort: `publications.citation`,
     filter: (_, condition) => String(`publications.citation`, condition),
     definition: {
+      id: {
+        default: true,
+        filter: false,
+      },
       citation: {
         default: true,
         filter: String,
@@ -338,8 +349,12 @@ export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({
       },
     },
   },
+  market: {
+    default: true,
+    filter: Numeric,
+  },
   status: {
-    default: false,
+    default: true,
     filter: Enum(Status),
   },
   creator: {
@@ -393,6 +408,10 @@ export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({
         },
       },
     },
+  },
+  type: {
+    default: true,
+    filter: Enum(Category),
   },
   created: {
     default: true,

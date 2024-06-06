@@ -17,5 +17,5 @@ export default defineEventHandler(async (event) => {
       },
       self: () => `/api/specimens`,
     })
-    : renderDocument(specimenOrSpecimens, { model: Specimen.Base, fields })
+    : renderDocument(specimenOrSpecimens, { model: Specimen.Base, fields, self: specimen => `/api/specimens/${specimen.slug}` })
 })

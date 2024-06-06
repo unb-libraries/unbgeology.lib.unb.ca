@@ -1,4 +1,5 @@
 export default defineMongooseFormatter(Specimen.Fossil, async (doc) => {
+  if (doc.__type !== Specimen.Fossil.fullName) { return {} }
   const { portion, type } = doc
 
   return {

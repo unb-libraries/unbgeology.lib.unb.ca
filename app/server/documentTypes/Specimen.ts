@@ -7,13 +7,16 @@ import type { Portion } from "./Portion"
 import type { Person, Organization } from "./Affiliate"
 import type { GeochronologicUnit } from "./Geochronology"
 import type { StorageLocation as IStorageLocation } from "./StorageLocation"
+import type { Collection } from "./Collection"
 import type { DocumentBase as IDocumentBase } from "~/layers/mongo/types/schema"
 import ImageFile, { type Image } from "~/layers/mongo/server/documentTypes/Image"
 import { type User } from "~/layers/mongo/server/documentTypes/User"
+import { type Authorize as IAuthorize } from "~/layers/mongo/server/utils/mixins/Authorize"
 
-export interface Specimen extends Omit<SpecimenEntity, keyof Entity | `classification` | `images` | `age` | `measurements` | `collector` | `sponsor` | `loans` | `storage` | `creator` | `editor`>, IStateful<typeof Status>, IDocumentBase {
+export interface Specimen extends Omit<SpecimenEntity, keyof Entity | `classification` | `collection` | `images` | `age` | `measurements` | `collector` | `sponsor` | `loans` | `storage` | `creator` | `editor`>, IStateful<typeof Status>, IAuthorize, IDocumentBase {
   classification: FossilCD | MineralCD | RockCD
   classificationModel: string
+  collection: Collection
   images: Image[]
   age: {
     relative: GeochronologicUnit
@@ -75,28 +78,21 @@ export const validationPatterns = {
 }
 
 const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>({
+  pk: {
+    type: EntityFieldTypes.String,
+    required: true,
+  },
   objectIDs: {
     type: [{
       id: {
         type: EntityFieldTypes.String,
         required: true,
       },
-      primary: {
-        type: EntityFieldTypes.Boolean,
-        required: false,
-      },
       type: {
         type: EntityFieldTypes.String,
-        enum: ObjectIDType,
         required: false,
       },
     }],
-    validate: {
-      validator: function (this: Specimen) {
-        return this.objectIDs.filter(objectID => objectID.primary).length === 1
-      },
-      message: `Exactly one primary object ID must be provided.`,
-    },
   },
   classification: {
     type: EntityFieldTypes.ObjectId,
@@ -139,34 +135,34 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
     required: optionalForStatus(Status.MIGRATED | Status.DRAFT),
     validate: [
       {
-        validator: function (measurements: Specimen[`measurements`]) {
-          return measurements.length > 0
+        validator: function (this: Specimen, measurements: Specimen[`measurements`]) {
+          return ((this.status as Status) & (Status.DRAFT | Status.MIGRATED)) || measurements.length > 0
         },
         message: `At least one measurement must be provided.`,
       },
       {
-        validator: function (measurements: Specimen[`measurements`]) {
-          return measurements.every(m => m.type === MeasurementType.IMMEASURABLE) || measurements.every(m => m.type !== MeasurementType.IMMEASURABLE)
+        validator: function (this: Specimen, measurements: Specimen[`measurements`]) {
+          return ((this.status as Status) & (Status.DRAFT | Status.MIGRATED)) || measurements.every(m => m.type === MeasurementType.IMMEASURABLE) || measurements.every(m => m.type !== MeasurementType.IMMEASURABLE)
         },
         message: `All measurements must be either measurable or immeasurable.`,
       },
       {
-        validator: function (measurements: Specimen[`measurements`]) {
-          return (measurements.every(m => m.type === MeasurementType.IMMEASURABLE) && measurements.length === 1) || true
+        validator: function (this: Specimen, measurements: Specimen[`measurements`]) {
+          return ((this.status as Status) & (Status.DRAFT | Status.MIGRATED)) || (measurements.every(m => m.type === MeasurementType.IMMEASURABLE) && measurements.length === 1) || true
         },
         message: `Only one immeasurable measurement is allowed.`,
       },
       {
-        validator: function (measurements: Specimen[`measurements`]) {
-          return measurements.every(m => m.type === MeasurementType.IMMEASURABLE
+        validator: function (this: Specimen, measurements: Specimen[`measurements`]) {
+          return ((this.status as Status) & (Status.DRAFT | Status.MIGRATED)) || measurements.every(m => m.type === MeasurementType.IMMEASURABLE
             ? m.reason !== undefined && m.dimensions === undefined
             : true)
         },
         message: `Immeasurable measurements must provide a reason but no dimensions.`,
       },
       {
-        validator: function (measurements: Specimen[`measurements`]) {
-          return measurements.every(m => m.type !== MeasurementType.IMMEASURABLE
+        validator: function (this: Specimen, measurements: Specimen[`measurements`]) {
+          return ((this.status as Status) & (Status.DRAFT | Status.MIGRATED)) || measurements.every(m => m.type !== MeasurementType.IMMEASURABLE
             ? m.reason === undefined && m.dimensions !== undefined
             : true)
         },
@@ -269,6 +265,7 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
   collectorModel: {
     type: EntityFieldTypes.String,
     enum: [
+      Term.mongoose.model.modelName,
       Affiliate.Person.mongoose.model.modelName,
       Affiliate.Organization.mongoose.model.modelName,
     ],
@@ -284,6 +281,7 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
   sponsorModel: {
     type: EntityFieldTypes.String,
     enum: [
+      Term.mongoose.model.modelName,
       Affiliate.Person.mongoose.model.modelName,
       Affiliate.Organization.mongoose.model.modelName,
     ],
@@ -416,15 +414,31 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
   editor: {
     type: EntityFieldTypes.ObjectId,
     ref: User.mongoose.model,
-    required: optionalForStatus(Status.MIGRATED),
     default(this: Specimen) {
       return this.creator
     },
   },
 }).mixin(Slugified<Specimen>({
-  path: doc => doc.objectIDs.find(id => id.primary)!.id,
+  path: `pk`,
 }))
   .mixin(State)
+  .mixin(Authorize<Specimen>({
+    paths: (specimen) => {
+      const { creator, status, type } = specimen
+      const statusLabel = useEnum(Status).labelOf(status).toLowerCase()
+      const category = type.substring(type.indexOf(`.`) + 1).toLowerCase()
+      return [
+        `specimen`,
+        `specimen:${statusLabel}`,
+        `specimen:${category}`,
+        `specimen:${category}:${statusLabel}`,
+        `specimen:${creator.username}`,
+        `specimen:${creator.username}:${category}`,
+        `specimen:${creator.username}:${statusLabel}`,
+        `specimen:${creator.username}:${category}:${statusLabel}`,
+      ]
+    },
+  }))
   .mixin(DocumentBase())())
 
 const Fossil = defineDocumentModel<Specimen, FossilSpecimen>(`Fossil`, defineDocumentSchema<FossilSpecimen>({
