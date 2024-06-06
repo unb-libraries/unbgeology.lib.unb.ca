@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
     total,
     canonical: {
       // @ts-ignore
-      self: user => `/api/users/${user._username}`,
+      self: user => `/api/users/${user._id}`,
       fields,
     },
   })

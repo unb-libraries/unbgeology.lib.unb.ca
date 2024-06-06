@@ -1,11 +1,14 @@
-import { Boolean, Date, String } from "../../utils/api/filter"
+import { Boolean, Date, ObjectID, String } from "../../utils/api/filter"
 
 export default defineMongooseEventQueryHandler(User, defineEventQuery({
   id: {
     default: true,
-    select: `username`,
-    sort: `username`,
-    filter: (_, condition) => String(`username`, condition),
+    sort: false,
+    filter: ObjectID,
+  },
+  username: {
+    default: true,
+    filter: String,
   },
   active: {
     default: false,

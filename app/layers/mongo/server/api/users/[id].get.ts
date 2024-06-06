@@ -1,11 +1,10 @@
 export default defineEventHandler(async (event) => {
-  const { username } = getRouterParams(event)
+  const { id } = getRouterParams(event)
 
   const resources = getAuthorizedResources(event, r => /^user(:\w)*$/.test(r))
   const fields = getAuthorizedFields(event, ...resources)
 
-  const query = User.findOne()
-    .where(`username`).eq(username)
+  const query = User.findByID(id)
     .select(`authTags`)
   await useEventQuery(event, query)
 

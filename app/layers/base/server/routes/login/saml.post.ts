@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
     givenName: firstName,
   } = await getSamlProfile(SAMLResponse)
 
-  // REFACTOR: Avoid making direct DB call.
+  // REFACTOR: Avoid making direct DB call, use API instead.
   const user = await User.findOne()
     .where(`username`).eq(username)
     .select(`username`, `roles`, `active`)
@@ -33,8 +33,13 @@ export default defineEventHandler(async (event) => {
   }
 
   await session.update({
+    id: user?._id,
     user: user.username,
     authenticated: true,
+    profile: {
+      firstName,
+      lastName,
+    },
     permissions: (await getUserPermissions(username)).map(createFieldPermissionKeys).flat(),
     validUntil: new Date().valueOf() + sessionConfig.maxAge * 1000,
   })

@@ -7,14 +7,13 @@ export default defineEventHandler(async (event) => {
   const body = await readDocumentBodyOr400(event, { model: User })
   const userOrUsers = await User.create(body)
 
-  const self = (user: { username: string }) => `/api/users/${user.username}`
   return Array.isArray(userOrUsers)
     ? renderDocumentList(userOrUsers, {
       model: User,
       pageSize: userOrUsers.length,
       canonical: {
-        self,
+        self: user => `/api/users/${user._id}`,
       },
     })
-    : renderDocument(userOrUsers, { model: User, self })
+    : renderDocument(userOrUsers, { model: User, self: user => `/api/users/${user._id}` })
 })
