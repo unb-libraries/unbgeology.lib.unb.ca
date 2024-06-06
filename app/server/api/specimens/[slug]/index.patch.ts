@@ -7,9 +7,24 @@ export default defineEventHandler(async (event) => {
     return create403()
   }
 
-  const body = await readOneDocumentBodyOr400(event, { model: Specimen.Base, flat: true, flattenExcept: [`portion`], fields })
   const specimen = await Specimen.Base.findOne()
     .where(`slug`).eq(slug)
+
+  if (!specimen) {
+    return create404()
+  }
+
+  const body = await readOneDocumentBodyOr400(event, {
+    model: specimen!.type === `Specimen.CFossil`
+      ? Specimen.Fossil
+      : specimen!.type === `Specimen.CRock`
+        ? Specimen.Rock
+        : Specimen.Mineral,
+    flat: true,
+    flattenExcept: [`portion`],
+    op: `update`,
+    fields,
+  })
 
   if (specimen && !specimen.authTags.some(t => resources.includes(t))) {
     return create403()
