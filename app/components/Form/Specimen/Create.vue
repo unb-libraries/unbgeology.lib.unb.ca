@@ -1,5 +1,5 @@
 <template>
-  <EntityForm :entity="data">
+  <EntityForm :entity="data" @save="onSave">
     <TwFormField label="Category">
       <TwInputRadioGroup
         v-model="data.type"
@@ -20,26 +20,21 @@
         </template>
       </TwInputRadioGroup>
     </TwFormField>
-    <TwFormField v-if="data.type" label="Classification">
-      <template #label>
-        <template v-if="data.type === `fossil`">
-          Taxonomy
-        </template>
-        <template v-if="data.type === `mineral`">
-          Mineral type or group
-        </template>
-        <template v-if="data.type === `rock`">
-          Rock type or group
-        </template>
-      </template>
-      <PvInputDropdown v-model="data.classification" :options="classifications[data.type]" option-field="self" label-field="label" class="input-select-lg" />
+    <TwFormField v-if="data.type === `fossil`" label="Taxonomy">
+      <InputSpecimenClassification v-model="data.classification" :type="data.type" />
+    </TwFormField>
+    <TwFormField v-if="data.type === `mineral`" label="Mineral type or group">
+      <InputSpecimenClassification v-model="data.classification" :type="data.type" />
+    </TwFormField>
+    <TwFormField v-if="data.type === `rock`" label="Rock type or group">
+      <InputSpecimenClassification v-model="data.classification" :type="data.type" />
     </TwFormField>
     <TwFormField label="Images">
       <TwInputImage v-model="data.images" :options="{}" />
     </TwFormField>
     <PvCheckbox v-model="unbOwned" label="Owned by UNB" class="input-checkbox" />
     <TwFormField v-if="unbOwned" label="ObjectIDs">
-      <TwInputText v-model="objectID" class="input input-text-lg" />
+      <InputSpecimenObjectID v-model="data.objectIDs" />
     </TwFormField>
     <div class="flex flex-row space-x-2">
       <TwFormField v-if="!unbOwned" label="Loan" class="w-1/2">
@@ -52,33 +47,41 @@
   </EntityForm>
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
 import { FilterOperator, type Image } from '@unb-libraries/nuxt-layer-entity'
-import { type ObjectID, type Loan } from '~/types/specimen'
+import { type Specimen, type Loan } from '~/types/specimen'
+import { TwToast } from '#components'
 
 definePageMeta({
   layout: `dashboard-page`,
   name: `Create specimen`,
 })
 
-const objectID = ref(``)
 const unbOwned = ref(true)
 
 const data = reactive({
   type: undefined,
-  objectIDs: [] as ObjectID[],
+  objectIDs: [] as ([string] | [string, string])[],
   classification: undefined,
   loan: undefined,
   lenderID: ``,
   images: {} as Record<string, string>,
 })
 
-const { entities: fossilClassifications } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `classification/fossil`]] })
-const { entities: mineralClassifications } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `classification/mineral`]] })
-const { entities: rockClassifications } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `classification/rock`]] })
-const classifications = computed(() => ({ fossil: fossilClassifications.value, mineral: mineralClassifications.value, rock: rockClassifications.value }))
+// const { entities: fossilClassifications } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `classification/fossil`]] })
+// const { entities: mineralClassifications } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `classification/mineral`]] })
+// const { entities: rockClassifications } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `classification/rock`]] })
+// const classifications = computed(() => ({ fossil: fossilClassifications.value, mineral: mineralClassifications.value, rock: rockClassifications.value }))
 
-function onSave(values: { type: string, loan?: Loan, images: Record<string, Image> }) {
-  console.log(values)
+// const { create } = useEntityType<Specimen>(`Specimen`)
+const { add: createToast } = useToasts()
+function onSave() {
+  createToast(() => <div>This is a toast.</div>)
+  // const { entity: specimen, error } = await create<Specimen>(data)
+  // if (!error.value && specimen.value?.id) {
+  //   navigateTo(`/dashboard/specimens/${specimen.value.id}`)
+  // } else {
+  //   createToast(() => <TwToast>{error}</TwToast>)
+  // }
 }
 </script>

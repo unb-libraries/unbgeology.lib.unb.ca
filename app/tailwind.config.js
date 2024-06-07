@@ -9,6 +9,18 @@ const colorReduce = (prefix = ``) =>
       ? [...reduced, [prefix ? key.toLowerCase() !== `default` ? `${prefix}-${key}` : prefix : key, value]]
       : Object.entries(value).reduce(colorReduce(key), reduced)
 
+const minMaxWH = {
+  '1/2': `50%`,
+  '1/3': `33%`,
+  '2/3': `66%`,
+  '1/4': `25%`,
+  '3/4': `75%`,
+  '1/5': '20%',
+  '2/5': '40%',
+  '3/5': '60%',
+  '4/5': '80%',
+}
+
 module.exports = {
   content: [
     `./components/**/*.{js,vue,ts}`,
@@ -44,6 +56,11 @@ module.exports = {
           DEFAULT: colors.blue[600],
           dark: colors.blue[700],
         },
+        green: {
+          light: colors.green[400],
+          DEFAULT: colors.green[500],
+          dark: colors.green[600],
+        },
         red: {
           light: colors.red[500],
           DEFAULT: colors.red[600],
@@ -55,9 +72,10 @@ module.exports = {
           dark: colors.amber[500],
         },
       },
-      minWidth: {
-        '1/3': `33%`,
-      },
+      maxWidth: minMaxWH,
+      minWidth: minMaxWH,
+      maxHeight: minMaxWH,
+      minHeight: minMaxWH,
       strokeWidth: {
         '1.5': `1.5`
       }
@@ -102,6 +120,7 @@ module.exports = {
       
       matchComponentsBySize(`button`, theme(`button`))
       matchComponentsBySize(`input-text`, theme(`input`))
+      matchComponentsBySize(`input-number`, theme(`input`))
       matchComponentsBySize(`input-select`, theme(`input`), {
         cursor: `pointer`,
         justifyContent: `flex-start`,
@@ -119,7 +138,7 @@ module.exports = {
           sm: {
             fontSize: defaults.fontSize.sm,
             borderRadius: defaults.borderRadius.md,
-            paddingX: defaults.spacing[1.5],
+            paddingX: defaults.spacing[2],
             paddingY: defaults.spacing[0.5],
           },
           md: {

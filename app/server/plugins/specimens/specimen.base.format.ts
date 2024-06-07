@@ -5,13 +5,14 @@ import { type StorageLocation } from "~/types/storagelocation"
 import { Immeasurabibility, MeasurementType, Status } from "~/types/specimen"
 
 export default defineMongooseFormatter(Specimen.Base, async (doc) => {
-  const { slug, objectIDs, classification, description, collection, images, measurements, date, age, origin, pieces, partial, collector, sponsor, loans, storage, publications, status, creator, editor, created, updated } = doc
-  return {
+  const { slug, objectIDs, classification, description, collection, images, measurements, date, age, origin, pieces, partial, collector, sponsor, loans, storage, publications, market, status, creator, editor, created, updated } = doc
+
+  const $return = {
     id: slug,
-    objectIDs: objectIDs && objectIDs.map(({ id, type }) => [id, type]),
-    classification: classification && await renderDocument(classification, { model: Term, self: term => `/api/terms/${term._id}` }),
+    objectIDs: objectIDs && objectIDs.map(({ id, type }) => ({ id, type })),
+    classification: (classification && Object.keys(classification).length > 0 && await renderDocument(classification, { model: Term, self: term => `/api/terms/${term._id}` })) || undefined,
     description,
-    collection: collection && await renderDocument(collection, { model: Term, self: term => `/api/terms/${term._id}` }),
+    collection: (collection && Object.keys(collection).length > 0 && await renderDocument(collection, { model: Term, self: term => `/api/terms/${term._id}` })) || undefined,
     images: images && await renderDocumentList(images, {
       model: FileBase,
       canonical: {
@@ -57,10 +58,15 @@ export default defineMongooseFormatter(Specimen.Base, async (doc) => {
       abstract,
       doi,
     })),
+    market,
     status: status && useEnum(Status).labelOf(status).toLowerCase(),
     creator: (creator && Object.keys(creator).length > 0 && await renderDocument(creator, { model: User, self: user => `/api/users/${user.username}` }) as UserEntity) || undefined,
     editor: (editor && Object.keys(editor).length > 0 && await renderDocument(editor, { model: User, self: user => `/api/users/${user.username}` }) as UserEntity) || undefined,
     created: (created && !isNaN(created) && new Date(created).toISOString()) || undefined,
     updated: (updated && !isNaN(updated) && new Date(updated).toISOString()) || undefined,
   }
+
+  // console.log(`$return`, $return)
+
+  return $return
 })

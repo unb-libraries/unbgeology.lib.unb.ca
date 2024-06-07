@@ -24,19 +24,19 @@ export enum Category {
 }
 
 export enum MeasurementType {
-  INDIVIDUAL = `individual`,
-  SMALLEST = `smallest`,
-  LARGEST = `largest`,
-  AVERAGE = `average`,
-  CONTAINER = `container`,
-  IMMEASURABLE = `immeasurable`,
+  INDIVIDUAL = 1,
+  SMALLEST = 2,
+  LARGEST = 4,
+  AVERAGE = 8,
+  CONTAINER = 16,
+  IMMEASURABLE = 32,
 }
 
 export enum Immeasurabibility {
-  OTHER = `other`,
-  TOO_SMALL = `too_small`,
-  TOO_MANY = `too_many`,
-  TOO_FRAGILE = `too_fragile`,
+  OTHER = 1,
+  TOO_SMALL = 2,
+  TOO_MANY = 4,
+  TOO_FRAGILE = 8,
 }
 
 export interface Measurement {
@@ -79,13 +79,15 @@ export interface Publication {
   doi?: string
 }
 
+export interface ObjectID {
+  id: string
+  type?: string
+}
+
 export interface Specimen extends Entity, Stateful<typeof Status> {
   type: Category
   pk: string
-  objectIDs: {
-    id: string
-    type?: string
-  }[]
+  objectIDs: ObjectID[]
   slug: string
   collection: Collection
   description: string

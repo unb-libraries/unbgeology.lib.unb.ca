@@ -15,13 +15,16 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readOneDocumentBodyOr400(event, {
-    model: specimen!.type === `Specimen.CFossil`
-      ? Specimen.Fossil
-      : specimen!.type === `Specimen.CRock`
-        ? Specimen.Rock
-        : Specimen.Mineral,
+    model: Specimen.Base,
     flat: true,
-    flattenExcept: [`portion`],
+    flattenExcept: [
+      `portion`,
+      `collection`,
+      `classification`,
+      `collector`,
+      `sponsor`,
+      `storage`,
+    ],
     op: `update`,
     fields,
   })

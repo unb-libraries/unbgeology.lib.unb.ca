@@ -1,5 +1,5 @@
 import { EntityFieldTypes } from "layers/mongo/types/entity"
-import { Immeasurabibility, MeasurementType, ObjectIDType, Status } from "types/specimen"
+import { Immeasurabibility, MeasurementType, Status } from "types/specimen"
 import type { Entity, Stateful as IStateful } from "@unb-libraries/nuxt-layer-entity"
 import type { Specimen as SpecimenEntity, Loan } from "types/specimen"
 import type { Fossil as FossilCD, Mineral as MineralCD, Rock as RockCD } from "./Classification"
@@ -7,16 +7,17 @@ import type { Portion } from "./Portion"
 import type { Person, Organization } from "./Affiliate"
 import type { GeochronologicUnit } from "./Geochronology"
 import type { StorageLocation as IStorageLocation } from "./StorageLocation"
-import type { Collection } from "./Collection"
+import type { Collection as ICollection } from "./Collection"
 import type { DocumentBase as IDocumentBase } from "~/layers/mongo/types/schema"
 import ImageFile, { type Image } from "~/layers/mongo/server/documentTypes/Image"
 import { type User } from "~/layers/mongo/server/documentTypes/User"
 import { type Authorize as IAuthorize } from "~/layers/mongo/server/utils/mixins/Authorize"
 
-export interface Specimen extends Omit<SpecimenEntity, keyof Entity | `classification` | `collection` | `images` | `age` | `measurements` | `collector` | `sponsor` | `loans` | `storage` | `creator` | `editor`>, IStateful<typeof Status>, IAuthorize, IDocumentBase {
+export interface Specimen extends Omit<SpecimenEntity, keyof Entity | `type` | `classification` | `collection` | `images` | `age` | `measurements` | `collector` | `sponsor` | `loans` | `storage` | `creator` | `editor`>, IStateful<typeof Status>, IAuthorize, IDocumentBase {
+  type: `Specimen.Fossil` | `Specimen.Mineral` | `Specimen.Rock`
   classification: FossilCD | MineralCD | RockCD
   classificationModel: string
-  collection: Collection
+  collection: ICollection
   images: Image[]
   age: {
     relative: GeochronologicUnit
@@ -94,6 +95,11 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
       },
     }],
   },
+  collection: {
+    type: EntityFieldTypes.ObjectId,
+    ref: Collection.mongoose.model,
+    required: false,
+  },
   classification: {
     type: EntityFieldTypes.ObjectId,
     required: optionalForStatus(Status.MIGRATED | Status.DRAFT),
@@ -107,6 +113,13 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
       Classification.Rock.mongoose.model.modelName,
     ],
     required: true,
+    default(this: Specimen) {
+      return {
+        "Specimen.Fossil": Classification.Fossil.mongoose.model.modelName,
+        "Specimen.Mineral": Classification.Mineral.mongoose.model.modelName,
+        "Specimen.Rock": Classification.Rock.mongoose.model.modelName,
+      }[this.type]
+    },
   },
   description: {
     type: EntityFieldTypes.String,
@@ -385,6 +398,10 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
   },
   publications: {
     type: [{
+      id: {
+        type: EntityFieldTypes.String,
+        required: true,
+      },
       citation: {
         type: EntityFieldTypes.String,
         required: true,
@@ -395,10 +412,13 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
       },
       doi: {
         type: EntityFieldTypes.String,
-        match: validationPatterns.doi,
         required: false,
       },
     }],
+  },
+  market: {
+    type: EntityFieldTypes.Number,
+    required: false,
   },
   status: {
     type: EntityFieldTypes.Number,

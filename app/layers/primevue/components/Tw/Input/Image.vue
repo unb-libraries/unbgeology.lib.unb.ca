@@ -12,14 +12,14 @@
         </div>
         <IconCancel class="fill-primary-80 hover:fill-red stroke-1.5 absolute -right-2 -top-2 hidden h-6 w-6 cursor-pointer stroke-current group-hover:flex" @click.stop.prevent="delete images![self]" />
       </div>
-      <button class="button button-lg button-outline-primary-60 hover:button-outline-accent-mid bg-primary aspect-square w-20 items-center justify-center" @click.stop.prevent="onClickBrowse">
+      <button class="button button-lg button-outline-primary-60 hover:button-outline-accent-light hover:bg-primary bg-primary aspect-square w-20 items-center justify-center" @click.stop.prevent="onClickBrowse">
         <IconImages class="h-8 w-8 fill-none stroke-current" />
         <span class="sr-only">
           Browse more images
         </span>
       </button>
     </div>
-    <button v-else class="button button-outline-primary-60 hover:button-outline-accent-mid button-lg bg-primary flex w-full flex-col space-y-2 border-dashed p-8" @click.stop.prevent="onClickBrowse">
+    <button v-else class="button button-outline-primary-60 hover:button-outline-accent-light button-lg hover:bg-primary bg-primary flex w-full flex-col space-y-2 border-dashed p-8" @click.stop.prevent="onClickBrowse">
       <IconImages class="h-12 w-12 fill-none stroke-current" />
       <span>
         Browse images

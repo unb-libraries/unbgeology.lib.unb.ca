@@ -1,10 +1,10 @@
 <template>
-  <TwInput :error="error" :help="help" :wrapper-class="wrapperClass">
-    <div
-      class="input"
-      :class="classes"
-    >
-      <slot name="before" />
+  <div
+    class="input"
+    :class="classes"
+  >
+    <slot name="before" />
+    <slot>
       <input
         :id="id"
         v-model="value"
@@ -14,9 +14,9 @@
         class="input-ref"
         :class="inputClass"
       >
-      <slot name="after" />
-    </div>
-  </TwInput>
+    </slot>
+    <slot name="after" />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -29,7 +29,7 @@ const props = defineProps<{
   labelClass?: string
   inputClass?: string
   wrapperClass?: string
-  modelValue: string
+  modelValue?: string
   validator?:(value: string) => boolean | string | Promise<boolean | string>
 }>()
 

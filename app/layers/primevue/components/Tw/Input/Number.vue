@@ -1,31 +1,29 @@
 <template>
-  <TwInput :error="error" :help="help" :wrapper-class="wrapperClass">
-    <div
-      class="input"
-      :class="classes"
-    >
-      <slot name="before" />
-      <slot>
-        <input
-          :id="id"
-          v-model="numeric"
-          type="text"
-          :name="name"
-          v-bind="attrs"
-          class="input-ref"
-          :class="inputClass"
-        >
-      </slot>
-      <div class="flex flex-col -space-y-1">
-        <button @click.stop.prevent="numeric ||= 0; numeric++">
-          <IconAngleUp class="hover:stroke-accent-mid stroke-primary-40 h-4 w-4 fill-none stroke-2" />
-        </button>
-        <button @click.stop.prevent="numeric ||= 0; numeric--">
-          <IconAngleDown class="stroke-primary-40 hover:stroke-accent-mid h-4 w-4 fill-none stroke-2" />
-        </button>
-      </div>
+  <div
+    class="input"
+    :class="classes"
+  >
+    <slot name="before" />
+    <slot>
+      <input
+        :id="id"
+        v-model="numeric"
+        type="text"
+        :name="name"
+        v-bind="attrs"
+        class="input-ref"
+        :class="inputClass"
+      >
+    </slot>
+    <div class="flex flex-col -space-y-1">
+      <button @click.stop.prevent="numeric ||= 0; numeric++">
+        <IconAngleUp class="hover:stroke-accent-mid stroke-primary-40 h-4 w-4 fill-none stroke-2 p-0" />
+      </button>
+      <button @click.stop.prevent="numeric ||= 0; numeric--">
+        <IconAngleDown class="stroke-primary-40 hover:stroke-accent-mid h-4 w-4 fill-none stroke-2 p-0" />
+      </button>
     </div>
-  </TwInput>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -57,11 +55,13 @@ const classes = computed(() => `${classList}${error.value ? ` border-red-600 has
 watch(numeric, (updated, previous) => {
   const { min, max } = props
   if (isNaN(Number(updated))) {
-    numeric.value = previous
+    numeric.value = Number(previous)
   } else if (updated && min !== undefined && updated < min) {
-    numeric.value = previous
+    numeric.value = Number(previous)
   } else if (updated && max !== undefined && updated > max) {
-    numeric.value = previous
+    numeric.value = Number(previous)
+  } else {
+    numeric.value = Number(updated)
   }
 })
 

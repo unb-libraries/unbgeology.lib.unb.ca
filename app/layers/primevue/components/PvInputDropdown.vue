@@ -14,17 +14,17 @@
           v-model="search"
           type="text"
           class="input-ref"
-          :class="itemClass"
-          placeholder="Search"
+          :class="inputClass"
+          :placeholder="placeholder || `Search`"
           @input="$emit(`input`, search)"
         >
         <span v-else>{{ selectedLabel }}</span>
       </slot>
-      <a v-if="selected" class="input-select-reset" :class="resetActionClass" @click.stop="selected = undefined">
-        <slot name="reset">Reset</slot>
-      </a>
+      <slot name="reset">
+        <a v-if="selected" class="input-select-reset" :class="resetActionClass" @click.stop="selected = undefined">Reset</a>
+      </slot>
     </div>
-    <ul v-if="optionsVisible" class="bg-primary absolute z-[100] max-h-64 w-full overflow-y-scroll">
+    <ul v-if="optionsVisible" class="bg-primary border-primary-60/40 absolute z-[100] max-h-64 w-full overflow-y-scroll rounded-b-md border border-t-0" :class="listClass">
       <li
         v-for="[option, label] in options"
         :key="option"
@@ -50,11 +50,14 @@ const props = defineProps<{
   labelField?: string
   placeholder?: string
   input?: boolean
+  inputClass?: string
+  listClass?: string
   filter?: (option: [string, string]) => boolean
   itemClass?: string
   selectedItemClass?: string
   wrapperClass?: string
   resetActionClass?: string
+  addNewOption?: boolean
 }>()
 const search = ref(``)
 
@@ -76,7 +79,7 @@ const classes = computed(() => selected.value ? classList : `${classList} input-
 
 const options = computed(() => {
   const arr: (string | [string, string | object] | object)[] = Array.isArray(props.options) ? props.options : Object.entries(props.options)
-  return arr
+  const normalized = arr
     .map<[string, string | object] | object>(item => typeof item === `string` ? [item, item[0].toUpperCase() + item.toLowerCase().slice(1)] : item)
     .map<[string, string | object]>((item, index) => Array.isArray(item)
       ? item
@@ -85,6 +88,7 @@ const options = computed(() => {
         : item)
     .map<[string, string]>(([key, value]) => typeof value === `object` ? [key, props.labelField && props.labelField in value ? value[props.labelField] : value] : [key, value])
     .filter(props.filter ?? (() => true))
+  return props.addNewOption ? [...normalized, [`addNew`, `+ Add new`]] : normalized
 })
 
 const optionsVisible = ref(false)
