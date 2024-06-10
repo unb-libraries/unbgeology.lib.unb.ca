@@ -1,4 +1,4 @@
-import { Immeasurabibility, MeasurementType, Status } from "~/types/specimen"
+import { Immeasurabibility, MeasurementCount, Status } from "~/types/specimen"
 import { validationPatterns } from "~/server/documentTypes/Specimen"
 import { require } from "~/layers/mongo/server/utils/api/payload"
 
@@ -23,16 +23,14 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
     classification: optional(MatchValidator(/^\/api\/terms\/[a-z0-9]{24}$/)),
     collection: optional(MatchValidator(/^\/api\/terms\/[a-z0-9]{24}$/)),
     images: optional(ArrayValidator(MatchValidator(/^\/api\/files\/[a-z0-9]{24}$/))),
-    measurements: optional(ArrayValidator(ObjectValidator({
-      type: EnumValidator(MeasurementType),
-      dimensions: ArrayValidator(NumberValidator, { minLength: 3, maxLength: 3 }),
-      reason: EnumValidator(Immeasurabibility),
-    }))),
-    date: optional(MatchValidator(validationPatterns.partialDate)),
-    age: optional(ObjectValidator({
-      relative: MatchValidator(/^\/api\/terms\/[a-z0-9]{24}$/),
-      numeric: NumberValidator,
+    measurements: optional(ObjectValidator({
+      count: EnumValidator(MeasurementCount),
+      dimensions: optional(ArrayValidator(ArrayValidator(NumberValidator, { minLength: 3, maxLength: 3 }))),
+      reason: optional(EnumValidator(Immeasurabibility)),
     })),
+    date: optional(MatchValidator(validationPatterns.partialDate)),
+    age: optional(OrValidator<string | number>(MatchValidator(/^\/api\/terms\/[a-z0-9]{24}$/), NumberValidator)),
+    composition: optional(ArrayValidator(StringValidator)),
     origin: optional(ObjectValidator({
       latitude: NumberValidator,
       longitude: NumberValidator,
@@ -79,15 +77,14 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
     classification: classification && { _id: classification.substring(1).split(`/`).at(-1)! },
     collection: collection && { _id: collection.substring(1).split(`/`).at(-1)! },
     images: images?.map(uri => ({ _id: uri.substring(1).split(`/`).at(-1)! })),
-    age: age && {
-      relative: age.relative && { _id: age.relative.substring(1).split(`/`).at(-1)! },
-      numeric: age.numeric,
-    },
-    measurements: measurements?.map(({ type, reason, dimensions }) => ({
-      type: useEnum(MeasurementType).valueOf(type),
-      dimensions: dimensions as [number, number, number],
-      reason: reason && useEnum(Immeasurabibility).valueOf(reason),
-    })),
+    age: age && (typeof age === `string`
+      ? { unit: { _id: age.substring(1).split(`/`).at(-1)! }, numeric: null }
+      : { unit: null, numeric: age }),
+    measurements: (measurements && Object.keys(measurements).length > 0 && {
+      count: useEnum(MeasurementCount).valueOf(measurements.count),
+      dimensions: measurements.dimensions,
+      reason: measurements.reason && useEnum(Immeasurabibility).valueOf(measurements.reason),
+    }) || undefined,
     // FIX: Without using URIEntityTypeValidator, the collector/sponsor model cannot be determined
     collector: collector && { _id: collector.substring(1).split(`/`).at(-1)! },
     collectorModel: collector && Term.fullName,
@@ -112,6 +109,6 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
     updated: (migrate && updated && new Date(updated).valueOf()) || undefined,
   }
 
-  console.log($return)
+  console.log(`api payload`, $return)
   return $return
 })

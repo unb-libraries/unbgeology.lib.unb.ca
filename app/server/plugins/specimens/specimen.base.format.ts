@@ -2,10 +2,10 @@ import { type User as UserEntity } from "@unb-libraries/nuxt-layer-entity"
 import User from "~/layers/mongo/server/documentTypes/User"
 import { type Affiliate } from "~/types/affiliate"
 import { type StorageLocation } from "~/types/storagelocation"
-import { Immeasurabibility, MeasurementType, Status } from "~/types/specimen"
+import { Immeasurabibility, MeasurementCount, Status } from "~/types/specimen"
 
 export default defineMongooseFormatter(Specimen.Base, async (doc) => {
-  const { slug, objectIDs, classification, description, collection, images, measurements, date, age, origin, pieces, partial, collector, sponsor, loans, storage, publications, market, status, creator, editor, created, updated } = doc
+  const { slug, objectIDs, classification, description, collection, images, measurements, date, age, composition, origin, pieces, partial, collector, sponsor, loans, storage, publications, market, status, creator, editor, created, updated } = doc
 
   const $return = {
     id: slug,
@@ -21,16 +21,17 @@ export default defineMongooseFormatter(Specimen.Base, async (doc) => {
       pageSize: 5,
       self: () => `/api/files`,
     }),
-    measurements: measurements && measurements.map(({ type, dimensions, reason }) => ({
-      type: useEnum(MeasurementType).labelOf(type) as MeasurementType,
-      dimensions: dimensions as [number, number, number] | undefined,
-      reason: reason && useEnum(Immeasurabibility).labelOf(reason) as Immeasurabibility,
-    })),
+    measurements: measurements && {
+      count: useEnum(MeasurementCount).labelOf(measurements.count),
+      dimensions: measurements.dimensions,
+      reason: measurements.reason && useEnum(Immeasurabibility).labelOf(measurements.reason),
+    },
     date,
-    age: (age && ((age.relative && Object.keys(age.relative).length > 0) || age.numeric) && {
-      relative: (age.relative && Object.keys(age.relative).length > 0 && await renderDocument(age.relative, { model: Term, self: term => `/api/terms/${term._id}` })) || undefined,
+    age: (age && ((age.unit && Object.keys(age.unit).length > 0) || age.numeric) && {
+      unit: (age.unit && Object.keys(age.unit).length > 0 && await renderDocument(age.unit, { model: Term, self: term => `/api/terms/${term._id}` })) || undefined,
       numeric: age.numeric,
     }) || undefined,
+    composition,
     origin,
     pieces,
     partial,

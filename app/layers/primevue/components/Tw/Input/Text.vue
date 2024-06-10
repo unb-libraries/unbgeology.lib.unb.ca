@@ -9,6 +9,8 @@
         :id="id"
         v-model="value"
         type="text"
+        :disabled="disabled"
+        :placeholder="placeholder"
         :name="name"
         v-bind="attrs"
         class="input-ref"
@@ -26,6 +28,8 @@ defineOptions({
 
 const props = defineProps<{
   help?: string
+  disabled?: boolean,
+  placeholder?: string
   labelClass?: string
   inputClass?: string
   wrapperClass?: string

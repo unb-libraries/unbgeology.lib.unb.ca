@@ -1,6 +1,6 @@
 <template>
   <ul class="input-radio-group" :class="classList">
-    <li v-for="[option, label] in options" :key="option" :class="`${(option === selected && selectedItemClass) ?? ``}${itemClass && ` ${itemClass}`}`">
+    <li v-for="[option, label] in options" :key="String(option)" :class="`${(option === selected && selectedItemClass) ?? ``}${itemClass && ` ${itemClass}`}`">
       <slot name="item">
         <input
           :id="`${id}[${option}]`"
@@ -23,7 +23,7 @@
   </ul>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="tsx" generic="T = any">
 defineOptions({
   inheritAttrs: false,
 })
@@ -31,16 +31,16 @@ defineOptions({
 const parentAttrs = inject<Partial<{ id: string, name: string }>>(`attrs`)
 const { id = parentAttrs?.id ?? useId(), name = parentAttrs?.name, class: classList, ...attrs } = useAttrs() as { id: string, name: string, class: string }
 
-const selected = defineModel<string>({ required: false })
+const selected = defineModel<T>({ required: false })
 const props = defineProps<{
-  options: [string, string][]
+  options: [T, string][]
   itemClass?: string
   selectedItemClass?: string
   inputClass?: string
   labelClass?: string
 }>()
 
-const options = computed(() => props.options.map<[string, string, boolean]>(([option, label]) => [option, label, option === selected.value]))
+const options = computed(() => props.options.map<[T, string, boolean]>(([option, label]) => [option, label, option === selected.value]))
 
 // interface RadioOptions {
 

@@ -56,9 +56,9 @@ watch(numeric, (updated, previous) => {
   const { min, max } = props
   if (isNaN(Number(updated))) {
     numeric.value = Number(previous)
-  } else if (updated && min !== undefined && updated < min) {
+  } else if (updated !== undefined && min !== undefined && updated < min) {
     numeric.value = Number(previous)
-  } else if (updated && max !== undefined && updated > max) {
+  } else if (updated !== undefined && max !== undefined && updated > max) {
     numeric.value = Number(previous)
   } else {
     numeric.value = Number(updated)

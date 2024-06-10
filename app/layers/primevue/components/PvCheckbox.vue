@@ -31,7 +31,9 @@ const emits = defineEmits<{
   "update:modelValue": [value: boolean]
 }>()
 
-const { name, id, class: classList, ...attrs } = useAttrs() as { name: string, id: string, class: string }
+const parentAttrs = inject<Partial<{ id: string, name: string }>>(`attrs`)
+const { id = parentAttrs?.id ?? useId(), name = parentAttrs?.name, class: classList, ...attrs } = useAttrs() as { id: string, name: string, class: string }
+
 const value = computed({
   get() {
     return props.modelValue

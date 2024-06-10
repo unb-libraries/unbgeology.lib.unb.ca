@@ -23,13 +23,11 @@ export enum Category {
   ROCK = `rock`,
 }
 
-export enum MeasurementType {
+export enum MeasurementCount {
   INDIVIDUAL = 1,
-  SMALLEST = 2,
-  LARGEST = 4,
-  AVERAGE = 8,
-  CONTAINER = 16,
-  IMMEASURABLE = 32,
+  AGGREGATE = 2,
+  CONTAINER = 4,
+  IMMEASURABLE = 8,
 }
 
 export enum Immeasurabibility {
@@ -37,12 +35,6 @@ export enum Immeasurabibility {
   TOO_SMALL = 2,
   TOO_MANY = 4,
   TOO_FRAGILE = 8,
-}
-
-export interface Measurement {
-  type: MeasurementType
-  dimensions?: [number, number, number]
-  reason?: Immeasurabibility
 }
 
 export interface Place {
@@ -93,12 +85,17 @@ export interface Specimen extends Entity, Stateful<typeof Status> {
   description: string
   images: EntityJSONList<Image>
   classification: Classification
-  measurements: Measurement[]
+  measurements: {
+    count: MeasurementCount
+    dimensions?: [number, number, number][]
+    reason?: Immeasurabibility
+  }
   date?: string
   age: {
-    relative: Unit
+    unit: Unit
     numeric?: number
   }
+  composition: string[]
   origin: Place
   pieces: number
   partial: boolean

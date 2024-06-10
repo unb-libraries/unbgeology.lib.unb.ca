@@ -1,5 +1,5 @@
 import { Boolean, Date, Enum, Count, Numeric, ObjectID, String } from "~/layers/mongo/server/utils/api/filter"
-import { Category, MeasurementType, Status } from "~/types/specimen"
+import { Category, MeasurementCount, Status } from "~/types/specimen"
 
 export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({
   id: {
@@ -97,9 +97,9 @@ export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({
     sort: false,
     filter: (_, condition) => Numeric(`measurements.dimensions`, condition),
     definition: {
-      type: {
+      count: {
         default: true,
-        filter: Enum(MeasurementType),
+        filter: Enum(MeasurementCount),
       },
       dimensions: {
         default: true,
@@ -119,9 +119,9 @@ export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({
   },
   age: {
     default: true,
-    filter: (_, condition) => Numeric(`age.relative`, condition),
+    filter: (_, condition) => Numeric(`age.unit`, condition),
     definition: {
-      relative: {
+      unit: {
         default: true,
         join: Term,
         filter: ObjectID,
@@ -144,25 +144,18 @@ export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({
               },
             },
           },
-          gssp: {
-            default: true,
-            filter: Boolean,
-          },
-          uncertainty: {
-            default: true,
-            filter: false,
-          },
-          color: {
-            default: true,
-            filter: false,
-          },
         },
       },
       numeric: {
-        default: false,
+        default: true,
         filter: Numeric,
       },
     },
+  },
+  composition: {
+    default: true,
+    sort: false,
+    filter: String,
   },
   origin: {
     default: true,

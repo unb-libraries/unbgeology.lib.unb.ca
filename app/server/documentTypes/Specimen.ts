@@ -1,5 +1,5 @@
 import { EntityFieldTypes } from "layers/mongo/types/entity"
-import { Immeasurabibility, MeasurementType, Status } from "types/specimen"
+import { Immeasurabibility, MeasurementCount, Status } from "types/specimen"
 import type { Entity, Stateful as IStateful } from "@unb-libraries/nuxt-layer-entity"
 import type { Specimen as SpecimenEntity, Loan } from "types/specimen"
 import type { Fossil as FossilCD, Mineral as MineralCD, Rock as RockCD } from "./Classification"
@@ -20,13 +20,13 @@ export interface Specimen extends Omit<SpecimenEntity, keyof Entity | `type` | `
   collection: ICollection
   images: Image[]
   age: {
-    relative: GeochronologicUnit
+    unit: GeochronologicUnit
   } & Pick<SpecimenEntity[`age`], `numeric`>
   measurements: {
-    type: MeasurementType
-    dimensions?: number[]
+    count: MeasurementCount
+    dimensions?: [number, number, number][]
     reason?: Immeasurabibility
-  }[]
+  }
   collector?: Person | Organization
   collectorModel: string
   sponsor?: Person | Organization
@@ -131,55 +131,48 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
     required: false,
   }],
   measurements: {
-    type: [{
-      type: {
+    type: {
+      count: {
         type: EntityFieldTypes.String,
-        enum: MeasurementType,
-        default: MeasurementType.INDIVIDUAL,
+        enum: MeasurementCount,
+        default: MeasurementCount.INDIVIDUAL,
       },
-      dimensions: {
-        type: [EntityFieldTypes.Number],
-      },
+      dimensions: [[EntityFieldTypes.Number, EntityFieldTypes.Number, EntityFieldTypes.Number]],
       reason: {
         type: EntityFieldTypes.String,
         enum: Immeasurabibility,
       },
-    }],
-    required: optionalForStatus(Status.MIGRATED | Status.DRAFT),
+    },
     validate: [
       {
         validator: function (this: Specimen, measurements: Specimen[`measurements`]) {
-          return ((this.status as Status) & (Status.DRAFT | Status.MIGRATED)) || measurements.length > 0
+          return ((this.status as Status) & (Status.DRAFT | Status.MIGRATED)) || (measurements && Object.keys(measurements).length)
         },
-        message: `At least one measurement must be provided.`,
+        message: `Measurements are required.`,
       },
       {
-        validator: function (this: Specimen, measurements: Specimen[`measurements`]) {
-          return ((this.status as Status) & (Status.DRAFT | Status.MIGRATED)) || measurements.every(m => m.type === MeasurementType.IMMEASURABLE) || measurements.every(m => m.type !== MeasurementType.IMMEASURABLE)
+        validator: function (this: Specimen, { count, dimensions }: Specimen[`measurements`]) {
+          return count !== MeasurementCount.CONTAINER || dimensions?.length === 1
         },
-        message: `All measurements must be either measurable or immeasurable.`,
+        message: `Must provide exactly one set of dimensions for container measurements.`,
       },
       {
-        validator: function (this: Specimen, measurements: Specimen[`measurements`]) {
-          return ((this.status as Status) & (Status.DRAFT | Status.MIGRATED)) || (measurements.every(m => m.type === MeasurementType.IMMEASURABLE) && measurements.length === 1) || true
+        validator: function (this: Specimen, { count, dimensions }: Specimen[`measurements`]) {
+          return count !== MeasurementCount.AGGREGATE || dimensions?.length === 3
         },
-        message: `Only one immeasurable measurement is allowed.`,
+        message: `Must provide exactly three sets of dimensions for aggregate measurements.`,
       },
       {
-        validator: function (this: Specimen, measurements: Specimen[`measurements`]) {
-          return ((this.status as Status) & (Status.DRAFT | Status.MIGRATED)) || measurements.every(m => m.type === MeasurementType.IMMEASURABLE
-            ? m.reason !== undefined && m.dimensions === undefined
-            : true)
+        validator: function (this: Specimen, { count, dimensions }: Specimen[`measurements`]) {
+          return count !== MeasurementCount.INDIVIDUAL || dimensions?.length === this.pieces
         },
-        message: `Immeasurable measurements must provide a reason but no dimensions.`,
+        message: `Must provide one set of dimensions per individual piece.`,
       },
       {
-        validator: function (this: Specimen, measurements: Specimen[`measurements`]) {
-          return ((this.status as Status) & (Status.DRAFT | Status.MIGRATED)) || measurements.every(m => m.type !== MeasurementType.IMMEASURABLE
-            ? m.reason === undefined && m.dimensions !== undefined
-            : true)
+        validator: function (this: Specimen, { count, reason }: Specimen[`measurements`]) {
+          return count !== MeasurementCount.IMMEASURABLE || reason
         },
-        message: `Measurable measurements must provide dimensions but no reason.`,
+        message: `Must provide a reason for immeasurable items.`,
       },
     ],
   },
@@ -201,7 +194,7 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
   },
   age: {
     type: {
-      relative: {
+      unit: {
         type: EntityFieldTypes.ObjectId,
         ref: Geochronology.mongoose.model,
       },
@@ -209,26 +202,8 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
         type: EntityFieldTypes.Number,
       },
     },
-    validate: [
-      {
-        validator: function (age: Specimen[`age`]) {
-          return age.relative !== undefined || age.numeric !== undefined
-        },
-        message: `Either a relative or numeric age must be provided.`,
-      },
-      {
-        validator: async function ({ relative, numeric }: Specimen[`age`]) {
-          if (!(relative && numeric)) {
-            return true
-          }
-          const unit = await Geochronology.findByID(`${relative}`).select(`boundaries`)
-          const { lower, upper } = unit!.boundaries
-          return numeric > lower && numeric < upper
-        },
-        message: `The numeric age does not match the geochronologi unit.`,
-      },
-    ],
   },
+  composition: [EntityFieldTypes.String],
   origin: {
     type: {
       latitude: {
@@ -437,6 +412,23 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
     default(this: Specimen) {
       return this.creator
     },
+  },
+}, {
+  alterSchema(schema) {
+    schema.pre(`save`, async function () {
+      if (this.age?.unit) {
+        this.age.numeric = undefined
+      }
+      if (this.age?.numeric) {
+        const unit = await Geochronology.findOne()
+          .where(`boundaries.lower`).lte(this.age.numeric)
+          .and(`boundaries.upper`).gte(this.age.numeric)
+          .sort(`-division`)
+        if (unit) {
+          this.age.unit = unit
+        }
+      }
+    })
   },
 }).mixin(Slugified<Specimen>({
   path: `pk`,

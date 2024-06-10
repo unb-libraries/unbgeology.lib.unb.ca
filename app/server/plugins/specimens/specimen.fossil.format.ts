@@ -3,7 +3,7 @@ export default defineMongooseFormatter(Specimen.Fossil, async (doc) => {
   const { portion, type } = doc
 
   return {
-    portion: portion && await renderDocument(portion, { model: Term, self: term => `/api/terms/${term._id}` }),
+    portion: (portion && Object.keys(portion).length > 0 && await renderDocument(portion, { model: Term, self: term => `/api/terms/${term._id}` })) || undefined,
     type: type && `fossil`,
   }
 })

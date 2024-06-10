@@ -34,6 +34,19 @@ export const optional = <T = any>(validator: Validator<T>) => {
 }
 export const requireIf = <R extends boolean, T = any>(condition: R, validator: Validator<T>) => condition ? require(validator) : optional(validator) as R extends true ? Validator<T> : Validator<T | undefined>
 
+export function OrValidator<T = any>(...validators: Validator<T>[]) {
+  return async (input: any) => {
+    for (const validator of validators) {
+      try {
+        return await validator(input)
+      } catch (error) {
+        continue
+      }
+    }
+    throw new TypeError(`"${input}" must match any of the given validators`)
+  }
+}
+
 export function StringValidator(input: any) {
   if (typeof input === `string`) {
     return input
