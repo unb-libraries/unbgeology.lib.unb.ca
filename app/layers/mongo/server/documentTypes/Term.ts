@@ -10,6 +10,10 @@ export default defineDocumentModel<Term>(`Term`, defineDocumentSchema<Term>({
     type: String,
     required: true,
   },
+}, {
+  alterSchema(schema) {
+    schema.index({ label: 1, type: 1 }, { unique: true })
+  },
 }).mixin(Slugified<Term>({
   path: `label`,
 }))

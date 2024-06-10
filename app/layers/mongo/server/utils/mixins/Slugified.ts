@@ -11,7 +11,6 @@ export default <T = any>(options: SlugifiedOptions<T>) => defineDocumentSchema<I
   slug: {
     type: Schema.Types.String,
     required: true,
-    unique: true,
     default() {
       return slugify(typeof options.path === `function`
         ? options.path(this)
