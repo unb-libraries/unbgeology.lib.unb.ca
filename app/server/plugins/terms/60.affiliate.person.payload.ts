@@ -2,6 +2,8 @@ import { type Image } from "@unb-libraries/nuxt-layer-entity"
 import { Pronouns, Status, Title } from "~/types/affiliate"
 
 export default defineMongooseReader(Affiliate.Person, async (payload, options) => {
+  if (options.op === `create` && payload.type !== `affiliate/person`) { return {} }
+
   const create = options.op === `create`
   const { status } = await validateBody(payload, {
     status: optional(EnumValidator(Status)),

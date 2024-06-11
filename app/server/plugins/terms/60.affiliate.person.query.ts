@@ -19,57 +19,57 @@ export default defineMongooseEventQueryHandler(Affiliate.Person, defineEventQuer
     filter: Enum(Title),
   },
   occupation: {
-    default: false,
+    default: true,
     filter: String,
   },
   position: {
-    default: false,
+    default: true,
     filter: String,
   },
   image: {
-    default: false,
+    default: true,
     sort: false,
     filter: false,
   },
   bio: {
-    default: false,
+    default: true,
     sort: false,
     filter: false,
   },
   email: {
-    default: false,
+    default: true,
     filter: false,
   },
   phone: {
-    default: false,
+    default: true,
     filter: String,
   },
   web: {
-    default: false,
+    default: true,
     filter: false,
   },
   status: {
-    default: false,
+    default: true,
     filter: Enum(Status),
   },
   type: {
-    default: false,
+    default: true,
     filter: (field, [op, value]) => (query) => {
-      if ((Array.isArray(value) && value.includes(`person`)) || value === `person`) {
+      if ((Array.isArray(value) && value.includes(`affiliate/person`)) || value === `affiliate/person`) {
         return String(field, [op, Affiliate.Person.fullName])(query)
       }
     },
   },
   active: {
-    default: false,
+    default: true,
     filter: Boolean,
   },
   created: {
-    default: false,
+    default: true,
     filter: Date,
   },
   updated: {
-    default: false,
+    default: true,
     filter: Date,
   },
 }))

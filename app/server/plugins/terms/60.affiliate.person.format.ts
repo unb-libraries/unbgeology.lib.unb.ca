@@ -7,7 +7,7 @@ export default defineMongooseFormatter(Affiliate.Person, (doc) => {
   return {
     firstName,
     lastName,
-    pronouns: pronouns && useEnum(Pronouns).labelOf(pronouns),
+    pronouns: pronouns && useEnum(Pronouns).labelOf(pronouns).toLowerCase(),
     title: title && useEnum(Title).labelOf(title).toLowerCase(),
     occupation,
     position,
@@ -17,7 +17,7 @@ export default defineMongooseFormatter(Affiliate.Person, (doc) => {
     phone,
     web,
     active: active !== undefined ? active : undefined,
-    status: status && useEnum(Status).valueOf(status),
-    type: type && `person`,
+    status: status && useEnum(Status).labelOf(status).toLowerCase(),
+    type: type && `affiliate/person`,
   }
 })

@@ -1,80 +1,85 @@
 <template>
-  <EntityForm :entity="data">
-    <template #default="{ body }">
-      <div class="flex flex-row space-x-4">
-        <div class="flex w-3/5 flex-col space-y-4">
-          <TwFormField label="Name">
-            <TwInputText v-model="body.origin.name" class="input input-text-lg" />
-          </TwFormField>
-          <TwFormField label="Description">
-            <TwInputTextArea v-model="body.origin.description" :rows="5" class="input input-textarea-lg" />
-          </TwFormField>
-          <TwFormField label="Collector">
-            <PvInputDropdown v-model="body.collector" :options="affiliates" option-field="self" label-field="label" class="input-select-lg" />
-          </TwFormField>
-          <TwFormField label="Sponsor">
-            <PvInputDropdown v-model="body.sponsor" :options="affiliates" option-field="self" label-field="label" class="input-select-lg" />
-          </TwFormField>
-        </div>
-        <div class="flex w-2/5 flex-col space-y-4">
-          <TwFormField label="Place" class="h-full">
-            <LeafletMap
-              class="border-primary-20 dark:border-primary-60/75 h-full rounded-md border"
-              name="origin"
-              :zoom="2"
-              :center="[body.origin?.latitude ?? 0, body.origin?.longitude ?? 0]"
-              @click="setOrigin"
-            >
-              <LeafletSearch v-model="location" class="input-select-md hover:border-accent-mid text-primary dark:text-primary w-80 rounded-sm bg-white dark:bg-white" />
-              <LeafletMarker
-                v-if="body.origin.latitude !== undefined && body.origin?.longitude !== undefined"
-                :name="body.origin.name"
-                :center="[body.origin.latitude, body.origin.longitude]"
-                :draggable="true"
-                @dragged="setOrigin"
-              />
-            </LeafletMap>
-          </TwFormField>
-        </div>
+  <EntityForm :entity="data" @save="onSave">
+    <div class="flex flex-row space-x-4">
+      <div class="flex w-3/5 flex-col space-y-4">
+        <TwFormField label="Name">
+          <TwInputText v-model="data.origin.name" class="input input-text-lg" />
+        </TwFormField>
+        <TwFormField label="Description">
+          <TwInputTextArea v-model="data.origin.description" :rows="5" class="input input-textarea-lg" />
+        </TwFormField>
+        <TwFormField label="Collector">
+          <PvInputDropdown v-model="data.collector" :options="affiliates" option-field="self" label-field="label" class="input-select-lg" />
+        </TwFormField>
+        <TwFormField label="Sponsor">
+          <PvInputDropdown v-model="data.sponsor" :options="affiliates" option-field="self" label-field="label" class="input-select-lg" />
+        </TwFormField>
       </div>
-    </template>
+      <div class="flex w-2/5 flex-col space-y-4">
+        <TwFormField label="Place" class="h-full">
+          <LeafletMap
+            class="border-primary-20 dark:border-primary-60/75 h-full rounded-md border"
+            name="origin"
+            :zoom="2"
+            :center="[data.origin.latitude, data.origin.longitude]"
+            @click="setOrigin"
+          >
+            <LeafletSearch v-model="location" class="input-select-md hover:border-accent-mid text-primary dark:text-primary w-80 rounded-sm bg-white dark:bg-white" />
+            <LeafletMarker
+              v-if="data.origin.latitude !== undefined && data.origin?.longitude !== undefined"
+              :name="data.origin.name"
+              :center="[data.origin.latitude, data.origin.longitude]"
+              :draggable="true"
+              @dragged="setOrigin"
+            />
+          </LeafletMap>
+        </TwFormField>
+      </div>
+    </div>
   </EntityForm>
 </template>
 
 <script setup lang="ts">
 import { FilterOperator } from '@unb-libraries/nuxt-layer-entity'
 import { type Specimen } from 'types/specimen'
+import { type Person, type Organization } from '~/types/affiliate'
 import { type Coordinate } from '~/types/leaflet'
 import { type Location } from '~/types/nominatim'
 
-defineProps<{
-  specimen?: Specimen
+const props = defineProps<{
+  specimen: Specimen
 }>()
 
-defineEmits<{
+const emits = defineEmits<{
   save: [specimen: Specimen]
 }>()
 
-const { entities: people } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `affiliate/person`]] })
-const { entities: organizations } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `affiliate/organization`]] })
-const affiliates = computed(() => [...people.value, ...organizations.value])
+const { entities: people } = await fetchEntityList<Person>(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `affiliate/person`]] })
+const { entities: organizations } = await fetchEntityList<Organization>(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `affiliate/organization`]] })
+const affiliates = computed(() => [...people.value, ...organizations.value].sort(({ label: a }, { label: b }) => a < b ? -1 : a > b ? 1 : 0))
 const location = ref<Location>()
 
 const data = reactive({
   origin: {
-    latitude: 0,
-    longitude: 0,
-    accuracy: 0,
-    name: ``,
-    description: ``,
+    ...{
+      latitude: 0,
+      longitude: 0,
+      accuracy: 0,
+      name: ``,
+      description: ``,
+    },
+    ...props.specimen.origin,
   },
-  collector: undefined as string | undefined,
-  sponsor: undefined as string | undefined,
+  collector: props.specimen.collector?.self,
+  sponsor: props.specimen.sponsor?.self,
 })
 
+console.log(`input`, props.specimen)
+console.log(`form-input`, data)
+
 const setOrigin = function ([lat, long]: Coordinate) {
-  data.origin.latitude = lat
-  data.origin.longitude = long
+  data.origin.latitude = Number(lat)
+  data.origin.longitude = Number(long)
 }
 
 watch(location, (loc) => {
@@ -86,4 +91,16 @@ watch(location, (loc) => {
     }
   }
 })
+
+function onSave() {
+  console.log(`form-output`, data)
+  const { origin, collector, sponsor } = data
+  const payload = {
+    origin,
+    collector: collector || (props.specimen.collector ? null : undefined),
+    sponsor: sponsor || (props.specimen.sponsor ? null : undefined),
+  }
+  console.log(`payload`, payload)
+  emits(`save`, payload)
+}
 </script>

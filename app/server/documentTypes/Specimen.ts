@@ -1,5 +1,6 @@
 import { EntityFieldTypes } from "layers/mongo/types/entity"
 import { Immeasurabibility, MeasurementCount, Status } from "types/specimen"
+import { isNullishCoalesce } from "typescript"
 import type { Entity, Stateful as IStateful } from "@unb-libraries/nuxt-layer-entity"
 import type { Specimen as SpecimenEntity, Loan } from "types/specimen"
 import type { Fossil as FossilCD, Mineral as MineralCD, Rock as RockCD } from "./Classification"
@@ -279,8 +280,9 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
       Affiliate.Person.mongoose.model.modelName,
       Affiliate.Organization.mongoose.model.modelName,
     ],
-    required(this: Specimen) {
-      return this.collector !== undefined
+    required: false,
+    default() {
+      return Term.mongoose.model.modelName
     },
   },
   sponsor: {
@@ -295,8 +297,9 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
       Affiliate.Person.mongoose.model.modelName,
       Affiliate.Organization.mongoose.model.modelName,
     ],
-    required(this: Specimen) {
-      return this.sponsor !== undefined
+    required: false,
+    default() {
+      return Term.mongoose.model.modelName
     },
   },
   loans: {

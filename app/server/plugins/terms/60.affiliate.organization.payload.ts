@@ -9,7 +9,7 @@ export default defineMongooseReader(Affiliate.Organization, async (payload, opti
   })
 
   const migrate = status === Status.MIGRATED
-  const { address, contact } = await validateBody(payload, {
+  const { address, contact, web } = await validateBody(payload, {
     address: requireIf(create && !migrate, ObjectValidator({
       line1: requireIf(create, StringValidator),
       line2: optional(StringValidator),
@@ -35,6 +35,7 @@ export default defineMongooseReader(Affiliate.Organization, async (payload, opti
       ...contact,
       phone: contact.phone?.replace(/[^\d+]/g, ``),
     },
+    web,
     status: status && useEnum(Status).valueOf(status),
     type: Affiliate.Organization.fullName,
   }

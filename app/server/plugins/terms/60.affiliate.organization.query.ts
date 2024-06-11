@@ -3,7 +3,7 @@ import { Status } from "~/types/affiliate"
 
 export default defineMongooseEventQueryHandler(Affiliate.Organization, defineEventQuery({
   address: {
-    default: false,
+    default: true,
     sort: false,
     filter: false,
     definition: {
@@ -12,7 +12,7 @@ export default defineMongooseEventQueryHandler(Affiliate.Organization, defineEve
         filter: false,
       },
       line2: {
-        default: false,
+        default: true,
         sort: false,
         filter: false,
       },
@@ -36,7 +36,7 @@ export default defineMongooseEventQueryHandler(Affiliate.Organization, defineEve
     },
   },
   contact: {
-    default: false,
+    default: true,
     sort: false,
     filter: false,
     definition: {
@@ -60,11 +60,12 @@ export default defineMongooseEventQueryHandler(Affiliate.Organization, defineEve
     filter: false,
   },
   status: {
-    default: false,
+    default: true,
     filter: Enum(Status),
   },
   type: {
-    default: false,
+    default: true,
+    // FIX: Allow filtering on more than one type
     filter: (field, [op, value]) => (query) => {
       if ((Array.isArray(value) && value.includes(`affiliate/organization`)) || value === `affiliate/organization`) {
         return String(field, [op, Affiliate.Organization.fullName])(query)

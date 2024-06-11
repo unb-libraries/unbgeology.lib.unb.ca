@@ -43,7 +43,7 @@ export default defineMongooseFormatter(Specimen.Base, async (doc) => {
     pieces,
     partial,
     collector: (collector && Object.keys(collector).length > 0 && await renderDocument(collector, { model: Term, self: term => `/api/terms/${term._id}` })) as Affiliate || undefined,
-    sponsor: (sponsor && Object.keys(sponsor).length > 0 && await renderDocument(sponsor, { self: term => `/api/terms/${term._id}` })) as Affiliate || undefined,
+    sponsor: (sponsor && Object.keys(sponsor).length > 0 && await renderDocument(sponsor, { model: Term, self: term => `/api/terms/${term._id}` })) as Affiliate || undefined,
     loans: loans && loans.map(loan => ({
       received: loan.received,
       contact: loan.contact && {

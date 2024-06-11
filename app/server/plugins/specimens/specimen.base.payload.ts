@@ -88,9 +88,9 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
     }) || undefined,
     // FIX: Without using URIEntityTypeValidator, the collector/sponsor model cannot be determined
     collector: collector && { _id: collector.substring(1).split(`/`).at(-1)! },
-    collectorModel: collector && Term.fullName,
+    // collectorModel: collector && Term.fullName,
     sponsor: sponsor && { _id: sponsor.substring(1).split(`/`).at(-1)! },
-    sponsorModel: sponsor && Term.fullName,
+    // sponsorModel: sponsor && Term.fullName,
     loans: loans?.map(({ start, end, ...loan }) => ({
       ...loan,
       start: new Date(start).getUTCMilliseconds(),

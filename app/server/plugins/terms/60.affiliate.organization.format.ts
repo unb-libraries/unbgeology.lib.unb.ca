@@ -9,6 +9,6 @@ export default defineMongooseFormatter(Affiliate.Organization, (doc) => {
     contact,
     web,
     status: status && useEnum(Status).valueOf(status),
-    type: type && `organization`,
+    type: type && `affiliate/organization`,
   }
 })
