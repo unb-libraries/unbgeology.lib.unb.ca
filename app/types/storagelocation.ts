@@ -8,3 +8,5 @@ export enum Status {
 export interface StorageLocation extends Term, Hierarchical<StorageLocation>, Stateful<typeof Status> {
   public: boolean
 }
+
+export type StorageLocationPayload = Partial<Pick<StorageLocation, `label` | `public`> & { parent?: string }>
