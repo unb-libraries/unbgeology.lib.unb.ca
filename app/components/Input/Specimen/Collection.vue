@@ -4,8 +4,9 @@
     :options="options"
     option-field="self"
     label-field="label"
-    :add-new-option="true"
     class="input-select-lg"
+    :add-new-option="true"
+    @add="onAdd"
   />
 </template>
 
@@ -18,18 +19,18 @@ import useEntityFormModal from '~/layers/primevue/composables/useEntityFormModal
 const collection = defineModel<string>({ required: false })
 
 const { entities: options, add: createCollection } = await fetchEntityList<Collection>(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `collection`]], select: [`label`] })
-watch(collection, (current, previous) => {
-  if (current === `addNew`) {
-    const { open: openModal } = useEntityFormModal<Collection>(TermForm, {
-      onCancel: () => { collection.value = previous },
-      onSave: async (values: Collection) => {
-        const { entity: newCollection } = await createCollection({ ...values, type: `collection` })
-        nextTick(() => {
+
+function onAdd() {
+  const { open: openModal } = useEntityFormModal<Collection>(TermForm, {
+    onSave: async (values: Collection) => {
+      const { entity: newCollection } = await createCollection({ ...values, type: `collection` })
+      nextTick(() => {
+        if (newCollection.value) {
           collection.value = newCollection.value?.self
-        })
-      },
-    })
-    openModal()
-  }
-})
+        }
+      })
+    },
+  })
+  openModal()
+}
 </script>

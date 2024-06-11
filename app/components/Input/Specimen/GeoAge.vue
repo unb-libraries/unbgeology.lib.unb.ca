@@ -8,8 +8,9 @@
       option-field="self"
       label-field="label"
       class="input-select-lg"
-      :add-new-option="true"
       placeholder="Select a geochronologic time unit"
+      :add-new-option="true"
+      @add="onAdd"
     />
     <TwInputNumber v-else-if="type === `numeric`" v-model="numeric" class="input-number-lg" />
   </div>
@@ -33,20 +34,19 @@ const typeOptions = [
 const type = ref<`unit` | `numeric`>(typeof age.value === `number` ? `numeric` : `unit`)
 
 const { entities: units, add: createUnit } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `geochronology`]] })
-watch(unit, (current, previous) => {
-  if (current === `addNew`) {
-    const { open: openModal } = useEntityFormModal<Unit>(FormGeochronology, {
-      onSave: async (values: Unit) => {
-        const { entity: newCollection } = await createUnit({ ...values, type: `geochronology` })
-        nextTick(() => {
-          unit.value = newCollection.value?.self
-        })
-      },
-    })
-    openModal()
-    unit.value = previous
-  }
-})
+function onAdd() {
+  const { open: openModal } = useEntityFormModal<Unit>(FormGeochronology, {
+    onSave: async (values: Unit) => {
+      const { entity: newUnit } = await createUnit({ ...values, type: `geochronology` })
+      nextTick(() => {
+        if (newUnit.value) {
+          unit.value = newUnit.value?.self
+        }
+      })
+    },
+  })
+  openModal()
+}
 
 watch(unit, (unit) => { age.value = unit })
 watch(numeric, (numeric) => { age.value = numeric })

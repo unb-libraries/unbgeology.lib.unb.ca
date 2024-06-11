@@ -6,6 +6,7 @@
     label-field="label"
     class="input-select-lg"
     :add-new-option="true"
+    @add="onAdd"
   />
 </template>
 
@@ -18,18 +19,17 @@ import { TermForm } from '#components'
 const portion = defineModel<string>({ required: false })
 const { entities: options, add: createPortion } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `portion`]] })
 
-watch(portion, (current, previous) => {
-  if (current === `addNew`) {
-    const { open: openModal } = useEntityFormModal<Portion>(TermForm, {
-      onSave: async (values: Portion) => {
-        const { entity: newCollection } = await createPortion({ ...values, type: `portion` })
-        nextTick(() => {
-          portion.value = newCollection.value?.self
-        })
-      },
-    })
-    openModal()
-    portion.value = previous
-  }
-})
+function onAdd() {
+  const { open: openModal } = useEntityFormModal<Portion>(TermForm, {
+    onSave: async (values: Portion) => {
+      const { entity: newPortion } = await createPortion({ ...values, type: `portion` })
+      nextTick(() => {
+        if (newPortion.value) {
+          portion.value = newPortion.value?.self
+        }
+      })
+    },
+  })
+  openModal()
+}
 </script>

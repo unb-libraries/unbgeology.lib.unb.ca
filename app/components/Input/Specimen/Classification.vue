@@ -6,6 +6,7 @@
     label-field="label"
     class="input-select-lg"
     :add-new-option="true"
+    @add="onAdd"
   />
 </template>
 
@@ -27,18 +28,17 @@ const Form = {
 }[props.type]
 
 const { entities: options, add: createClassification } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `classification/${props.type}`]] })
-watch(classification, (current, previous) => {
-  if (current === `addNew`) {
-    const { open: openModal } = useEntityFormModal<Classification>(Form, {
-      onCancel: () => { classification.value = previous },
-      onSave: async (values: Classification) => {
-        const { entity: newCollection } = await createClassification({ ...values, type: `classification/${props.type}` })
-        nextTick(() => {
+function onAdd() {
+  const { open: openModal } = useEntityFormModal<Classification>(Form, {
+    onSave: async (values: Classification) => {
+      const { entity: newCollection } = await createClassification({ ...values, type: `classification/${props.type}` })
+      nextTick(() => {
+        if (newCollection.value) {
           classification.value = newCollection.value?.self
-        })
-      },
-    })
-    openModal()
-  }
-})
+        }
+      })
+    },
+  })
+  openModal()
+}
 </script>
