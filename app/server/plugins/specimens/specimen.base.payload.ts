@@ -14,7 +14,7 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
 
   // REFACTOR: Because URIEntityTypeValidator cannot authorize against the API, MatchValidator is used instead
 
-  const { classification, collection, images, age, measurements, collector, sponsor, loans, storage, creator, editor, created, updated, ...body } = await validateBody(payload, {
+  const { classification, collection, images, age, composition, measurements, collector, sponsor, loans, storage, creator, editor, created, updated, ...body } = await validateBody(payload, {
     objectIDs: optional(ArrayValidator(ObjectValidator({
       id: require(StringValidator),
       type: optional(StringValidator),
@@ -30,7 +30,7 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
     })),
     date: optional(MatchValidator(validationPatterns.partialDate)),
     age: optional(OrValidator<string | number>(MatchValidator(/^\/api\/terms\/[a-z0-9]{24}$/), NumberValidator)),
-    composition: optional(ArrayValidator(StringValidator)),
+    composition: optional(ArrayValidator(MatchValidator(/^\/api\/terms\/[a-z0-9]{24}$/))),
     origin: optional(ObjectValidator({
       latitude: NumberValidator,
       longitude: NumberValidator,
@@ -80,6 +80,7 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
     age: age && (typeof age === `string`
       ? { unit: { _id: age.substring(1).split(`/`).at(-1)! }, numeric: null }
       : { unit: null, numeric: age }),
+    composition: composition && composition.map(c => ({ _id: c.substring(1).split(`/`).at(-1)! })),
     measurements: (measurements && Object.keys(measurements).length > 0 && {
       count: useEnum(MeasurementCount).valueOf(measurements.count),
       dimensions: measurements.dimensions,

@@ -15,8 +15,14 @@
         <InputSpecimenGeoAge v-model="data.age" />
       </TwFormField>
     </div>
-    <TwFormField label="Composition">
-      <TwInputText class="input input-text-lg" />
+    <TwFormField v-if="[`fossil`, `rock`].includes(specimen.type)" label="Composition">
+      <InputSpecimenComposition
+        v-model="data.composition"
+        :type="(specimen.type as `fossil` | `rock`)"
+        class="input-select-lg"
+        option-field="self"
+        label-field="label"
+      />
     </TwFormField>
     <div class="flex w-full flex-row space-x-2">
       <TwFormField label="Pieces" class="w-1/2">
@@ -40,7 +46,7 @@
 
 <script setup lang="ts">
 import { FilterOperator } from '@unb-libraries/nuxt-layer-entity'
-import { type Fossil, type Specimen } from 'types/specimen'
+import { type Fossil, type Rock, type Specimen } from 'types/specimen'
 
 const props = defineProps<{
   specimen: Specimen
@@ -56,7 +62,7 @@ const { entities: classifications } = await fetchEntityList(`Term`, { filter: [[
 const data = reactive({
   classification: props.specimen.classification?.self,
   age: props.specimen.age?.numeric ?? props.specimen.age?.unit?.self,
-  // composition: props.specimen.composition ?? [],
+  composition: (props.specimen as Fossil | Rock).composition?.entities.map(c => c.self),
   pieces: props.specimen.pieces || 1,
   partial: props.specimen.partial,
   portion: props.specimen.type === `fossil` ? (props.specimen as Fossil).portion?.self : undefined,
@@ -68,14 +74,16 @@ console.log(`form-input`, data)
 
 const onSave = () => {
   console.log(`form-output`, data)
-  const { classification, age, pieces, partial, measurements } = data
+  const { classification, age, composition, pieces, partial, portion, measurements } = data
+  console.log(`composition`, composition)
 
   const payload = {
     classification: classification ?? (props.specimen.classification ? null : undefined),
     age: age || (props.specimen.age ? null : undefined),
+    composition: composition || ((props.specimen as Fossil | Rock).composition ? null : undefined),
     pieces,
     partial,
-    portion: (props.specimen.type === `fossil` && data.portion) || ((props.specimen as Fossil).portion ? null : undefined),
+    portion: (props.specimen.type === `fossil` && portion) || (props.specimen as Fossil).portion ? null : undefined,
     measurements,
   }
 

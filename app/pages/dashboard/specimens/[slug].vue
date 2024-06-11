@@ -16,7 +16,7 @@
         </NuxtLink>
       </nav>
 
-      <FormSpecimenDetails v-if="edit === `details`" :category="specimen!.type" />
+      <FormSpecimenDetails v-if="edit === `details`" :specimen="specimen!" @save="onSave" @cancel="navigateTo(`/dashboard/specimens`)" />
       <FormSpecimenOrigin v-else-if="edit === `origin`" />
       <FormSpecimenStorage v-else-if="edit === `storage`" />
       <FormSpecimen v-else :specimen="specimen!" @save="onSave" @cancel="navigateTo(`/dashboard/specimens`)" />

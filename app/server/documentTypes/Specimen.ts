@@ -8,12 +8,13 @@ import type { Person, Organization } from "./Affiliate"
 import type { GeochronologicUnit } from "./Geochronology"
 import type { StorageLocation as IStorageLocation } from "./StorageLocation"
 import type { Collection as ICollection } from "./Collection"
+import type { Composition as IComposition } from "./Composition"
 import type { DocumentBase as IDocumentBase } from "~/layers/mongo/types/schema"
 import ImageFile, { type Image } from "~/layers/mongo/server/documentTypes/Image"
 import { type User } from "~/layers/mongo/server/documentTypes/User"
 import { type Authorize as IAuthorize } from "~/layers/mongo/server/utils/mixins/Authorize"
 
-export interface Specimen extends Omit<SpecimenEntity, keyof Entity | `type` | `classification` | `collection` | `images` | `age` | `measurements` | `collector` | `sponsor` | `loans` | `storage` | `creator` | `editor`>, IStateful<typeof Status>, IAuthorize, IDocumentBase {
+export interface Specimen extends Omit<SpecimenEntity, keyof Entity | `type` | `classification` | `collection` | `images` | `age` | `composition` | `measurements` | `collector` | `sponsor` | `loans` | `storage` | `creator` | `editor`>, IStateful<typeof Status>, IAuthorize, IDocumentBase {
   type: `Specimen.Fossil` | `Specimen.Mineral` | `Specimen.Rock`
   classification: FossilCD | MineralCD | RockCD
   classificationModel: string
@@ -46,8 +47,9 @@ export interface Specimen extends Omit<SpecimenEntity, keyof Entity | `type` | `
   editor: User
 }
 
-export interface FossilSpecimen extends Omit<Specimen, `classification` | keyof Entity>, IDocumentBase {
+export interface FossilSpecimen extends Omit<Specimen, `classification` | `composition` | keyof Entity>, IDocumentBase {
   classification: FossilCD
+  composition: IComposition[]
   portion: Portion
 }
 
@@ -55,8 +57,9 @@ export interface MineralSpecimen extends Omit<Specimen, `classification` | keyof
   classification: MineralCD
 }
 
-export interface RockSpecimen extends Omit<Specimen, `classification` | keyof Entity>, IDocumentBase {
+export interface RockSpecimen extends Omit<Specimen, `classification` | `composition` | keyof Entity>, IDocumentBase {
   classification: RockCD
+  composition: IComposition[]
 }
 
 const State = Stateful({
@@ -203,7 +206,26 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
       },
     },
   },
-  composition: [EntityFieldTypes.String],
+  composition: [{
+    type: EntityFieldTypes.ObjectId,
+    refPath: `compositionModel`,
+    required: false,
+  }],
+  compositionModel: {
+    type: EntityFieldTypes.String,
+    enum: [
+      Composition.Fossil.mongoose.model.modelName,
+      Composition.Rock.mongoose.model.modelName,
+    ],
+    required: false,
+    default(this: Specimen) {
+      return {
+        "Specimen.Fossil": Composition.Fossil.mongoose.model.modelName,
+        "Specimen.Mineral": undefined,
+        "Specimen.Rock": Composition.Rock.mongoose.model.modelName,
+      }[this.type]
+    },
+  },
   origin: {
     type: {
       latitude: {

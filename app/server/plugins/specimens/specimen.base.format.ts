@@ -18,8 +18,16 @@ export default defineMongooseFormatter(Specimen.Base, async (doc) => {
       canonical: {
         self: img => `/api/files/${img._id}`,
       },
-      pageSize: 5,
+      pageSize: 10,
       self: () => `/api/files`,
+    }),
+    composition: composition && await renderDocumentList(composition, {
+      model: Term,
+      canonical: {
+        self: term => `/api/terms/${term._id}`,
+      },
+      pageSize: 10,
+      self: term => `/api/terms`,
     }),
     measurements: measurements && {
       count: useEnum(MeasurementCount).labelOf(measurements.count),
@@ -31,7 +39,6 @@ export default defineMongooseFormatter(Specimen.Base, async (doc) => {
       unit: (age.unit && Object.keys(age.unit).length > 0 && await renderDocument(age.unit, { model: Term, self: term => `/api/terms/${term._id}` })) || undefined,
       numeric: age.numeric,
     }) || undefined,
-    composition,
     origin,
     pieces,
     partial,

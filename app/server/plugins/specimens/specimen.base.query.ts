@@ -154,8 +154,18 @@ export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({
   },
   composition: {
     default: true,
-    sort: false,
-    filter: String,
+    join: {
+      documentType: Term,
+      cardinality: `many`,
+    },
+    sort: `composition.label`,
+    filter: (_, condition) => Numeric(`composition.label`, condition),
+    definition: {
+      label: {
+        default: true,
+        filter: String,
+      },
+    },
   },
   origin: {
     default: true,

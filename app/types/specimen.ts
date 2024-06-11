@@ -9,6 +9,7 @@ import type {
   Mineral,
 } from "types/classification"
 import type { Collection } from "./collection"
+import type { Composition } from "./composition"
 
 export enum Status {
   MIGRATED = 1,
@@ -95,7 +96,6 @@ export interface Specimen extends Entity, Stateful<typeof Status> {
     unit: Unit
     numeric?: number
   }
-  composition: string[]
   origin: Place
   pieces: number
   partial: boolean
@@ -112,6 +112,7 @@ export interface Specimen extends Entity, Stateful<typeof Status> {
 export interface Fossil extends Specimen {
   type: Category.FOSSIL
   classification: Fossil
+  composition: EntityJSONList<Composition>
   portion: Term
 }
 
@@ -123,4 +124,5 @@ export interface Mineral extends Specimen {
 export interface Rock extends Specimen {
   type: Category.ROCK
   classification: Rock
+  composition: EntityJSONList<Composition>
 }
