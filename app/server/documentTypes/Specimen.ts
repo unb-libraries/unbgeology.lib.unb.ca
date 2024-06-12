@@ -37,13 +37,13 @@ export interface Specimen extends Omit<SpecimenEntity, keyof Entity | `type` | `
     start: number
     end: number
   }>
+  storageLocations: IStorageLocation[]
   storage: {
-    locations: IStorageLocation[]
-    dates: {
-      dateIn: number
-      dateOut?: number
-    }[]
-  }
+    id: string
+    location: IStorageLocation
+    dateIn: number
+    dateOut?: number
+  }[]
   creator: User
   editor: User
 }
@@ -346,55 +346,19 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
       },
     ],
   },
+  storageLocations: {
+    type: [{
+      type: EntityFieldTypes.ObjectId,
+      ref: StorageLocation.mongoose.model,
+    }],
+  },
   storage: {
-    type: {
-      locations: [{
-        type: EntityFieldTypes.ObjectId,
-        ref: StorageLocation.mongoose.model,
-      }],
-      dates: [{
-        dateIn: EntityFieldTypes.Number,
-        dateOut: EntityFieldTypes.Number,
-      }],
-    },
-    validate: [
-      {
-        validator: function (this: Specimen, storage: Specimen[`storage`]) {
-          return storage || (this.status as Status) & (Status.MIGRATED | Status.DRAFT)
-        },
-        message: `Storage is required.`,
-      },
-      {
-        validator: function (this: Specimen, storage: Specimen[`storage`]) {
-          return !storage || storage.locations.length === storage.dates.length
-        },
-        message: `The number of locations must match the number of dates.`,
-      },
-      {
-        validator: function (this: Specimen, storage: Specimen[`storage`]) {
-          return !storage || !storage.dates.slice(1).some(d => d.dateIn === undefined)
-        },
-        message: `Each entry must provide an incoming date.`,
-      },
-      {
-        validator: function (this: Specimen, storage: Specimen[`storage`]) {
-          return storage.dates.length < 2 || storage.dates.reverse().slice(1).some(s => s.dateOut === undefined)
-        },
-        message: `Each but the most recent entry must provide an outgoing date.`,
-      },
-      {
-        validator: function (this: Specimen, storage: Specimen[`storage`]) {
-          return storage.dates.length < 2 || storage.dates.every(s => !s.dateOut || s.dateIn <= s.dateOut)
-        },
-        message: `Each entry's incoming date must precede its outgoing date.`,
-      },
-      {
-        validator: function (this: Specimen, storage: Specimen[`storage`]) {
-          return storage.dates.length < 2 || storage.dates.slice(1).every((s, i) => s.dateIn >= storage.dates[i].dateOut!)
-        },
-        message: `Each entry's incoming date must follow the previous entry's outgoing date.`,
-      },
-    ],
+    type: [{
+      location: EntityFieldTypes.ObjectId,
+      dateIn: EntityFieldTypes.Number,
+      dateOut: EntityFieldTypes.Number,
+    }],
+    required: optionalForStatus(Status.MIGRATED | Status.DRAFT),
   },
   publications: {
     type: [{
@@ -452,6 +416,11 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
         if (unit) {
           this.age.unit = unit
         }
+      }
+      if (this.storage?.length) {
+        this.storageLocations = this.storage
+          .map(({ location }) => location)
+          .filter((loc, index, arr) => arr.indexOf(loc) === index)
       }
     })
   },

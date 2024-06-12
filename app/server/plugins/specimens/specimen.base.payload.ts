@@ -96,13 +96,11 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
       start: new Date(start).getUTCMilliseconds(),
       end: new Date(end).getUTCMilliseconds(),
     })),
-    storage: {
-      locations: storage?.map(({ location }) => ({ _id: location.substring(1).split(`/`).at(-1)! })),
-      dates: storage?.map(({ dateIn, dateOut }) => ({
-        dateIn: dateIn && new Date(dateIn).valueOf(),
-        dateOut: dateOut && new Date(dateOut).valueOf(),
-      })),
-    },
+    storage: storage?.map(({ location, dateIn, dateOut }) => ({
+      location: location && location.substring(1).split(`/`).at(-1)!,
+      dateIn: dateIn && new Date(dateIn).valueOf(),
+      dateOut: dateOut && new Date(dateOut).valueOf(),
+    })),
     status: status && useEnum(Status).valueOf(status),
     creator: creator && { _id: creator.substring(1).split(`/`).at(-1)! },
     editor: editor && { _id: editor.substring(1).split(`/`).at(-1)! },

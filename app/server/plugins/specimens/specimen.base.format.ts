@@ -5,7 +5,7 @@ import { type StorageLocation } from "~/types/storagelocation"
 import { Immeasurabibility, MeasurementCount, Status } from "~/types/specimen"
 
 export default defineMongooseFormatter(Specimen.Base, async (doc) => {
-  const { slug, objectIDs, classification, description, collection, images, measurements, date, age, composition, origin, pieces, partial, collector, sponsor, loans, storage, publications, market, status, creator, editor, created, updated } = doc
+  const { slug, objectIDs, classification, description, collection, images, measurements, date, age, composition, origin, pieces, partial, collector, sponsor, loans, storage, storageLocations, publications, market, status, creator, editor, created, updated } = doc
 
   const $return = {
     id: slug,
@@ -55,11 +55,15 @@ export default defineMongooseFormatter(Specimen.Base, async (doc) => {
       start: loan.start && new Date(loan.start).toISOString(),
       end: loan.end && new Date(loan.end).toISOString(),
     })),
-    storage: storage && (storage.locations?.length > 0 || storage.dates?.length > 0) && await Promise.all(Array.from({ length: storage.locations?.length || storage.dates?.length }).map(async (_, index) => ({
-      location: storage.locations?.[index] && await renderDocument(storage.locations[index], { model: Term, self: term => `/api/terms/${term._id}` }) as StorageLocation,
-      dateIn: (!isNaN(storage.dates?.[index].dateIn) && new Date(storage.dates[index].dateIn).toISOString()) || undefined,
-      dateOut: (storage.dates?.[index].dateOut && (!isNaN(storage.dates[index].dateOut!) && new Date(storage.dates[index].dateOut!).toISOString())) || undefined,
-    }))),
+    storage: (storage && storage.length > 0 && await Promise.all(storage
+      .map(({ location, ...s }) => ({ location: storageLocations.find(sl => `${sl._id}` === `${location._id}`), ...s }))
+      .map(async ({ location, dateIn, dateOut }, index) => ({
+        id: index + 1,
+        location: location && Object.keys(location).length > 0 && await renderDocument(location, { model: Term, self: term => `/api/terms/${term._id}` }) as StorageLocation,
+        dateIn: (!isNaN(dateIn) && new Date(dateIn).toISOString()) || undefined,
+        dateOut: (dateOut && (!isNaN(dateOut!) && new Date(dateOut!).toISOString())) || undefined,
+      })),
+    )) || undefined,
     publications: publications && publications.map(({ id, citation, abstract, doi }) => ({
       id,
       citation,

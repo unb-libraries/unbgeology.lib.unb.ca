@@ -34,9 +34,10 @@ const page = computed({
 })
 
 function getStartPageIndex(current: number, count: number, last: number) {
+  current = Math.min(Math.max(current, 1), last)
   const slice = Array
     .from({ length: count }, (_, i) => current - Math.floor(count / 2) + i)
-    .filter(i => i >= 1 && i <= last)
+    .filter(page => page >= 1 && page <= last)
   const imbalance = slice.filter(i => i > current).length - slice.filter(i => i < current).length
   const start = current - Math.floor(count / 2) + imbalance
   return start

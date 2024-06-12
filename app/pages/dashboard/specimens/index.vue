@@ -5,106 +5,107 @@
         Specimens
       </h1>
       <div class="grow space-x-2 text-right">
-        <NuxtLink to="/dashboard/specimens/create/?category=fossil" class="form-action form-action-submit p-2 font-normal">
-          Create Fossil
-        </NuxtLink>
-        <NuxtLink to="/dashboard/specimens/create/?category=mineral" class="form-action form-action-submit p-2 font-normal">
-          Create Mineral
-        </NuxtLink>
-        <NuxtLink to="/dashboard/specimens/create/?category=rock" class="form-action form-action-submit p-2 font-normal">
-          Create Rock
+        <NuxtLink to="/dashboard/specimens/create" class="form-action form-action-submit p-2 font-normal">
+          Add specimen
         </NuxtLink>
       </div>
     </div>
 
-    <div class="relative flex w-full flex-row space-x-2">
-      <div class="form-field w-full">
-        <label class="sr-only" for="search">Search</label>
-        <input v-model="search" placeholder="Search" name="search" class="placeholder:text-primary dark:placeholder:text-primary-20 form-input form-input-text grow p-2 placeholder:italic">
+    <div class="form-field w-full">
+      <label class="sr-only" for="search">Search</label>
+      <input v-model="search" placeholder="Search" name="search" class="placeholder:text-primary dark:placeholder:text-primary-20 form-input form-input-text grow p-2 placeholder:italic">
+    </div>
+
+    <div class="mt-2 flex w-full flex-row items-center justify-between">
+      <div v-if="list?.total" class="italic">
+        Displaying {{ (page - 1) * pageSize + 1 }} - {{ Math.min(list?.total, page * pageSize) }} of {{ pluralize(list?.total, `specimen`, `specimens`) }}
       </div>
-      <button id="button-filter" class="form-action form-action-submit bg-primary-80/40 hover:bg-primary-60/40 grow-0 p-2" @click.stop.prevent="filterMenuVisible = !filterMenuVisible">
-        Filter
-      </button>
-      <button id="button-sort" class="form-action form-action-submit bg-primary-80/40 hover:bg-primary-60/40 grow-0 p-2" @click.prevent="sortMenuVisible = !sortMenuVisible">
-        Sort
-      </button>
-      <button id="button-columns" class="form-action form-action-submit bg-primary-80/40 hover:bg-primary-60/40 grow-0 p-2" @click.prevent="columnMenuVisible = !columnMenuVisible">
-        Columns
-      </button>
+      <PvPaginator v-model="page" :total="Math.ceil((list?.total ?? 0) / pageSize)" :size="5" />
+      <div class="relative flex items-center space-x-2">
+        <button id="button-filter" class="button bg-primary-80/40 hover:bg-primary-60/40 button-md inline-flex space-x-2" @click.stop.prevent="filterMenuVisible = !filterMenuVisible">
+          <IconFilter class="stroke-1.5 h-6 w-6 fill-none stroke-current" /><span>Filter</span>
+        </button>
+        <button id="button-sort" class="button bg-primary-80/40 hover:bg-primary-60/40 button-md inline-flex space-x-2" @click.prevent="sortMenuVisible = !sortMenuVisible">
+          <IconSort class="stroke-1.5 h-6 w-6 fill-none stroke-current" /><span>Sort<template v-if="activeSortOptions.length"> ({{ activeSortOptions.map(([,label]) => label).join(`, `) }})</template></span>
+        </button>
+        <button id="button-columns" class="button bg-primary-80/40 hover:bg-primary-60/40 button-md inline-flex space-x-2" @click.prevent="columnMenuVisible = !columnMenuVisible">
+          <IconTable class="stroke-1.5 h-6 w-6 fill-none stroke-current" /><span>Columns ({{ columnsOptions.filter(([id, label, selected]) => selected).length }}/{{ columnsOptions.length }})</span>
+        </button>
 
-      <PvContextualDropdown v-model="filterMenuVisible" trigger-id="button-filter" class="bg-primary border-primary-60/40 right-0 top-12 w-96 rounded-md border p-6" @click.prevent.stop="filterMenuVisible = !filterMenuVisible">
-        <div class="form-field">
-          <label class="form-label" for="filter-category">Categories</label>
-          <PvMultipleChoice v-model="categoryFilter" :options="categoryOptions" class="rounded-lg p-1" />
-        </div>
-        <div class="form-field">
-          <label for="fiter-test">Test</label>
-          <PvInputText v-model="test" class="dark:bg-primary border-primary-80 rounded-lg border p-1.5">
-            <template #before>
-              <PvIconSort class="h-4 w-4" />
-            </template>
-          </PvInputText>
-        </div>
-        <div class="space-x-2">
-          <button type="submit" class="form-action form-action-submit" @click.prevent="applyFilter()">
-            Apply
-          </button>
-          <a class="cursor-pointer p-2 hover:underline" @click.prevent="filter = []">Reset</a>
-        </div>
-      </PvContextualDropdown>
-
-      <PvContextualDropdown v-model="sortMenuVisible" trigger-id="button-sort" class="bg-primary border-primary-60/40 right-0 top-12 w-96 rounded-md border p-4" @click.stop.prevent="sortMenuVisible = !sortMenuVisible">
-        <div class="form-field space-y-4">
-          <div v-if="activeSortOptions.length > 0" class="space-y-2">
-            <h2 class="text-lg font-bold">
-              Sort by
-            </h2>
-            <ul v-if="activeSortOptions.length > 0" class="space-y-1">
-              <li v-for="([id, label, direction], index) in activeSortOptions" :key="id" class="group">
-                <div class="bg-primary-80/40 flex w-full flex-row justify-between rounded-sm px-3 py-2">
-                  <div class="space-x-2">
-                    <a @click.stop.prevent="">{{ label }}</a>
-                    <a class="text-primary-40 cursor-pointer text-xs hover:underline" @click.stop.prevent="sortReverse(id)">{{ direction === 1 ? `ASC` : `DESC` }}</a>
-                  </div>
-                  <div class="invisible inline-flex space-x-2 group-hover:visible">
-                    <a v-if="index > 0" class="cursor-pointer hover:underline" @click.stop.prevent="sortUp(id)">Up</a>
-                    <a v-if="index > 0" class="cursor-pointer hover:underline" @click.stop.prevent="sortTop(id)">Top</a>
-                    <a class="cursor-pointer hover:underline" @click.stop.prevent="unsort(id)">Remove</a>
-                  </div>
-                </div>
-              </li>
-            </ul>
+        <PvContextualDropdown v-model="filterMenuVisible" trigger-id="button-filter" class="bg-primary border-primary-60/40 right-0 top-12 w-96 rounded-md border p-6" @click.prevent.stop="filterMenuVisible = !filterMenuVisible">
+          <div class="form-field">
+            <label class="form-label" for="filter-category">Categories</label>
+            <PvMultipleChoice v-model="categoryFilter" :options="categoryOptions" class="rounded-lg p-1" />
           </div>
-          <div v-if="inactiveSortOptions.length > 0" class="space-y-2">
-            <h2 class="text-lg font-bold">
-              Unsorted
-            </h2>
+          <div class="form-field">
+            <label for="fiter-test">Test</label>
+            <PvInputText v-model="test" class="dark:bg-primary border-primary-80 rounded-lg border p-1.5">
+              <template #before>
+                <PvIconSort class="h-4 w-4" />
+              </template>
+            </PvInputText>
+          </div>
+          <div class="space-x-2">
+            <button type="submit" class="form-action form-action-submit" @click.prevent="applyFilter()">
+              Apply
+            </button>
+            <a class="cursor-pointer p-2 hover:underline" @click.prevent="filter = []">Reset</a>
+          </div>
+        </PvContextualDropdown>
+
+        <PvContextualDropdown v-model="sortMenuVisible" trigger-id="button-sort" class="bg-primary border-primary-60/40 right-0 top-12 w-96 rounded-md border p-4" @click.stop.prevent="sortMenuVisible = !sortMenuVisible">
+          <div class="form-field max-h-96 space-y-4 overflow-y-scroll">
+            <div v-if="activeSortOptions.length > 0" class="space-y-2">
+              <h2 class="text-lg font-bold">
+                Sort by
+              </h2>
+              <ul v-if="activeSortOptions.length > 0" class="space-y-1">
+                <li v-for="([id, label, direction], index) in activeSortOptions" :key="id" class="group">
+                  <div class="bg-primary-80/40 flex w-full flex-row justify-between rounded-sm px-3 py-2">
+                    <div class="space-x-2">
+                      <a @click.stop.prevent="">{{ label }}</a>
+                      <a class="text-primary-40 cursor-pointer text-xs hover:underline" @click.stop.prevent="sortReverse(id)">{{ direction === 1 ? `ASC` : `DESC` }}</a>
+                    </div>
+                    <div class="invisible inline-flex space-x-2 group-hover:visible">
+                      <a v-if="index > 0" class="cursor-pointer hover:underline" @click.stop.prevent="sortUp(id)">Up</a>
+                      <a v-if="index > 0" class="cursor-pointer hover:underline" @click.stop.prevent="sortTop(id)">Top</a>
+                      <a class="cursor-pointer hover:underline" @click.stop.prevent="unsort(id)">Remove</a>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div v-if="inactiveSortOptions.length > 0" class="space-y-2">
+              <h2 class="text-lg font-bold">
+                Unsorted
+              </h2>
+              <ul class="space-y-1">
+                <li v-for="[id, label] in inactiveSortOptions" :key="id" class="group">
+                  <div class="bg-primary-80/40 flex w-full flex-row justify-between rounded-sm px-3 py-2">
+                    <a class="cursor-pointer hover:underline" @click.stop.prevent="sortTop(id)">{{ label }}</a>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </PvContextualDropdown>
+
+        <PvContextualDropdown v-model="columnMenuVisible" trigger-id="button-columns" class="bg-primary border-primary-60/40 right-0 top-12 w-96 rounded-md border p-4">
+          <div class="form-field max-h-96 overflow-y-scroll">
             <ul class="space-y-1">
-              <li v-for="[id, label] in inactiveSortOptions" :key="id" class="group">
-                <div class="bg-primary-80/40 flex w-full flex-row justify-between rounded-sm px-3 py-2">
-                  <a class="cursor-pointer hover:underline" @click.stop.prevent="sortTop(id)">{{ label }}</a>
-                </div>
+              <li v-for="column in columnsOptions" :key="(column[0])" class="bg-primary-80/40 flex w-full flex-row rounded-sm px-3 py-1">
+                <PvCheckbox
+                  :id="`column-${column[0]}`"
+                  v-model="column[2]"
+                  :label="column[1]"
+                  :name="`column-${column[0]}`"
+                  class="rounded-lg p-1"
+                />
               </li>
             </ul>
           </div>
-        </div>
-      </PvContextualDropdown>
-
-      <PvContextualDropdown v-model="columnMenuVisible" trigger-id="button-columns" class="bg-primary border-primary-60/40 right-0 top-12 w-96 rounded-md border p-4">
-        <div class="form-field">
-          <ul class="space-y-1">
-            <li v-for="column in columnsOptions" :key="(column[0])" class="bg-primary-80/40 flex w-full flex-row rounded-sm px-3 py-1">
-              <PvCheckbox
-                :id="`column-${column[0]}`"
-                v-model="column[2]"
-                :label="column[1]"
-                :name="`column-${column[0]}`"
-                class="rounded-lg p-1"
-              />
-            </li>
-          </ul>
-        </div>
-      </PvContextualDropdown>
+        </PvContextualDropdown>
+      </div>
     </div>
   </header>
 
@@ -112,11 +113,11 @@
     v-model="selected"
     class="border-primary-60/75 w-full border-b"
     header-cell-class="group"
-    row-class="even:dark:bg-primary-80/20 hover:bg-accent-dark/20 even:dark:hover:bg-accent-dark/20"
+    row-class="table-row"
     :entities="specimens"
     :columns="columnsOptions.filter(([id, label, selected]) => selected).map(([id, label]) => [id, label])"
     :multi-select="true"
-    selected-row-class="dark:bg-accent-dark/40 even:dark:bg-accent-dark/40 hover:dark:bg-accent-dark/60 even:hover:dark:bg-accent-dark/60"
+    selected-row-class="active"
   >
     <template #id="{ entity: specimen }">
       <NuxtLink :to="`/dashboard/specimens/${specimen.id.toLowerCase()}`" class="hover:underline" @click.stop="">
@@ -124,7 +125,7 @@
       </NuxtLink>
     </template>
     <template #type="{ entity: specimen }">
-      {{ specimen.type.substring(0, 1).toUpperCase() + specimen.type.substring(1).toLowerCase() }}
+      {{ sentenceCased(specimen.type) }}
     </template>
     <template #classification="{ entity: specimen }">
       <template v-if="specimen.classification">
@@ -132,42 +133,111 @@
       </template>
     </template>
     <template #images="{ entity: specimen }">
-      <nuxt-img
+      <img
         v-if="specimen.images?.total > 0"
         :src="specimen.images?.entities[0].uri"
-        format="webp"
-        fit="cover"
-        width="100"
-        height="100"
-      />
-      <div v-else class="bg-primary-80 border-primary-60 grid h-[100px] w-[100px] grid-cols-1 place-items-center border">
-        <PvIconNoImage />
-      </div>
+        width="60"
+        height="60"
+        class="aspect-square rounded-md object-cover"
+      >
+      <div v-else />
     </template>
-    <template #measurements="{ entity: specimen }">
-      <ol v-if="specimen.measurements?.filter(m => m.type !== MeasurementType.IMMEASURABLE).length > 0">
-        <li v-for="(dimensions, index) in specimen.measurements.map<NonNullable<Specimen[`measurements`][number][`dimensions`]>>(m => m.dimensions!)" :key="index">
-          {{ dimensions.map(d => `${d / 10}cm`).join(` x `) }}
+    <template #collection="{ entity: { collection } }">
+      {{ collection?.label }}
+    </template>
+    <template #measurements="{ entity: { measurements } }">
+      <ol v-if="measurements?.dimensions">
+        <li v-for="(lwh, index) in measurements.dimensions" :key="index">
+          {{ lwh.map(d => `${d / 10}cm`).join(` x `) }}
         </li>
       </ol>
       <span v-else />
     </template>
-    <template #pieces="{ entity: specimen}">
-      {{ specimen.pieces }}{{ specimen.partial ? ` (P)` : `` }}
+    <template #partial="{ entity: { partial }}">
+      <template v-if="partial">
+        Partial
+      </template>
+      <template v-else>
+        Whole
+      </template>
+    </template>
+    <template #portion="{ entity: fossil }">
+      <template v-if="(fossil as Fossil).portion">
+        {{ (fossil as Fossil).portion.label }}
+      </template>
+    </template>
+    <template #composition="{ entity: specimen }">
+      <template v-if="[`fossil`, `rock`].includes(specimen.type)">
+        {{ (specimen as Fossil | Rock).composition?.entities.map(({ label }) => label).join(`, `) }}
+      </template>
+      <template v-else>
+        {{ (specimen as Mineral).classification?.composition }}
+      </template>
+    </template>
+    <template #age="{ entity: { age }}">
+      <template v-if="age?.unit">
+        {{ age?.unit?.label }} (
+        <template v-if="age.numeric">
+          {{ age?.numeric }} mya
+        </template>
+        <template v-else>
+          {{ Object.entries(age.unit.boundaries).map(([, value]) => value).map(value => `${value} mya`).join(` - `) }}
+        </template>
+        )
+      </template>
+      <template v-else-if="age?.numeric">
+        {{ age.numeric }} mya
+      </template>
+    </template>
+    <template #origin="{ entity: { origin }}">
+      {{ origin?.name }}
+    </template>
+    <template #collector="{ entity: { collector }}">
+      {{ collector?.label }}
+    </template>
+    <template #sponsor="{ entity: { sponsor }}">
+      {{ sponsor?.label }}
+    </template>
+    <template #market="{ entity: { market }}">
+      <template v-if="market">
+        $CAD {{ `${market}`.split(``).reverse().join(``).match(/\d{1,3}/g)!.join(',').split(``).reverse().join(``) }}
+      </template>
+    </template>
+    <template #legal="{ entity: { legal }}">
+      <!-- TODO: Test this after the field actually exists. -->
+      <template v-if="legal">
+        {{ useEnum(Legal).labelOf(legal) }}
+      </template>
+    </template>
+    <template #storage="{ entity: { storage }}">
+      <!-- TODO: Indicate if item is on loan and not stored on site -->
+      {{ storage?.at(-1)?.location?.label }}
+    </template>
+    <template #creator="{ entity: { creator }}">
+      <template v-if="creator?.profile?.firstName && creator.profile?.lastName">
+        {{ creator?.profile?.firstName }} {{ creator?.profile?.lastName }}
+      </template>
+      <template v-else>
+        {{ creator?.username }}
+      </template>
+    </template>
+    <template #editor="{ entity: { editor }}">
+      <template v-if="editor?.profile?.firstName && editor.profile?.lastName">
+        {{ editor?.profile?.firstName }} {{ editor?.profile?.lastName }}
+      </template>
+      <template v-else>
+        {{ editor?.username }}
+      </template>
+    </template>
+    <template #status="{ entity: { status }}">
+      {{ sentenceCased(useEnum(Status).labelOf(status)) }}
     </template>
   </EntityTable>
-
-  <div class="mt-2 flex flex-row justify-between">
-    <span v-if="list?.total" class="italic">
-      {{ (page - 1) * pageSize + 1 }} - {{ Math.min(list?.total, page * pageSize) }} of {{ pluralize(list?.total, `specimen`, `specimens`) }}
-    </span>
-    <PvPaginator v-model="page" :total="Math.ceil((list?.total ?? 0) / pageSize)" :size="5" />
-  </div>
 </template>
 
 <script setup lang="ts">
 import { FilterOperator, type EntityJSON } from '@unb-libraries/nuxt-layer-entity'
-import { type Specimen, MeasurementType } from 'types/specimen'
+import { type Specimen, Status, Legal, type Fossil, type Mineral, type Rock } from 'types/specimen'
 
 definePageMeta({
   layout: `dashboard`,
@@ -177,18 +247,33 @@ definePageMeta({
   },
 })
 
-const columns = ref<(string | [string, string])[]>([
-  [`images`, `Image`],
+const columns = ref<[string, string][]>([
+  // [`images`, `Image`],
   [`id`, `ID`],
   [`type`, `Category`],
   [`classification`, `Classification`],
+  [`collection`, `Collection`],
+  [`date`, `Date received`],
   [`pieces`, `Pieces`],
   [`measurements`, `Dimensions`],
+  [`partial`, `Condition`],
+  [`portion`, `Portion`],
+  [`composition`, `Composition`],
+  [`age`, `Age`],
+  [`origin`, `Origin`],
+  [`collector`, `Collected by`],
+  [`sponsor`, `Sponsored by`],
+  [`market`, `Value`],
+  [`legal`, `Legal status`],
+  [`storage`, `Stored at`],
+  [`creator`, `Created by`],
+  [`editor`, `Last edited by`],
+  [`created`, `Created on`],
+  [`updated`, `Updated on`],
+  [`status`, `Status`],
 ])
 
-const { list, entities: specimens, query } = await fetchEntityList<Specimen>(`Specimen`, {
-  select: columns.value.map(([id]) => id),
-})
+const { list, entities: specimens, query } = await fetchEntityList<Specimen>(`Specimen`)
 
 const { filter, search, page, pageSize, sort } = query
 
@@ -198,7 +283,7 @@ const columnMenuVisible = ref(false)
 const columnsOptions = ref<[string, string, boolean][]>(columns.value.map(([id, label], index) => [id, label, index < 4]))
 
 const sortMenuVisible = ref(false)
-const { options: sortedColumnIDs, sortTop, sortUp, sortReverse, remove: unsort } = useSort(columns.value.map(([id]) => id))
+const { options: sortedColumnIDs, sortTop, sortUp, sortReverse, remove: unsort } = useSort(columns.value.filter(([id]) => id !== `images`).map(([id]) => id))
 
 const sortOptions = computed(() => sortedColumnIDs.filter(([id]) => columns.value.find(([colID]) => colID === id)).map<[string, string, 1 | 0 | -1]>(([id, order]) => [id, columns.value.find(([colID]) => colID === id)![1], order]))
 const activeSortOptions = computed(() => sortOptions.value.filter(([_, __, direction]) => direction !== 0))

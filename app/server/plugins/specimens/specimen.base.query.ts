@@ -35,6 +35,10 @@ export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({
         default: true,
         filter: String,
       },
+      composition: {
+        default: true,
+        filter: String,
+      },
     },
   },
   description: {
@@ -297,32 +301,33 @@ export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({
   },
   storage: {
     default: true,
+    select: `storage storageLocations`,
     sort: false,
-    filter: false,
+    filter: (_, condition) => ObjectID(`storageLocations`, condition),
     definition: {
       dateIn: {
         default: true,
-        select: `storage.dates.dateIn`,
+        select: `storage.dateIn`,
         filter: (_, condition) => Date(`storage.dates.dateIn`, condition),
       },
       dateOut: {
         default: true,
-        select: `storage.dates.dateOut`,
+        select: `storage.dateOut`,
         filter: (_, condition) => Date(`storage.dates.dateOut`, condition),
       },
       location: {
         default: true,
-        select: `storage.locations`,
+        select: `storage.location`,
         join: {
-          documentType: Term,
-          localField: `storage.locations`,
+          documentType: StorageLocation,
+          localField: `storageLocations`,
           cardinality: `many`,
         },
-        filter: (_, condition) => ObjectID(`storage.locations`, condition),
+        filter: (_, condition) => ObjectID(`storageLocations`, condition),
         definition: {
           label: {
             default: true,
-            select: `storage.locations.label`,
+            select: `storageLocations.label`,
             filter: String,
           },
         },

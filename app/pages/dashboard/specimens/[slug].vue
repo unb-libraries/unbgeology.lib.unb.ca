@@ -18,7 +18,7 @@
 
       <FormSpecimenDetails v-if="edit === `details`" :specimen="specimen!" @save="onSave" @cancel="navigateTo(`/dashboard/specimens`)" />
       <FormSpecimenOrigin v-else-if="edit === `origin`" :specimen="specimen!" @save="onSave" @cancel="navigateTo(`/dashboard/specimens`)" />
-      <FormSpecimenStorage v-else-if="edit === `storage`" />
+      <FormSpecimenStorageHistory v-else-if="edit === `storage`" :specimen="specimen!" @save="onSave" @cancel="navigateTo(`/dashboard/specimens`)" />
       <FormSpecimen v-else :specimen="specimen!" @save="onSave" @cancel="navigateTo(`/dashboard/specimens`)" />
     </div>
 
