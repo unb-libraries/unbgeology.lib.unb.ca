@@ -69,13 +69,8 @@ const data = reactive({
   measurements: props.specimen.measurements,
 })
 
-console.log(`input`, props.specimen)
-console.log(`form-input`, data)
-
 const onSave = () => {
-  console.log(`form-output`, data)
   const { classification, age, composition, pieces, partial, portion, measurements } = data
-  console.log(`composition`, composition)
 
   const payload = {
     classification: classification ?? (props.specimen.classification ? null : undefined),
@@ -83,11 +78,9 @@ const onSave = () => {
     composition: composition || ((props.specimen as Fossil | Rock).composition ? null : undefined),
     pieces,
     partial,
-    portion: (props.specimen.type === `fossil` && portion) || (props.specimen as Fossil).portion ? null : undefined,
+    portion: portion || ((props.specimen as Fossil).portion ? null : undefined),
     measurements,
   }
-
-  console.log(`payload`, payload)
   emits(`save`, payload)
 }
 </script>

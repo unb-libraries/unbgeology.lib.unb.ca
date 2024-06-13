@@ -1,13 +1,19 @@
 <template>
   <EntityForm @save="onSave" @cancel="$emit(`cancel`)">
     <TwFormField label="Storage location history">
-      <div v-if="Object.keys(storage).length > 0" class="space-y-1">
-        <div v-for="item of storage" :key="item.location.self" class="bg-primary-80 hover:bg-primary-60/60 rounded-md p-4 text-lg hover:cursor-pointer" @click.stop.prevent="openFormModal(item)">
-          {{ item.dateIn.substring(0, 10) }} - {{ item.dateOut?.substring(0, 10) ?? `present` }} @ {{ item.location.label }}
+      <div v-if="Object.keys(storage).length > 0" class="space-y-2">
+        <div v-for="({ id, location: { label }, dateIn, dateOut }, index) in Object.values(storage)" :key="id" class="flex flex-row space-x-4 px-2 py-1">
+          <div class="bg-primary-80 flex w-24 items-center justify-center rounded-md text-xs uppercase">
+            <span v-if="index < 1">{{ dateIn.substring(0, 10) }}</span>
+            <span v-else>{{ dateOut?.substring(0, 10) ?? `present` }}</span>
+          </div>
+          <div>
+            @ {{ label }}
+          </div>
         </div>
       </div>
       <div v-else>
-        Not available
+        Unrecorded
       </div>
       <div class="flex items-center justify-end rounded-md py-4">
         <button class="button button-lg button-accent-mid hover:button-accent-light" @click.stop.prevent="openFormModal()">
@@ -38,7 +44,8 @@ function openFormModal(formInput?: Storage) {
   const { open: openModal } = useEntityFormModal<Storage>(FormSpecimenStorage, {
     onSave: (values: Storage) => {
       const id = values.id ?? Object.keys(storage.value).length + 1
-      storage.value = { ...storage.value, [id]: { ...values, id } }
+      storage.value = Object.fromEntries(Object.entries({ ...storage.value, [id]: { ...values, id } })
+        .sort(([, { dateIn: a }], [, { dateIn: b }]) => new Date(a).valueOf() - new Date(b).valueOf()))
     },
   })
   openModal({ storage: formInput })

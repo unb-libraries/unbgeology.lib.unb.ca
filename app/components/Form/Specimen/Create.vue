@@ -1,5 +1,5 @@
 <template>
-  <EntityForm :entity="data" @save="onSave">
+  <EntityForm :entity="data">
     <TwFormField label="Category">
       <TwInputRadioGroup
         v-model="data.type"
@@ -47,10 +47,7 @@
   </EntityForm>
 </template>
 
-<script setup lang="tsx">
-import { FilterOperator, type Image } from '@unb-libraries/nuxt-layer-entity'
-import { type Specimen, type Loan } from '~/types/specimen'
-import { TwToast } from '#components'
+<script setup lang="ts">
 
 definePageMeta({
   layout: `dashboard-page`,
@@ -67,21 +64,4 @@ const data = reactive({
   lenderID: ``,
   images: {} as Record<string, string>,
 })
-
-// const { entities: fossilClassifications } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `classification/fossil`]] })
-// const { entities: mineralClassifications } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `classification/mineral`]] })
-// const { entities: rockClassifications } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `classification/rock`]] })
-// const classifications = computed(() => ({ fossil: fossilClassifications.value, mineral: mineralClassifications.value, rock: rockClassifications.value }))
-
-// const { create } = useEntityType<Specimen>(`Specimen`)
-const { add: createToast } = useToasts()
-function onSave() {
-  createToast(() => <div>This is a toast.</div>)
-  // const { entity: specimen, error } = await create<Specimen>(data)
-  // if (!error.value && specimen.value?.id) {
-  //   navigateTo(`/dashboard/specimens/${specimen.value.id}`)
-  // } else {
-  //   createToast(() => <TwToast>{error}</TwToast>)
-  // }
-}
 </script>

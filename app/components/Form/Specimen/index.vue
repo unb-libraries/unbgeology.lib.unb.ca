@@ -1,10 +1,10 @@
 <template>
-  <EntityForm :entity="data" @save="onSave" @cancel="$emit(`cancel`)">
+  <EntityForm @save="onSave" @cancel="$emit(`cancel`)">
     <TwFormField label="Object IDs">
       <InputSpecimenObjectID v-model="data.objectIDs" />
     </TwFormField>
     <TwFormField label="Collection">
-      <InputTermCollection v-model="data.collection" />
+      <InputSpecimenCollection v-model="data.collection" />
     </TwFormField>
     <TwFormField label="Date added">
       <TwInputText v-model="data.date" placeholder="e.g. 1974, 1974-08, or 1974-08-12" class="input input-text-lg" />
@@ -71,9 +71,6 @@ const data = reactive({
   externalID: ``,
 })
 
-console.log(`input`, props.specimen)
-console.log(`form-input`, data)
-
 const { entities: images, refresh } = await fetchEntityList<Image>(`File`, { filter: [[`type`, FilterOperator.EQUALS, `image`]], select: [`uri`] })
 const imageOptions = computed(() => images.value
   .map(({ self, uri }) => ({ [self]: uri }))
@@ -92,8 +89,6 @@ function onRemovePublication(id: string) {
 
 const onSave = () => {
   const { objectIDs, collection, date, description, images, publications, market } = data
-  console.log(`form-output`, data)
-
   const payload = {
     objectIDs: objectIDs.length ? data.objectIDs : props.specimen.objectIDs ? null : undefined,
     collection: collection ?? (props.specimen.collection ? null : undefined),
@@ -103,7 +98,6 @@ const onSave = () => {
     publications: Object.values(publications),
     market: market || (props.specimen.market ? null : undefined),
   }
-  console.log(`payload`, payload)
   emits(`save`, payload)
 }
 </script>
