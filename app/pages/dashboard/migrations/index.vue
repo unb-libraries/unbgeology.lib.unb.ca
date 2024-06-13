@@ -19,34 +19,12 @@
       <span v-if="migration.status === MigrationStatus.IDLE">Idle</span>
       <span v-if="migration.status === MigrationStatus.RUNNING">Running</span>
     </template>
-    <template #actions="{ entity: migration }">
-      <PvDefaultEntityTableActions
-        :entity="migration"
-        label="name"
-        :form="MigrationForm"
-        :update="updateMigration"
-        :remove="removeMigration"
-        class="invisible group-hover:visible group-focus:visible"
-      >
-        <template #before>
-          <button v-if="canImport(migration)" class="bg-accent-mid hover:bg-accent-light rounded-md px-2 py-1 hover:cursor-pointer" @click.prevent="onImportMigration(migration)">
-            Import
-          </button>
-          <button v-if="canRollback(migration)" class="bg-blue hover:bg-blue-light rounded-md px-2 py-1 hover:cursor-pointer" @click.prevent="onRollbackMigration(migration)">
-            Rollback
-          </button>
-          <button v-if="canPause(migration)" class="bg-yellow hover:bg-yellow-light rounded-md px-2 py-1 hover:cursor-pointer" @click.prevent="onPauseMigration(migration)">
-            Pause
-          </button>
-        </template>
-      </PvDefaultEntityTableActions>
-    </template>
   </PvEntityTable>
 </template>
 
 <script setup lang="ts">
 import { type EntityJSONBody, type Migration, MigrationStatus, type EntityJSON } from "@unb-libraries/nuxt-layer-entity"
-import { MigrationForm, PvDefaultEntityTableActions } from "#components"
+import { MigrationForm } from "#components"
 
 definePageMeta({
   layout: `dashboard`,
