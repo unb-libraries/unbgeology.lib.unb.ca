@@ -9,8 +9,8 @@
       class="context-menu"
       @click.prevent.stop="visible = !visible"
     >
-      <div class="space-y-2">
-        <TwFormField v-for="{ id, label } of filters" :key="id" :label="label" class="w-full">
+      <div class="space-y-4">
+        <TwFormField v-for="{ id, label } of filters" :key="id" :label="label" :label-class="labelClass" class="w-full">
           <template #label>
             <slot :name="`${String(id)}-label`">
               {{ label }}
@@ -21,7 +21,7 @@
         <div class="inline-flex items-center space-x-2">
           <button
             type="submit"
-            class="btn-filter"
+            class="button button-sm button-accent-mid hover:button-accent-light"
             @click.prevent.stop="$emit(`submit`)"
           >
             Apply
@@ -39,6 +39,7 @@ type Filter = { id: T, label: string, op: FilterOperator, value: any }
 
 const props = defineProps<{
   filters: Record<T, [FilterOperator, any] | Omit<Filter, `id` | `label`> & Pick<Partial<Filter>, `label`>>
+  labelClass?: string
 }>()
 
 defineEmits<{

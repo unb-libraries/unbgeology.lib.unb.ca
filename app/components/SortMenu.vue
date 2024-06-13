@@ -10,21 +10,21 @@
       @click.stop.prevent="visible = !visible"
     >
       <PvSortableEntityPropertyList
-        :items="props"
+        :items="props.map(([key, label, direction]) => [key, [label, direction]])"
         item-class="rounded-md"
-        @changed="([key, [, direction]], ranking) => $emit(`changed`, key, direction, ranking)"
+        @changed="([key, [, direction]], ranking) => $emit(`changed`, key as T, direction, ranking.map(([id, [label, sort]]) => [id as T, label, sort]))"
       />
     </PvContextualDropdown>
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" generic="T extends string">
 defineProps<{
-  props: [string, [string, 1 | 0 | -1]][]
+  props: [T, string, 1 | 0 | -1][]
 }>()
 
 defineEmits<{
-  changed: [prop: string, direction: 1 | 0 | -1, props: [string, [string, 1 | 0 | -1]][]]
+  changed: [prop: T, direction: 1 | 0 | -1, props: [T, string, 1 | 0 | -1][]]
 }>()
 
 const visible = ref(false)

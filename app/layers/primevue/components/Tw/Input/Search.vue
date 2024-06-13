@@ -5,7 +5,7 @@
       v-model="search"
       name="search"
       :label="label"
-      placeholder="Search"
+      :placeholder="$attrs.placeholder || `Search`"
       :wrapper-class="textWrapperClass"
     >
       <template #before>

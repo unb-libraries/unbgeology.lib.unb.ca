@@ -5,43 +5,29 @@
         :id="option[0]"
         v-model="option[2]"
         :label="option[1]"
-        :name="option[0]"
-        :class="inputClass ?? ``"
-        @change="(checked: boolean) => onChange(checked, option)"
+        :name="option"
+        :class="inputClass"
+        @change="(checked: boolean) => onChange(option[0], checked)"
       />
     </li>
   </ul>
 </template>
 
 <script setup lang="ts">
+const selected = defineModel<Record<string, boolean>>(`selected`, {
+  default: {},
+})
+
 const props = defineProps<{
   itemClass?: string
   inputClass?: string
   options:(string | [string, string])[]
-  modelValue: string[]
 }>()
 
-const emits = defineEmits<{
-  // eslint-disable-next-line
-  'update:modelValue': [string[]]
-}>()
+const normalize = (value: (string | [string, string])) => Array.isArray(value) ? value : [value, value[0].toUpperCase() + value.slice(1).toLowerCase()]
+const options = computed(() => props.options.map(normalize).map<[string, string, boolean]>(([option, label]) => [option, label, Boolean(selected.value[option]) ?? false]))
 
-const options = computed<[string, string, boolean][]>({
-  get() {
-    return props.options
-      .map(option => Array.isArray(option) ? option : [option, option])
-      .map(([value, label]) => [value, label.charAt(0).toUpperCase() + label.slice(1)])
-      .map(([value, label]) => [value, label, props.modelValue.includes(value)])
-  },
-  set(value: [string, string, boolean][]) {
-    emits(`update:modelValue`, value
-      .filter(([, , checked]) => checked === true)
-      .map(([value]) => value))
-  },
-})
-
-const onChange = (checked: boolean, option: [string, string, boolean]) => {
-  // explcitly set the value to a new array to trigger the setter
-  options.value = options.value.map(opt => opt !== option ? opt : [option[0], option[1], checked])
+const onChange = (option: string, checked: boolean) => {
+  selected.value = { ...Object.fromEntries(options.value.map(([option,, checked]) => [option, checked])), [option]: checked }
 }
 </script>
