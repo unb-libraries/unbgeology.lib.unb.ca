@@ -23,7 +23,7 @@ export default defineNuxtRouteMiddleware((_, to) => {
   const { hasPermission, isAuthenticated } = useCurrentUser()
   if (permission && !hasPermission(permission)) {
     // Use instead of navigateTo to avoid ERR_HTTP_HEADERS_SENT error
-    if (!isAuthenticated && auth.redirect) {
+    if (!isAuthenticated.value && auth.redirect) {
       return requireLogin()
     }
     return abortNavigation({ statusCode: 403, message: `Unauthorized` })

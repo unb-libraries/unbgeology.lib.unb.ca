@@ -4,7 +4,11 @@ export default defineNuxtConfig({
     `../prod`,
   ],
   runtimeConfig: {
-    defaultUser: `admin`,
+    nitro: {
+      defaultUser(event) {
+        return /^\/api(?!\/session)/.test(getRequestURL(event).pathname) && `admin`
+      },
+    },
     session: {
       cookie: {
         secure: false,

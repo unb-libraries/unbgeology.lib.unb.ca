@@ -9,7 +9,13 @@ export default defineNitroPlugin((nitro) => {
         { action: [`create`], resource: `session` },
       ],
       sysadmin: [
+        { action: [`create`], resource: `session` },
         { action: [`read`, `create`, `update`, `delete`], resource: `user`, fields: [] },
+        { action: [`read`, `create`, `update`, `delete`], resource: `file`, fields: [] },
+        { action: [`read`, `create`, `update`, `delete`], resource: `migration`, fields: [] },
+        { action: [`read`, `create`, `update`, `delete`], resource: `migrationitem`, fields: [] },
+        { action: [`read`, `create`, `update`, `delete`], resource: `term`, fields: [] },
+        { action: [`read`, `create`, `update`, `delete`], resource: `specimen`, fields: [] },
       ],
       migrator: [
         { action: [`read`, `create`, `update`, `delete`], resource: `migration`, fields: [] },

@@ -25,7 +25,7 @@ export default defineNuxtConfig({
     runtimeConfig: {
       uploads: {
         dir: `/app/html/public/files`,
-        uri: `/public/files`,
+        uri: `/files`,
       },
     },
   },

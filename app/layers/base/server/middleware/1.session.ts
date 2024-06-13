@@ -1,7 +1,12 @@
 export default defineEventHandler(async (event) => {
-  const { data, update } = await useSession(event, useServerSessionConfig())
-
+  const { data, update, clear } = await useSession(event, useServerSessionConfig())
   if (!data?.user) {
+    const { validUntil, authenticated } = data
+    const now = new Date().valueOf()
+    const expired = validUntil ? validUntil < now : false
+    if (!authenticated && expired) {
+      await clear()
+    }
     const { defaultUser } = useRuntimeConfig(event).nitro
     const username = typeof defaultUser === `function` ? defaultUser(event) : defaultUser
     await update({
