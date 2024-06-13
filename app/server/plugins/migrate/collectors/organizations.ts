@@ -1,4 +1,4 @@
-import { type Organization } from "~/types/affiliation"
+import { type Organization } from "~/types/affiliate"
 
 interface Collector {
   name: string
@@ -6,13 +6,11 @@ interface Collector {
   gender: `M` | `F` | `N`
 }
 
-export default defineNitroPlugin((nitro) => {
-  nitro.hooks.hook(`migrate:import:item`, useMigrateHandler<Collector, Organization>(`Organization`, (data) => {
-    const { name, first_name: firstName, gender } = data
-    if (gender !== `N` || firstName) {
-      return null
-    }
+export default defineMigrateHandler<Collector, Organization>(`Organization`, (data) => {
+  const { name, first_name: firstName, gender } = data
+  if (gender !== `N` || firstName) {
+    return null
+  }
 
-    return { name }
-  }))
+  return { name }
 })

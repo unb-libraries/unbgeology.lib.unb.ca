@@ -1,23 +1,15 @@
-import { type TaxonomyTerm, type EntityJSONBody } from "@unb-libraries/nuxt-layer-entity"
+import { type Fossil } from "~/types/classification"
 
 interface ClassificationItem {
   name: string
   parent: string
 }
 
-export default defineNitroPlugin((nitro) => {
-  nitro.hooks.hook(`migrate:import:item`, useMigrateHandler<ClassificationItem, TaxonomyTerm>(`Fossil.Classification`, async (item, { sourceID: sourceIDLookup }) => {
-    const { name: label, parent } = item
+export default defineMigrateHandler<ClassificationItem, Fossil>(`Term`, async (item, { migration }) => {
+  const { name: label, parent } = item
 
-    const body: EntityJSONBody<TaxonomyTerm> = { label }
-    const parentID = parseInt(parent)
-    if (parentID > 0) {
-      const parent = await sourceIDLookup(parentID)
-      if (parent) {
-        body.parent = parent
-      }
-    }
-
-    return body
-  }))
+  return {
+    label,
+    parent: (parseInt(parent) > 0 && (await useMigrationLookup(migration, parent))) || undefined,
+  }
 })

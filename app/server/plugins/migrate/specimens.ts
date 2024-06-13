@@ -1,5 +1,6 @@
-import type { EntityJSONBody, TaxonomyTerm } from "@unb-libraries/nuxt-layer-entity"
-import { ObjectIDType, Category, type ObjectID, type Specimen, MeasurementType, Unmeasurability } from "~/types/specimen"
+import { FilterOperator, type Image, type EntityJSONList } from "@unb-libraries/nuxt-layer-entity"
+import type { Classification } from "~/types/classification"
+import { Category, type Specimen, MeasurementCount, Immeasurabibility, type ObjectID } from "~/types/specimen"
 
 // New field: Collection (vocabulary)
 
@@ -63,85 +64,49 @@ interface MimsySpecimen {
   updated: string
 }
 
-export default defineNitroPlugin((nitroApp) => {
-  nitroApp.hooks.hook(`migrate:import:item`, useMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (item, { sourceID: sourceIDLookup, entity: entityLookup }) => {
-    const { unb_id: unbID, other_ids: legacyIDs, type, classification: classifications, description, pieces, partial, measurements, origin, collected, collector_ids: collectorIDs, publications, created } = item
+export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (data, { sourceID, migration: { dependencies } }) => {
+  const { unb_id: unbID, other_ids: legacyIDs, type, classification: classifications, description, pieces, partial, measurements, origin, collected, collector_ids: collectorIDs, publications, created } = data
 
-    let category
-    if (type.toLowerCase().match(/rock|ore/)) {
-      category = Category.ROCK
-    } else if (type.toLowerCase().match(/fossil/)) {
-      category = Category.FOSSIL
-    } else if (type.toLowerCase().match(/mineral/)) {
-      category = Category.MINERAL
-    }
+  let category
+  if (type.toLowerCase().match(/rock|ore/)) {
+    category = Category.ROCK
+  } else if (type.toLowerCase().match(/fossil/)) {
+    category = Category.FOSSIL
+  } else if (type.toLowerCase().match(/mineral/)) {
+    category = Category.MINERAL
+  }
 
-    if (!category) {
-      throw new Error(`Unknown specimen type: ${type}`)
-    }
+  if (!category) {
+    throw new Error(`Unknown specimen type: ${type}`)
+  }
 
-    const unbObjectID = { id: unbID, type: ObjectIDType.LEGACY, source: `Mimsy` }
-    const legacyObjectIDs = legacyIDs?.map(lid => ({
+  return {
+    objectIDs: [{ id: unbID, type: `Mimsy` }, ...(legacyIDs ?? []).map<ObjectID>(lid => ({
       id: lid.id,
-      type: ObjectIDType.LEGACY,
-      source: lid.source ?? lid.type ?? ``,
-    })) ?? []
-
-    const body: EntityJSONBody<Specimen> = {
-      objectIDs: [unbObjectID, ...legacyObjectIDs],
-      category,
-      description,
-      pieces,
-      partial: partial !== null && !partial.toLowerCase().includes(`whole`),
-      created: new Date(created).valueOf(),
-    }
-
-    if (Array.isArray(classifications) && classifications.length > 0) {
-      const classification = await entityLookup<TaxonomyTerm>((classification) => {
-        return classification.label === classifications.at(-1)
-      }, category === Category.FOSSIL ? `Fossil.Classification` : category === Category.MINERAL ? `Mineral.Classification` : `Rock.Classification`)
-
-      if (classification) {
-        body.classification = classification
-      }
-    }
-
-    if (measurements !== null && !measurements.toLowerCase().match(/^(unknown|unmeasur|microscopic|too )/)) {
-      const parsed = measurements.split(`;`).map((m) => {
-        const [prefix, ...dimensions] = m.replace(/cm|:|x/g, ``).replace(/\s+/g, ` `).trim().split(` `)
-        const map: [string, MeasurementType][] = [
-          [`small`, MeasurementType.SMALLEST],
-          [`large`, MeasurementType.LARGEST],
-          [`average`, MeasurementType.AVERAGE],
-          [`container`, MeasurementType.CONTAINER],
-        ]
-        const type = map.find(([keyword]) => prefix.toLowerCase().includes(keyword))?.[1] ?? MeasurementType.INDIVIDUAL
-        return {
-          type,
-          dimensions: dimensions.map(d => parseFloat(d) * 10),
-        }
+      type: lid.type ?? lid.source ?? undefined,
+    }))],
+    type: category,
+    classification: await (async () => {
+      if (!Array.isArray(classifications) || classifications.length < 1) { return }
+      return await $fetch<Classification>(`/api/terms`, {
+        query: {
+          filter: [
+            [`label`, FilterOperator.EQUALS, classifications.at(-1)],
+            [`type`, FilterOperator.EQUALS, `classification/${category}`],
+          ],
+        },
       })
-      if (parsed.length > 0) {
-        body.measurements = parsed
-      }
-    } else if (measurements !== null && !measurements.toLowerCase().match(/^unknown/)) {
-      if (measurements.toLowerCase().includes(`microscopic`)) {
-        body.unmeasureable = Unmeasurability.TOO_SMALL
-      } else if (measurements.toLowerCase().includes(`too fragile`)) {
-        body.unmeasureable = Unmeasurability.TOO_FRAGILE
-      } else if (measurements.toLowerCase().includes(`too many`)) {
-        body.unmeasureable = Unmeasurability.TOO_MANY
-      } else if (measurements.toLowerCase().includes(`unmeasur`)) {
-        body.unmeasureable = Unmeasurability.OTHER
-      }
-    }
+    })(),
+    description,
+    images: await (async () => {
+      try {
+        const { entities: files } = await $fetch<EntityJSONList<Image>>(`/api/files`, { query: { filter: [[`filename`, FilterOperator.EQUALS, unbID.substring(5)]] } })
+        return files.map(({ self }) => self)
+      } catch (err: unknown) {
 
-    if (origin !== null) {
-      const { place: name, site: description } = origin
-      body.origin = { name, description }
-    }
-
-    if (collected !== null && collected.toLowerCase() !== `unknown`) {
+      }
+    })(),
+    date: (collected && collected.toLowerCase() !== `unknown` && (() => {
       const parsed = collected
         .replace(/[?.,]/g, ``)
         .replace(/(\d)(st|nd|rd|th)/g, `$1`)
@@ -151,47 +116,78 @@ export default defineNitroPlugin((nitroApp) => {
       const yearMonth = /^\d{4}-\d{2}$|^\w+ \d{4}$/
 
       const date = new Date(parsed)
-      if (parsed.match(yearOnly)) {
-        body.date = { year: date.getFullYear() }
-      } else if (parsed.match(yearMonth)) {
-        body.date = { year: date.getFullYear(), month: date.getMonth() + 1 }
-      } else if (date.toString() !== `Invalid Date`) {
-        body.date = { year: date.getFullYear(), month: date.getMonth() + 1, day: date.getDate() }
+      return parsed.match(yearOnly)
+        ? { year: date.getFullYear() }
+        : parsed.match(yearMonth)
+          ? { year: date.getFullYear(), month: date.getMonth() + 1 }
+          : date.toString() !== `Invalid Date`
+            ? { year: date.getFullYear(), month: date.getMonth() + 1, day: date.getDate() }
+            : undefined
+    })()) || undefined,
+    measurements: (() => {
+      if (!measurements || measurements.match(/^unknown/i)) { return }
+      if (measurements.match(/^(unmeasur|microscopic|too)/)) {
+        return {
+          count: MeasurementCount.IMMEASURABLE,
+          reason: measurements.toLowerCase().includes(`microscopic`)
+            ? Immeasurabibility.TOO_SMALL
+            : measurements.toLowerCase().includes(`too fragile`)
+              ? Immeasurabibility.TOO_FRAGILE
+              : measurements.toLowerCase().includes(`too many`)
+                ? Immeasurabibility.TOO_MANY
+                : Immeasurabibility.OTHER,
+        }
+      } else {
+        const parsed = measurements.split(`;`).map(m => m.replace(/cm|:|x/g, ``).replace(/\s+/g, ` `).trim().split(` `))
+        const sla = [`small`, `large`, `average`]
+        const count = parsed.filter(([prefix]) => sla.includes(prefix)).length
+          ? MeasurementCount.AGGREGATE
+          : parsed.filter(([prefix]) => prefix === `container`).length
+            ? MeasurementCount.CONTAINER
+            : MeasurementCount.INDIVIDUAL
+        return {
+          count,
+          dimensions: count === MeasurementCount.AGGREGATE
+            ? parsed.filter(([pfx]) => sla.includes(pfx)).sort(([a], [b]) => sla.indexOf(a) - sla.indexOf(b)).map(([, dimensions]) => dimensions)
+            : count === MeasurementCount.CONTAINER
+              ? [measurements.split(`;`).find(([pfx]) => pfx === `container`)!.slice(1)]
+              : parsed.map(([, dimensions]) => dimensions),
+        }
       }
-    }
+    })(),
+    pieces,
+    partial: partial && !partial.toLowerCase().includes(`whole`),
+    origin: (origin && {
+      name: origin.place,
+      description: origin.site,
+    }) || undefined,
+    collector: (collectorIDs && collectorIDs.length && await (async () => {
+      const peopleMigration = dependencies.find(m => m.name === `People`)
+      if (!peopleMigration) { throw new Error(`People migration not found`) }
+      const orgMigration = dependencies.find(m => m.name === `Organization`)
+      if (!orgMigration) { throw new Error(`Organization migration not found`) }
 
-    if (collectorIDs !== null && collectorIDs.length > 0) {
       for (const collectorID of collectorIDs) {
         let collector
         try {
-          collector = await sourceIDLookup(collectorID, `People`)
+          collector = await useMigrationLookup(peopleMigration, `${collectorID}`)
         } catch (err: any) {
-          collector = await sourceIDLookup(collectorID, `Organization`)
+          collector = await useMigrationLookup(orgMigration, `${collectorID}`)
         }
         if (collector) {
-          body.collector = collector
-          break
+          return collector
         }
       }
-    }
-
-    if (Array.isArray(publications)) {
+    })()) || undefined,
+    publications: (Array.isArray(publications) && (() => {
       const publicationsWithCitation = publications.filter(publication => publication.citation)
       if (publicationsWithCitation.length > 0) {
-        body.publications = publicationsWithCitation.map((publication) => {
+        return publicationsWithCitation.map((publication) => {
           const { citation, abstract, url } = publication
-          const publicationBody = { citation }
-          if (abstract !== null) {
-            publicationBody.abstract = abstract
-          }
-          if (url !== null) {
-            publicationBody.doi = url
-          }
-          return publicationBody
+          return { citation, abstract: abstract || undefined, doi: url || undefined }
         })
       }
-    }
-
-    return body
-  }))
+    })()) || undefined,
+    created: new Date(created).toISOString(),
+  }
 })

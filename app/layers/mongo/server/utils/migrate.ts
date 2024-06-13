@@ -99,7 +99,7 @@ export function useMigrationLookup<E extends Entity = Entity>(migration: Migrati
   })
 }
 
-export function defineMigrateHandler<T, E extends Entity = Entity>(entityType: string, handler: (data: T, item: MigrationItem) => EntityJSONBody<E> | null | Promise<EntityJSONBody<E> | null>): MigrateHandler {
+export function defineMigrateHandler<T, E extends Entity = Entity>(entityType: string, handler: (data: T, item: MigrationItem) => E | null | Promise<E | null>): MigrateHandler {
   return defineNitroPlugin((nitro) => {
     nitro.hooks.hook(`migrate:import:item`, async (item) => {
       if (item.migration.entityType === entityType) {
