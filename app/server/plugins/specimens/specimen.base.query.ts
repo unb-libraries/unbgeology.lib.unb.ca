@@ -419,7 +419,7 @@ export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({
   },
   type: {
     default: true,
-    filter: Enum(Category),
+    filter: (_, [op, value]) => String(`type`, [op, `Specimen.${value[0].toUpperCase() + value.slice(1)}`]),
   },
   created: {
     default: true,

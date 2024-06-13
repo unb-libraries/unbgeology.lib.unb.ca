@@ -33,23 +33,18 @@
         </button>
 
         <PvContextualDropdown v-model="filterMenuVisible" trigger-id="button-filter" class="bg-primary border-primary-60/40 right-0 top-12 w-96 rounded-md border p-6" @click.prevent.stop="filterMenuVisible = !filterMenuVisible">
-          <div class="form-field">
-            <label class="form-label" for="filter-category">Categories</label>
-            <PvMultipleChoice v-model="categoryFilter" :options="categoryOptions" class="rounded-lg p-1" />
-          </div>
-          <div class="form-field">
-            <label for="fiter-test">Test</label>
-            <PvInputText v-model="test" class="dark:bg-primary border-primary-80 rounded-lg border p-1.5">
-              <template #before>
-                <PvIconSort class="h-4 w-4" />
-              </template>
-            </PvInputText>
-          </div>
-          <div class="space-x-2">
-            <button type="submit" class="form-action form-action-submit" @click.prevent="applyFilter()">
-              Apply
-            </button>
-            <a class="cursor-pointer p-2 hover:underline" @click.prevent="filter = []">Reset</a>
+          <div class="space-y-3">
+            <TwFormField label="Category">
+              <PvInputDropdown v-model="categoryFilter" :options="categoryOptions" class="input-select-md" />
+            </TwFormField>
+            <div class="inline-flex space-x-2">
+              <button type="submit" class="button button-accent-mid :hover:button-accent-light button-md" @click.prevent="filter = (categoryFilter && [[`type`, FilterOperator.EQUALS, categoryFilter]]) || []">
+                Apply
+              </button>
+              <button class="button button-md hover:bg-primary-80/60" @click.prevent="filter = []">
+                Reset
+              </button>
+            </div>
           </div>
         </PvContextualDropdown>
 
@@ -297,14 +292,6 @@ watch(sortedColumnIDs, () => {
 
 const selected = ref<EntityJSON<Specimen>[]>([])
 
-const test = ref(``)
-
-const { create: createFilter, apply: applyFilter } = useFilters(filter)
-
 const categoryOptions = [`fossil`, `mineral`, `rock`]
-const categoryFilter = createFilter<string[]>(`category`, FilterOperator.EQUALS, {
-  input: values => values,
-  output: values => values,
-  empty: value => value.length === 0 || value.length === categoryOptions.length,
-})
+const categoryFilter = ref<string>()
 </script>
