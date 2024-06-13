@@ -5,8 +5,8 @@
         {{ label }}
       </dt>
       <dd :class="valueClass">
-        <slot :name="field" :value="entity[field]">
-          {{ entity[field] }}
+        <slot :name="field" :value="(entity as E)[field]" :entity="entity">
+          {{ (entity as E)[field] }}
         </slot>
       </dd>
     </div>
@@ -14,19 +14,19 @@
 </template>
 
 <script setup lang="ts" generic="E extends Entity = Entity">
-import { type Entity, type EntityJSON } from "@unb-libraries/nuxt-layer-entity"
+import { type Entity } from "@unb-libraries/nuxt-layer-entity"
 
 const props = defineProps<{
-  entity: EntityJSON<E>
-  fields?:(string | [string, string])[]
+  entity: E
+  fields:(keyof E | [keyof E, string])[]
   itemClass?: string
   labelClass?: string
   valueClass?: string
 }>()
 
-const fields = computed(() => (props.fields ?? Object.keys(props.entity)).map(field =>
-  typeof field === `string`
-    ? [field, field.substring(0, 1).toUpperCase() + field.substring(1)]
+const fields = computed(() => (props.fields).map<[keyof E, string]>(field =>
+  !Array.isArray(field)
+    ? [field, String(field).substring(0, 1).toUpperCase() + String(field).substring(1)]
     : field,
 ))
 </script>

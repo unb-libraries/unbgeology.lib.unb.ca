@@ -1,32 +1,29 @@
 <template>
-  <header class="mb-6 space-y-6">
-    <div class="flex flex-row space-x-8">
-      <h1 id="title" class="text-2xl">
-        Specimens
-      </h1>
-      <div class="grow space-x-2 text-right">
-        <NuxtLink to="/dashboard/specimens/create" class="form-action form-action-submit p-2 font-normal">
-          Add specimen
-        </NuxtLink>
-      </div>
-    </div>
+  <NuxtLayout name="dashboard-page">
+    <template #actions>
+      <NuxtLink v-if="hasPermission(/^create:specimen/)" to="/dashboard/specimens/create" class="button button-lg button-accent-mid hover:button-accent-light">
+        Add specimen
+      </NuxtLink>
+    </template>
 
     <div class="form-field w-full">
       <label class="sr-only" for="search">Search</label>
       <input v-model="search" placeholder="Search" name="search" class="placeholder:text-primary dark:placeholder:text-primary-20 form-input form-input-text grow p-2 placeholder:italic">
     </div>
-
     <div class="mt-2 flex w-full flex-row items-center justify-between">
       <div v-if="list?.total" class="italic">
         Displaying {{ (page - 1) * pageSize + 1 }} - {{ Math.min(list?.total, page * pageSize) }} of {{ pluralize(list?.total, `specimen`, `specimens`) }}
       </div>
+      <div v-else>
+        No specimens found
+      </div>
       <PvPaginator v-model="page" :total="Math.ceil((list?.total ?? 0) / pageSize)" :size="5" />
       <div class="relative flex items-center space-x-2">
         <button id="button-filter" class="button bg-primary-80/40 hover:bg-primary-60/40 button-md inline-flex space-x-2" @click.stop.prevent="filterMenuVisible = !filterMenuVisible">
-          <IconFilter class="stroke-1.5 h-6 w-6 fill-none stroke-current" /><span>Filter</span>
+          <IconFilter class="stroke-1.5 h-6 w-6 fill-none stroke-current" /><span>Filter<template v-if="filter.length"> ({{ filter.length }})</template></span>
         </button>
         <button id="button-sort" class="button bg-primary-80/40 hover:bg-primary-60/40 button-md inline-flex space-x-2" @click.prevent="sortMenuVisible = !sortMenuVisible">
-          <IconSort class="stroke-1.5 h-6 w-6 fill-none stroke-current" /><span>Sort<template v-if="activeSortOptions.length"> ({{ activeSortOptions.map(([,label]) => label).join(`, `) }})</template></span>
+          <IconSort class="stroke-1.5 h-6 w-6 fill-none stroke-current" /><span>Sort<template v-if="activeSortOptions.length"> ({{ activeSortOptions.length }})</template></span>
         </button>
         <button id="button-columns" class="button bg-primary-80/40 hover:bg-primary-60/40 button-md inline-flex space-x-2" @click.prevent="columnMenuVisible = !columnMenuVisible">
           <IconTable class="stroke-1.5 h-6 w-6 fill-none stroke-current" /><span>Columns ({{ columnsOptions.filter(([id, label, selected]) => selected).length }}/{{ columnsOptions.length }})</span>
@@ -102,148 +99,278 @@
         </PvContextualDropdown>
       </div>
     </div>
-  </header>
 
-  <EntityTable
-    v-model="selected"
-    class="border-primary-60/75 w-full border-b"
-    header-cell-class="group"
-    row-class="table-row"
-    :entities="specimens"
-    :columns="columnsOptions.filter(([id, label, selected]) => selected).map(([id, label]) => [id, label])"
-    :multi-select="true"
-    selected-row-class="active"
-  >
-    <template #id="{ entity: specimen }">
-      <NuxtLink :to="`/dashboard/specimens/${specimen.id.toLowerCase()}`" class="hover:underline" @click.stop="">
-        {{ specimen.id.toUpperCase() }}
-      </NuxtLink>
-    </template>
-    <template #type="{ entity: specimen }">
-      {{ sentenceCased(specimen.type) }}
-    </template>
-    <template #classification="{ entity: specimen }">
-      <template v-if="specimen.classification">
-        {{ specimen.classification.label }}
+    <EntityTable
+      v-model="selection"
+      class="border-primary-60/75 w-full border-b"
+      header-cell-class="group"
+      row-class="table-row"
+      :entities="specimens"
+      :columns="columnsOptions.filter(([,, selected]) => selected).map(([id, label]) => [id, label])"
+      :multi-select="true"
+      selected-row-class="active"
+    >
+      <template #id="{ entity: specimen }">
+        <NuxtLink :to="`/dashboard/specimens/${specimen.id.toLowerCase()}`" class="hover:underline" @click.stop="">
+          {{ specimen.id.toUpperCase() }}
+        </NuxtLink>
       </template>
-    </template>
-    <template #images="{ entity: specimen }">
-      <img
-        v-if="specimen.images?.total > 0"
-        :src="specimen.images?.entities[0].uri"
-        width="60"
-        height="60"
-        class="aspect-square rounded-md object-cover"
-      >
-      <div v-else />
-    </template>
-    <template #collection="{ entity: { collection } }">
-      {{ collection?.label }}
-    </template>
-    <template #measurements="{ entity: { measurements } }">
-      <ol v-if="measurements?.dimensions">
-        <li v-for="(lwh, index) in measurements.dimensions" :key="index">
-          {{ lwh.map(d => `${d / 10}cm`).join(` x `) }}
-        </li>
-      </ol>
-      <span v-else />
-    </template>
-    <template #partial="{ entity: { partial }}">
-      <template v-if="partial">
-        Partial
+      <template #type="{ entity: specimen }">
+        {{ sentenceCased(specimen.type) }}
       </template>
-      <template v-else>
-        Whole
+      <template #classification="{ entity: specimen }">
+        <template v-if="specimen.classification">
+          {{ specimen.classification.label }}
+        </template>
       </template>
-    </template>
-    <template #portion="{ entity: fossil }">
-      <template v-if="(fossil as Fossil).portion">
-        {{ (fossil as Fossil).portion.label }}
+      <template #images="{ entity: specimen }">
+        <img
+          v-if="specimen.images?.total > 0"
+          :src="specimen.images?.entities[0].uri"
+          width="60"
+          height="60"
+          class="aspect-square rounded-md object-cover"
+        >
+        <div v-else />
       </template>
-    </template>
-    <template #composition="{ entity: specimen }">
-      <template v-if="[`fossil`, `rock`].includes(specimen.type)">
-        {{ (specimen as Fossil | Rock).composition?.entities.map(({ label }) => label).join(`, `) }}
+      <template #collection="{ entity: { collection } }">
+        {{ collection?.label }}
       </template>
-      <template v-else>
-        {{ (specimen as Mineral).classification?.composition }}
+      <template #measurements="{ entity: { measurements } }">
+        <ol v-if="measurements?.dimensions">
+          <li v-for="(lwh, index) in measurements.dimensions" :key="index">
+            {{ lwh.map(d => `${d / 10}cm`).join(` x `) }}
+          </li>
+        </ol>
+        <span v-else />
       </template>
-    </template>
-    <template #age="{ entity: { age }}">
-      <template v-if="age?.unit">
-        {{ age?.unit?.label }} (
-        <template v-if="age.numeric">
-          {{ age?.numeric }} mya
+      <template #partial="{ entity: { partial }}">
+        <template v-if="partial">
+          Partial
         </template>
         <template v-else>
-          {{ Object.entries(age.unit.boundaries).map(([, value]) => value).map(value => `${value} mya`).join(` - `) }}
+          Whole
         </template>
-        )
       </template>
-      <template v-else-if="age?.numeric">
-        {{ age.numeric }} mya
+      <template #portion="{ entity: fossil }">
+        <template v-if="(fossil as Fossil).portion">
+          {{ (fossil as Fossil).portion.label }}
+        </template>
       </template>
-    </template>
-    <template #origin="{ entity: { origin }}">
-      {{ origin?.name }}
-    </template>
-    <template #collector="{ entity: { collector }}">
-      {{ collector?.label }}
-    </template>
-    <template #sponsor="{ entity: { sponsor }}">
-      {{ sponsor?.label }}
-    </template>
-    <template #market="{ entity: { market }}">
-      <template v-if="market">
-        $CAD {{ `${market}`.split(``).reverse().join(``).match(/\d{1,3}/g)!.join(',').split(``).reverse().join(``) }}
+      <template #composition="{ entity: specimen }">
+        <template v-if="[`fossil`, `rock`].includes(specimen.type)">
+          {{ (specimen as Fossil | Rock).composition?.entities.map(({ label }) => label).join(`, `) }}
+        </template>
+        <template v-else>
+          {{ (specimen as Mineral).classification?.composition }}
+        </template>
       </template>
-    </template>
-    <template #legal="{ entity: { legal }}">
-      <!-- TODO: Test this after the field actually exists. -->
-      <template v-if="legal">
-        {{ useEnum(Legal).labelOf(legal) }}
+      <template #age="{ entity: { age }}">
+        <template v-if="age?.unit">
+          {{ age?.unit?.label }} (
+          <template v-if="age.numeric">
+            {{ age?.numeric }} mya
+          </template>
+          <template v-else>
+            {{ Object.entries(age.unit.boundaries).map(([, value]) => value).map(value => `${value} mya`).join(` - `) }}
+          </template>
+          )
+        </template>
+        <template v-else-if="age?.numeric">
+          {{ age.numeric }} mya
+        </template>
       </template>
-    </template>
-    <template #storage="{ entity: { storage }}">
-      <!-- TODO: Indicate if item is on loan and not stored on site -->
-      {{ storage?.at(-1)?.location?.label }}
-    </template>
-    <template #creator="{ entity: { creator }}">
-      <template v-if="creator?.profile?.firstName && creator.profile?.lastName">
-        {{ creator?.profile?.firstName }} {{ creator?.profile?.lastName }}
+      <template #origin="{ entity: { origin }}">
+        {{ origin?.name }}
       </template>
-      <template v-else>
-        {{ creator?.username }}
+      <template #collector="{ entity: { collector }}">
+        {{ collector?.label }}
       </template>
-    </template>
-    <template #editor="{ entity: { editor }}">
-      <template v-if="editor?.profile?.firstName && editor.profile?.lastName">
-        {{ editor?.profile?.firstName }} {{ editor?.profile?.lastName }}
+      <template #sponsor="{ entity: { sponsor }}">
+        {{ sponsor?.label }}
       </template>
-      <template v-else>
-        {{ editor?.username }}
+      <template #market="{ entity: { market }}">
+        <template v-if="market">
+          $CAD {{ `${market}`.split(``).reverse().join(``).match(/\d{1,3}/g)!.join(',').split(``).reverse().join(``) }}
+        </template>
       </template>
+      <template #legal="{ entity: { legal }}">
+        <!-- TODO: Test this after the field actually exists. -->
+        <template v-if="legal">
+          {{ useEnum(Legal).labelOf(legal) }}
+        </template>
+      </template>
+      <template #storage="{ entity: { storage }}">
+        <!-- TODO: Indicate if item is on loan and not stored on site -->
+        {{ storage?.at(-1)?.location?.label }}
+      </template>
+      <template #creator="{ entity: { creator }}">
+        <template v-if="creator?.profile?.firstName && creator.profile?.lastName">
+          {{ creator?.profile?.firstName }} {{ creator?.profile?.lastName }}
+        </template>
+        <template v-else>
+          {{ creator?.username }}
+        </template>
+      </template>
+      <template #editor="{ entity: { editor }}">
+        <template v-if="editor?.profile?.firstName && editor.profile?.lastName">
+          {{ editor?.profile?.firstName }} {{ editor?.profile?.lastName }}
+        </template>
+        <template v-else>
+          {{ editor?.username }}
+        </template>
+      </template>
+      <template #status="{ entity: { status }}">
+        {{ sentenceCased(useEnum(Status).labelOf(status)) }}
+      </template>
+    </EntityTable>
+
+    <template #sidebar>
+      <EntityAdminSidebar v-if="selection.length" :entities="selection">
+        <PvEntityDetails v-if="selection.length === 1" :entity="selection[0]" :fields="columns" class="space-y-4" label-class="font-bold italic">
+          <template #images="{ entity: { images } }">
+            <img
+              v-if="images?.total > 0"
+              :src="images?.entities[0].uri"
+              width="200"
+              height="200"
+              class="aspect-square rounded-md object-cover"
+            >
+            <div v-else />
+          </template>
+          <template #id="{ entity: { id } }">
+            {{ id.toUpperCase() }}
+          </template>
+          <template #type="{ entity: { type } }">
+            {{ sentenceCased(type) }}
+          </template>
+          <template #classification="{ entity: { classification } }">
+            <template v-if="classification">
+              {{ classification.label }}
+            </template>
+          </template>
+          <template #collection="{ entity: { collection } }">
+            {{ collection?.label }}
+          </template>
+          <template #measurements="{ entity: { measurements } }">
+            <ol v-if="measurements?.dimensions">
+              <li v-for="(lwh, index) in measurements.dimensions" :key="index">
+                {{ lwh.map(d => `${d / 10}cm`).join(` x `) }}
+              </li>
+            </ol>
+            <span v-else />
+          </template>
+          <template #partial="{ entity: { partial } }">
+            <template v-if="partial">
+              Partial
+            </template>
+            <template v-else>
+              Whole
+            </template>
+          </template>
+          <!-- @vue-ignore -->
+          <template #portion="{ entity: { portion } }">
+            <template v-if="portion">
+              {{ portion.label }}
+            </template>
+          </template>
+          <!-- @vue-ignore -->
+          <template #composition="{ entity: specimen }">
+            <template v-if="[`fossil`, `rock`].includes(specimen.type)">
+              {{ (specimen as Fossil | Rock).composition?.entities.map(({ label }) => label).join(`, `) }}
+            </template>
+            <template v-else>
+              {{ (specimen as Mineral).classification?.composition }}
+            </template>
+          </template>
+          <template #age="{ entity: { age } }">
+            <template v-if="age?.unit">
+              {{ age?.unit?.label }} (
+              <template v-if="age.numeric">
+                {{ age?.numeric }} mya
+              </template>
+              <template v-else>
+                {{ Object.entries(age.unit.boundaries).map(([, value]) => value).map(value => `${value} mya`).join(` - `) }}
+              </template>
+              )
+            </template>
+            <template v-else-if="age?.numeric">
+              {{ age.numeric }} mya
+            </template>
+          </template>
+          <template #origin="{ entity: { origin } }">
+            {{ origin?.name }}
+          </template>
+          <template #collector="{ entity: { collector } }">
+            {{ collector?.label }}
+          </template>
+          <template #sponsor="{ entity: { sponsor } }">
+            {{ sponsor?.label }}
+          </template>
+          <template #market="{ entity: { market } }">
+            <template v-if="market">
+              $CAD {{ `${market}`.split(``).reverse().join(``).match(/\d{1,3}/g)!.join(',').split(``).reverse().join(``) }}
+            </template>
+          </template>
+          <template #legal="{ entity: { legal } }">
+            <!-- TODO: Test this after the field actually exists. -->
+            <template v-if="legal">
+              {{ useEnum(Legal).labelOf(legal) }}
+            </template>
+          </template>
+          <template #storage="{ entity: { storage } }">
+            <!-- TODO: Indicate if item is on loan and not stored on site -->
+            {{ storage?.at(-1)?.location?.label }}
+          </template>
+          <template #creator="{ entity: { creator } }">
+            <template v-if="creator?.profile?.firstName && creator.profile?.lastName">
+              {{ creator?.profile?.firstName }} {{ creator?.profile?.lastName }}
+            </template>
+            <template v-else>
+              {{ creator?.username }}
+            </template>
+          </template>
+          <template #editor="{ entity: { editor } }">
+            <template v-if="editor?.profile?.firstName && editor.profile?.lastName">
+              {{ editor?.profile?.firstName }} {{ editor?.profile?.lastName }}
+            </template>
+            <template v-else>
+              {{ editor?.username }}
+            </template>
+          </template>
+          <template #status="{ entity: { status } }">
+            {{ sentenceCased(useEnum(Status).labelOf(status)) }}
+          </template>
+        </PvEntityDetails>
+        <template #actions>
+          <div class="space-y-2">
+            <button v-if="hasPermission(/^delete:specimen/)" class="button button-lg button-outline-red-dark hover:button-red-dark w-full" @click.stop.prevent="onClickDelete">
+              Delete{{ selection.length > 1 ? ` ${selection.length} specimens` : `` }}
+            </button>
+          </div>
+        </template>
+      </EntityAdminSidebar>
+      <span v-else>No specimen selected.</span>
     </template>
-    <template #status="{ entity: { status }}">
-      {{ sentenceCased(useEnum(Status).labelOf(status)) }}
-    </template>
-  </EntityTable>
+  </NuxtLayout>
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
 import { FilterOperator, type EntityJSON } from '@unb-libraries/nuxt-layer-entity'
 import { type Specimen, Status, Legal, type Fossil, type Mineral, type Rock } from 'types/specimen'
+import { PvEntityDeleteConfirm } from '#components'
 
 definePageMeta({
-  layout: `dashboard`,
+  layout: false,
   name: `Specimens`,
   menu: {
     weight: 10,
   },
 })
 
-const columns = ref<[string, string][]>([
-  // [`images`, `Image`],
+const { hasPermission } = useCurrentUser()
+const columns = ref<[keyof Specimen, string][]>([
+  [`images`, `Images`],
   [`id`, `ID`],
   [`type`, `Category`],
   [`classification`, `Classification`],
@@ -252,7 +379,9 @@ const columns = ref<[string, string][]>([
   [`pieces`, `Pieces`],
   [`measurements`, `Dimensions`],
   [`partial`, `Condition`],
+  // @ts-ignore
   [`portion`, `Portion`],
+  // @ts-ignore
   [`composition`, `Composition`],
   [`age`, `Age`],
   [`origin`, `Origin`],
@@ -268,14 +397,14 @@ const columns = ref<[string, string][]>([
   [`status`, `Status`],
 ])
 
-const { list, entities: specimens, query } = await fetchEntityList<Specimen>(`Specimen`)
+const { list, entities: specimens, query, remove, removeMany } = await fetchEntityList<Specimen>(`Specimen`)
 
 const { filter, search, page, pageSize, sort } = query
 
 const filterMenuVisible = ref(false)
 
 const columnMenuVisible = ref(false)
-const columnsOptions = ref<[string, string, boolean][]>(columns.value.map(([id, label], index) => [id, label, index < 4]))
+const columnsOptions = ref<[string, string, boolean][]>(columns.value.filter(([id]) => id !== `images`).map(([id, label], index) => [id, label, index < 4]))
 
 const sortMenuVisible = ref(false)
 const { options: sortedColumnIDs, sortTop, sortUp, sortReverse, remove: unsort } = useSort(columns.value.filter(([id]) => id !== `images`).map(([id]) => id))
@@ -290,8 +419,23 @@ watch(sortedColumnIDs, () => {
     .map(([id, order]) => `${order === -1 ? `-` : ``}${id}`)
 })
 
-const selected = ref<EntityJSON<Specimen>[]>([])
+const selection = ref<EntityJSON<Specimen>[]>([])
 
 const categoryOptions = [`fossil`, `mineral`, `rock`]
 const categoryFilter = ref<string>()
+
+const { setContent, close: closeModal } = useModal()
+const onClickDelete = () => {
+  const label = selection.value.length > 1 ? `${selection.value.length} specimens` : `the specimen "${selection.value[0].id}"`
+  setContent(() => <PvEntityDeleteConfirm label={label} onConfirm={onRemove} onCancel={closeModal} />)
+}
+const onRemove = async () => {
+  if (selection.value.length === 1) {
+    await remove(selection.value[0])
+  } else {
+    await removeMany(selection.value)
+  }
+  selection.value = []
+  closeModal()
+}
 </script>
