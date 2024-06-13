@@ -33,6 +33,7 @@ export function defineEntityType<E extends Entity = Entity>(name: string, defini
 
 export function useEntityType<E extends Entity = Entity, Bc = E, Bu = Partial<Bc>>(name: keyof AppConfig<E>[`entityTypes`]) {
   const { [name]: entityType } = useAppConfig().entityTypes
+  // TODO: Support typing functions, e.g. to enable fetching subtypes, e.g. useEntityType<Vehicle>, create<Bus>, create<Car>, etc.
   return {
     definition: entityType,
     async create<B extends Bc = Bc>(entity: B) {
@@ -42,7 +43,7 @@ export function useEntityType<E extends Entity = Entity, Bc = E, Bu = Partial<Bc
       return await fetchEntity<E>(pk, entityType, options)
     },
     async fetchBy(condition: Partial<E>, options?: Partial<FetchEntityOptions<E>>) {
-      const { entities } = await fetchEntityList<E>(entityType, {
+      const { entities, error } = await fetchEntityList<E>(entityType, {
         filter: Object.entries(condition).map(([key, value]) => [key, FilterOperator.EQUALS, value]),
         select: options?.select,
       })
@@ -50,18 +51,24 @@ export function useEntityType<E extends Entity = Entity, Bc = E, Bu = Partial<Bc
       const entity = ref(entities.value[0] ?? null)
       return (entity.value && {
         entity: entity as Ref<EntityJSON<E> | null>,
-        update: async (body: Bu) => {
+        update: async <B extends Partial<E> = Partial<E>>(body: B) => {
           if (entity.value) {
-            await updateEntity<E, Bu>({ self: entity.value!.self, ...body })
+            const { entity: updatedEntity, error: updateError } = await updateEntity<E, B>({ self: entity.value.self, ...body })
+            if (!updateError.value) {
+              entity.value = updatedEntity.value
+            } else {
+              error.value = updateError.value
+            }
           }
         },
         remove: async () => {
-          const { success } = await deleteEntity(entity.value as EntityJSON<E>)
+          const { success, error } = await deleteEntity(entity.value as EntityJSON<E>)
           if (success) {
             entity.value = null
           }
+          return { success, error }
         },
-        errors: [],
+        error,
       }) || undefined
     },
     async fetchAll(options?: FetchEntityListOptions) {
@@ -103,12 +110,12 @@ export async function createEntity <E extends Entity = Entity, B = E>(entity: B,
     ? useEntityType<E>(entityTypeOrId).definition.baseURI
     : entityTypeOrId.baseURI
 
-  const { data: newEntity } = await useFetch<E>(url, {
+  const { data: newEntity, error } = await useFetch<E>(url, {
     // @ts-ignore
     method: `POST`,
     body: entity,
   })
-  return await fetchEntity<E>((newEntity.value as EntityJSON<E>).self)
+  return { entity: newEntity, error }
 }
 
 export async function fetchEntity <E extends Entity = Entity> (pk: string, entityType: EntityType<E>, options?: Partial<FetchEntityOptions<E>>): Promise<EntityFetchResponse<E>>
@@ -123,7 +130,7 @@ export async function fetchEntity <E extends Entity = Entity>(pkOrUri: string, e
       ? options.select
       : []
 
-  const { data, refresh } = await useFetch<EntityJSON<E>>(url, { query: { select: selectOptions } })
+  const { data, refresh, error } = await useFetch<EntityJSON<E>>(url, { query: { select: selectOptions } })
   const entity: Ref<EntityJSON<E> | null> = data as Ref<EntityJSON<E> | null>
   return {
     entity: entity as Ref<EntityJSON<E> | null>,
@@ -139,13 +146,13 @@ export async function fetchEntity <E extends Entity = Entity>(pkOrUri: string, e
         entity.value = null
       }
     },
-    errors: [],
+    error,
   }
 }
 
 export async function updateEntity <E extends Entity = Entity, B = Partial<E>>(entity: B): Promise<EntityResponse<E>> {
   const { self, ...body } = entity
-  const { data: updatedEntity } = await useFetch<EntityJSON<E>>(self, {
+  const { data: updatedEntity, error } = await useFetch<EntityJSON<E>>(self, {
     // @ts-ignore
     method: `PATCH`,
     body,
@@ -153,7 +160,7 @@ export async function updateEntity <E extends Entity = Entity, B = Partial<E>>(e
 
   return {
     entity: updatedEntity as Ref<EntityJSON<E> | null>,
-    errors: [],
+    error,
   }
 }
 
@@ -175,7 +182,7 @@ export async function deleteEntity(entityReferenceOrPk: EntityJSONReference | st
     const { error } = await useFetch(url, { method: `DELETE` })
     return {
       success: !error.value,
-      errors: [],
+      error,
     }
   }
   throw createError(`Entity ${entityReferenceOrPk} not found.`)
@@ -212,7 +219,7 @@ export async function fetchEntityList <E extends Entity = Entity>(entityTypeOrId
   watch(search, resetPage)
   watch(filter, resetPage)
 
-  const { data: list, refresh } = await useFetch<EntityJSONList<E>>(url, fetchOptions)
+  const { data: list, error, refresh } = await useFetch<EntityJSONList<E>>(url, fetchOptions)
   return {
     list: list as Ref<EntityJSONList<E> | null>,
     entities: computed(() => list.value?.entities ?? []),
@@ -251,7 +258,7 @@ export async function fetchEntityList <E extends Entity = Entity>(entityTypeOrId
         : await deleteEntityList(entityTypeOrIdOrURI.name, options)
       refresh()
     },
-    errors: [],
+    error,
   }
 }
 

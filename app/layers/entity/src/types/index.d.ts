@@ -53,7 +53,7 @@ export type EntityJSONUpdateBody<E extends Entity = Entity> = EntityJSONBody<E> 
 };
 export interface EntityResponse<E extends Entity = Entity> {
     entity: Ref<EntityJSON<E> | null>;
-    errors: any[];
+    error: Ref<any>;
 }
 export interface EntityFetchResponse<E extends Entity = Entity> extends EntityResponse<E> {
     update: () => Promise<void>;
@@ -67,11 +67,11 @@ export type EntityDiff<E extends Entity = Entity> = [Omit<EntityUpdate<E>, `prev
 export type EntityUpdateList<E extends Entity = Entity> = EntityJSONList<EntityUpdate<E>>;
 export interface EntityDeleteResponse {
     success: boolean;
-    errors: any[];
+    error: Ref<any>;
 }
 export interface EntityDeleteManyResponse {
     deleted: number;
-    errors: any[];
+    error: Ref<any>;
 }
 export declare enum FilterOperator {
     EQUALS = 1,
@@ -118,13 +118,13 @@ export interface EntityListResponse<E extends Entity = Entity> {
         select: Ref<string[]>;
         sort: Ref<string[]>;
     };
-    refresh: () => void;
+    refresh: () => Promise<void>;
     add: (entity: EntityJSONCreateBody<E>) => Promise<EntityCreateResponse<E>>;
     update: (entity: EntityJSONBody<E>) => Promise<EntityResponse<E>>;
     updateMany: (body: EntityJSONBody<E>) => Promise<EntityUpdateList<E>>;
     remove: (entity: EntityJSON) => Promise<EntityDeleteResponse>;
     removeMany: (entity: EntityJSON[]) => Promise<EntityDeleteManyResponse>;
-    errors: any[];
+    error: Ref<any>;
 }
 export interface Permission {
     action: string | string[];
