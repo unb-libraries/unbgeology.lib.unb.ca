@@ -74,9 +74,6 @@ const data = reactive({
   sponsor: props.specimen.sponsor?.self,
 })
 
-console.log(`input`, props.specimen)
-console.log(`form-input`, data)
-
 const setOrigin = function ([lat, long]: Coordinate) {
   data.origin.latitude = Number(lat)
   data.origin.longitude = Number(long)
@@ -93,14 +90,12 @@ watch(location, (loc) => {
 })
 
 function onSave() {
-  console.log(`form-output`, data)
   const { origin, collector, sponsor } = data
   const payload = {
     origin,
     collector: collector || (props.specimen.collector ? null : undefined),
     sponsor: sponsor || (props.specimen.sponsor ? null : undefined),
   }
-  console.log(`payload`, payload)
   emits(`save`, payload)
 }
 </script>

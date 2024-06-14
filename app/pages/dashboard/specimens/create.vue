@@ -84,7 +84,6 @@ async function onNewFiles(files: File[]) {
 }
 
 async function onSave() {
-  console.log(data.images)
   const { entity: specimen, error } = await create({ ...data, images: Object.keys(data.images), creator: `/api/users/${id.value}` })
   if (specimen.value) {
     createToast(`specimen-create-confirm-${specimen.value.id}`, () => `Specimen created.`, { type: `success` })

@@ -3,8 +3,6 @@ import { MigrationStatus } from "@unb-libraries/nuxt-layer-entity"
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
 
-  console.log(useCurrentServerSession(event))
-
   const resources = getAuthorizedResources(event, r => /^migration(:\w)*$/.test(r))
   const fields = getAuthorizedFields(event, ...resources)
   if (!resources.length) {

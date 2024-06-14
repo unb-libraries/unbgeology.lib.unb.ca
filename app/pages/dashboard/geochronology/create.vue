@@ -21,13 +21,8 @@ const { create } = useEntityType<Unit>(`Term`)
 const returnUrl = `/dashboard/geochronology`
 
 async function onSave(unit: Unit) {
-  // console.log(unit)
-  const { error } = await create(unit)
-  if (error.value) {
-    console.log(error)
-  } else {
-    navigateTo(returnUrl)
-  }
+  await create(unit)
+  navigateTo(returnUrl)
 }
 
 </script>

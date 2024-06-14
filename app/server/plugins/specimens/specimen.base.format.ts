@@ -7,7 +7,7 @@ import { Immeasurabibility, MeasurementCount, Status } from "~/types/specimen"
 export default defineMongooseFormatter(Specimen.Base, async (doc) => {
   const { slug, objectIDs, classification, description, collection, images, measurements, date, age, composition, origin, pieces, partial, collector, sponsor, loans, storage, storageLocations, publications, market, status, creator, editor, created, updated } = doc
 
-  const $return = {
+  return {
     id: slug,
     objectIDs: objectIDs && objectIDs.map(({ id, type }) => ({ id, type })),
     classification: (classification && Object.keys(classification).length > 0 && await renderDocument(classification, { model: Term, self: term => `/api/terms/${term._id}` })) || undefined,
@@ -77,8 +77,4 @@ export default defineMongooseFormatter(Specimen.Base, async (doc) => {
     created: (created && !isNaN(created) && new Date(created).toISOString()) || undefined,
     updated: (updated && !isNaN(updated) && new Date(updated).toISOString()) || undefined,
   }
-
-  // console.log(`$return`, $return)
-
-  return $return
 })

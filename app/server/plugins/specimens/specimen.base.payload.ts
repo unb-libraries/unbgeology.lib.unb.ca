@@ -71,7 +71,7 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
     updated: optional(MatchValidator(validationPatterns.date)),
   })
 
-  const $return = {
+  return {
     ...body,
     pk: create ? `UNB-${`${Math.floor(Math.random() * 1000000)}`.padStart(8, `0`)}` : undefined,
     classification: classification && { _id: classification.substring(1).split(`/`).at(-1)! },
@@ -107,7 +107,4 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
     created: (migrate && created && new Date(created).valueOf()) || undefined,
     updated: (migrate && updated && new Date(updated).valueOf()) || undefined,
   }
-
-  console.log(`api payload`, $return)
-  return $return
 })
