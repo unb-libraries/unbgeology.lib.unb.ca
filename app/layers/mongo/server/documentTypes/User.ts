@@ -41,12 +41,6 @@ export default defineDocumentModel<User>(`User`, defineDocumentSchema<User>({
     type: [EntityFieldTypes.String],
     required: false,
   },
-}, {
-  alterSchema(schema) {
-    schema.post(`save`, async function () {
-      await setUserRoles(this.username, ...this.roles)
-    })
-  },
 }).mixin(Authorize<User>({
   paths: (user) => {
     const { username, active, roles } = user

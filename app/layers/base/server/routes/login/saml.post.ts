@@ -40,7 +40,7 @@ export default defineEventHandler(async (event) => {
       firstName,
       lastName,
     },
-    permissions: (await getUserPermissions(username)).map(createFieldPermissionKeys).flat(),
+    permissions: (await getRolePermissions(...user.roles)).map(createFieldPermissionKeys).flat(),
     validUntil: new Date().valueOf() + sessionConfig.maxAge * 1000,
   })
 

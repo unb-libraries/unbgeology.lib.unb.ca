@@ -1,5 +1,5 @@
-export default defineMongooseFormatter(User, async (doc) => {
-  const { _id, username, active, profile, roles, permissions, created, updated } = doc
+export default defineMongooseFormatter(User, (doc) => {
+  const { _id, username, active, profile, roles, created, updated } = doc
   return {
     id: _id,
     username,
@@ -11,7 +11,6 @@ export default defineMongooseFormatter(User, async (doc) => {
       phone: profile.phone,
     }) || undefined,
     roles,
-    permissions: username && permissions && (await getUserPermissions(username)).map(createFieldPermissionKeys).flat(),
     created: (created && !isNaN(created) && new Date(created).toISOString()) || undefined,
     updated: (updated && !isNaN(updated) && new Date(updated).toISOString()) || undefined,
   }
