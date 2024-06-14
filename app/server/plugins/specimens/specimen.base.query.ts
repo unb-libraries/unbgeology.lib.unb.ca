@@ -1,5 +1,5 @@
 import { Boolean, Date, Enum, Count, Numeric, ObjectID, String } from "~/layers/mongo/server/utils/api/filter"
-import { Category, MeasurementCount, Status } from "~/types/specimen"
+import { MeasurementCount, Status } from "~/types/specimen"
 
 export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({
   id: {
@@ -48,13 +48,19 @@ export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({
   },
   collection: {
     default: true,
-    join: Term,
-    sort: `collection.label`,
-    filter: ObjectID,
+    select: `kollektion`,
+    join: {
+      documentType: Term,
+      localField: `kollektion`,
+      cardinality: `one`,
+    },
+    sort: `kollection.label`,
+    filter: (_, condition) => ObjectID(`kollektion`, condition),
     definition: {
       label: {
         default: true,
-        filter: String,
+        select: `kollektion.label`,
+        filter: (_, condition) => String(`kollektion.label`, condition),
       },
     },
   },

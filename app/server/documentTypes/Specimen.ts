@@ -19,7 +19,7 @@ export interface Specimen extends Omit<SpecimenEntity, keyof Entity | `type` | `
   type: `Specimen.Fossil` | `Specimen.Mineral` | `Specimen.Rock`
   classification: FossilCD | MineralCD | RockCD
   classificationModel: string
-  collection: ICollection
+  kollektion: ICollection
   images: Image[]
   age: {
     unit: GeochronologicUnit
@@ -99,7 +99,7 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
       },
     }],
   },
-  collection: {
+  kollektion: {
     type: EntityFieldTypes.ObjectId,
     ref: Collection.mongoose.model,
     required: false,

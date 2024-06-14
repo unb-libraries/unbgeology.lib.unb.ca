@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
     flat: true,
     flattenExcept: [
       `portion`,
-      `collection`,
+      `kollektion`,
       `classification`,
       `age`,
       `measurements`,

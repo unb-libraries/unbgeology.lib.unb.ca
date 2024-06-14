@@ -75,7 +75,7 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
     ...body,
     pk: create ? `UNB-${`${Math.floor(Math.random() * 1000000)}`.padStart(8, `0`)}` : undefined,
     classification: classification && { _id: classification.substring(1).split(`/`).at(-1)! },
-    collection: collection && { _id: collection.substring(1).split(`/`).at(-1)! },
+    kollektion: collection && { _id: collection.substring(1).split(`/`).at(-1)! },
     images: images?.map(uri => ({ _id: uri.substring(1).split(`/`).at(-1)! })),
     age: age && (typeof age === `string`
       ? { unit: { _id: age.substring(1).split(`/`).at(-1)! }, numeric: null }
