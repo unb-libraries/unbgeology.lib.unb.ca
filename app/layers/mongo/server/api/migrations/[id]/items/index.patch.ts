@@ -2,6 +2,7 @@ import { MigrationItemStatus } from "@unb-libraries/nuxt-layer-entity"
 
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
+  const { pageSize, page } = getQueryOptions(event)
 
   const migrationResources = getAuthorizedResources(event, r => /^migration(:\w)*$/.test(r), { action: `update` })
   const migration = await Migration.findByID(id).select(`authTags`)
@@ -24,6 +25,7 @@ export default defineEventHandler(async (event) => {
     .join(`migration`, Migration)
     .where(`migration._id`).eq(parseObjectID(id))
     .and(`authTags`).in(resources)
+    .paginate(page, pageSize)
 
   if (updates.length > 0) {
     const countUpdate = updates

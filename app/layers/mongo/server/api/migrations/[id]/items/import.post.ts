@@ -2,7 +2,6 @@ import { MigrationItemStatus } from "@unb-libraries/nuxt-layer-entity"
 
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
-  const { pageSize, page } = getQueryOptions(event)
 
   const migrationResources = getAuthorizedResources(event, r => /^migration(:\w)*$/.test(r), { action: `update` })
   const migration = await Migration.findByID(id).select(`authTags`)
@@ -12,33 +11,15 @@ export default defineEventHandler(async (event) => {
     return create403()
   }
 
-  const sessionName = useRuntimeConfig().public.session.name
-  const Cookie = `${sessionName}=${getCookie(event, sessionName)}`
+  // TODO: Find a way to use DocumentQuery and possibly update ALL items, using pagination only if specified
+  await MigrationItem.mongoose.model.updateMany(
+    { migration: migration._id, status: MigrationItemStatus.INITIAL },
+    { status: MigrationItemStatus.QUEUED },
+  )
 
-  const query = MigrationItem.find()
-    .join(`migration`, Migration)
-    .where(`migration._id`).eq(parseObjectID(id))
-    .where(`status`).eq(MigrationItemStatus.INITIAL)
-    .select(`migration.dependencies`)
-    .select([`_sourceID`, `$sourceID`])
-  await useEventQuery(event, query)
-  const { documents: items, total } = await query
-    .paginate(page, pageSize)
-
-  return runTask(`migrate:import`, {
+  await runTask(`migrate:import`, {
     payload: {
-      items: await renderDocumentList(items, {
-        model: MigrationItem,
-        total,
-        canonical: {
-          // @ts-ignore
-          self: item => `/api/migrations/${id}/items/${item._sourceID}`,
-        },
-        self: () => `/api/migrations/${id}/items`,
-      }),
-      headers: {
-        Cookie,
-      },
+      migration: `${migration._id}`,
     },
   })
 })
