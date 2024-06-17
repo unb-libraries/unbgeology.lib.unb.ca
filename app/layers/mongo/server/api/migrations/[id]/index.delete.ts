@@ -11,5 +11,6 @@ export default defineEventHandler(async (event) => {
     return create403()
   }
 
+  await migration?.delete()
   return migration ? sendNoContent(event) : create404()
 })

@@ -9,10 +9,12 @@ export default defineEventHandler(async (event) => {
   }
 
   const query = Migration.find()
-    .where(`authTags`).in(resources)
+    .where(`status`).eq(MigrationStatus.IDLE)
+    .and(`authTags`).in(resources)
   await useEventQuery(event, query)
 
   const { documents: migrations } = await query.paginate(page, pageSize)
+
   const idleMigrations = migrations.filter(migration => migration.status === MigrationStatus.IDLE)
   await Promise.all(idleMigrations.map(migration => migration.delete()))
 
