@@ -16,7 +16,14 @@ export default defineAppConfig({
       uri(term) {
         return `/api/terms/${term.id}`
       },
-      abstract: true,
+    },
+
+    Migration: {
+      name: `Migration`,
+      baseURI: `/api/migrations`,
+      uri(migration) {
+        return `/api/migrations/${migration.id}`
+      },
     },
   },
 })

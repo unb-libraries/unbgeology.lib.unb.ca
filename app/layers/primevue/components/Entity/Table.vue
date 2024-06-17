@@ -16,7 +16,7 @@
       <tr
         v-for="(entity, index) in entities"
         :key="entity.id"
-        :class="{ [rowClass ?? ``]: true, [selectedRowClass ?? ``]: selection.find(e => e === entity) }"
+        :class="{ [rowClass ?? ``]: true, [selectedRowClass ?? ``]: selection?.find(e => e === entity) }"
         tabindex="0"
         @click.stop="onClickRow(entity, index)"
       >
@@ -102,7 +102,7 @@ const allChecked = computed({
 
 const onClickRow = (entity: EntityJSON<E>, index: number) => {
   if (!props.multiSelect) {
-    selection.value = selection.value[0] !== entity ? [entity] : []
+    selection.value = selection.value?.[0] !== entity ? [entity] : []
   } else {
     const entityIndex = selection.value.findIndex(e => e === entity)
     if (entityIndex >= 0) {

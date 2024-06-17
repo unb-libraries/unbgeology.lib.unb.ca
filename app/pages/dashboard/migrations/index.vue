@@ -1,56 +1,92 @@
 <template>
-  <header class="flex flex-row justify-between">
-    <h2 class="mb-6 text-2xl">
-      Migrations
-    </h2>
-    <div class="space-x-1">
-      <button class="form-action form-action-submit p-2 font-normal" @click.prevent="content = { component: MigrationForm, props: { entity: {} }, eventHandlers: { save: onCreateMigration, cancel: () => closeModal()}}">
-        Create
-      </button>
-    </div>
-  </header>
-  <PvEntityTable :entities="migrations" :columns="['name', ['total', 'Records'], 'imported', 'skipped', 'errored', 'status', ['actions', '']]">
-    <template #name="{ entity: migration }">
-      <NuxtLink :to="`/dashboard/migrations/${migration.id}`" class="hover:underline">
-        {{ migration.name }}
+  <NuxtLayout name="dashboard-page">
+    <template #actions>
+      <NuxtLink v-if="hasPermission(/^create:migration/)" to="/dashboard/migrations/create" class="button button-lg button-accent-mid hover:button-accent-light">
+        Add migration
       </NuxtLink>
     </template>
-    <template #status="{ entity: migration }">
-      <span v-if="migration.status === MigrationStatus.IDLE">Idle</span>
-      <span v-if="migration.status === MigrationStatus.RUNNING">Running</span>
+
+    <EntityTable
+      v-model="selection"
+      :entities="migrations"
+      :columns="['name', ['total', 'Records'], 'imported', 'skipped', 'errored', 'status', ['actions', '']]"
+      class="border-primary-60/75 w-full border-b"
+      header-cell-class="group"
+      row-class="table-row"
+      selected-row-class="active"
+    >
+      <template #name="{ entity: migration }">
+        <NuxtLink :to="`/dashboard/migrations/${migration.id}`" class="hover:underline">
+          {{ migration.name }}
+        </NuxtLink>
+      </template>
+      <template #status="{ entity: migration }">
+        <span v-if="migration.status === MigrationStatus.IDLE">Idle</span>
+        <span v-if="migration.status === MigrationStatus.RUNNING">Running</span>
+      </template>
+    </EntityTable>
+
+    <template #sidebar>
+      <EntityAdminSidebar v-if="selection" :entities="[selection]">
+        <PvEntityDetails :entity="selection" :fields="columns" class="space-y-4" label-class="font-bold italic" />
+        <template #actions>
+          <div class="space-y-2">
+            <button v-if="hasPermission(/^update:migrationitem/)" class="button button-lg button-outline-blue hover:button-blue w-full" @click.stop.prevent="onClickImport">
+              Import
+            </button>
+            <button v-if="hasPermission(/^delete:migration/)" class="button button-lg button-outline-red-dark hover:button-red-dark w-full" @click.stop.prevent="onClickRemove">
+              Delete
+            </button>
+          </div>
+        </template>
+      </EntityAdminSidebar>
     </template>
-  </PvEntityTable>
+  </NuxtLayout>
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
 import { type EntityJSONBody, type Migration, MigrationStatus, type EntityJSON } from "@unb-libraries/nuxt-layer-entity"
-import { MigrationForm } from "#components"
+import { PvEntityDeleteConfirm } from "#components"
 
 definePageMeta({
-  layout: `dashboard`,
+  layout: false,
   name: `Migrations`,
   menu: {
     weight: 2000,
   },
 })
 
-const { content, close: closeModal } = useModal()
-const { entities: migrations, add: addMigration, update: updateMigration, remove: removeMigration, refresh } = await fetchEntityList<Migration>(`Migration`)
-async function onCreateMigration(migration: EntityJSONBody<Migration>) {
-  await addMigration(migration)
+const { hasPermission } = useCurrentUser()
+const { setContent, close: closeModal } = useModal()
+const { entities: migrations, remove, refresh, error } = await fetchEntityList<Migration>(`Migration`)
+const columns: [keyof Migration, string][] = [[`name`, `Name`], [`total`, `Records`], [`imported`, `Imported`], [`skipped`, `Skipped`], [`errored`, `Errored`], [`status`, `Status`]]
+const selection = ref<EntityJSON<Migration>>()
+
+function onClickRemove() {
+  const label = `the migration "${selection.value!.name}"`
+  setContent(() => <PvEntityDeleteConfirm label={label} onConfirm={onRemove} onCancel={closeModal} />)
+}
+
+const { createToast } = useToasts()
+async function onRemove() {
+  const name = selection.value!.name
+  await remove(selection.value!)
+  if (error.value) {
+    createToast(`migration-delete-error`, () => error.value, { type: `error` })
+  } else {
+    createToast(`migration-delete-success`, () => `Deleted migration "${name}".`, { type: `success`, duration: 4000 })
+  }
+  selection.value = undefined
   closeModal()
 }
 
-if (process.client) {
-  const idle = computed(() => migrations.value.every(({ status }) => status === MigrationStatus.IDLE))
-  let intervalId: ReturnType<typeof setInterval>
-  watch(idle, (isIdle) => {
-    if (!isIdle) {
-      intervalId = setInterval(refresh, 1000)
-    } else if (isIdle && intervalId) {
-      clearInterval(intervalId)
-    }
-  }, { immediate: true })
+async function onClickImport() {
+  const { error } = await useFetch(`/api/migrations/${selection.value!.id}/items/import`, { method: `POST` })
+  if (!error.value) {
+    createToast(`migration-import-started`, () => `Import started: "${selection.value!.name}"`, { type: `success`, duration: 4000 })
+  } else {
+    createToast(`migration-import-error`, () => `Failed to import "${selection.value!.name}": ${error.value}`, { type: `error` })
+  }
 }
 
 function canImport({ status, total, imported, skipped, errored }: EntityJSON<Migration>) {
