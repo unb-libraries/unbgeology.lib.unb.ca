@@ -11,14 +11,6 @@ export default defineEventHandler(async (event) => {
   const body = await readOneDocumentBodyOr400(event, { model: Migration, fields })
   const migration = await Migration.create(body)
 
-  const { items } = await readBody(event)
-  if (items) {
-    await $fetch(`/api/migrations/${migration._id}/items`, {
-      method: `POST`,
-      body: items,
-    })
-  }
-
   return await renderDocument<MigrationEntity, MigrationDoc>(migration, {
     model: Migration,
     self: migration => `/api/migrations/${migration._id}`,

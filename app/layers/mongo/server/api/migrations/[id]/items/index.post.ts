@@ -17,11 +17,10 @@ export default defineEventHandler(async (event) => {
     return create403()
   }
 
-  const body = {
-    migration: parseObjectID(id),
-    ...await readDocumentBodyOr400<MigrationItem>(event, { model: MigrationItem, fields }),
-  }
-  const oneOrManyItems = await MigrationItem.create(body)
+  const bodyOrBodies = await readDocumentBodyOr400<MigrationItem>(event, { model: MigrationItem, fields })
+  const oneOrManyItems = await MigrationItem.create(Array.isArray(bodyOrBodies)
+    ? bodyOrBodies.map(body => ({ ...body, migration: parseObjectID(id) }))
+    : { ...bodyOrBodies, migration: parseObjectID(id) })
 
   return Array.isArray(oneOrManyItems)
     ? renderDocumentList(oneOrManyItems, {
