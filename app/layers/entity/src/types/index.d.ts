@@ -206,7 +206,7 @@ export declare enum MigrationItemStatus {
     SKIPPED = 32
 }
 export interface MigrationItem extends Stateful<typeof MigrationItemStatus>, Entity {
-    sourceID: number;
+    sourceID: string;
     data: any;
     entityURI?: string;
     migration: Migration;

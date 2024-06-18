@@ -10,7 +10,7 @@ export interface MigrationItem extends Omit<MigrationItemEntity, keyof Entity | 
 
 export default defineDocumentModel<MigrationItem>(`MigrationItem`, defineDocumentSchema<MigrationItem>({
   sourceID: {
-    type: EntityFieldTypes.Number,
+    type: EntityFieldTypes.String,
     required: true,
   },
   entityURI: {

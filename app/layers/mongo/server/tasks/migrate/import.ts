@@ -107,7 +107,7 @@ export default defineTask({
       consola.log(`Done!`)
     }
 
-    const imported: number[] = []
+    const imported: string[] = []
     async function doImport(item: IMigrationItem) {
       if (!imported.includes(item.sourceID)) {
         imported.push(item.sourceID)

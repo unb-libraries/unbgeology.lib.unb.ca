@@ -9,7 +9,7 @@ export default defineMongooseReader(MigrationItem, async (payload, { op }) => {
   const status = statusStr && useEnum(MigrationItemStatus).valueOf(statusStr)
 
   const { id: sourceID, ...body } = await validateBody(payload, {
-    id: requireIf(create, NumberValidator),
+    id: requireIf(create, StringValidator),
     data: requireIf(create, (input: any) => {
       try {
         const stringified = JSON.stringify(input)
