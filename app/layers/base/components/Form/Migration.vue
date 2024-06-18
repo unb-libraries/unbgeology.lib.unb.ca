@@ -7,7 +7,7 @@
       <PvInputDropdown
         v-model="entityType"
         class="input-select-lg"
-        :options="[[`Specimen`, `Specimen`], [`Term.Classification.Mineral`, `Classification (Mineral)`]]"
+        :options="entityTypeOptions ?? []"
       />
     </TwFormField>
     <TwFormField label="Dependencies">
@@ -42,6 +42,7 @@ import { parse } from "csv-parse/browser/esm"
 
 const props = defineProps<{
   entity?: EntityJSONProperties<Migration> & Partial<EntityJSON<Migration>>
+  entityTypeOptions?: [string, string][]
 }>()
 
 const emits = defineEmits<{
@@ -74,8 +75,10 @@ async function onDrop(files: File[]) {
   }))
 
   const migrationItems = parsed.filter(f => f).map(f => f!.map<Pick<MigrationItem, `sourceID` | `data`>>((p) => {
-    const [[, sourceID], ...data] = Object.entries(p)
-    return { id: parseInt(sourceID), data: Object.fromEntries(data) }
+    // const [[, sourceID], ...data] = Object.entries(p)
+    const data = Object.entries(p)
+    const [[, sourceID]] = data
+    return { id: `${sourceID}`, data: Object.fromEntries(data) }
   })).flat()
 
   items.value = [...items.value, ...migrationItems]

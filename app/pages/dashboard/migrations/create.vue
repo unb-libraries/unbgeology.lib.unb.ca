@@ -1,5 +1,5 @@
 <template>
-  <FormMigration @save="onSave" @cancel="navigateTo(returnUrl)" />
+  <FormMigration :entity-type-options="entityTypeOptions" @save="onSave" @cancel="navigateTo(returnUrl)" />
 </template>
 
 <script setup lang="ts">
@@ -21,6 +21,13 @@ type MigrationBody = Pick<Migration, `name` | `entityType` | `dependencies`>
 type MigrationItemBody = Pick<MigrationItem, `sourceID` | `data`>
 const { create } = useEntityType<Migration, MigrationBody>(`Migration`)
 const returnUrl = `/dashboard/migrations`
+
+const entityTypeOptions: [string, string][] = [
+  [`Specimen`, `Specimen`],
+  [`Term.Classification.Fossil`, `Classification (Fossil)`],
+  [`Term.Classification.Mineral`, `Classification (Mineral)`],
+  [`Term.Classification.Rock`, `Classification (Rock)`],
+]
 
 async function onSave(body: MigrationBody, items?: MigrationItemBody[]) {
   const { createToast } = useToasts()
