@@ -24,6 +24,10 @@ async function setItemStatus(item: IMigrationItem, status: MigrationItemStatus) 
   return await setItem(item, { status })
 }
 
+async function setMigrationStatus(migration: IMigration, status: MigrationStatus) {
+  return await Migration.mongoose.model.findByIdAndUpdate(migration._id, { status }, { returnDocument: `after` })
+}
+
 function loadProcessed(migration: IMigration) {
   const fetchItems = async () => {
     return await MigrationItem.mongoose.model
@@ -86,7 +90,7 @@ export default defineTask({
         $unset: { entityURI: 1, error: 1 },
       })
 
-      await Migration.mongoose.model.findByIdAndUpdate(item._id, {
+      await Migration.mongoose.model.findByIdAndUpdate(migration!._id, {
         $inc: item.status === MigrationItemStatus.IMPORTED
           ? { imported: -1 }
           : { errored: -1 },
@@ -94,6 +98,7 @@ export default defineTask({
     }
 
     consola.info(`Rollback ${migration.name}`)
+    await setMigrationStatus(migration, MigrationStatus.RUNNING)
     cycle()
 
     return { result: true }
