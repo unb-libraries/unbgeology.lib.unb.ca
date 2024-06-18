@@ -25,7 +25,7 @@ export function useMigrationLookup<E extends Entity = Entity>(migration: Migrati
 
     if (typeof sourceIDOrMatcher === `string`) {
       const sourceID = sourceIDOrMatcher
-      MigrationItem.mongoose.model.findOne({ sourceID })
+      MigrationItem.mongoose.model.findOne({ migration: migration._id, sourceID })
         .then((item) => {
           // const status = useEnum(MigrationItemStatus).valueOf(item.status)
           if (item && item.entityURI) {
