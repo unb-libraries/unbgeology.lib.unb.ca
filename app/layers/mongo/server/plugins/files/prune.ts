@@ -15,7 +15,7 @@ export default defineNitroPlugin((nitro) => {
       }
     }
 
-    const orphans = await Promise.all(files.filter(async file => !(await fileExists(file.filepath))))
+    const orphans = await Promise.all(files.filter(file => !fileExists(file.filepath)))
     if (orphans.length > 0) {
       consola.log(`${orphans.length} file documents have been orphaned.`)
       orphans.forEach(file => consola.log(file.filepath))
