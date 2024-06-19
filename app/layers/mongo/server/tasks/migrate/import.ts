@@ -56,6 +56,7 @@ function loadQueued(migration: IMigration) {
     return await MigrationItem.mongoose.model
       .find({ migration: migration._id, status: MigrationItemStatus.QUEUED })
       .populate(`migration`)
+      .limit(10)
   }
 
   async function* doLoad() {
