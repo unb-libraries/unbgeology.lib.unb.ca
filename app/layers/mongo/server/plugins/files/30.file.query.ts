@@ -5,6 +5,7 @@ export default defineMongooseEventQueryHandler(FileBase, (event, query) => {
   const { select, sort, filter } = getQueryOptions(event)
   const defaultFields = [
     `filesize`,
+    `filename`,
     `filepath`,
     `mimetype`,
     `uri`,
@@ -31,6 +32,7 @@ export default defineMongooseEventQueryHandler(FileBase, (event, query) => {
       const [op, value] = condition
       switch (field) {
         case `id`: query.use(ObjectID(`_id`, condition)); break
+        case `filename`: query.use(String(field, condition)); break
         case `filesize`: query.use(Numeric(field, condition)); break
         case `mimetype`: query.use(String(field, condition)); break
         case `status`: query.use(Numeric.Equals(field, [op, Array.isArray(value)
