@@ -12,7 +12,7 @@ export default defineDocumentModel<Term>(`Term`, defineDocumentSchema<Term>({
   },
 }, {
   alterSchema(schema) {
-    schema.index({ label: 1, type: 1 }, { unique: true })
+    schema.index({ label: 1, type: 1, parent: 1 }, { unique: true })
   },
 }).mixin(Slugified<Term>({
   path: `label`,
