@@ -28,6 +28,7 @@ const entityTypeOptions: [string, string][] = [
   [`Term.Classification.Mineral`, `Classification (Mineral)`],
   [`Term.Classification.Rock`, `Classification (Rock)`],
   [`Term.Geochronology`, `Geochronology`],
+  [`Term.StorageLocation`, `Storage location`],
 ]
 
 async function onSave(body: MigrationBody, items?: MigrationItemBody[]) {
