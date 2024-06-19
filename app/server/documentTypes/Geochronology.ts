@@ -19,15 +19,9 @@ export default defineDocumentModel(`GeochronologicUnit`, defineDocumentSchema<Ge
     enum: Division,
     required: true,
   },
-  boundaries: {
-    lower: {
-      type: EntityFieldTypes.Number,
-      required: true,
-    },
-    upper: {
-      type: EntityFieldTypes.Number,
-      required: true,
-    },
+  start: {
+    type: EntityFieldTypes.Number,
+    required: true,
   },
   gssp: {
     type: EntityFieldTypes.Boolean,

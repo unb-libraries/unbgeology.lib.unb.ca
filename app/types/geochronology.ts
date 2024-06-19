@@ -6,28 +6,20 @@ export enum Status {
 }
 
 export enum Division {
-  AGE = 1,
-  EPOCH = 2,
+  EON = 1,
+  ERA = 2,
   PERIOD = 4,
-  ERA = 8,
-  EON = 16,
+  SUBPERIOD = 8,
+  EPOCH = 16,
+  AGE = 32,
 }
 
 export interface Unit extends Term, Hierarchical<Unit>, Stateful<typeof Status> {
   division: Division
-  boundaries: {
-    lower: number
-    upper: number
-  }
+  start: number
   gssp?: boolean
   uncertainty?: number
   color: string
 }
 
-export type UnitFormData = Partial<Omit<Unit, keyof Omit<Term, `label`> | `boundaries` | `uncertainty`>> & {
-  boundaries: {
-    upper: string
-    lower: string
-  }
-  uncertainty: string
-}
+export type UnitFormData = Partial<Omit<Unit, keyof Omit<Term, `label`>>>

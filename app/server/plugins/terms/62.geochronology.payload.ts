@@ -8,10 +8,7 @@ export default defineMongooseReader(Geochronology, async (payload, options) => {
     // FIX: Work around as URIEntityTypeValidator cannot authorize against the API
     parent: optional(MatchValidator(/^\/api\/terms\/[a-z0-9]{24}$/)),
     division: requireIf(create, EnumValidator(Division)),
-    boundaries: requireIf(create, ObjectValidator({
-      lower: requireIf(create, NumberValidator),
-      upper: requireIf(create, NumberValidator),
-    })),
+    start: requireIf(create, NumberValidator),
     gssp: optional(BooleanValidator),
     uncertainty: optional(NumberValidator),
     color: optional(StringValidator),

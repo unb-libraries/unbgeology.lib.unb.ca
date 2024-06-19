@@ -20,7 +20,7 @@ definePageMeta({
 })
 
 const { fetchBy } = useEntityType<Unit>(`Term`)
-const { entity: unit, update } = await fetchBy({ slug: slug as string, type: `geochronology` }, { select: [`label`, `parent`, `division`, `boundaries`, `uncertainty`, `color`, `gssp`] })
+const { entity: unit, update } = await fetchBy({ slug: slug as string, type: `geochronology` })
 if (!unit.value) {
   showError(`Unit not found.`)
 }

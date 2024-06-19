@@ -8,16 +8,13 @@
         <PvInputDropdown v-model="body.division" :options="divisions" option-field="self" label-field="label" class="input-select-lg" />
       </TwFormField>
       <div class="inline-flex w-full space-x-4">
-        <TwFormField label="Upper boundary" class="w-1/4">
-          <TwInputText v-model="body.boundaries.upper" class="input input-text-lg" />
+        <TwFormField label="Lower boundary" class="w-1/3">
+          <TwInputText v-model="body.start" class="input input-text-lg" />
         </TwFormField>
-        <TwFormField label="Lower boundary" class="w-1/4">
-          <TwInputText v-model="body.boundaries.lower" class="input input-text-lg" />
-        </TwFormField>
-        <TwFormField label="Uncertainty" class="w-1/4">
+        <TwFormField label="Uncertainty" class="w-1/3">
           <TwInputText v-model="body.uncertainty" class="input input-text-lg" />
         </TwFormField>
-        <TwFormField label="Color" class="w-1/4">
+        <TwFormField label="Color" class="w-1/3">
           <TwInputText v-model="body.color" class="input input-text-lg" />
         </TwFormField>
       </div>
@@ -43,11 +40,8 @@ const unit = reactive<UnitFormData>({
   label: props.unit?.label ?? ``,
   parent: props.unit?.parent,
   division: props.unit?.division ?? undefined,
-  boundaries: {
-    upper: `${props.unit?.boundaries?.upper ?? ``}`,
-    lower: `${props.unit?.boundaries?.lower ?? ``}`,
-  },
-  uncertainty: `${props.unit?.uncertainty ?? 0}`,
+  start: props.unit?.start,
+  uncertainty: props.unit?.uncertainty,
   gssp: props.unit?.gssp ?? true,
   color: props.unit?.color ?? ``,
 })
@@ -57,14 +51,11 @@ const { fetchAll } = useEntityType<Unit, UnitFormData>(`Term`)
 const { entities: parents } = await fetchAll({ filter: [[`type`, FilterOperator.EQUALS, type]] })
 const divisions = useEnum(Division).toTuples().map<[string, string]>(([value, label]) => [`${value}`, titleCased(label)])
 
-function onSave({ boundaries, uncertainty, ...values }: UnitFormData) {
+function onSave({ start, uncertainty, ...values }: UnitFormData) {
   const unit = {
     ...values,
-    uncertainty: parseInt(uncertainty),
-    boundaries: {
-      upper: parseInt(boundaries.upper),
-      lower: parseInt(boundaries.lower),
-    },
+    uncertainty,
+    start,
     type,
   } as Unit
   emits(`save`, unit)

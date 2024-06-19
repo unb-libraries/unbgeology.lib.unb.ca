@@ -22,23 +22,12 @@ export default defineMongooseEventQueryHandler(Geochronology, defineEventQuery({
     default: false,
     filter: Enum(Division),
   },
-  boundaries: {
-    default: false,
-    sort: `boundaries.upper`,
-    filter: false,
-    definition: {
-      lower: {
-        default: true,
-        filter: Numeric,
-      },
-      upper: {
-        default: true,
-        filter: Numeric,
-      },
-    },
+  start: {
+    default: true,
+    filter: Numeric,
   },
   gssp: {
-    default: false,
+    default: true,
     filter: Boolean,
   },
   uncertainty: {

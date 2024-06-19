@@ -15,7 +15,7 @@
     <EntityTable
       v-model="selection"
       :entities="terms"
-      :columns="schema.filter(({ id }) => [`label`, `parent`, `division`, `boundaries`].includes(id)).map(({ id, label }) => [id, label])"
+      :columns="schema.filter(({ id }) => [`label`, `parent`, `division`, `start`].includes(id)).map(({ id, label }) => [id, label])"
       :multi-select="true"
       class="w-full"
       row-class="table-row"
@@ -36,8 +36,8 @@
       <template #division="{ entity: { division }}">
         {{ titleCased(useEnum(Division).labelOf(division)) }}
       </template>
-      <template #boundaries="{ entity: { boundaries: { upper } } }">
-        {{ upper }} Ma
+      <template #start="{ entity: { start } }">
+        {{ start }} Ma
       </template>
     </EntityTable>
     <div class="flex w-full flex-row justify-between px-4">
@@ -57,8 +57,13 @@
           <template #division="{ value: division }">
             {{ titleCased(useEnum(Division).labelOf(division)) }}
           </template>
-          <template #boundaries="{ value: { upper } }">
-            {{ upper }} Ma
+          <template #start="{ entity: { start } }">
+            <template v-if="start !== undefined">
+              {{ start }} Mya
+            </template>
+          </template>
+          <template #uncertainty="{ entity: { uncertainty } }">
+            {{ uncertainty }}
           </template>
           <template #color="{ value: color }">
             <svg class="mt-2 h-6 w-6 rounded-md"><rect width="100%" height="100%" x="0" y="0" :fill="color" /></svg>
@@ -101,7 +106,7 @@ definePageMeta({
 })
 
 const { hasPermission } = useCurrentUser()
-const { values: schema, keys } = defineEntitySchema<Unit>(`Geochronology`, [`label`, `slug`, `parent`, `division`, [`boundaries`, `Boundary`], `uncertainty`, `color`, `gssp`, `created`, `updated`, `status`], {
+const { values: schema, keys } = defineEntitySchema<Unit>(`Geochronology`, [`label`, `slug`, `parent`, `division`, [`start`, `Boundary`], `uncertainty`, `color`, `gssp`, `created`, `updated`, `status`], {
   fieldPermission: id => new RegExp(`read:term(:geochronology)?:(${id}|\\*)`),
 })
 
