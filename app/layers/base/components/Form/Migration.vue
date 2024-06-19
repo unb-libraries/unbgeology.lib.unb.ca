@@ -70,6 +70,8 @@ async function onDrop(files: File[]) {
     switch (f.type) {
       case `text/csv`:
         return parseCsv(await f.text())
+      case `application/json`:
+        return parseJson(await f.text())
       default: createToast(`unsupported-file-error-${f.type}`, () => `Unsupported file type: ${f.type}`, { type: `error`, duration: 4000 })
     }
   }))
@@ -93,6 +95,17 @@ function parseCsv(csv: string) {
         resolve([])
       }
     })
+  })
+}
+
+function parseJson(json: string) {
+  return new Promise<object[]>((resolve) => {
+    const parsed = JSON.parse(json)
+    if (Array.isArray(parsed)) {
+      resolve(parsed)
+    } else {
+      resolve([parsed])
+    }
   })
 }
 
