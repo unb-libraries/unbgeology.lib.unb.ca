@@ -35,6 +35,11 @@ function useHook(name: HookName, handler: (...args: HookParams) => void) {
   }
 }
 
+async function loadItem(id: string) {
+  return await MigrationItem.mongoose.model.findById(id)
+    .populate(`migration`)
+}
+
 async function setItem(item: IMigrationItem, values: Partial<IMigrationItem>) {
   return await MigrationItem.mongoose.model.findByIdAndUpdate(item._id, values, { returnDocument: `after` }).populate(`migration`)
 }
@@ -123,9 +128,15 @@ export default defineTask({
         await Migration.mongoose.model.findByIdAndUpdate(migration!._id, { $inc: { imported: 1 } })
         consola.success(`Imported ${item.sourceID}`, self)
       } catch (err: unknown) {
-        await callHook(`migrate:import:item:error`, [await setItem(item, { status: MigrationItemStatus.ERRORED, error: (err as Error).message })])
-        await Migration.mongoose.model.findByIdAndUpdate(migration!._id, { $inc: { errored: 1 } })
-        consola.error(`Failed to import ${item.sourceID}`, (err as Error).message)
+        const maybeImportedItem = await loadItem(`${item._id}`)
+        const { status, entityURI } = maybeImportedItem!
+        if (status === MigrationItemStatus.IMPORTED && entityURI) {
+          await callHook(`migrate:import:item:imported`, [maybeImportedItem])
+        } else {
+          await callHook(`migrate:import:item:error`, [await setItem(item, { status: MigrationItemStatus.ERRORED, error: (err as Error).message })])
+          await Migration.mongoose.model.findByIdAndUpdate(migration!._id, { $inc: { errored: 1 } })
+          consola.error(`Failed to import ${item.sourceID}`, (err as Error).message)
+        }
       }
     }
 
