@@ -6,5 +6,7 @@ export default defineEventHandler(async (event) => {
   if (user && !user.authTags.some(t => resources.includes(t))) {
     return create403()
   }
+
+  await user?.delete()
   return user ? sendNoContent(event) : create404(`User not found`)
 })

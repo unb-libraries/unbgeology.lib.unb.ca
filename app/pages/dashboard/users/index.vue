@@ -40,9 +40,9 @@
       row-class="table-row"
       selected-row-class="active"
     >
-      <template #id="{ entity }">
-        <NuxtLink :to="`/dashboard/users/${entity.id}`" class="hover:underline">
-          {{ entity.id }}
+      <template #username="{ entity: { username } }">
+        <NuxtLink :to="`/dashboard/users/${username}`" class="hover:underline">
+          {{ username }}
         </NuxtLink>
       </template>
       <template #roles="{ entity }">
@@ -115,7 +115,7 @@ definePageMeta({
 })
 
 const schema = defineEntitySchema<User>(`User`, [
-  [`id`, { label: `Username`, toggable: false }],
+  [`username`, { toggable: false }],
   [`roles`, { sort: false }],
   [`created`, `Member since`],
   [`active`, `Status`],
@@ -125,8 +125,8 @@ const { hasPermission } = useCurrentUser()
 const columns = schema.filter(({ permission }) => permission ? hasPermission(permission) : false)
 
 const { columns: toggleableColumns, selected: selectedToggeableColumns, toggle } = useToggleableColumns(columns)
-const { columns: sortableColumns, rankedIDs } = useSortableColumns(columns, { defaultSort: `id` })
-const selectedColumns = computed<[string, string][]>(() => [[`id`, `Username`], ...selectedToggeableColumns.value])
+const { columns: sortableColumns, rankedIDs } = useSortableColumns(columns, { defaultSort: `username` })
+const selectedColumns = computed<[string, string][]>(() => [[`username`, `Username`], ...selectedToggeableColumns.value])
 
 const { list, entities, query, removeMany } = await fetchEntityList<User>(`User`, {
   select: columns.keys,
