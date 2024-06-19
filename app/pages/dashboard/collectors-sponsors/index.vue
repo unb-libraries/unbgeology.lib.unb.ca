@@ -31,8 +31,8 @@
           </NuxtLink>
         </div>
       </template>
-      <template #address="{ entity: { address: { city }}}">
-        {{ city }}
+      <template #address="{ entity: { address }}">
+        {{ address?.city }}
       </template>
     </EntityTable>
     <div class="flex w-full flex-row justify-between px-4">

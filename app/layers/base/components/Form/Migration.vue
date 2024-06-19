@@ -77,13 +77,14 @@ async function onDrop(files: File[]) {
   }))
 
   const migrationItems = parsed.filter(f => f).map(f => f!.map<Pick<MigrationItem, `sourceID` | `data`>>((p) => {
-    // const [[, sourceID], ...data] = Object.entries(p)
     const data = Object.entries(p)
     const [[, sourceID]] = data
     return { id: `${sourceID}`, data: Object.fromEntries(data) }
   })).flat()
 
-  items.value = [...items.value, ...migrationItems]
+  items.value = Object.values([...items.value, ...migrationItems]
+    .map<[string, any]>(item => [item.id, item])
+    .reduceRight((items, [id, item]) => ({ ...items, [id]: { ...item, data: { ...items[id]?.data ?? {}, ...item.data } } }), {}))
 }
 
 function parseCsv(csv: string) {

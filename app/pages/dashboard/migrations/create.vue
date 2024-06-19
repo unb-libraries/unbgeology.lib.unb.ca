@@ -29,6 +29,7 @@ const entityTypeOptions: [string, string][] = [
   [`Term.Classification.Rock`, `Classification (Rock)`],
   [`Term.Geochronology`, `Geochronology`],
   [`Term.StorageLocation`, `Storage location`],
+  [`Term.Affiliate`, `Collector / Sponsor`],
   [`User`, `User`],
 ]
 
