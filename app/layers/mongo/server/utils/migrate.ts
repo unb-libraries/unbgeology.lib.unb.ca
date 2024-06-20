@@ -27,7 +27,6 @@ export function useMigrationLookup<E extends Entity = Entity>(migration: Migrati
       const sourceID = sourceIDOrMatcher
       MigrationItem.mongoose.model.findOne({ migration: migration._id, sourceID })
         .then((item) => {
-          // const status = useEnum(MigrationItemStatus).valueOf(item.status)
           if (item && item.entityURI) {
             unregister()
             resolve(item.entityURI)
@@ -48,25 +47,19 @@ export function useMigrationLookup<E extends Entity = Entity>(migration: Migrati
 
       if (nitro) {
         register(nitro.hooks.hook(`migrate:import:item:imported`, (item) => {
-          // console.log(`dependency imported`, item, migration)
           if (`${item.sourceID}` === sourceID && `${item.migration._id}` === `${migration._id}`) {
-            // console.log(`moving on: imported`)
             unregister()
             resolve(item.entityURI!)
           }
         }))
         register(nitro.hooks.hook(`migrate:import:item:error`, (item) => {
-          // console.log(`dependency errored`)
           if (`${item.sourceID}` === sourceID && `${item.migration._id}` === `${migration._id}`) {
-            // console.log(`moving on: errored`)
             unregister()
             reject(new Error(`Item ${sourceID} errored during migration.`))
           }
         }))
         register(nitro.hooks.hook(`migrate:import:item:skipped`, (item) => {
-          // console.log(`dependency skipped`)
           if (`${item.sourceID}` === sourceID && `${item.migration._id}` === `${migration._id}`) {
-            // console.log(`moving on: skipped`)
             unregister()
             reject(new Error(`Item ${sourceID} was skipped during migration.`))
           }
@@ -77,7 +70,15 @@ export function useMigrationLookup<E extends Entity = Entity>(migration: Migrati
       MigrationItem.mongoose.model.find({ _id: migration._id, entityURI: { $regex: `(/[a-z0-9]+)+` } })
         .then(async (items) => {
           await Promise.all(items.map(async (item) => {
-            const entity = await $fetch<EntityJSON<E>>(item.entityURI!)
+            function getAuthHeaders(): { Cookie?: string } {
+              const event = useEvent()
+              if (event) {
+                const sessionName = useRuntimeConfig().public.session.name
+                return { Cookie: `${sessionName}=${getCookie(event, sessionName)}` }
+              }
+              return {}
+            }
+            const entity = await $fetch<EntityJSON<E>>(item.entityURI!, { headers: getAuthHeaders() })
             if (matcher(entity)) {
               resolve(entity.self)
             }

@@ -60,8 +60,8 @@ function loadQueued(migration: IMigration) {
   const fetchItems = async () => {
     return await MigrationItem.mongoose.model
       .find({ migration: migration._id, status: MigrationItemStatus.QUEUED })
-      .populate(`migration`)
-      .limit(10)
+      .populate({ path: `migration`, populate: { path: `dependencies` } })
+      .limit(100)
   }
 
   async function* doLoad() {
@@ -101,16 +101,38 @@ export default defineTask({
     }
     const entityTypeID = migration.entityType.split(`.`)[0]
 
-    async function cycle() {
-      const queue = loadQueued(migration!)
-      let item = await queue.next()
-      while (!item.done && item.value) {
+    let importedCount = 0; let erroredCount = 0
+    async function next() {
+      const item = await queue.next()
+      if (!item.done && item.value) {
         await setItemStatus(item.value, MigrationItemStatus.PENDING)
         await doImport(item.value)
-        item = await queue.next()
       }
+    }
+
+    function onImported() {
+      total--
+      importedCount++
+      if (total > 0) {
+        next()
+      } else {
+        done()
+      }
+    }
+
+    function onErrored() {
+      total--
+      erroredCount++
+      if (total > 0) {
+        next()
+      } else {
+        done()
+      }
+    }
+
+    async function done() {
       await Migration.mongoose.model.findByIdAndUpdate(migration!._id, { status: MigrationStatus.IDLE })
-      consola.log(`Done!`)
+      consola.success(`Done! Imported: ${importedCount}, errored: ${erroredCount}`)
     }
 
     const imported: string[] = []
@@ -126,6 +148,7 @@ export default defineTask({
         const { self } = await createEntity(entityTypeID, body)
         await callHook(`migrate:import:item:imported`, [await setItem(item, { status: MigrationItemStatus.IMPORTED, entityURI: self })])
         await Migration.mongoose.model.findByIdAndUpdate(migration!._id, { $inc: { imported: 1 } })
+        onImported()
         consola.success(`Imported ${item.sourceID}`, self)
       } catch (err: unknown) {
         const maybeImportedItem = await loadItem(`${item._id}`)
@@ -135,6 +158,7 @@ export default defineTask({
         } else {
           await callHook(`migrate:import:item:error`, [await setItem(item, { status: MigrationItemStatus.ERRORED, error: (err as Error).message })])
           await Migration.mongoose.model.findByIdAndUpdate(migration!._id, { $inc: { errored: 1 } })
+          onErrored()
           consola.error(`Failed to import ${item.sourceID}`, (err as Error).message)
         }
       }
@@ -150,7 +174,10 @@ export default defineTask({
 
     consola.info(`Importing ${migration.name}`)
     await setMigrationStatus(migration, MigrationStatus.RUNNING)
-    cycle()
+
+    const queue = loadQueued(migration!)
+    let total = await MigrationItem.mongoose.model.countDocuments({ migration: migration._id, status: MigrationItemStatus.QUEUED })
+    Array.from({ length: 100 }).map(next)
 
     return { result: true }
   },
