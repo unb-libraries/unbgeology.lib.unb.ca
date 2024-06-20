@@ -1,6 +1,5 @@
 import { EntityFieldTypes } from "layers/mongo/types/entity"
-import { Immeasurabibility, MeasurementCount, Status } from "types/specimen"
-import { isNullishCoalesce } from "typescript"
+import { Immeasurabibility, Legal, MeasurementCount, Status } from "types/specimen"
 import type { Entity, Stateful as IStateful } from "@unb-libraries/nuxt-layer-entity"
 import type { Specimen as SpecimenEntity, Loan } from "types/specimen"
 import type { Fossil as FossilCD, Mineral as MineralCD, Rock as RockCD } from "./Classification"
@@ -86,6 +85,12 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
   pk: {
     type: EntityFieldTypes.String,
     required: true,
+  },
+  legal: {
+    type: EntityFieldTypes.String,
+    enum: Legal,
+    required: true,
+    default: Legal.PERMANENT_COLLECTION,
   },
   objectIDs: {
     type: [{

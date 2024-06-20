@@ -1,5 +1,5 @@
 import { Boolean, Date, Enum, Count, Numeric, ObjectID, String } from "~/layers/mongo/server/utils/api/filter"
-import { MeasurementCount, Status } from "~/types/specimen"
+import { Legal, MeasurementCount, Status } from "~/types/specimen"
 
 export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({
   id: {
@@ -24,6 +24,10 @@ export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({
         filter: String,
       },
     },
+  },
+  legal: {
+    default: true,
+    filter: Enum(Legal),
   },
   classification: {
     default: true,

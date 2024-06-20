@@ -18,6 +18,11 @@ export enum Status {
   PUBLISHED = 8,
 }
 
+export enum Legal {
+  PERMANENT_COLLECTION = 1,
+  ON_LOAN = 2,
+}
+
 export enum Category {
   FOSSIL = `fossil`,
   MINERAL = `mineral`,
@@ -103,6 +108,7 @@ export interface Specimen extends Entity, Stateful<typeof Status> {
   collector?: Affiliate,
   sponsor?: Affiliate,
   market?: number
+  legal: Legal
   loans?: Loan[],
   storage: Storage[],
   publications?: Publication[],
