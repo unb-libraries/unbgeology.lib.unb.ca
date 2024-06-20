@@ -7,9 +7,11 @@ export async function useFileUpload<T extends FileEntity = FileEntity>(fileOrFil
   const files = Array.isArray(fileOrFiles) ? fileOrFiles : [fileOrFiles]
 
   const uploadOne = async (formData: FormData): Promise<EntityJSON<T>> => {
+    const body = formData
+    body.set(`status`, `persisted`)
     const { data, error } = await useFetch(`/api/upload`, {
       method: `POST`,
-      body: formData,
+      body,
     })
     if (error.value) {
       throw new Error(error.value.message)
@@ -18,9 +20,11 @@ export async function useFileUpload<T extends FileEntity = FileEntity>(fileOrFil
   }
 
   const uploadMany = async (formData: FormData): Promise<EntityJSON<T>[]> => {
+    const body = formData
+    body.set(`status`, `persisted`)
     const { data, error } = await useFetch(`/api/upload`, {
       method: `POST`,
-      body: formData,
+      body,
     })
     if (error.value) {
       throw new Error(error.value.message)
