@@ -20,4 +20,4 @@ app/public/files
 app/public/image
 app/public/document
 app/public/other
-./files
+files/*
