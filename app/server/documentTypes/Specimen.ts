@@ -85,6 +85,10 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
   pk: {
     type: EntityFieldTypes.String,
     required: true,
+    unique: true,
+    default() {
+      return `UNB-${`${Math.floor(Math.random() * 1000000)}`.padStart(8, `0`)}`
+    },
   },
   legal: {
     type: EntityFieldTypes.String,
