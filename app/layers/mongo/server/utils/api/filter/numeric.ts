@@ -111,7 +111,11 @@ const Equals = <D extends DocumentBase = DocumentBase>(field: string, condition:
     throw new TypeError(`Invalid value: must provide a number`)
   }
 
-  if (op === FilterOperator.EQUALS) {
+  if (op & (FilterOperator.EQUALS & FilterOperator.NOT)) {
+    return (query: FilterableQuery<D>) => !Array.isArray(number)
+      ? query.where(field).ne(number)
+      : query.where(field).nin(number)
+  } else if (op & FilterOperator.EQUALS) {
     return (query: FilterableQuery<D>) => !Array.isArray(number)
       ? query.where(field).eq(number)
       : query.where(field).in(number)
