@@ -28,6 +28,11 @@ export default defineEventHandler(async (event) => {
     .where(`username`).eq(username)
     .select(`username`, `roles`, `active`)
 
+  if (!user) {
+    await User.mongoose.model.init()
+    consola.log(await User.mongoose.model.find())
+  }
+
   consola.log(`user:`, user)
 
   if (user?.active) {
