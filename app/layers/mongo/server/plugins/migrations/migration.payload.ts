@@ -11,7 +11,7 @@ export default defineMongooseReader(Migration, async (payload, { op }) => {
 
   return {
     ...body,
-    dependencies: dependencies && dependencies.map(({ id }) => ({ _id: id })),
+    dependencies: dependencies && dependencies.map(d => d.split(`/`).at(-1)).map(id => ({ _id: id })),
     status: status && useEnum(MigrationStatus).valueOf(status),
   }
 })

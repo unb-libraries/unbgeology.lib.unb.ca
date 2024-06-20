@@ -5,7 +5,7 @@ export default defineMongooseEventQueryHandler(Migration, defineEventQuery({
   id: {
     default: true,
     select: `_id`,
-    filter: ObjectID,
+    filter: (_, condition) => ObjectID(`_id`, condition),
   },
   name: {
     default: true,
