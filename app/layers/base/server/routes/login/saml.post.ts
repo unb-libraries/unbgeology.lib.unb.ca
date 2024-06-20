@@ -20,14 +20,13 @@ export default defineEventHandler(async (event) => {
     .select(`username roles active`)
 
   if (user?.active) {
-    await user.updateOne({ username }, {
-      profile: {
-        email,
-        phone,
-        lastName,
-        firstName,
-      },
+    user.set(`profile`, {
+      email,
+      phone,
+      lastName,
+      firstName,
     })
+    await user.save()
   } else {
     throw createError({ status: 404, statusText: `User not found` })
   }
