@@ -24,20 +24,15 @@ export default defineEventHandler(async (event) => {
   consola.log(`User model:`, User)
 
   // REFACTOR: Avoid making direct DB call, use API instead.
-  const user = await User.findOne()
-    .where(`username`).eq(username)
-    .select(`username`, `roles`, `active`)
-
-  if (!user) {
-    await User.mongoose.model.init()
-    consola.log(await User.mongoose.model.find())
-  }
+  const user = await User.mongoose.model
+    .findOne({ username })
+    .select(`username roles active`)
 
   consola.log(`user:`, user)
 
   if (user?.active) {
     consola.log(`active:`, true)
-    await user.update({
+    await user.updateOne({ username }, {
       profile: {
         email,
         phone,
