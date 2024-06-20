@@ -245,9 +245,7 @@
             {{ sentenceCased(type) }}
           </template>
           <template #classification="{ entity: { classification } }">
-            <template v-if="classification">
-              {{ classification.label }}
-            </template>
+            {{ classification?.label }}
           </template>
           <template #collection="{ entity: { collection } }">
             {{ collection?.label }}
@@ -268,13 +266,9 @@
               Whole
             </template>
           </template>
-          <!-- @vue-ignore -->
           <template #portion="{ entity: { portion } }">
-            <template v-if="portion">
-              {{ portion.label }}
-            </template>
+            {{ portion?.label }}
           </template>
-          <!-- @vue-ignore -->
           <template #composition="{ entity: specimen }">
             <template v-if="[`fossil`, `rock`].includes(specimen.type)">
               {{ (specimen as Fossil | Rock).composition?.entities.map(({ label }) => label).join(`, `) }}
@@ -285,14 +279,7 @@
           </template>
           <template #age="{ entity: { age } }">
             <template v-if="age?.unit">
-              {{ age?.unit?.label }} (
-              <template v-if="age.numeric">
-                {{ age?.numeric }} mya
-              </template>
-              <template v-else>
-                {{ Object.entries(age.unit.boundaries).map(([, value]) => value).map(value => `${value} mya`).join(` - `) }}
-              </template>
-              )
+              {{ age?.unit?.label }}
             </template>
             <template v-else-if="age?.numeric">
               {{ age.numeric }} mya

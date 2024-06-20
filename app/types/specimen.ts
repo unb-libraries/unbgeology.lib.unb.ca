@@ -109,6 +109,7 @@ export interface Specimen extends Entity, Stateful<typeof Status> {
   sponsor?: Affiliate,
   market?: number
   legal: Legal
+  lenderID: string
   loans?: Loan[],
   storage: Storage[],
   publications?: Publication[],

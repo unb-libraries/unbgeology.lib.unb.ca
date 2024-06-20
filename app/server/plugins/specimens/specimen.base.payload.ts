@@ -1,4 +1,4 @@
-import { Immeasurabibility, MeasurementCount, Status } from "~/types/specimen"
+import { Immeasurabibility, Legal, MeasurementCount, Status } from "~/types/specimen"
 import { validationPatterns } from "~/server/documentTypes/Specimen"
 import { require } from "~/layers/mongo/server/utils/api/payload"
 
@@ -33,11 +33,11 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
     age: optional(OrValidator<string | number>(MatchValidator(/^\/api\/terms\/[a-z0-9]{24}$/), NumberValidator)),
     composition: optional(ArrayValidator(MatchValidator(/^\/api\/terms\/[a-z0-9]{24}$/))),
     origin: optional(ObjectValidator({
-      latitude: NumberValidator,
-      longitude: NumberValidator,
-      accuracy: NumberValidator,
-      name: StringValidator,
-      description: StringValidator,
+      latitude: optional(NumberValidator),
+      longitude: optional(NumberValidator),
+      accuracy: optional(NumberValidator),
+      name: optional(StringValidator),
+      description: optional(StringValidator),
     })),
     pieces: optional(NumberValidator),
     partial: optional(BooleanValidator),
@@ -68,8 +68,8 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
     market: optional(NumberValidator),
     creator: optional(MatchValidator(/^\/api\/users\/[a-z0-9]{24}$/)),
     editor: optional(MatchValidator(/^\/api\/users\/[a-z0-9]{24}$/)),
-    created: optional(MatchValidator(validationPatterns.date)),
-    updated: optional(MatchValidator(validationPatterns.date)),
+    created: optional(MatchValidator(/^\d{4}-\d{2}-\d{2}/)),
+    updated: optional(MatchValidator(/^\d{4}-\d{2}-\d{2}/)),
   })
 
   return {

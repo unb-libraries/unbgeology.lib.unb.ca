@@ -238,13 +238,13 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
         type: EntityFieldTypes.Number,
         min: -90,
         max: 90,
-        required: optionalForStatus(Status.MIGRATED),
+        required: false,
       },
       longitude: {
         type: EntityFieldTypes.Number,
         min: -180,
         max: 180,
-        required: optionalForStatus(Status.MIGRATED),
+        required: false,
       },
       accuracy: {
         type: EntityFieldTypes.Number,
@@ -254,7 +254,7 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
       },
       name: {
         type: EntityFieldTypes.String,
-        required: true,
+        required: false,
       },
       description: {
         type: EntityFieldTypes.String,
