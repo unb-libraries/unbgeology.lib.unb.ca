@@ -49,7 +49,7 @@ export function getQueryOptions(event: H3Event): QueryOptions {
   let { page, pageSize } = query
 
   pageSize = pageSize ? Array.isArray(pageSize) ? parseInt(`${pageSize.at(-1)}`) : parseInt(`${pageSize}`) : 25
-  pageSize = Math.min(Math.max(1, pageSize), 100)
+  pageSize = Math.min(Math.max(1, pageSize), 500)
 
   page = page ? Array.isArray(page) ? parseInt(`${page.at(-1)}`) : parseInt(`${page}`) : 1
   page = Math.max(1, page)
