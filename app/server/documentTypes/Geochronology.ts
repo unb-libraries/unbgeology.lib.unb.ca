@@ -15,7 +15,7 @@ const State = Stateful({
 
 export default defineDocumentModel(`GeochronologicUnit`, defineDocumentSchema<GeochronologicUnit>({
   division: {
-    type: EntityFieldTypes.String,
+    type: EntityFieldTypes.Number,
     enum: Division,
     required: true,
   },

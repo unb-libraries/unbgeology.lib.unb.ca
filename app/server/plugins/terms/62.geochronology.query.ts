@@ -19,7 +19,7 @@ export default defineMongooseEventQueryHandler(Geochronology, defineEventQuery({
     },
   },
   division: {
-    default: false,
+    default: true,
     filter: Enum(Division),
   },
   start: {
@@ -31,15 +31,15 @@ export default defineMongooseEventQueryHandler(Geochronology, defineEventQuery({
     filter: Boolean,
   },
   uncertainty: {
-    default: false,
+    default: true,
     filter: Numeric,
   },
   color: {
-    default: false,
+    default: true,
     filter: String,
   },
   status: {
-    default: false,
+    default: true,
     filter: Enum(Status),
   },
   type: {
