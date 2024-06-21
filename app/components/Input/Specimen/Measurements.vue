@@ -44,7 +44,7 @@ const immeasurableReason = computed<Immeasurabibility | undefined>({
 })
 
 const dimensions = computed<Dimensions[]>({
-  get: () => (toRaw(props.modelValue?.dimensions) ?? []).map(([l, w, h]) => [l / 10, w / 10, h / 10]).slice(0, count.value === MeasurementCount.INDIVIDUAL ? props.pieces : count.value === MeasurementCount.AGGREGATE ? 3 : 1),
+  get: () => (toRaw(props.modelValue?.dimensions) ?? []).map(([l, w, h]) => [l / 10, w / 10, h / 10]).slice(0, (count.value & MeasurementCount.INDIVIDUAL && props.pieces) || (count.value & MeasurementCount.AGGREGATE && 3) || 1),
   set: (value: Dimensions[]) => emits(`update:modelValue`, {
     count: count.value,
     dimensions: value.map(([l, w, h]) => [l * 10, w * 10, h * 10]),

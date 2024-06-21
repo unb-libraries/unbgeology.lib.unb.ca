@@ -28,6 +28,7 @@ export interface Specimen extends Omit<SpecimenEntity, keyof Entity | `type` | `
     dimensions?: [number, number, number][]
     reason?: Immeasurabibility
   }
+  longestEdge?: number
   collector?: Person | Organization
   collectorModel: string
   sponsor?: Person | Organization
@@ -185,6 +186,13 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
         message: `Must provide a reason for immeasurable items.`,
       },
     ],
+  },
+  longestEdge: {
+    type: EntityFieldTypes.Number,
+    required: false,
+    default(this: Specimen) {
+      return this.measurements?.dimensions?.reduce((max, dimensions) => Math.max(max, Math.max(...dimensions)), 0)
+    },
   },
   date: {
     type: EntityFieldTypes.String,
