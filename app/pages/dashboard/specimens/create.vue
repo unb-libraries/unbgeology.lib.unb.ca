@@ -71,7 +71,7 @@ const data = reactive({
 const { id } = useCurrentUser()
 const { createToast } = useToasts()
 
-const { entities: images, refresh } = await fetchEntityList<Image>(`File`, { filter: [[`type`, FilterOperator.EQUALS, `image`]], select: [`uri`] })
+const { entities: images, refresh } = await fetchEntityList<Image>(`File`, { filter: [[`type`, FilterOperator.EQUALS, `image`]], select: [`uri`], pageSize: 500 })
 const imageOptions = computed(() => images.value
   .map(({ self, uri }) => ({ [self]: uri }))
   .reduce((acc, cur) => ({ ...acc, ...cur }), {}))

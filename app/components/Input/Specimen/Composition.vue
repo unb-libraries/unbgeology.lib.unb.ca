@@ -22,7 +22,7 @@ const props = defineProps<{
   type: `fossil` | `rock`
 }>()
 
-const { entities: options, add: createTerm } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `composition/${props.type}`]] })
+const { entities: options, add: createTerm } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `composition/${props.type}`]], select: [`label`], sort: [`label`], pageSize: 500 })
 const onAdd = () => {
   const { open: openModal } = useEntityFormModal<Composition>(TermForm, {
     onSave: async (values: Composition) => {

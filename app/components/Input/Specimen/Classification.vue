@@ -27,7 +27,8 @@ const Form = {
   rock: FormClassificationRock,
 }[props.type]
 
-const { entities: options, add: createClassification } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `classification/${props.type}`]] })
+// FIX: Dynamically load all, e.g. on scroll, instead of setting fixed pageSize
+const { entities: options, add: createClassification } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `classification/${props.type}`]], select: [`label`], sort: [`label`], pageSize: 500 })
 function onAdd() {
   const { open: openModal } = useEntityFormModal<Classification>(Form, {
     onSave: async (values: Classification) => {

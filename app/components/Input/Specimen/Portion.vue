@@ -17,7 +17,7 @@ import type { Portion } from '~/types/portion'
 import { TermForm } from '#components'
 
 const portion = defineModel<string>({ required: false })
-const { entities: options, add: createPortion } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `portion`]] })
+const { entities: options, add: createPortion } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `portion`]], select: [`label`], sort: [`label`], pageSize: 500 })
 
 function onAdd() {
   const { open: openModal } = useEntityFormModal<Portion>(TermForm, {

@@ -18,7 +18,7 @@ import useEntityFormModal from '~/layers/primevue/composables/useEntityFormModal
 
 const collection = defineModel<string>({ required: false })
 
-const { entities: options, add: createCollection } = await fetchEntityList<Collection>(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `collection`]], select: [`label`] })
+const { entities: options, add: createCollection } = await fetchEntityList<Collection>(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `collection`]], select: [`label`], sort: [`label`], pageSize: 500 })
 
 function onAdd() {
   const { open: openModal } = useEntityFormModal<Collection>(TermForm, {

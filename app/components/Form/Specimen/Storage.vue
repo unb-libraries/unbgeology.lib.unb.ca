@@ -32,7 +32,7 @@ const emits = defineEmits<{
   cancel: []
 }>()
 
-const { entities: storageOptions } = await fetchEntityList<StorageLocation>(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `storageLocation`]] })
+const { entities: storageOptions } = await fetchEntityList<StorageLocation>(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `storageLocation`]], select: [`label`], sort: [`label`], pageSize: 500 })
 
 function onSave() {
   emits(`save`, {

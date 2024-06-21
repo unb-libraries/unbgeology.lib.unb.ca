@@ -33,7 +33,7 @@ const typeOptions = [
 
 const type = ref<`unit` | `numeric`>(typeof age.value === `number` ? `numeric` : `unit`)
 
-const { entities: units, add: createUnit } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `geochronology`]] })
+const { entities: units, add: createUnit } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `geochronology`]], select: [`label`], sort: [`label`], pageSize: 500 })
 function onAdd() {
   const { open: openModal } = useEntityFormModal<Unit>(FormGeochronology, {
     onSave: async (values: Unit) => {

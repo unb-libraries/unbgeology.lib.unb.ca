@@ -54,8 +54,8 @@ const emits = defineEmits<{
   save: [specimen: Specimen]
 }>()
 
-const { entities: people } = await fetchEntityList<Person>(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `affiliate/person`]] })
-const { entities: organizations } = await fetchEntityList<Organization>(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `affiliate/organization`]] })
+const { entities: people } = await fetchEntityList<Person>(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `affiliate/person`]], select: [`label`], sort: [`label`], pageSize: 500 })
+const { entities: organizations } = await fetchEntityList<Organization>(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `affiliate/organization`]], select: [`label`], sort: [`label`], pageSize: 500 })
 const affiliates = computed(() => [...people.value, ...organizations.value].sort(({ label: a }, { label: b }) => a < b ? -1 : a > b ? 1 : 0))
 const location = ref<Location>()
 

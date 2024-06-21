@@ -4,7 +4,6 @@
       <InputSpecimenClassification
         v-model="data.classification"
         :type="specimen.type"
-        :options="classifications"
         option-field="self"
         label-field="label"
         class="input-select-lg"
