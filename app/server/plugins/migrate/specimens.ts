@@ -175,8 +175,10 @@ export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (
                 : Immeasurabibility.OTHER,
         }
       } else {
-        const parsed = measurements.split(`;`).map(m => m.replace(/cm|:|x/g, ``).replace(/\s+/g, ` `).trim().split(` `))
         const sla = [`small`, `large`, `average`]
+        const parsed = measurements.split(`;`)
+          .map(m => m.replace(/cm|:|x/g, ``).replace(/\s+/g, ` `).trim().split(` `))
+          .map(([prefix, ...dimensions]) => [prefix, ...dimensions.map(e => Number(e) * 10)]) as [string, number, number, number][]
         const count = parsed.filter(([prefix]) => sla.includes(prefix)).length
           ? MeasurementCount.AGGREGATE
           : parsed.filter(([prefix]) => prefix === `container`).length
@@ -185,10 +187,10 @@ export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (
         return {
           count,
           dimensions: count === MeasurementCount.AGGREGATE
-            ? parsed.filter(([pfx]) => sla.includes(pfx)).sort(([a], [b]) => sla.indexOf(a) - sla.indexOf(b)).map(([, dimensions]) => dimensions)
+            ? parsed.filter(([pfx]) => sla.includes(pfx)).sort(([a], [b]) => sla.indexOf(a) - sla.indexOf(b)).map(([, ...dimensions]) => dimensions)
             : count === MeasurementCount.CONTAINER
               ? [measurements.split(`;`).find(([pfx]) => pfx === `container`)!.slice(1)]
-              : parsed.map(([, ...dimensions]) => dimensions.map(d => parseInt(d))),
+              : parsed.map(([, ...dimensions]) => dimensions),
         }
       }
     })(),
