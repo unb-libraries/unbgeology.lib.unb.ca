@@ -28,7 +28,7 @@ const parent = ref<string | undefined>(props.storageLocation?.parent?.self)
 const isPublic = ref<boolean>(props.storageLocation?.public || false)
 
 const { fetchAll } = useEntityType<StorageLocation>(`Term`)
-const { entities: parents } = await fetchAll({ filter: [[`type`, FilterOperator.EQUALS, `storageLocation`]] })
+const { entities: parents } = await fetchAll({ filter: [[`type`, FilterOperator.EQUALS, `storageLocation`]], select: [`label`], sort: [`label`], pageSize: 500 })
 
 function onSave() {
   if (label.value) {
