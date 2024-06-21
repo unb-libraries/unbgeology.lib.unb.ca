@@ -30,7 +30,7 @@
         <span v-if="parent">{{ parent.label }}</span>
       </template>
       <template #rank="{ entity: { rank }}">
-        {{ titleCase(useEnum(Rank).labelOf(rank)) }}
+        {{ rank ? titleCase(useEnum(Rank).labelOf(rank)) : `` }}
       </template>
     </EntityTable>
     <div class="flex w-full flex-row justify-between px-4">
