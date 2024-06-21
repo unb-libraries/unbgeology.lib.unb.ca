@@ -28,7 +28,7 @@ const count = computed<MeasurementCount>({
   get: () => useEnum(MeasurementCount).valueOf(props.modelValue?.count ?? MeasurementCount.INDIVIDUAL),
   set: (value: MeasurementCount) => emits(`update:modelValue`, {
     count: value,
-    dimensions: value === MeasurementCount.IMMEASURABLE ? undefined : dimensions.value,
+    dimensions: value === MeasurementCount.IMMEASURABLE ? undefined : dimensions.value.map(([l, w, h]) => [l * 10, w * 10, h * 10]),
     reason: value !== MeasurementCount.IMMEASURABLE ? undefined : immeasurableReason.value,
   }),
 })
@@ -44,10 +44,10 @@ const immeasurableReason = computed<Immeasurabibility | undefined>({
 })
 
 const dimensions = computed<Dimensions[]>({
-  get: () => (toRaw(props.modelValue?.dimensions) ?? []).slice(0, count.value === MeasurementCount.INDIVIDUAL ? props.pieces : count.value === MeasurementCount.AGGREGATE ? 3 : 1),
+  get: () => (toRaw(props.modelValue?.dimensions) ?? []).map(([l, w, h]) => [l / 10, w / 10, h / 10]).slice(0, count.value === MeasurementCount.INDIVIDUAL ? props.pieces : count.value === MeasurementCount.AGGREGATE ? 3 : 1),
   set: (value: Dimensions[]) => emits(`update:modelValue`, {
     count: count.value,
-    dimensions: value,
+    dimensions: value.map(([l, w, h]) => [l * 10, w * 10, h * 10]),
     reason: undefined,
   }),
 })
