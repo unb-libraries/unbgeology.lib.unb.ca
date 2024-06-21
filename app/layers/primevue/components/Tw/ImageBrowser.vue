@@ -1,6 +1,6 @@
 <template>
   <form @submit.prevent="onSubmit">
-    <div class="grid grid-cols-8 gap-2">
+    <div class="grid h-64 grid-cols-8 gap-2 overflow-y-scroll">
       <div v-for="(uri, self) of options" :key="self" class="bg-primary w-fit p-0">
         <div class="group relative h-24 w-24 cursor-pointer overflow-hidden">
           <img
