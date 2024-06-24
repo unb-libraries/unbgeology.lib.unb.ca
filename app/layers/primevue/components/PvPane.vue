@@ -1,9 +1,11 @@
 <template>
-  <div :class="[collapsible ? collapsed ? collapsedClass : expandedClass : '', { 'cursor-pointer': collapsible && collapsed }]" @click="toggleIfCollapsed">
-    <div class="empty:hidden" :class="[headerClass ?? '', { 'cursor-pointer': collapsible }]" @click.stop="toggle">
+  <div class="flex flex-col" :class="[collapsible ? collapsed ? collapsedClass : expandedClass : '', { 'cursor-pointer': collapsible && collapsed }]" @click="toggleIfCollapsed">
+    <div class="grow-0 empty:hidden" :class="[headerClass ?? '', { 'cursor-pointer': collapsible }]" @click.stop="toggle">
       <slot name="header" />
     </div>
-    <slot v-if="!collapsible || !collapsed" />
+    <div v-if="!collapsible || !collapsed" class="grow overflow-scroll">
+      <slot />
+    </div>
   </div>
 </template>
 

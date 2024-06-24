@@ -1,11 +1,11 @@
 <template>
-  <div class="flex h-full flex-col space-y-4">
-    <div class="grow">
+  <div class="flex h-full flex-col space-y-4 overflow-hidden">
+    <div class="h-full overflow-y-scroll">
       <slot>
         <span v-if="entities.length">{{ pluralize(entities.length, `user`, `users`) }} selected</span>
       </slot>
     </div>
-    <div class="flex-none empty:hidden">
+    <div class="grow-0 empty:hidden">
       <slot name="actions" />
     </div>
   </div>
