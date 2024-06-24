@@ -5,7 +5,7 @@ import { type StorageLocation } from "~/types/storagelocation"
 import { Immeasurabibility, Legal, MeasurementCount, Status } from "~/types/specimen"
 
 export default defineMongooseFormatter(Specimen.Base, async (doc) => {
-  const { slug, objectIDs, legal, classification, description, kollektion, images, measurements, date, age, composition, origin, pieces, partial, collector, sponsor, loans, storage, storageLocations, publications, market, status, creator, editor, created, updated } = doc
+  const { slug, objectIDs, legal, classification, description, kollektion, images, measurements, date, age, composition, origin, pieces, partial, collector, sponsor, loans, storage, storageLocations, publications, appraisal, status, creator, editor, created, updated } = doc
 
   return {
     id: slug,
@@ -71,7 +71,7 @@ export default defineMongooseFormatter(Specimen.Base, async (doc) => {
       abstract,
       doi,
     })),
-    market,
+    appraisal,
     status: status && useEnum(Status).labelOf(status).toLowerCase(),
     creator: (creator && Object.keys(creator).length > 0 && await renderDocument(creator, { model: User, self: user => `/api/users/${user.username}` }) as UserEntity) || undefined,
     editor: (editor && Object.keys(editor).length > 0 && await renderDocument(editor, { model: User, self: user => `/api/users/${user.username}` }) as UserEntity) || undefined,

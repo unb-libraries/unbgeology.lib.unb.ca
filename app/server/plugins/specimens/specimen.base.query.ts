@@ -367,7 +367,7 @@ export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({
       },
     },
   },
-  market: {
+  appraisal: {
     default: true,
     filter: Numeric,
   },

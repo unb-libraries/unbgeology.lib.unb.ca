@@ -27,8 +27,8 @@
         </template>
       </InputDoi>
     </TwFormField>
-    <TwFormField label="Trade value">
-      <TwInputNumber v-model="data.market" :min="0" class="input input-number-lg" />
+    <TwFormField label="Appraisal">
+      <TwInputNumber v-model="data.appraisal" :min="0" class="input input-number-lg" />
     </TwFormField>
   </EntityForm>
 </template>
@@ -67,7 +67,7 @@ const data = reactive({
   description: props.specimen.description ?? ``,
   images: Object.fromEntries((props.specimen.images?.entities ?? []).map(({ self, uri }) => [self, uri])),
   publications: Object.fromEntries((props.specimen.publications ?? []).map(p => [p.id, p])),
-  market: props.specimen.market,
+  appraisal: props.specimen.appraisal,
   externalID: ``,
 })
 
@@ -96,7 +96,7 @@ const onSave = () => {
     description: description || (props.specimen.description ? null : undefined),
     images: Object.keys(images),
     publications: Object.values(publications),
-    market: market || (props.specimen.market ? null : undefined),
+    appraisal: appraisal || (props.specimen.appraisal ? null : undefined),
   }
   emits(`save`, payload)
 }

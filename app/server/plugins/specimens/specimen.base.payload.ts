@@ -65,7 +65,7 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
       abstract: optional(StringValidator),
       doi: optional(StringValidator),
     }))),
-    market: optional(NumberValidator),
+    appraisal: optional(NumberValidator),
     creator: optional(MatchValidator(/^\/api\/users\/[a-z0-9]{24}$/)),
     editor: optional(MatchValidator(/^\/api\/users\/[a-z0-9]{24}$/)),
     created: optional(MatchValidator(/^\d{4}-\d{2}-\d{2}/)),

@@ -394,7 +394,7 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
       },
     }],
   },
-  market: {
+  appraisal: {
     type: EntityFieldTypes.Number,
     required: false,
   },
