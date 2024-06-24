@@ -19,8 +19,8 @@ export enum Status {
 }
 
 export enum Legal {
-  PERMANENT_COLLECTION = 1,
-  ON_LOAN = 2,
+  PERMANENT = 1,
+  LOAN = 2,
 }
 
 export enum Category {
@@ -87,6 +87,8 @@ export interface Specimen extends Entity, Stateful<typeof Status> {
   type: Category
   pk: string
   objectIDs: ObjectID[]
+  legal: Legal
+  lenderID?: string
   slug: string
   collection: Collection
   description: string
@@ -108,8 +110,6 @@ export interface Specimen extends Entity, Stateful<typeof Status> {
   collector?: Affiliate
   sponsor?: Affiliate
   appraisal?: number
-  legal: Legal
-  lenderID: string
   loans?: Loan[],
   storage: Storage[],
   publications?: Publication[],

@@ -88,12 +88,6 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
     required: true,
     unique: true,
   },
-  legal: {
-    type: EntityFieldTypes.String,
-    enum: Legal,
-    required: true,
-    default: Legal.PERMANENT_COLLECTION,
-  },
   objectIDs: {
     type: [{
       id: {
@@ -104,6 +98,27 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
         type: EntityFieldTypes.String,
         required: false,
       },
+    }],
+  },
+  legal: {
+    type: EntityFieldTypes.Number,
+    enum: Legal,
+    required: true,
+    default: Legal.PERMANENT,
+  },
+  lenderID: {
+    type: EntityFieldTypes.String,
+    required: false,
+    validate: [{
+      validator: function (this: Specimen) {
+        return this.legal !== Legal.LOAN || this.lenderID
+      },
+      message: `Loanded specimens must provide a Lender ID.`,
+    }, {
+      validator: function (this: Specimen) {
+        return this.legal !== Legal.PERMANENT || !this.lenderID
+      },
+      message: `Permanent collection specimens must not provide a Lender ID.`,
     }],
   },
   kollektion: {

@@ -14,12 +14,13 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
 
   // REFACTOR: Because URIEntityTypeValidator cannot authorize against the API, MatchValidator is used instead
 
-  const { legal, classification, collection, images, age, composition, measurements, collector, sponsor, loans, storage, creator, editor, created, updated, ...body } = await validateBody(payload, {
+  const { legal, lenderID, classification, collection, images, age, composition, measurements, collector, sponsor, loans, storage, creator, editor, created, updated, ...body } = await validateBody(payload, {
     objectIDs: optional(ArrayValidator(ObjectValidator({
       id: require(StringValidator),
       type: optional(StringValidator),
     }))),
     legal: optional(EnumValidator(Legal)),
+    lenderID: optional(StringValidator),
     description: optional(StringValidator),
     classification: optional(MatchValidator(/^\/api\/terms\/[a-z0-9]{24}$/)),
     collection: optional(MatchValidator(/^\/api\/terms\/[a-z0-9]{24}$/)),
@@ -76,6 +77,7 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
     ...body,
     pk: `UNB-${`${Math.floor(Math.random() * 1000000)}`.padStart(8, `0`)}`,
     legal: legal && useEnum(Legal).valueOf(legal),
+    lenderID,
     classification: classification && { _id: classification.substring(1).split(`/`).at(-1)! },
     kollektion: collection && { _id: collection.substring(1).split(`/`).at(-1)! },
     images: images?.map(uri => ({ _id: uri.substring(1).split(`/`).at(-1)! })),

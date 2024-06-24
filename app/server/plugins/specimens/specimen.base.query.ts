@@ -29,6 +29,10 @@ export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({
     default: true,
     filter: Enum(Legal),
   },
+  lenderID: {
+    default: true,
+    filter: String,
+  },
   classification: {
     default: true,
     join: Term,

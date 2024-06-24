@@ -3,6 +3,12 @@
     <TwFormField label="Object IDs">
       <InputSpecimenObjectID v-model="data.objectIDs" />
     </TwFormField>
+    <TwFormField label="Legal Status">
+      <TwInputRadioGroup v-model="data.legal" :options="useEnum(Legal).toTuples().map(([value, label]) => [value, sentenceCased(label)])" class="input-radio-group flex-row space-x-3" />
+    </TwFormField>
+    <TwFormField v-if="data.legal === Legal.LOAN" label="Lender ID">
+      <TwInputText v-model="data.lenderID" class="input input-text-lg" />
+    </TwFormField>
     <TwFormField label="Collection">
       <InputSpecimenCollection v-model="data.collection" />
     </TwFormField>
@@ -35,7 +41,7 @@
 
 <script setup lang="tsx">
 import { type Image, FilterOperator } from '@unb-libraries/nuxt-layer-entity'
-import { type Specimen, type Publication } from 'types/specimen'
+import { type Specimen, type Publication, Legal } from 'types/specimen'
 import { FormPublication } from '#components'
 import useEntityFormModal from '~/layers/primevue/composables/useEntityFormModal'
 
@@ -62,6 +68,8 @@ function onResolveDoi({ citation, abstract, doi }: Publication) {
 
 const data = reactive({
   objectIDs: (props.specimen.objectIDs ?? []),
+  legal: (props.specimen.legal && useEnum(Legal).valueOf(props.specimen.legal)) || undefined,
+  lenderID: (props.specimen.lenderID),
   collection: props.specimen.collection?.self,
   date: props.specimen.date ?? ``,
   description: props.specimen.description ?? ``,
@@ -88,9 +96,17 @@ function onRemovePublication(id: string) {
 }
 
 const onSave = () => {
-  const { objectIDs, collection, date, description, images, publications, market } = data
+  const { objectIDs, legal, collection, date, description, images, publications, appraisal } = data
+  let { lenderID } = data
+
+  if (legal !== Legal.LOAN) {
+    lenderID = undefined
+  }
+
   const payload = {
     objectIDs: objectIDs.length ? data.objectIDs : props.specimen.objectIDs ? null : undefined,
+    legal: legal || (props.specimen.legal ? null : undefined),
+    lenderID: lenderID || (props.specimen.lenderID ? null : undefined),
     collection: collection ?? (props.specimen.collection ? null : undefined),
     date: date || (props.specimen.date ? null : undefined),
     description: description || (props.specimen.description ? null : undefined),
