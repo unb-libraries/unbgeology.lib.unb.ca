@@ -11,10 +11,10 @@
     </TwFormField>
     <div class="inline-flex w-full space-x-4">
       <TwFormField label="Lower boundary" class="w-1/3">
-        <TwInputText v-model="start" class="input input-text-lg" />
+        <TwInputNumber v-model="start" :min="0" class="input input-text-lg" />
       </TwFormField>
       <TwFormField label="Uncertainty" class="w-1/3">
-        <TwInputText v-model="uncertainty" class="input input-text-lg" />
+        <TwInputNumber v-model="uncertainty" :min="0" class="input input-text-lg" />
       </TwFormField>
       <TwFormField label="Color" class="w-1/3">
         <TwInputText v-model="color" class="input input-text-lg" />
@@ -40,8 +40,8 @@ const emits = defineEmits<{
 const label = ref(props.unit?.label)
 const parent = ref(props.unit?.parent?.self)
 const division = ref(props.unit?.division)
-const start = ref(props.unit?.start)
-const uncertainty = ref(props.unit?.uncertainty)
+const start = ref(props.unit?.start && Number(props.unit.start / 1e6))
+const uncertainty = ref(props.unit?.uncertainty && Number(props.unit.uncertainty / 1e6))
 const color = ref(props.unit?.color)
 const gssp = ref(props.unit?.gssp)
 
@@ -62,8 +62,8 @@ function onSave() {
     label: label.value || (props.unit?.label ? null : undefined),
     parent: parent.value || (props.unit?.parent ? null : undefined),
     division: division.value || (props.unit?.division ? null : undefined),
-    start: start.value || (props.unit?.start ? null : undefined),
-    uncertainty: uncertainty.value || (props.unit?.uncertainty ? null : undefined),
+    start: (start.value && Number(start.value * 1e6)) || (props.unit?.start ? null : undefined),
+    uncertainty: (uncertainty.value && Number(uncertainty.value * 1e6)) || (props.unit?.uncertainty ? null : undefined),
     color: color.value || (props.unit?.color ? null : undefined),
     gssp: gssp.value || (props.unit?.gssp ? null : undefined),
     type,

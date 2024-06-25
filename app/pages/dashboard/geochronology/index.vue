@@ -36,8 +36,8 @@
       <template #division="{ entity: { division }}">
         {{ titleCased(useEnum(Division).labelOf(division)) }}
       </template>
-      <template #start="{ entity: { start } }">
-        {{ start }} Ma
+      <template #start="{ entity: { gssp, start, uncertainty }}">
+        {{ (gssp === false ? `~` : ``) + (start / 1e6) + (uncertainty ? ` ± ${uncertainty / 1e6}` : ``) }}
       </template>
     </EntityTable>
     <div class="flex w-full flex-row justify-between px-4">
@@ -57,13 +57,10 @@
           <template #division="{ value: division }">
             {{ titleCased(useEnum(Division).labelOf(division)) }}
           </template>
-          <template #start="{ entity: { start } }">
+          <template #start="{ entity: { gssp, start, uncertainty } }">
             <template v-if="start !== undefined">
-              {{ start }} Mya
+              {{ (gssp === false ? `~` : ``) + (start / 1e6) + (uncertainty ? ` ± ${uncertainty / 1e6}` : ``) }}
             </template>
-          </template>
-          <template #uncertainty="{ entity: { uncertainty } }">
-            {{ uncertainty }}
           </template>
           <template #color="{ value: color }">
             <svg class="mt-2 h-6 w-6 rounded-md"><rect width="100%" height="100%" x="0" y="0" :fill="color" /></svg>
@@ -106,13 +103,12 @@ definePageMeta({
 })
 
 const { hasPermission } = useCurrentUser()
-const { values: schema, keys } = defineEntitySchema<Unit>(`Geochronology`, [`label`, `slug`, `parent`, `division`, [`start`, `Boundary`], `uncertainty`, `color`, `gssp`, `created`, `updated`, `status`], {
+const { values: schema } = defineEntitySchema<Unit>(`Geochronology`, [`label`, `slug`, `parent`, `division`, [`start`, `Mya`], `color`, `created`, `updated`, `status`], {
   fieldPermission: id => new RegExp(`read:term(:geochronology)?:(${id}|\\*)`),
 })
 
 const selection = ref<Unit[]>([])
 const { entities: terms, list, query: { page, pageSize, search }, remove, removeMany } = await fetchEntityList<Unit>(`Term`, {
-  select: keys,
   sort: [`label`],
   filter: [[`type`, FilterOperator.EQUALS, `geochronology`]],
 })
