@@ -439,9 +439,8 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
       }
       if (this.age?.numeric) {
         const unit = await Geochronology.findOne()
-          .where(`boundaries.lower`).lte(this.age.numeric)
-          .and(`boundaries.upper`).gte(this.age.numeric)
-          .sort(`-division`)
+          .where(`start`).gte(this.age.numeric)
+          .sort(`-division start`)
         if (unit) {
           this.age.unit = unit
         }
