@@ -5,10 +5,11 @@ import { type StorageLocation } from "~/types/storagelocation"
 import { Immeasurabibility, Legal, MeasurementCount, Status } from "~/types/specimen"
 
 export default defineMongooseFormatter(Specimen.Base, async (doc) => {
-  const { slug, objectIDs, legal, lenderID, classification, description, kollektion, images, measurements, date, age, composition, origin, pieces, partial, collector, sponsor, loans, storage, storageLocations, publications, appraisal, status, creator, editor, created, updated } = doc
+  const { slug, objectIDs, mimsyID, legal, lenderID, classification, description, kollektion, images, measurements, date, age, composition, origin, pieces, partial, collector, sponsor, loans, storage, storageLocations, publications, appraisal, status, creator, editor, created, updated } = doc
 
   return {
     id: slug,
+    mimsyID,
     objectIDs: objectIDs && objectIDs.map(({ id, type }) => ({ id, type })),
     legal: legal && useEnum(Legal).labelOf(legal).toLowerCase(),
     lenderID,

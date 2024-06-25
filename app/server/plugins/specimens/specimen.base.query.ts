@@ -8,6 +8,10 @@ export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({
     sort: `slug`,
     filter: (_, condition) => String(`slug`, condition),
   },
+  mimsyID: {
+    default: true,
+    filter: (_, condition) => String(`mimsyID`, condition),
+  },
   objectIDs: {
     default: true,
     sort: false,

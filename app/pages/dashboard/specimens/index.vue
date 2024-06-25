@@ -115,6 +115,9 @@
           {{ specimen.id.toUpperCase() }}
         </NuxtLink>
       </template>
+      <template #objectIDs="{ entity: { objectIDs } }">
+        {{ objectIDs.find(({ type }) => type === `Mimsy`)?.id }}
+      </template>
       <template #type="{ entity: specimen }">
         {{ sentenceCased(specimen.type) }}
       </template>
@@ -237,6 +240,9 @@
           <template #id="{ entity: { id } }">
             {{ id.toUpperCase() }}
           </template>
+          <template #objectIDs="{ entity: { objectIDs } }">
+            {{ objectIDs.find(({ type, id }) => type === `Mimsy`)?.id }}
+          </template>
           <template #type="{ entity: { type } }">
             {{ sentenceCased(type) }}
           </template>
@@ -355,6 +361,7 @@ const { hasPermission } = useCurrentUser()
 const columns = ref<[keyof Specimen, string][]>([
   [`images`, `Images`],
   [`id`, `ID`],
+  [`objectIDs`, `Mimsy ID`],
   [`type`, `Category`],
   [`classification`, `Classification`],
   [`collection`, `Collection`],

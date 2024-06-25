@@ -86,6 +86,7 @@ export interface ObjectID {
 export interface Specimen extends Entity, Stateful<typeof Status> {
   type: Category
   pk: string
+  mimsyID?: string
   objectIDs: ObjectID[]
   legal: Legal
   lenderID?: string
