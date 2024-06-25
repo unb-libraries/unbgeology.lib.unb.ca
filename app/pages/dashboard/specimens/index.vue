@@ -167,17 +167,13 @@
       </template>
       <template #age="{ entity: { age }}">
         <template v-if="age?.unit">
-          {{ age?.unit?.label }} (
+          {{ age?.unit?.label }}
           <template v-if="age.numeric">
-            {{ age?.numeric }} mya
+            ({{ age.numeric / 1e6 }} mya)
           </template>
-          <template v-else>
-            {{ Object.entries(age.unit.boundaries).map(([, value]) => value).map(value => `${value} mya`).join(` - `) }}
-          </template>
-          )
         </template>
         <template v-else-if="age?.numeric">
-          {{ age.numeric }} mya
+          {{ age.numeric / 1e6 }} mya
         </template>
       </template>
       <template #origin="{ entity: { origin }}">
