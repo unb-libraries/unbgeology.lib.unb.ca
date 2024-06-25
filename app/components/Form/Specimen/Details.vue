@@ -11,7 +11,9 @@
     </TwFormField>
     <div class="flex flex-row space-x-4">
       <TwFormField label="Age" class="w-full">
-        <InputSpecimenGeoAge v-model="data.age" />
+        <TwInputRadioGroup v-model="ageType" :options="[[`unit`, `Geochronologic unit`],[`numeric`, `Numeric`]]" class="flex flex-row space-x-6 py-4" />
+        <InputSpecimenGeoAge v-show="ageType === `unit`" v-model="data.ageRelative" />
+        <TwInputNumber v-show="ageType === `numeric`" v-model="data.ageNumeric" class="input-number-lg" />
       </TwFormField>
     </div>
     <TwFormField v-if="[`fossil`, `rock`].includes(specimen.type)" label="Composition">
@@ -44,7 +46,6 @@
 </template>
 
 <script setup lang="ts">
-import { FilterOperator } from '@unb-libraries/nuxt-layer-entity'
 import { type Fossil, type Rock, type Specimen } from 'types/specimen'
 
 const props = defineProps<{
@@ -56,11 +57,11 @@ const emits = defineEmits<{
   cancel: []
 }>()
 
-const { entities: classifications } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `classification/${props.specimen.type}`]] })
-
+const ageType = ref<`unit` | `numeric`>(props.specimen.age?.numeric ? `numeric` : `unit`)
 const data = reactive({
   classification: props.specimen.classification?.self,
-  age: props.specimen.age?.numeric ?? props.specimen.age?.unit?.self,
+  ageNumeric: props.specimen.age?.numeric && (props.specimen.age.numeric / 1e6),
+  ageRelative: props.specimen.age?.unit?.self,
   composition: (props.specimen as Fossil | Rock).composition?.entities.map(c => c.self),
   pieces: props.specimen.pieces || 1,
   partial: props.specimen.partial,
@@ -69,11 +70,13 @@ const data = reactive({
 })
 
 const onSave = () => {
-  const { classification, age, composition, pieces, partial, portion, measurements } = data
+  const { classification, ageNumeric, ageRelative, composition, pieces, partial, portion, measurements } = data
 
   const payload = {
     classification: classification ?? (props.specimen.classification ? null : undefined),
-    age: age || (props.specimen.age ? null : undefined),
+    age: ageType.value === `numeric`
+      ? ((ageNumeric && ageNumeric * 1e6) || (props.specimen.age ? null : undefined))
+      : (ageRelative || (props.specimen.age ? null : undefined)),
     composition: composition || ((props.specimen as Fossil | Rock).composition ? null : undefined),
     pieces,
     partial,
