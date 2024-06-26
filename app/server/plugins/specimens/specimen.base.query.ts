@@ -66,7 +66,7 @@ export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({
       localField: `kollektion`,
       cardinality: `one`,
     },
-    sort: `kollection.label`,
+    sort: `kollektion.label`,
     filter: (_, condition) => ObjectID(`kollektion`, condition),
     definition: {
       label: {
@@ -386,7 +386,7 @@ export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({
   creator: {
     default: true,
     join: User,
-    sort: `creator.username`,
+    sort: `creator.profile.firstName`,
     filter: ObjectID,
     definition: {
       username: {

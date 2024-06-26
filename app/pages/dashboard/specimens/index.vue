@@ -396,7 +396,8 @@ const columnMenuVisible = ref(false)
 const columnsOptions = ref<[string, string, boolean][]>(columns.value.filter(([id]) => id !== `images`).map(([id, label], index) => [id, label, index < 4]))
 
 const sortMenuVisible = ref(false)
-const { options: sortedColumnIDs, sortTop, sortUp, sortReverse, remove: unsort } = useSort(columns.value.filter(([id]) => id !== `images`).map(([id]) => id))
+const sortableColumIDs = [`mimsyID`, `classification`, `collection`, `pieces`, `legal`, `creator`, `editor`, `created`, `updated`]
+const { options: sortedColumnIDs, sortTop, sortUp, sortReverse, remove: unsort } = useSort(columns.value.filter(([id]) => sortableColumIDs.includes(id)).map(([id]) => id))
 
 const sortOptions = computed(() => sortedColumnIDs.filter(([id]) => columns.value.find(([colID]) => colID === id)).map<[string, string, 1 | 0 | -1]>(([id, order]) => [id, columns.value.find(([colID]) => colID === id)![1], order]))
 const activeSortOptions = computed(() => sortOptions.value.filter(([_, __, direction]) => direction !== 0))

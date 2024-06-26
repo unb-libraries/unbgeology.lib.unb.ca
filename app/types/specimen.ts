@@ -19,8 +19,8 @@ export enum Status {
 }
 
 export enum Legal {
-  PERMANENT = 1,
-  LOAN = 2,
+  LOAN = 1,
+  PERMANENT = 2,
 }
 
 export enum Category {
