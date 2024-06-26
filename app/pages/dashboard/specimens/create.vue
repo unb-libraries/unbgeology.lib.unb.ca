@@ -36,7 +36,7 @@
       <InputSpecimenClassification v-model="data.classification" :type="data.type" />
     </TwFormField>
     <TwFormField label="Images">
-      <TwInputImage v-model="data.images" :options="imageOptions" @drop="files => onNewFiles(files)" />
+      <TwInputImage v-model="data.images" />
     </TwFormField>
     <TwFormField v-if="unbOwned" label="ObjectIDs">
       <InputSpecimenObjectID v-model="data.objectIDs" />
@@ -45,7 +45,6 @@
 </template>
 
 <script setup lang="tsx">
-import { FilterOperator, type Image } from '@unb-libraries/nuxt-layer-entity'
 import { Legal, type Specimen } from 'types/specimen'
 
 definePageMeta({
@@ -68,18 +67,6 @@ const data = reactive({
 
 const { id } = useCurrentUser()
 const { createToast } = useToasts()
-
-const { entities: images, refresh } = await fetchEntityList<Image>(`File`, { filter: [[`type`, FilterOperator.EQUALS, `image`]], select: [`uri`], pageSize: 500 })
-const imageOptions = computed(() => images.value
-  .map(({ self, uri }) => ({ [self]: uri }))
-  .reduce((acc, cur) => ({ ...acc, ...cur }), {}))
-
-async function onNewFiles(files: File[]) {
-  files.length > 1
-    ? await useFileUpload<Image>(files)
-    : await useFileUpload<Image>(files[0])
-  refresh()
-}
 
 async function onSave() {
   const { entity: specimen, error } = await create({ ...data, images: Object.keys(data.images), creator: `/api/users/${id.value}` })

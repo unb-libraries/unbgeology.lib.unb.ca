@@ -19,7 +19,7 @@
       <TwInputTextArea v-model="data.description" :rows="5" class="input input-textarea-lg" />
     </TwFormField>
     <TwFormField label="Images">
-      <TwInputImage v-model="data.images" :options="imageOptions" class="w-full" @drop="files => onNewFiles(files)" />
+      <TwInputImage v-model="data.images" class="w-full" />
     </TwFormField>
     <TwFormField label="Publications">
       <InputDoi v-model="doiSearch" placeholder="Search by DOI, e.g. https://doi.org/10.1130/GES01535.1" @resolve="onResolveDoi">
@@ -40,7 +40,6 @@
 </template>
 
 <script setup lang="tsx">
-import { type Image, FilterOperator } from '@unb-libraries/nuxt-layer-entity'
 import { type Specimen, type Publication, Legal } from 'types/specimen'
 import { FormPublication } from '#components'
 import useEntityFormModal from '~/layers/primevue/composables/useEntityFormModal'
@@ -79,17 +78,6 @@ const data = reactive({
   externalID: ``,
 })
 
-const { entities: images, refresh } = await fetchEntityList<Image>(`File`, { filter: [[`type`, FilterOperator.EQUALS, `image`]], select: [`uri`], pageSize: 500 })
-const imageOptions = computed(() => images.value
-  .map(({ self, uri }) => ({ [self]: uri }))
-  .reduce((acc, cur) => ({ ...acc, ...cur }), {}))
-
-async function onNewFiles(files: File[]) {
-  files.length > 1
-    ? await useFileUpload<Image>(files)
-    : await useFileUpload<Image>(files[0])
-  refresh()
-}
 
 function onRemovePublication(id: string) {
   delete data.publications[id]

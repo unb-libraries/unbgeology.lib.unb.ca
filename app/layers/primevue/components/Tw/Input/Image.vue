@@ -32,15 +32,10 @@
 import { TwImageBrowser } from '#components'
 
 const images = defineModel<Record<string, string> | undefined>()
-const props = defineProps<{
-  options: Record<string, string>
+defineProps<{
   imgClass?: string
   resetActionClass?: string
   placeholder?: string
-}>()
-
-const emits = defineEmits<{
-  drop: [images: File[]]
 }>()
 
 const parentAttrs = inject<Partial<{ id: string, name: string }>>(`attrs`)
@@ -48,7 +43,7 @@ const { id = parentAttrs?.id, name = parentAttrs?.name, class: classList } = use
 
 const { setContent, close: closeModal } = useModal()
 const onClickBrowse = () => {
-  setContent(() => <TwImageBrowser selection={images.value} options={props.options} onSelect={onSelect} onCancel={closeModal} onDrop={files => emits(`drop`, files)} />)
+  setContent(() => <TwImageBrowser selection={images.value} onSelect={onSelect} onCancel={closeModal} />)
 }
 
 const onSelect = (selection: Record<string, string>) => {
