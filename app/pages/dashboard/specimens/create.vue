@@ -1,5 +1,5 @@
 <template>
-  <EntityForm :entity="data" @save="onSave">
+  <EntityForm :entity="data" @save="onSave" @cancel="navigateTo(`/dashboard/specimens`)">
     <TwFormField label="Category">
       <TwInputRadioGroup
         v-model="data.type"
@@ -20,6 +20,12 @@
         </template>
       </TwInputRadioGroup>
     </TwFormField>
+    <TwFormField label="Legal Status">
+      <TwInputRadioGroup v-model="data.legal" :options="useEnum(Legal).toTuples().reverse().map(([value, label]) => [value, sentenceCased(label)])" class="input-radio-group flex-row space-x-3" />
+    </TwFormField>
+    <TwFormField v-if="data.legal === Legal.LOAN" label="Lender ID">
+      <TwInputText v-model="data.lenderID" class="input input-text-lg" />
+    </TwFormField>
     <TwFormField v-if="data.type === `fossil`" label="Taxonomy">
       <InputSpecimenClassification v-model="data.classification" :type="data.type" />
     </TwFormField>
@@ -32,24 +38,15 @@
     <TwFormField label="Images">
       <TwInputImage v-model="data.images" :options="imageOptions" @drop="files => onNewFiles(files)" />
     </TwFormField>
-    <PvCheckbox v-model="unbOwned" label="Owned by UNB" class="input-checkbox" />
     <TwFormField v-if="unbOwned" label="ObjectIDs">
       <InputSpecimenObjectID v-model="data.objectIDs" />
     </TwFormField>
-    <div class="flex flex-row space-x-2">
-      <TwFormField v-if="!unbOwned" label="Loan" class="w-1/2">
-        <PvInputDropdown v-model="data.loan" :options="[]" class="input-select-lg" />
-      </TwFormField>
-      <TwFormField v-if="!unbOwned" label="Given ID" class="w-1/2">
-        <TwInputText v-model="data.lenderID" class="input input-text-lg" />
-      </TwFormField>
-    </div>
   </EntityForm>
 </template>
 
 <script setup lang="tsx">
 import { FilterOperator, type Image } from '@unb-libraries/nuxt-layer-entity'
-import { type Specimen } from 'types/specimen'
+import { Legal, type Specimen } from 'types/specimen'
 
 definePageMeta({
   layout: `dashboard-page`,
@@ -61,10 +58,11 @@ const unbOwned = ref(true)
 const { create } = useEntityType<Specimen>(`Specimen`)
 const data = reactive({
   type: undefined,
+  legal: Legal.PERMANENT,
   objectIDs: [],
   classification: undefined,
   loan: undefined,
-  lenderID: ``,
+  lenderID: undefined,
   images: {} as Record<string, string>,
 })
 
