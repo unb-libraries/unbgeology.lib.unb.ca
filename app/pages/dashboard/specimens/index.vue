@@ -115,8 +115,10 @@
           {{ specimen.id.toUpperCase() }}
         </NuxtLink>
       </template>
-      <template #objectIDs="{ entity: { objectIDs } }">
-        {{ objectIDs.find(({ type }) => type === `Mimsy`)?.id }}
+      <template #mimsyID="{ entity: { mimsyID } }">
+        <template v-if="mimsyID">
+          UNB{{ mimsyID }}
+        </template>
       </template>
       <template #type="{ entity: specimen }">
         {{ sentenceCased(specimen.type) }}
@@ -188,16 +190,13 @@
       <template #sponsor="{ entity: { sponsor }}">
         {{ sponsor?.label }}
       </template>
-      <template #market="{ entity: { market }}">
-        <template v-if="market">
-          $CAD {{ `${market}`.split(``).reverse().join(``).match(/\d{1,3}/g)!.join(',').split(``).reverse().join(``) }}
+      <template #appraisal="{ entity: { appraisal }}">
+        <template v-if="appraisal">
+          $CAD {{ `${appraisal}`.split(``).reverse().join(``).match(/\d{1,3}/g)!.join(',').split(``).reverse().join(``) }}
         </template>
       </template>
       <template #legal="{ entity: { legal }}">
-        <!-- TODO: Test this after the field actually exists. -->
-        <template v-if="legal">
-          {{ useEnum(Legal).labelOf(legal) }}
-        </template>
+        {{ sentenceCased(useEnum(Legal).labelOf(legal)) }}
       </template>
       <template #storage="{ entity: { storage }}">
         <!-- TODO: Indicate if item is on loan and not stored on site -->
@@ -361,7 +360,7 @@ const { hasPermission } = useCurrentUser()
 const columns = ref<[keyof Specimen, string][]>([
   [`images`, `Images`],
   [`id`, `ID`],
-  [`objectIDs`, `Mimsy ID`],
+  [`mimsyID`, `Mimsy ID`],
   [`type`, `Category`],
   [`classification`, `Classification`],
   [`collection`, `Collection`],
@@ -377,7 +376,7 @@ const columns = ref<[keyof Specimen, string][]>([
   [`origin`, `Origin`],
   [`collector`, `Collected by`],
   [`sponsor`, `Sponsored by`],
-  [`market`, `Value`],
+  [`appraisal`, `Appraisal`],
   [`legal`, `Legal status`],
   [`storage`, `Stored at`],
   [`creator`, `Created by`],
