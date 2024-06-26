@@ -73,8 +73,14 @@ const options = computed<Record<string, string>>(() => {
     .map(({ self, uri }) => ({ [self]: uri }))
     .reduce((acc, cur) => ({ ...acc, ...cur }), {})
 })
-function onFilesDropped(files: File[]) {
-  emits(`drop`, files)
+
+async function onFilesDropped(files: File[]) {
+  const uploaded = files.length > 1
+    ? await useFileUpload<Image>(files)
+    : await useFileUpload<Image>(files[0])
+  uploaded.value.forEach(({ self, uri }) => {
+    onSelect(self, uri)
+  })
 }
 
 function onSubmit() {
