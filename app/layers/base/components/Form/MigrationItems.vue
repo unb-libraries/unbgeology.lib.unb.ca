@@ -11,6 +11,14 @@
             </button>
           </div>
         </div>
+        <div v-else-if="error" class="bg-red-light group rounded-lg px-3 py-2 text-base">
+          <div class="flex flex-row justify-between">
+            <span>{{ error }}</span>
+            <button class="button button-sm button-red-dark hover:button-red" @click.prevent.stop="error = undefined">
+              Dismiss
+            </button>
+          </div>
+        </div>
       </div>
     </TwFormField>
   </EntityForm>
@@ -26,16 +34,21 @@ defineEmits<{
 }>()
 
 const items = ref<Pick<MigrationItem, `sourceID` | `data`>[]>([])
-const { createToast } = useToasts()
+const error = ref()
 
 async function onDrop(files: File[]) {
+  error.value = undefined
   const parsed = await Promise.all(files.map(async (f) => {
-    switch (f.type) {
-      case `text/csv`:
-        return parseCsv(await f.text())
-      case `application/json`:
-        return parseJson(await f.text())
-      default: createToast(`unsupported-file-error-${f.type}`, () => `Unsupported file type: ${f.type}`, { type: `error`, duration: 4000 })
+    try {
+      switch (f.type) {
+        case `text/csv`:
+          return await parseCsv(await f.text())
+        case `application/json`:
+          return await parseJson(await f.text())
+        default: error.value = `Unsupported file type: ${f.type}`
+      }
+    } catch (err: unknown) {
+      error.value = (err as Error).message
     }
   }))
 
@@ -51,24 +64,32 @@ async function onDrop(files: File[]) {
 }
 
 function parseCsv(csv: string) {
-  return new Promise<object[]>((resolve) => {
-    parse(csv, {}, (err, [header, ...rows]: string[][]) => {
+  return new Promise<object[]>((resolve, reject) => {
+    parse(csv, {}, (err, content: string[][]) => {
+      if (!content) {
+        return reject(new Error(`Parse error: invalid CSV`))
+      }
+      const [header, ...rows] = content
       if (!err) {
         resolve(rows.map(row => Object.fromEntries(row.map((col, i) => [header[i], col]))))
       } else {
-        resolve([])
+        reject(new Error(err.message))
       }
     })
   })
 }
 
 function parseJson(json: string) {
-  return new Promise<object[]>((resolve) => {
-    const parsed = JSON.parse(json)
-    if (Array.isArray(parsed)) {
-      resolve(parsed)
-    } else {
-      resolve([parsed])
+  return new Promise<object[]>((resolve, reject) => {
+    try {
+      const parsed = JSON.parse(json)
+      if (Array.isArray(parsed)) {
+        resolve(parsed)
+      } else {
+        resolve([parsed])
+      }
+    } catch (err: unknown) {
+      reject(err)
     }
   })
 }

@@ -192,7 +192,7 @@ function onAddItems() {
         body: items,
       })
       if (!error.value) {
-        createToast(`items-added-success`, () => `${items.length} items would have been added`, { type: `success`, duration: 4000 })
+        createToast(`items-added-success`, () => `Added ${items.length} items`, { type: `success`, duration: 4000 })
         refresh()
       } else {
         createToast(`items-added-error`, () => error.value!.message, { type: `error`, duration: 4000 })
