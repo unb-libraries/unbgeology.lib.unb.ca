@@ -33,27 +33,14 @@ const entityTypeOptions: [string, string][] = [
   [`User`, `User`],
 ]
 
-async function onSave(body: MigrationBody, items?: MigrationItemBody[]) {
+async function onSave(body: MigrationBody) {
   const { createToast } = useToasts()
-  const { entity: migration, error: createError } = await create(body)
-  if (!createError.value) {
-    if (items?.length) {
-      const { error: itemsCreateError } = await useFetch(`${migration.value?.self}/items`, {
-        method: `POST`,
-        body: items,
-      })
-      if (itemsCreateError.value) {
-        createToast(`migration-items-created-error`, () => `Failed to create migration items: ${itemsCreateError.value}`, { type: `error` })
-      } else {
-        createToast(`migration-items-created`, () => `Migration created`, { type: `success` })
-        navigateTo(returnUrl)
-      }
-    } else {
-      createToast(`migration-created`, () => `Migration created`, { type: `success` })
-    }
-  } else {
-    createToast(`migration-created-error`, () => `Failed to create migration: ${createError.value}`, { type: `error` })
+  const { error } = await create(body)
+  if (!error.value) {
+    createToast(`migration-created`, () => `Migration created`, { type: `success` })
     navigateTo(returnUrl)
+  } else {
+    createToast(`migration-created-error`, () => `Failed to create migration: ${error.value}`, { type: `error` })
   }
 }
 
