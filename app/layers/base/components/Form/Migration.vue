@@ -3,7 +3,7 @@
     <TwFormField label="Name">
       <PvInputText id="form-input-label" v-model="name" class="input input-text-lg" />
     </TwFormField>
-    <TwFormField label="Entity type">
+    <TwFormField v-if="entityTypeOptions?.length" label="Entity type">
       <PvInputDropdown
         v-model="entityType"
         class="input-select-lg"
@@ -37,11 +37,11 @@
 </template>
 
 <script setup lang="tsx">
-import { type MigrationItem, type EntityJSON, type EntityJSONProperties, type Migration } from "@unb-libraries/nuxt-layer-entity"
+import { type MigrationItem, type Migration } from "@unb-libraries/nuxt-layer-entity"
 import { parse } from "csv-parse/browser/esm"
 
 const props = defineProps<{
-  entity?: EntityJSONProperties<Migration> & Partial<EntityJSON<Migration>>
+  entity?: Migration
   entityTypeOptions?: [string, string][]
 }>()
 
@@ -51,9 +51,9 @@ const emits = defineEmits<{
 }>()
 
 const { entities: migrations } = await fetchEntityList(`Migration`)
-const name = ref<string>(props.entity?.name ?? ``)
-const entityType = ref<string>(props.entity?.entityType ?? ``)
-const dependencies = ref<string[]>(props.entity?.dependencies?.map(d => d.self) ?? [])
+const name = ref(props.entity?.name)
+const entityType = ref(props.entity?.entityType)
+const dependencies = ref<string[]>(props.entity?.dependencies?.entities.map(d => d.self) ?? [])
 const items = ref<Pick<MigrationItem, `sourceID` | `data`>[]>([])
 const { createToast } = useToasts()
 
