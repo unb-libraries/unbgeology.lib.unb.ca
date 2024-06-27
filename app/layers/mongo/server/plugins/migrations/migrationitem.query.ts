@@ -72,11 +72,11 @@ export default defineMongooseEventQueryHandler(MigrationItem, defineEventQuery({
     filter: Enum(MigrationItemStatus),
   },
   created: {
-    default: false,
+    default: true,
     filter: Date,
   },
   updated: {
-    default: false,
+    default: true,
     filter: Date,
   },
 }))
