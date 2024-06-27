@@ -47,6 +47,7 @@ interface MimsySpecimen {
   portion: string
   // Can only provide name, coordinates to be set manually
   origin: {
+    place_raw: string | null
     place: string[]
     site: string | null
   }
@@ -64,7 +65,7 @@ interface MimsySpecimen {
   location_history: {
     name: string[]
     date: string
-  }[]
+  }[] | null
   created: string
   creator: string
   updated: string
@@ -102,6 +103,7 @@ export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (
       id: lid.id,
       type: lid.type ?? lid.source ?? undefined,
     }))],
+    mimsyID: unbID,
     type: category,
     classification: await (async () => {
       if (!Array.isArray(classifications) || classifications.length < 1) { return }
@@ -178,7 +180,11 @@ export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (
         const sla = [`small`, `large`, `average`]
         const parsed = measurements.split(`;`)
           .map(m => m.replace(/cm|:|x/g, ``).replace(/\s+/g, ` `).trim().split(` `))
-          .map(([prefix, ...dimensions]) => [prefix, ...dimensions.map(e => Number(e) * 10)]) as [string, number, number, number][]
+          .map(measurements => [
+            [...measurements].reverse().slice(3).reverse().join(` `),
+            ...measurements.slice(-3).map(e => e.startsWith(`.`) ? `0${e}` : e).map(e => Number(e) * 10).map(e => isNaN(e) ? 0 : e),
+          ]) as [string, number, number, number][]
+
         const count = parsed.filter(([prefix]) => sla.includes(prefix)).length
           ? MeasurementCount.AGGREGATE
           : parsed.filter(([prefix]) => prefix === `container`).length
@@ -197,7 +203,7 @@ export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (
     pieces,
     partial: partial && !partial.toLowerCase().includes(`whole`),
     origin: (origin && {
-      name: origin?.place?.join(`, `) ?? ``,
+      name: origin?.place?.join(`, `) ?? origin.place_raw ?? ``,
       description: origin.site,
     }) || undefined,
     collector: (collectorIDs && collectorIDs.length && await (async () => {
@@ -212,22 +218,20 @@ export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (
       }
     })()) || undefined,
     publications: (Array.isArray(publications) && (() => {
-      const publicationsWithCitation = publications.filter(publication => publication.citation)
-      if (publicationsWithCitation.length > 0) {
-        return publicationsWithCitation.map((publication) => {
-          const { citation, abstract, url } = publication
-          return { citation, abstract: abstract || undefined, doi: url || undefined }
-        })
-      }
+      return publications.map((publication, i) => {
+        const { citation, abstract, url } = publication
+        const id = (citation?.substring(0, citation?.indexOf(`,`) > 0 ? citation?.indexOf(`,`) : 10)) || `${i}`
+        return { id, citation: citation || url || undefined, abstract: abstract || undefined, doi: url || undefined }
+      })
     })()) || undefined,
-    storage: (await Promise.all(storage.map(async (loc) => {
+    storage: (storage && (await Promise.all(storage.map(async (loc) => {
       const { name: names, date } = loc
       const storageEntities = await $fetch(`/api/terms`, { query: { filter: [`type:equals:storageLocation`, `label:equals:${names.at(-1)}`] }, headers })
       return {
         location: storageEntities?.entities[0]?.self,
         dateIn: date ?? undefined,
       }
-    }))).filter(s => s.location),
+    }))).filter(s => s.location)) || undefined,
     created: new Date(created).toISOString(),
     creator: await (async () => {
       const userEntities = await $fetch(`/api/users`, { query: { filter: [`username:equals:${creator.toLowerCase()}`] }, headers })
