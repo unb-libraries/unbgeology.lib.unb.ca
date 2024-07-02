@@ -68,7 +68,7 @@ const onReceive = function (files: File[]) {
   let batchSize = 0
 
   const accepted = files.slice(0, Math.max(0, props.maxFiles ?? files.length)).filter((file) => {
-    if (!props.maxFileSize || file.size > props.maxFileSize) {
+    if (props.maxFileSize && file.size > props.maxFileSize) {
       emits(`error`, `Maximum allowed size exceeded.`, file)
       return false
     }
