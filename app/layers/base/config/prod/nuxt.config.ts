@@ -54,6 +54,9 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
+      maxFileSize: 100 * 1024 * 1024, // 100MB
+      maxTotalFileSize: 200 * 1024 * 1024, // 200MB
+      maxFiles: 100,
       session: {
         name: `sessionId`,
       },
