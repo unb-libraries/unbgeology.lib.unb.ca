@@ -3,7 +3,7 @@ import { fileExists, getUploadDir, moveFile } from "../../utils/api/files/fs"
 import { type File } from "../../documentTypes/FileBase"
 
 export default defineEventHandler(async (event) => {
-  const resources = getAuthorizedResources(event, r => /^file(:\w)*$/.test(r))
+  const resources = getAuthorizedResources(event, r => /^file(:\w+)*$/.test(r))
   if (!resources.length) {
     return create403()
   }

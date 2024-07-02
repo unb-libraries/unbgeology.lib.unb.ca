@@ -5,7 +5,7 @@ import type { File } from "../../documentTypes/FileBase"
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
 
-  const resources = getAuthorizedResources(event, r => /^file(:\w)*$/.test(r))
+  const resources = getAuthorizedResources(event, r => /^file(:\w+)*$/.test(r))
   const fields = getAuthorizedFields(event, ...resources)
 
   const file = await FileBase.findByID(id)

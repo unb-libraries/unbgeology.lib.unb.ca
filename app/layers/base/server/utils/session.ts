@@ -28,7 +28,6 @@ export async function createUserSession(event: H3Event, username: string, option
 
 export function getCurrentUserPermissions(event: H3Event, options?: Partial<{ action: `read` | `write` | `update` | `delete` | `method` | `*` }>) {
   const session = useCurrentServerSession(event)
-  if (!session.data.user) { return {} }
 
   function getHttpMethodAction(method: HTTPMethod) {
     switch (method) {

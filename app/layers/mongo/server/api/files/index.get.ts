@@ -1,7 +1,7 @@
 export default defineEventHandler(async (event) => {
   const { page, pageSize } = getQueryOptions(event)
 
-  const resources = getAuthorizedResources(event, r => /^file(:\w)*$/.test(r))
+  const resources = getAuthorizedResources(event, r => /^file(:\w+)*$/.test(r))
   const fields = getAuthorizedFields(event, ...resources)
 
   const query = FileBase.find()

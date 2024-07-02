@@ -3,7 +3,7 @@ import { removeFile } from "../../utils/api/files/fs"
 export default defineEventHandler(async (event) => {
   const { page, pageSize } = getQueryOptions(event)
 
-  const resources = getAuthorizedResources(event, r => /^file(:\w)*$/.test(r))
+  const resources = getAuthorizedResources(event, r => /^file(:\w+)*$/.test(r))
 
   const query = FileBase.find()
   await useEventQuery(event, query)

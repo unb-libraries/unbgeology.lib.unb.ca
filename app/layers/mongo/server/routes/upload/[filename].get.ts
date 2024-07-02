@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
   const { filename: encodedFilename } = getRouterParams(event)
   const filename = decode(encodedFilename)
 
-  const resources = getAuthorizedResources(event, r => /^file(:\w)*$/.test(r))
+  const resources = getAuthorizedResources(event, r => /^file(:\w+)*$/.test(r))
   const file = await FileBase.findOne()
     .where(`filename`).eq(filename)
     .and(`authTags`).in(resources)
