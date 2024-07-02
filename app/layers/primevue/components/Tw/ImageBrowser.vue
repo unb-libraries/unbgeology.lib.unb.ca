@@ -20,9 +20,10 @@ import { IconCheck } from '#components'
 
 const Thumbnail = (props: { src: string, selected?: boolean }) => {
   const { src, selected } = props
+  const url = `${src}?w=120&h=120`
   return <div class="bg-primary w-fit p-0">
     <div class="group relative h-24 w-24 cursor-pointer overflow-hidden">
-      <img src={src} width={150} height={150} class={`${`absolute left-0 top-0 h-full w-full rounded-md object-cover`} ${selected ? `group-hover:opacity-15 opacity-25` : ``}`} />
+      <img src={url} class={`${`absolute left-0 top-0 h-full w-full rounded-md object-cover`} ${selected ? `group-hover:opacity-15 opacity-25` : ``}`} />
       {selected && <IconCheck class="fill-accent-mid stroke-1.5 absolute right-3 top-3 h-9 w-9 stroke-current group-hover:hidden" />}
       {selected && <div class="absolute right-3 top-3 hidden h-9 w-9 rounded-full border border-dashed group-hover:flex" />}
     </div>
