@@ -36,7 +36,7 @@
       <InputSpecimenClassification v-model="data.classification" :type="data.type" />
     </TwFormField>
     <TwFormField label="Images">
-      <TwInputImage v-model="data.images" />
+      <TwInputImage v-model="data.images" :max-files="maxFiles" :max-file-size="maxFileSize" :max-total-file-size="maxTotalFileSize" />
     </TwFormField>
     <TwFormField v-if="unbOwned" label="ObjectIDs">
       <InputSpecimenObjectID v-model="data.objectIDs" />
@@ -52,6 +52,7 @@ definePageMeta({
   name: `Create specimen`,
 })
 
+const { maxFiles, maxFileSize, maxTotalFileSize } = useRuntimeConfig().public
 const unbOwned = ref(true)
 
 const { create } = useEntityType<Specimen>(`Specimen`)

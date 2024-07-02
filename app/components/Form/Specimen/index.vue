@@ -19,7 +19,7 @@
       <TwInputTextArea v-model="data.description" :rows="5" class="input input-textarea-lg" />
     </TwFormField>
     <TwFormField label="Images">
-      <TwInputImage v-model="data.images" class="w-full" />
+      <TwInputImage v-model="data.images" :max-files="maxFiles" :max-file-size="maxFileSize" :max-total-file-size="maxTotalFileSize" class="w-full" />
     </TwFormField>
     <TwFormField label="Publications">
       <InputDoi v-model="doiSearch" placeholder="Search by DOI, e.g. https://doi.org/10.1130/GES01535.1" @resolve="onResolveDoi">
@@ -52,6 +52,8 @@ const emits = defineEmits<{
   save: [specimen: Specimen]
   cancel: []
 }>()
+
+const { maxFiles, maxFileSize, maxTotalFileSize } = useRuntimeConfig().public
 
 const { open: openPublicationFormModal } = useEntityFormModal(FormPublication, {
   onSave: (publication: Publication) => { data.publications[publication.id] = publication },

@@ -4,7 +4,22 @@
       <Thumbnail v-for="(uri, self) of selection" :key="self" :src="uri" :selected="true" @click="onSelect(self, uri)" />
       <Thumbnail v-for="(uri, self) of options" :key="self" :src="uri" @click="onSelect(self, uri)" />
     </div>
-    <TwInputFileDrop @drop="onFilesDropped" />
+    <div class="text-primary-40 space-y-2">
+      <TwInputFileDrop :max-file-size="maxFileSize" :max-total-file-size="maxTotalFileSize" :max-files="maxFiles" @drop="onFilesDropped" @error="onFileError" />
+      <div v-if="!error && maxFiles !== undefined" class="flex flex-col">
+        <span>Upload up to {{ maxFiles }} images</span>
+        <span v-if="maxTotalFileSize">Max. size: {{ maxTotalFileSize / 1024 / 1024 }} MB</span>
+        <span v-if="maxFileSize">Max. size/image: {{ maxFileSize / 1024 / 1024 }} MB</span>
+      </div>
+      <div v-else-if="error" class="bg-red-light group rounded-lg px-3 py-2 text-base">
+        <div class="flex flex-row justify-between">
+          <span>{{ error }}</span>
+          <button class="button button-sm button-red-dark hover:button-red" @click.prevent.stop="error = undefined">
+            Dismiss
+          </button>
+        </div>
+      </div>
+    </div>
     <div class="flex flex-row space-x-2">
       <button type="submit" class="button-accent-mid hover:button-accent-light button-lg">
         Select
@@ -32,6 +47,9 @@ const Thumbnail = (props: { src: string, selected?: boolean }) => {
 
 const props = defineProps<{
   selection?: Record<string, string>
+  maxFiles?: number
+  maxFileSize?: number
+  maxTotalFileSize?: number
 }>()
 
 const { list, entities: images, query: { page, pageSize } } = await fetchEntityList<Image>(`File`, {
@@ -60,6 +78,8 @@ const emits = defineEmits<{
 }>()
 
 const selection = reactive<Record<string, string>>({ ...(props.selection ?? {}) })
+const error = ref<string>()
+
 function onSelect(id: string, uri: string) {
   if (!selection[id]) {
     selection[id] = uri
@@ -82,6 +102,10 @@ async function onFilesDropped(files: File[]) {
   uploaded.value.forEach(({ self, uri }) => {
     onSelect(self, uri)
   })
+}
+
+function onFileError(msg: string, file?: File) {
+  error.value = (file && `${file?.name}: ${msg}`) || msg
 }
 
 function onSubmit() {
