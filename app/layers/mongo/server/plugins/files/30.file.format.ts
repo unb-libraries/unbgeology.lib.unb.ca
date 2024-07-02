@@ -1,3 +1,4 @@
+import { encode } from "ufo"
 import { FileState, type File } from "@unb-libraries/nuxt-layer-entity"
 
 export default defineMongooseFormatter(FileBase, (doc): Partial<File> | void => {
@@ -9,7 +10,7 @@ export default defineMongooseFormatter(FileBase, (doc): Partial<File> | void => 
     filesize,
     mimetype,
     type: !__type ? `other` : undefined,
-    uri: (filename && `/upload/${filename}`) || undefined,
+    uri: (filename && encode(`/upload/${filename}`)) || undefined,
     // @ts-ignore
     status: status ? useEnum(FileState).labelOf(status).toLowerCase() as Lowercase<keyof typeof FileState> : undefined,
     created: created ? new Date(created).toISOString() : undefined,
