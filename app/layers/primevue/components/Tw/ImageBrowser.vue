@@ -113,7 +113,7 @@ function onFilesDropped(files: File[]) {
       entities.forEach(({ self, uri }) => {
         onSelect(self, uri)
       })
-      createToast(`uploaded-success`, () => `Uploaded ${total} images`, { type: `success`, duration: 4000 })
+      createToast(`uploaded-success`, () => `Uploaded ${pluralize(total, `image`, `images`)}`, { type: `success`, duration: 4000 })
     } else if (error.value) {
       createToast(`uploaded-error`, () => error.value, { type: `error` })
     }
