@@ -1,6 +1,6 @@
 <template>
   <form class="flex h-full flex-col" @submit.prevent="onSubmit">
-    <div class="border-primary-60/20 h-full overflow-y-scroll border p-2" @scroll="onScroll">
+    <div ref="browser" class="border-primary-60/20 h-full overflow-y-scroll border p-2" @scroll="onScroll">
       <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10">
         <Thumbnail v-for="(uri, self) of selection" :key="self" :src="uri" :selected="true" @click="onSelect(self, uri)" />
         <Thumbnail v-for="(uri, self) of options" :key="self" :src="uri" @click="onSelect(self, uri)" />
@@ -65,6 +65,7 @@ const { list, entities: images, query: { page, pageSize } } = await fetchEntityL
   pageSize: 100,
 })
 
+const browser = ref<HTMLElement>()
 const allLoaded = computed(() => !list.value || page.value * pageSize.value >= list.value.total)
 const uploading = ref(false)
 
@@ -115,6 +116,7 @@ function onFilesDropped(files: File[]) {
       entities.forEach(({ self, uri }) => {
         onSelect(self, uri)
       })
+      browser.value!.scrollTop = 0
       createToast(`uploaded-success`, () => `Uploaded ${pluralize(total, `image`, `images`)}`, { type: `success`, duration: 4000 })
     } else if (error.value) {
       createToast(`uploaded-error`, () => error.value, { type: `error` })
