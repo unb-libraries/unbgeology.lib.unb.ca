@@ -82,7 +82,7 @@ function getAuthHeaders(): { Cookie?: string } {
 }
 
 export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (data, { sourceID, migration: { dependencies } }) => {
-  const { unb_id: unbID, other_ids: legacyIDs, type, classification: classifications, description, pieces, age, partial, measurements, origin, collected, collector_ids: collectorIDs, publications, location_history: storage, created, creator, updated } = data
+  const { unb_id: unbID, other_ids: legacyIDs, type, classification: classifications, description, pieces, age, partial, measurements, origin, collected, collector_ids: collectorIDs, publications, location_history: storage, created, creator } = data
   const headers = getAuthHeaders()
 
   let category
@@ -126,7 +126,7 @@ export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (
     description,
     images: await (async () => {
       try {
-        const { entities: files } = await $fetch<EntityJSONList<Image>>(`/api/files`, { query: { filter: [`filename:match:-${unbID.substring(5)} `] }, headers })
+        const { entities: files } = await $fetch<EntityJSONList<Image>>(`/api/files`, { query: { filter: [`filename:match:^[0-9a-z]{24}-(UNB)?${unbID}[a-z]?([- ]\\w*)?\\.JPG$`] }, headers })
         return files.map(({ self }) => self)
       } catch (err: unknown) {
         consola.error(`Failed to fetch images for specimen ${unbID}`)
