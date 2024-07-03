@@ -1,8 +1,10 @@
 <template>
   <form class="flex h-full flex-col" @submit.prevent="onSubmit">
-    <div class="border-primary-60/20 grid h-full grid-cols-2 gap-2 overflow-y-scroll rounded-md border sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10" @scroll="onScroll">
-      <Thumbnail v-for="(uri, self) of selection" :key="self" :src="uri" :selected="true" @click="onSelect(self, uri)" />
-      <Thumbnail v-for="(uri, self) of options" :key="self" :src="uri" @click="onSelect(self, uri)" />
+    <div class="border-primary-60/20 h-full overflow-y-scroll border p-2" @scroll="onScroll">
+      <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10">
+        <Thumbnail v-for="(uri, self) of selection" :key="self" :src="uri" :selected="true" @click="onSelect(self, uri)" />
+        <Thumbnail v-for="(uri, self) of options" :key="self" :src="uri" @click="onSelect(self, uri)" />
+      </div>
     </div>
     <div class="text-primary-40 space-y-2">
       <div class="relative">
