@@ -50,6 +50,7 @@ function onClick() {
 }
 
 function onDrop({ dataTransfer }: DragEvent) {
+  dragover.value = false
   if (dataTransfer?.items) {
     onReceive(Object.values(dataTransfer.items)
       .map(item => item.getAsFile())
