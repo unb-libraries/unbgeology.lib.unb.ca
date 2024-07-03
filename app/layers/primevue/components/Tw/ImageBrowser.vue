@@ -5,7 +5,12 @@
       <Thumbnail v-for="(uri, self) of options" :key="self" :src="uri" @click="onSelect(self, uri)" />
     </div>
     <div class="text-primary-40 space-y-2">
-      <TwInputFileDrop :max-file-size="maxFileSize" :max-total-file-size="maxTotalFileSize" :max-files="maxFiles" @drop="onFilesDropped" @error="onFileError" />
+      <div class="relative">
+        <TwInputFileDrop :max-file-size="maxFileSize" :max-total-file-size="maxTotalFileSize" :max-files="maxFiles" @drop="onFilesDropped" @error="onFileError" />
+        <div v-if="uploading" class="bg-base/80 absolute left-0 top-0 flex h-full w-full items-center justify-center">
+          <PvProgressSpinner class="h-9 w-9" stroke-width="8" />
+        </div>
+      </div>
       <div v-if="!error && maxFiles !== undefined" class="flex flex-col">
         <span>Upload up to {{ maxFiles }} images</span>
         <span v-if="maxTotalFileSize">Max. size: {{ maxTotalFileSize / 1024 / 1024 }} MB</span>
@@ -59,6 +64,7 @@ const { list, entities: images, query: { page, pageSize } } = await fetchEntityL
 })
 
 const allLoaded = computed(() => !list.value || page.value * pageSize.value >= list.value.total)
+const uploading = ref(false)
 
 const allImages = ref([] as Image[])
 watch(images, (images) => {
@@ -95,13 +101,23 @@ const options = computed<Record<string, string>>(() => {
     .reduce((acc, cur) => ({ ...acc, ...cur }), {})
 })
 
-async function onFilesDropped(files: File[]) {
-  const uploaded = files.length > 1
-    ? await useFileUpload<Image>(files)
-    : await useFileUpload<Image>(files[0])
-  uploaded.value.forEach(({ self, uri }) => {
-    onSelect(self, uri)
-  })
+function onFilesDropped(files: File[]) {
+  const { createToast } = useToasts()
+  const { data, error, pending } = useFileUpload<Image>(files)
+  uploading.value = true
+  watch(pending, () => {
+    uploading.value = false
+    if (data.value) {
+      const { entities, total } = data.value
+      // FIX: Select all images, not only the first page
+      entities.forEach(({ self, uri }) => {
+        onSelect(self, uri)
+      })
+      createToast(`uploaded-success`, () => `Uploaded ${total} images`, { type: `success`, duration: 4000 })
+    } else if (error.value) {
+      createToast(`uploaded-error`, () => error.value, { type: `error` })
+    }
+  }, { once: true })
 }
 
 function onFileError(msg: string, file?: File) {

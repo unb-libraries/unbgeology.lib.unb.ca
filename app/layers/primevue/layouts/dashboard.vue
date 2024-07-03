@@ -94,7 +94,7 @@
     <PvModal />
 
     <Teleport to="body">
-      <div class="absolute bottom-12 flex w-full flex-col items-center space-y-2">
+      <div class="absolute bottom-12 z-[2000] flex w-full flex-col items-center space-y-2">
         <TwToast v-for="([Content, { type, duration }], id) of toasts" :id="id" :key="id" :type="type" :duration="duration">
           <component :is="Content" />
         </TwToast>
