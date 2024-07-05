@@ -21,6 +21,7 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
     }))),
     legal: optional(EnumValidator(Legal)),
     lenderID: optional(StringValidator),
+    name: optional(StringValidator),
     description: optional(StringValidator),
     classification: optional(MatchValidator(/^\/api\/terms\/[a-z0-9]{24}$/)),
     collection: optional(MatchValidator(/^\/api\/terms\/[a-z0-9]{24}$/)),

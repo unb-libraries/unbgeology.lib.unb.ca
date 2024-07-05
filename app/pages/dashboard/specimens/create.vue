@@ -35,6 +35,9 @@
     <TwFormField v-if="data.type === `rock`" label="Rock type or group">
       <InputSpecimenClassification v-model="data.classification" :type="data.type" />
     </TwFormField>
+    <TwFormField label="Name">
+      <TwInputText v-model="data.name" class="input input-text-lg" />
+    </TwFormField>
     <TwFormField label="Images">
       <TwInputImage v-model="data.images" :max-files="maxFiles" :max-file-size="maxFileSize" :max-total-file-size="maxTotalFileSize" />
     </TwFormField>
@@ -61,6 +64,7 @@ const data = reactive({
   legal: Legal.PERMANENT,
   objectIDs: [],
   classification: undefined,
+  name: undefined,
   loan: undefined,
   lenderID: undefined,
   images: {} as Record<string, string>,

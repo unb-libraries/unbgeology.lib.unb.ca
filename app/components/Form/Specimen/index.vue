@@ -15,6 +15,9 @@
     <TwFormField label="Date added">
       <TwInputText v-model="data.date" placeholder="e.g. 1974, 1974-08, or 1974-08-12" class="input input-text-lg" />
     </TwFormField>
+    <TwFormField label="Name">
+      <TwInputText v-model="data.name" class="input input-text-lg" />
+    </TwFormField>
     <TwFormField label="Description">
       <TwInputTextArea v-model="data.description" :rows="5" class="input input-textarea-lg" />
     </TwFormField>
@@ -73,6 +76,7 @@ const data = reactive({
   lenderID: (props.specimen.lenderID),
   collection: props.specimen.collection?.self,
   date: props.specimen.date ?? ``,
+  name: props.specimen.name,
   description: props.specimen.description ?? ``,
   images: Object.fromEntries((props.specimen.images?.entities ?? []).map(({ self, uri }) => [self, uri])),
   publications: Object.fromEntries((props.specimen.publications ?? []).map(p => [p.id, p])),
@@ -99,6 +103,7 @@ const onSave = () => {
     lenderID: lenderID || (props.specimen.lenderID ? null : undefined),
     collection: collection ?? (props.specimen.collection ? null : undefined),
     date: date || (props.specimen.date ? null : undefined),
+    name: name || (props.specimen.name ? null : undefined),
     description: description || (props.specimen.description ? null : undefined),
     images: Object.keys(images),
     publications: Object.values(publications),

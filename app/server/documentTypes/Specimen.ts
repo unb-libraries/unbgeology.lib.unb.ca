@@ -151,6 +151,10 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
       }[this.type]
     },
   },
+  name: {
+    type: EntityFieldTypes.String,
+    required: false,
+  },
   description: {
     type: EntityFieldTypes.String,
     required: optionalForStatus(Status.MIGRATED | Status.DRAFT),

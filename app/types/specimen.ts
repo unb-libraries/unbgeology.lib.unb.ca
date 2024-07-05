@@ -92,6 +92,7 @@ export interface Specimen extends Entity, Stateful<typeof Status> {
   lenderID?: string
   slug: string
   collection: Collection
+  name: string
   description: string
   images: EntityJSONList<Image>
   classification: Classification

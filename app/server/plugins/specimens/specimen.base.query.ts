@@ -53,6 +53,10 @@ export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({
       },
     },
   },
+  name: {
+    default: true,
+    filter: String,
+  },
   description: {
     default: true,
     sort: false,

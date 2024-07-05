@@ -22,6 +22,7 @@ interface MimsySpecimen {
   // Some may not exist
   // Some may be in reverse order
   classification: string[]
+  name: string
   description: string
   // a lot of them seem to only have thumbnails
   images: string[]
@@ -82,7 +83,7 @@ function getAuthHeaders(): { Cookie?: string } {
 }
 
 export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (data, { sourceID, migration: { dependencies } }) => {
-  const { unb_id: unbID, other_ids: legacyIDs, type, classification: classifications, description, pieces, age, partial, measurements, origin, collected, collector_ids: collectorIDs, publications, location_history: storage, created, creator } = data
+  const { unb_id: unbID, other_ids: legacyIDs, type, classification: classifications, name, description, pieces, age, partial, measurements, origin, collected, collector_ids: collectorIDs, publications, location_history: storage, created, creator } = data
   const headers = getAuthHeaders()
 
   let category
@@ -123,6 +124,7 @@ export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (
       }
       return undefined
     })(),
+    name,
     description,
     images: await (async () => {
       try {
