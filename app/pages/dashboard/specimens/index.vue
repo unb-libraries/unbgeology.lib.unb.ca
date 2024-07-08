@@ -117,7 +117,7 @@
       </template>
       <template #mimsyID="{ entity: { mimsyID } }">
         <template v-if="mimsyID">
-          UNB{{ mimsyID }}
+          {{ mimsyID }}
         </template>
       </template>
       <template #type="{ entity: specimen }">
