@@ -125,7 +125,7 @@ export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (
       }
       return undefined
     })(),
-    name,
+    name: name !== `Unknown` ? name : undefined,
     description,
     images: await (async () => {
       try {
