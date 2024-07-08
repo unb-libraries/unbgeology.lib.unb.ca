@@ -83,10 +83,9 @@ const getStatusValue = (status: Parameters<ReturnType<typeof useEnum<typeof Stat
 const onSave = async (values: Specimen) => {
   const { entity: updatedSpecimen, error } = await update({ self: specimen.value!.self, ...values })
   if (updatedSpecimen.value) {
-    createToast(`update-${specimen.value!.id}`, () => `Updated specimen ${specimen.value!.id}`, { type: `success` })
-    await navigateTo(`/dashboard/specimens`)
+    createToast(`update-${specimen.value!.id}`, () => `Specimen updated`, { type: `success`, duration: 3000 })
   } else if (error.value) {
-    createToast(`error-updated-${specimen.value!.id}`, () => `${error.value}`, { type: `error` })
+    createToast(`error-updated-${specimen.value!.id}`, () => `${error.value}`, { type: `error`, duration: 5000 })
   }
 }
 
