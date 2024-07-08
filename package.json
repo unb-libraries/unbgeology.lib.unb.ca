@@ -2,8 +2,8 @@
   "private": true,
   "scripts": {
     "lint": "eslint .",
-    "lint:commit": "eslint $(find $(git diff --diff-filter=d --name-only --cached | xargs) -type f -name \"*.ts\") --no-error-on-unmatched-pattern",
-    "lint:fix": "eslint . --fix",
+    "lint:commit": "npx eslint $(find $(git diff --diff-filter=d --name-only --cached | xargs) -type f -name \"*.ts\") --no-error-on-unmatched-pattern",
+    "lint:fix": "npx eslint . --fix",
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "vitest run -c ./tests/unit/vitest.config.ts",
     "test:e2e": "cypress open -C ./tests/e2e/cypress.config.ts",
