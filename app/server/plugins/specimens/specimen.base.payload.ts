@@ -85,7 +85,7 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
     age: age && (typeof age === `string`
       ? { unit: { _id: age.substring(1).split(`/`).at(-1)! }, numeric: null }
       : { unit: null, numeric: age }),
-    composition: composition && composition.map(c => ({ _id: c.substring(1).split(`/`).at(-1)! })),
+    composition: (composition && composition.map(c => ({ _id: c.substring(1).split(`/`).at(-1)! }))) || undefined,
     measurements: (measurements && Object.keys(measurements).length > 0 && {
       count: useEnum(MeasurementCount).valueOf(measurements.count),
       dimensions: measurements.dimensions,

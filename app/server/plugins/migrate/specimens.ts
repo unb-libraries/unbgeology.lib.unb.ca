@@ -2,6 +2,7 @@ import { consola } from "consola"
 import { type Image, type EntityJSONList } from "@unb-libraries/nuxt-layer-entity"
 import type { Classification } from "~/types/classification"
 import { Category, type Specimen, MeasurementCount, Immeasurabibility, type ObjectID } from "~/types/specimen"
+import type { Composition } from "~/types/composition"
 
 // New field: Collection (vocabulary)
 
@@ -83,7 +84,7 @@ function getAuthHeaders(): { Cookie?: string } {
 }
 
 export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (data, { sourceID, migration: { dependencies } }) => {
-  const { unb_id: unbID, other_ids: legacyIDs, type, classification: classifications, name, description, pieces, age, partial, measurements, origin, collected, collector_ids: collectorIDs, publications, location_history: storage, created, creator } = data
+  const { unb_id: unbID, other_ids: legacyIDs, type, classification: classifications, name, description, pieces, composition, age, partial, measurements, origin, collected, collector_ids: collectorIDs, publications, location_history: storage, created, creator } = data
   const headers = getAuthHeaders()
 
   let category
@@ -153,6 +154,24 @@ export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (
             ? { year: date.getFullYear(), month: date.getMonth() + 1, day: date.getDate() }
             : undefined
     })()) || undefined,
+    composition: await (async () => {
+      const findTerm = async (term: string) => (await $fetch<EntityJSONList<Composition>>(`/api/terms`, {
+        query: {
+          filter: [
+              `label:equals:${term}`,
+              `type:equals:composition/${category}`,
+          ],
+        },
+        headers,
+      }))?.entities[0]?.self
+      const terms = (await Promise.all(composition?.replace(/ and | or |\/|;|\?/g, `,`).split(`,`)
+        .filter(c => c.length > 0)
+        .map(c => c[0].toUpperCase() + c.slice(1).toLowerCase())
+        .map(c => c.trim())
+        .map(findTerm) ?? []))
+        .filter(c => typeof c === `string`)
+      return terms.length > 0 ? terms : undefined
+    })(),
     age: await (async () => {
       const unitEntities = await $fetch<EntityJSONList<Classification>>(`/api/terms`, {
         query: {
