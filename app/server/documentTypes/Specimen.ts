@@ -443,7 +443,7 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
   alterSchema(schema) {
     schema.pre(`save`, async function () {
       // Set mimsyID
-      this.mimsyID = this.objectIDs?.find(({ type }) => type === `Mimsy`)?.id.replace(/^UNB-?/, ``)
+      this.mimsyID = this.objectIDs?.find(({ type }) => type?.toLowerCase() === `mimsy`)?.id
 
       // Set relative age based on numeric age
       if (this.age?.unit) {

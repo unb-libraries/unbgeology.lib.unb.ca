@@ -105,7 +105,7 @@ export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (
       id: lid.id,
       type: lid.type ?? lid.source ?? undefined,
     }))],
-    mimsyID: unbID,
+    mimsyID: `UNB-${unbID}`,
     type: category,
     classification: await (async () => {
       if (!Array.isArray(classifications) || classifications.length < 1) { return }
