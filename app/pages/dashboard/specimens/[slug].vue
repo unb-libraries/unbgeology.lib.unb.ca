@@ -65,8 +65,12 @@ definePageMeta({
 const { slug } = useRoute().params
 const edit = ref(useRoute().query.edit)
 
-onUpdated(() => {
+onUpdated(async () => {
   edit.value = useRoute().query.edit
+  const { entity: updatedSpecimen } = await fetchByPK(slug as string)
+  if (updatedSpecimen.value) {
+    specimen.value = updatedSpecimen.value
+  }
 })
 
 const { hasPermission } = useCurrentUser()

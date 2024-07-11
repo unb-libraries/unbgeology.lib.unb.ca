@@ -84,13 +84,12 @@ const data = reactive({
   externalID: ``,
 })
 
-
 function onRemovePublication(id: string) {
   delete data.publications[id]
 }
 
 const onSave = () => {
-  const { objectIDs, legal, collection, date, description, images, publications, appraisal } = data
+  const { objectIDs, legal, collection, date, name, description, images, publications, appraisal } = data
   let { lenderID } = data
 
   if (legal !== Legal.LOAN) {
