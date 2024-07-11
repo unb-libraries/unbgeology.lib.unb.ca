@@ -5,7 +5,7 @@ import { require } from "~/layers/mongo/server/utils/api/payload"
 export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
   const create = op === `create`
 
-  const { type, status } = await validateBody(payload, {
+  const { status } = await validateBody(payload, {
     status: optional(EnumValidator(Status)),
     type: requireIf(create, StringValidator),
   })
@@ -76,7 +76,7 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
 
   return {
     ...body,
-    pk: `UNB-${`${Math.floor(Math.random() * 1000000)}`.padStart(8, `0`)}`,
+    pk: (create && `UNB-${`${Math.floor(Math.random() * 1000000)}`.padStart(8, `0`)}`) || undefined,
     legal: legal && useEnum(Legal).valueOf(legal),
     lenderID,
     classification: classification && { _id: classification.substring(1).split(`/`).at(-1)! },
