@@ -35,7 +35,7 @@
     <TwFormField v-if="data.type === `rock`" label="Rock type or group">
       <InputSpecimenClassification v-model="data.classification" :type="data.type" />
     </TwFormField>
-    <TwFormField label="Name">
+    <TwFormField label="Object name">
       <TwInputText v-model="data.name" class="input input-text-lg" />
     </TwFormField>
     <TwFormField label="Images">

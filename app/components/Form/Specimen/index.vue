@@ -15,7 +15,7 @@
     <TwFormField label="Date added">
       <TwInputText v-model="data.date" placeholder="e.g. 1974, 1974-08, or 1974-08-12" class="input input-text-lg" />
     </TwFormField>
-    <TwFormField label="Name">
+    <TwFormField label="Object name">
       <TwInputText v-model="data.name" class="input input-text-lg" />
     </TwFormField>
     <TwFormField label="Description">

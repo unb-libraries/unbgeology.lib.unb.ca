@@ -1,5 +1,5 @@
 <template>
-  <PvEntityDetails :entity="specimen!" :fields="[[`id`, `ID`], `name`, [`type`, `Category`], `classification`, `created`, `updated`, `status`]" class="space-y-4" label-class="font-bold italic">
+  <PvEntityDetails :entity="specimen!" :fields="[[`id`, `ID`], [`name`, `Object name`], [`type`, `Category`], `classification`, `created`, `updated`, `status`]" class="space-y-4" label-class="font-bold italic">
     <template #id="{ value: id }">
       {{ id }}
     </template>
