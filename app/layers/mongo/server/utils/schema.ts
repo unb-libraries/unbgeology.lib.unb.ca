@@ -228,8 +228,44 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
     }
 
     // lookup stage
-    joins.forEach(({ from, foreignField, localField, as }) => {
-      aggregate.lookup({ from, foreignField, localField, as })
+    joins.forEach(({ from, foreignField, localField, as, cardinality }) => {
+      if (cardinality === `many`) {
+        // Add index fields to preserve order of multi-value joins
+        aggregate.addFields({
+          [`indexed${localField}`]: {
+            $map: {
+              input: `$${localField}`,
+              as: `foreign`,
+              in: {
+                _id: `$$foreign`,
+                index: { $indexOfArray: [`$${localField}`, `$$foreign`] },
+              },
+            },
+          },
+        })
+        aggregate.unwind({ path: `$indexed${localField}`, preserveNullAndEmptyArrays: true })
+        aggregate.lookup({
+          from,
+          foreignField: `_id`,
+          localField: `indexed${localField}._id`,
+          as,
+        })
+        aggregate.unwind({ path: `$${as}`, preserveNullAndEmptyArrays: true })
+        aggregate.sort(`indexed${localField}.index`)
+        aggregate.group({
+          _id: `$_id`,
+          document: { $first: `$$ROOT` },
+          [as]: { $push: `$${as}` },
+        })
+        aggregate.replaceRoot({ $mergeObjects: [`$document`, { [as]: `$${as}` }] })
+      } else {
+        aggregate.lookup({
+          from,
+          foreignField,
+          localField,
+          as,
+        })
+      }
     })
 
     // addFields stage
