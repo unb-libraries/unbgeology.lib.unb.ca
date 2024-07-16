@@ -7,13 +7,22 @@ import { Immeasurabibility, Legal, MeasurementCount, Status } from "~/types/spec
 export default defineMongooseFormatter(Specimen.Base, async (doc) => {
   const { slug, objectIDs, mimsyID, legal, lenderID, classification, name, description, kollektion, images, measurements, date, age, composition, origin, pieces, partial, collector, sponsor, loans, storage, storageLocations, publications, appraisal, status, creator, editor, created, updated } = doc
 
+  function getAuthHeaders(): { Cookie?: string } {
+    const event = useEvent()
+    if (event) {
+      const sessionName = useRuntimeConfig().public.session.name
+      return { Cookie: `${sessionName}=${getCookie(event, sessionName)}` }
+    }
+    return {}
+  }
+
   return {
     id: slug,
     mimsyID,
     objectIDs: objectIDs && objectIDs.map(({ id, type }) => ({ id, type })),
     legal: legal && useEnum(Legal).labelOf(legal).toLowerCase(),
     lenderID,
-    classification: (classification && Object.keys(classification).length > 0 && await renderDocument(classification, { model: Term, self: term => `/api/terms/${term._id}` })) || undefined,
+    classification: (classification && Object.keys(classification).length > 0 && await $fetch(`/api/terms/${classification._id}`, { headers: getAuthHeaders() ?? {} })) || undefined,
     name,
     description,
     collection: (kollektion && Object.keys(kollektion).length > 0 && await renderDocument(kollektion, { model: Term, self: term => `/api/terms/${term._id}` })) || undefined,

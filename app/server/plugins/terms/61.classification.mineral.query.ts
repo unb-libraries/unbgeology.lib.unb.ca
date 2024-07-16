@@ -4,7 +4,6 @@ import { Status } from "~/types/classification"
 export default defineMongooseEventQueryHandler(Classification.Mineral, defineEventQuery({
   parent: {
     default: true,
-    sort: `__l`,
     filter: false,
     definition: {
       id: {
@@ -15,6 +14,26 @@ export default defineMongooseEventQueryHandler(Classification.Mineral, defineEve
       label: {
         default: true,
         filter: String,
+      },
+    },
+  },
+  ancestors: {
+    default: true,
+    join: {
+      documentType: Term,
+      cardinality: `many`,
+    },
+    sort: false,
+    filter: false,
+    definition: {
+      id: {
+        default: true,
+        sort: false,
+        filter: false,
+      },
+      label: {
+        default: true,
+        filter: false,
       },
     },
   },

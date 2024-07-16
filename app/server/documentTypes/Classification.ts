@@ -1,5 +1,5 @@
 import { type Term as ITerm } from "~/layers/mongo/server/documentTypes/Term"
-import { Hierarchical, type Hierarchical as IHierarchical } from "~/layers/mongo/server/utils/mixins"
+import { Hierarchical } from "~/layers/mongo/server/utils/mixins"
 import { EntityFieldTypes } from "~/layers/mongo/types/entity"
 import type { DocumentSchema } from "~/layers/mongo/types/schema"
 import {
@@ -11,9 +11,7 @@ import {
   Status,
 } from "~/types/classification"
 
-type Classification<T extends IClassification = IClassification> = Omit<IClassification & IHierarchical & ITerm, `parent`> & {
-  parent?: Classification<T>
-} & T
+type Classification<T extends IClassification = IClassification> = ITerm & T
 
 const State = Stateful({
   values: Status,
