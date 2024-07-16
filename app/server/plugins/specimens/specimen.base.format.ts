@@ -49,7 +49,7 @@ export default defineMongooseFormatter(Specimen.Base, async (doc) => {
     },
     date,
     age: (age && ((age.unit && Object.keys(age.unit).length > 0) || age.numeric) && {
-      unit: (age.unit && Object.keys(age.unit).length > 0 && await renderDocument(age.unit, { model: Term, self: term => `/api/terms/${term._id}` })) || undefined,
+      unit: (age.unit && Object.keys(age.unit).length > 0 && await $fetch(`/api/terms/${age.unit._id}`, { headers: getAuthHeaders() ?? {} })) || undefined,
       numeric: age.numeric,
     }) || undefined,
     origin,
