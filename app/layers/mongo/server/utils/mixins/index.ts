@@ -4,7 +4,7 @@ import Stateful, { type Stateful as IStateful } from "./Stateful"
 
 enum Status {}
 
-export type Hierarchical = IHierarchical
+export type Hierarchical<T> = IHierarchical<T>
 export type Slugified = ISlugified
 export type Stateful<S extends typeof Status> = IStateful<S>
 

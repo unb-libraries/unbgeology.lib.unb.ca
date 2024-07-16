@@ -1,12 +1,13 @@
 import { Document, Schema } from "mongoose"
 import type { DocumentBase } from "~/layers/mongo/types/schema"
-export interface Hierarchical {
-  parent: Hierarchical
-  ancestors: Hierarchical[]
+
+export interface Hierarchical<T> {
+  parent?: Hierarchical<T> & T
+  ancestors: (Hierarchical<T> & T)[]
   parentModel: string
 }
 
-export default <T extends DocumentBase>(options?: { sort: keyof Omit<T, keyof DocumentBase | keyof Hierarchical> }) => defineDocumentSchema<Hierarchical>({
+export default <T extends DocumentBase>(options?: { sort: keyof Omit<T, keyof DocumentBase | keyof Hierarchical<T>> }) => defineDocumentSchema<Hierarchical<T>>({
   parent: {
     type: Schema.Types.ObjectId,
     required: false,
@@ -46,7 +47,7 @@ export default <T extends DocumentBase>(options?: { sort: keyof Omit<T, keyof Do
 
     schema.post(`save`, async function () {
       const Model = this.model()
-      const original = this.$locals.original as Hierarchical
+      const original = this.$locals.original as Hierarchical<T>
       if (original && original.parent !== this.parent) {
         await Model.updateMany({ ancestors: this._id }, { $pullAll: { ancestors: original.ancestors } })
         await Model.updateMany({ ancestors: this._id }, { $push: { ancestors: { $each: this.ancestors } } })
