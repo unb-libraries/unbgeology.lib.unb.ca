@@ -18,6 +18,26 @@ export default defineMongooseEventQueryHandler(StorageLocation, defineEventQuery
       },
     },
   },
+  ancestors: {
+    default: true,
+    join: {
+      documentType: Term,
+      cardinality: `many`,
+    },
+    sort: false,
+    filter: false,
+    definition: {
+      id: {
+        default: true,
+        sort: false,
+        filter: false,
+      },
+      label: {
+        default: true,
+        filter: false,
+      },
+    },
+  },
   public: {
     default: false,
     filter: Boolean,

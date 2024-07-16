@@ -72,7 +72,7 @@ export default defineMongooseFormatter(Specimen.Base, async (doc) => {
       .map(({ location, ...s }) => ({ location: storageLocations.find(sl => `${sl._id}` === `${location._id}`), ...s }))
       .map(async ({ location, dateIn, dateOut }, index) => ({
         id: index + 1,
-        location: location && Object.keys(location).length > 0 && await renderDocument(location, { model: Term, self: term => `/api/terms/${term._id}` }) as StorageLocation,
+        location: location && Object.keys(location).length > 0 && await $fetch(`/api/terms/${location._id}`, { headers: getAuthHeaders() ?? {} }),
         dateIn: (!isNaN(dateIn) && new Date(dateIn).toISOString()) || undefined,
         dateOut: (dateOut && (!isNaN(dateOut!) && new Date(dateOut!).toISOString())) || undefined,
       })),

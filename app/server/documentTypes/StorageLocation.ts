@@ -1,9 +1,9 @@
 import { EntityFieldTypes } from "layers/mongo/types/entity"
 import { type StorageLocation as TxStorageLocation, Status } from "types/storagelocation"
+import { type Term as TermEntity } from "@unb-libraries/nuxt-layer-entity"
 import { type Term as ITerm } from "~/layers/mongo/server/documentTypes/Term"
-import { type Hierarchical as IHierarchical } from "~/layers/mongo/server/utils/mixins/Hierarchical"
 
-export type StorageLocation = Omit<TxStorageLocation, keyof ITerm> & Omit<IHierarchical, `parent`> & ITerm & {
+export type StorageLocation = Omit<TxStorageLocation, keyof TermEntity> & ITerm & {
   parent?: StorageLocation
 }
 
