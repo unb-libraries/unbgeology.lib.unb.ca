@@ -12,7 +12,7 @@
           <span class="bg-primary-60/60 rounded-md px-1.5 py-0.5">
             {{ term.label }}
           </span>
-          <span v-if="index < (classification.ancestors?.entities ?? []).length">></span>
+          <span v-if="index < (classification.ancestors?.entities ?? []).length">&raquo;</span>
         </template>
       </div>
       <template v-else>

@@ -37,15 +37,15 @@
     </div>
     <ul v-if="optionsVisible" class="bg-primary border-primary-60/40 absolute z-[100] max-h-64 w-full overflow-y-scroll rounded-b-md border border-t-0" :class="listClass">
       <li
-        v-for="[option, label] in options.filter(([id]) => !selected.includes(id))"
+        v-for="[option, label] in options.filter(([id]) => !multi || !selected.includes(id))"
         :key="option"
         :ref="option"
         tabindex="0"
         class="input-select-item"
-        :class="{ [`${selectedItemClass ?? ``} input-select-item-selected`]: selected[0] === option }"
+        :class="{ [`${selectedItemClass ?? ``} input-select-item-selected`]: selected[0] === option, [itemClass]: true }"
         @click.stop="onSelect(option)"
       >
-        <slot name="item" :options="[option, label]">
+        <slot name="item" :options="[option, label, selected[0] === option]">
           {{ label }}
         </slot>
       </li>

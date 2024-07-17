@@ -5,9 +5,20 @@
     option-field="self"
     label-field="label"
     class="input-select-lg"
+    item-class="even:bg-primary-80/40 hover:even:bg-accent-mid py-1 group"
+    selected-item-class="bg-accent-mid even:bg-accent-mid hover:bg-accent-light even:hover:bg-accent-light"
     :add-new-option="true"
     @add="onAdd"
-  />
+  >
+    <template #item="{ options: [option, label, selected] }">
+      <div class="flex flex-col">
+        <span>{{ label }}</span>
+        <span class="group-hover:text-primary-80 text-xs italic" :class="{ 'text-primary-20': !selected, 'text-primary-80': selected }">
+          {{ options.find(op => op.self === option)?.ancestors?.entities.map(acs => acs.label).reverse().join(` &raquo; `) ?? `&nbsp;` }}
+        </span>
+      </div>
+    </template>
+  </PvInputDropdown>
 </template>
 
 <script setup lang="ts">
@@ -28,7 +39,7 @@ const Form = {
 }[props.type]
 
 // FIX: Dynamically load all, e.g. on scroll, instead of setting fixed pageSize
-const { entities: options, add: createClassification } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `classification/${props.type}`]], select: [`label`], sort: [`label`], pageSize: 500 })
+const { entities: options, add: createClassification } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `classification/${props.type}`]], select: [`label`, `ancestors`], sort: [`label`], pageSize: 500 })
 function onAdd() {
   const { open: openModal } = useEntityFormModal<Classification>(Form, {
     onSave: async (values: Classification) => {
