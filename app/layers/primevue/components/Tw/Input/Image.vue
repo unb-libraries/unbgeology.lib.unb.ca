@@ -44,14 +44,16 @@ const { id = parentAttrs?.id, name = parentAttrs?.name, class: classList } = use
 
 const { setContent, close: closeModal } = useModal()
 const onClickBrowse = () => {
-  setContent(() => <TwImageBrowser
-    selection={images.value}
-    maxFileSize={props.maxFileSize}
-    maxTotalFileSize={props.maxTotalFileSize}
-    maxFiles={props.maxFiles}
-    onSelect={onSelect}
-    onCancel={closeModal}
-  />)
+  setContent(() => <div class={`sm:min-w-[480px] md:min-w-[560px] lg:min-w-[720px] xl:min-w-[960px] 2xl:min-w-[1080px]`}>
+    <TwImageBrowser
+      selection={images.value}
+      maxFileSize={props.maxFileSize}
+      maxTotalFileSize={props.maxTotalFileSize}
+      maxFiles={props.maxFiles}
+      onSelect={onSelect}
+      onCancel={closeModal}
+    />
+    </div>)
 }
 
 const onSelect = (selection: Record<string, string>) => {

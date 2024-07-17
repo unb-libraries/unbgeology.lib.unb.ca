@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1 class="mb-12 text-2xl" :class="contentClass">
+    <h1 class="mb-12 text-center text-2xl" :class="contentClass">
       <slot>
         {{ question }}
       </slot>
