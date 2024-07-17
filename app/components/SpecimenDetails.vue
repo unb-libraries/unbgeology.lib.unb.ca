@@ -7,7 +7,7 @@
       {{ titleCased(category) }}
     </template>
     <template #classification="{ entity: { classification } }">
-      <div v-if="classification" class="flex flex-row items-center space-x-1.5">
+      <div v-if="classification" class="flex flex-row flex-wrap items-start gap-1.5">
         <template v-for="(term, index) in [classification, ...classification.ancestors?.entities ?? []].reverse()" :key="term.self">
           <span class="bg-primary-60/60 rounded-md px-1.5 py-0.5">
             {{ term.label }}

@@ -40,6 +40,9 @@ module.exports = {
         '4/3': `4 / 3`,
         '7/5': `7 / 5`,
       },
+      gap: {
+        '1.5': `0.375rem`,
+      },
       colors: {
         base: `#E3E1D9`,
         primary: {
