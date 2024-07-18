@@ -27,7 +27,7 @@
             :placeholder="placeholder || `Search`"
             @input="$emit(`input`, search)"
           >
-          <span v-if="!multi && selectedOptions.length > 0">{{ selectedOptions[0][1] }}</span>
+          <span v-else-if="!multi && selectedOptions.length > 0">{{ selectedOptions[0][1] }}</span>
           <span v-else>{{ placeholder || `-- Select --` }}</span>
         </slot>
       </div>
@@ -85,6 +85,12 @@ const selected = computed<string[]>({
   },
 })
 
+onUpdated(() => {
+  console.log(`selected`, selected.value)
+  console.log(`model`, model.value)
+  console.log(`selected options`, selectedOptions.value)
+})
+
 const parentAttrs = inject<Partial<{ id: string, name: string }>>(`attrs`)
 const { id = parentAttrs?.id, name = parentAttrs?.name, class: classList } = useAttrs() as { id: string, name: string, class: string }
 const classes = computed(() => selected.value ? classList : `${classList} input-select-empty`)
@@ -100,7 +106,7 @@ const options = computed<[string, string][]>(() => {
 })
 
 const optionsVisible = ref(false)
-const selectedOptions = computed(() => options.value.filter(([id]) => selected.value.includes(id)))
+const selectedOptions = computed(() => options.value.filter(([id]) => selected.value.includes(`${id}`)))
 
 function onSelect(value: string) {
   if (value === `addNew`) {

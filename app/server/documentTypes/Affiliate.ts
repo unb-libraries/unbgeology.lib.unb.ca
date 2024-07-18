@@ -33,6 +33,7 @@ function optionalOnImport(this: Affiliate<any>) {
 
 export default {
   Person: defineDocumentModel(`Person`, defineDocumentSchema<Person>({
+    // REFACTOR: Require occupation,position,email,phone
     firstName: {
       type: EntityFieldTypes.String,
       required: true,
@@ -53,11 +54,11 @@ export default {
     },
     occupation: {
       type: EntityFieldTypes.String,
-      required: optionalOnImport,
+      required: false,
     },
     position: {
       type: EntityFieldTypes.String,
-      required: optionalOnImport,
+      required: false,
     },
     image: {
       type: EntityFieldTypes.ObjectId,
@@ -70,7 +71,7 @@ export default {
     },
     email: {
       type: EntityFieldTypes.String,
-      required: optionalOnImport,
+      required: false,
       validate: {
         validator: function (email: string) {
           return /^.+@.+\..+$/.test(email)
@@ -80,7 +81,7 @@ export default {
     },
     phone: {
       type: EntityFieldTypes.String,
-      required: optionalOnImport,
+      required: false,
       validate: {
         validator: function (phone: string) {
           return /^\+?[\d\s\-()]+$/.test(phone)
