@@ -8,20 +8,21 @@ export default defineMongooseReader(Affiliate.Organization, async (payload, opti
     status: optional(EnumValidator(Status)),
   })
 
-  const migrate = status === Status.MIGRATED
   const { address, contact, web } = await validateBody(payload, {
-    address: requireIf(create && !migrate, ObjectValidator({
-      line1: requireIf(create, StringValidator),
+    // REFACTOR: Require line1,city,postalCode,country
+    address: optional(ObjectValidator({
+      line1: optional(StringValidator),
       line2: optional(StringValidator),
-      city: requireIf(create, StringValidator),
+      city: optional(StringValidator),
       state: optional(StringValidator),
-      postalCode: requireIf(create, StringValidator),
-      country: requireIf(create, StringValidator),
+      postalCode: optional(StringValidator),
+      country: optional(StringValidator),
     })),
-    contact: requireIf(create && !migrate, ObjectValidator({
-      name: requireIf(create, StringValidator),
-      email: requireIf(create, StringValidator),
-      phone: requireIf(create, StringValidator),
+    // REFACTOR: Require name
+    contact: optional(ObjectValidator({
+      name: optional(StringValidator),
+      email: optional(StringValidator),
+      phone: optional(StringValidator),
     })),
     web: optional(ArrayValidator(StringValidator)),
   })
@@ -29,11 +30,11 @@ export default defineMongooseReader(Affiliate.Organization, async (payload, opti
   return {
     address: address && {
       ...address,
-      postalCode: address.postalCode?.replace(/\s/g, ``),
+      postalCode: address.postalCode && address.postalCode?.replace(/\s/g, ``),
     },
     contact: contact && {
       ...contact,
-      phone: contact.phone?.replace(/[^\d+]/g, ``),
+      phone: contact.phone && contact.phone?.replace(/[^\d+]/g, ``),
     },
     web,
     status: status && useEnum(Status).valueOf(status),

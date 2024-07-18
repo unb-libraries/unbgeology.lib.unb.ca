@@ -107,10 +107,11 @@ export default {
 
   Organization: defineDocumentModel(`Organization`, defineDocumentSchema<Organization>({
     address: {
+      // REFACTOR: Require line1,city,postalCode,country
       type: {
         line1: {
           type: EntityFieldTypes.String,
-          required: true,
+          required: false,
         },
         line2: {
           type: EntityFieldTypes.String,
@@ -118,7 +119,7 @@ export default {
         },
         city: {
           type: EntityFieldTypes.String,
-          required: true,
+          required: false,
         },
         state: {
           type: EntityFieldTypes.String,
@@ -126,31 +127,32 @@ export default {
         },
         postalCode: {
           type: EntityFieldTypes.String,
-          required: true,
+          required: false,
         },
         country: {
           type: EntityFieldTypes.String,
-          required: true,
+          required: false,
         },
       },
-      required: optionalOnImport,
+      required: false,
     },
     contact: {
+      // REFACTOR: Require name
       type: {
         name: {
           type: EntityFieldTypes.String,
-          required: true,
+          required: false,
         },
         email: {
           type: EntityFieldTypes.String,
-          required: true,
+          required: false,
         },
         phone: {
           type: EntityFieldTypes.String,
-          required: true,
+          required: false,
         },
       },
-      required: optionalOnImport,
+      required: false,
     },
     web: [{
       type: EntityFieldTypes.String,
