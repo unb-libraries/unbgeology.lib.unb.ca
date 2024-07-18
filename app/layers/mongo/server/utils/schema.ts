@@ -293,14 +293,13 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
       })
 
     // sort stage
+    const sortRanking: Record<string, 1 | -1 | { $meta: `textScore` }> = sort.reduce((sort, [field, asc]) => ({ ...sort, [`no${field}`]: 1, [field]: asc ? 1 : -1 }), {})
     if (options?.search) {
       selection.push([`_score`, { $meta: `textScore` }])
-      aggregate.sort({ score: { $meta: `textScore` } })
-    } else if (sort.length > 0) {
-      aggregate.sort(sort.map(([field, asc]) => `no${field} ${asc ? `` : `-`}${field}`).join(` `))
-    } else {
-      aggregate.sort(`_id`)
+      sortRanking._score = { $meta: `textScore` }
     }
+    sortRanking._id = 1
+    aggregate.sort(sortRanking)
 
     // project stage
     if (selection.length > 0) {
