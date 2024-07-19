@@ -1,37 +1,17 @@
 <template>
-  <EntityForm :entity="data" @save="publication => $emit(`save`, publication as unknown as Publication)" @cancel="$emit(`cancel`)">
-    <template #default="{ body }">
-      <TwFormField label="ID">
-        <TwInputText v-model="body.id" class="input input-text-lg" />
-      </TwFormField>
-      <TwFormField label="DOI">
-        <TwInputText v-model="body.doi" class="input input-text-lg" />
-      </TwFormField>
-      <TwFormField label="Citation">
-        <TwInputTextArea v-model="body.citation" class="input-textarea-lg" />
-      </TwFormField>
-      <TwFormField label="Abstract">
-        <TwInputTextArea v-model="body.abstract" :rows="15" class="input-textarea-lg" />
-      </TwFormField>
-      <!-- <div class="form-field">
-        <label for="citation">DOI</label>
-        <FormInputDoiResolve class="form-input form-input-text" @success="pub => onResolve(pub, body)" @error="msg => doiResolveError = msg ?? ``" />
-        <span v-if="doiResolveError" class="text-sm">DOI could not be resolved.</span>
-      </div>
-      <div class="form-field">
-        <label for="citation">Citation</label>
-        <PvInputText v-model="body.citation" class="form-input form-input-text" />
-      </div>
-      <div class="form-field">
-        <label for="abstract">Abstract</label>
-        <textarea v-model="body.abstract" rows="5" class="form-input form-input-textarea" />
-      </div> -->
-    </template>
-    <!-- <template #more-actions>
-      <button class="form-action form-action-delete" @click.prevent="emits(`delete`)">
-        Delete
-      </button>
-    </template> -->
+  <EntityForm @save="onSave" @cancel="$emit(`cancel`)">
+    <TwFormField label="ID">
+      <TwInputText v-model="id" class="input input-text-lg" />
+    </TwFormField>
+    <TwFormField label="DOI">
+      <TwInputText v-model="doi" class="input input-text-lg" />
+    </TwFormField>
+    <TwFormField label="Citation">
+      <TwInputTextArea v-model="citation" :rows="4" class="input-textarea-lg" />
+    </TwFormField>
+    <TwFormField label="Abstract">
+      <TwInputTextArea v-model="abstract" :rows="10" class="input-textarea-lg" />
+    </TwFormField>
   </EntityForm>
 </template>
 
@@ -42,17 +22,23 @@ const props = defineProps<{
   publication?: Publication
 }>()
 
-const data = reactive({
-  id: ``,
-  doi: ``,
-  citation: ``,
-  abstract: ``,
-  ...props.publication,
-})
+const id = ref(props.publication?.id)
+const doi = ref(props.publication?.doi)
+const citation = ref(props.publication?.citation)
+const abstract = ref(props.publication?.abstract)
 
-defineEmits<{
+const emits = defineEmits<{
   save: [publication: Publication]
   cancel: []
 }>()
+
+function onSave() {
+  emits(`save`, {
+    id: id.value || (props.publication?.id ? null : undefined),
+    doi: doi.value || (props.publication?.doi ? null : undefined),
+    citation: citation.value || (props.publication?.citation ? null : undefined),
+    abstract: abstract.value || (props.publication?.abstract ? null : undefined),
+  })
+}
 
 </script>

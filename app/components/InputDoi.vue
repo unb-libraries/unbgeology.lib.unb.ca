@@ -1,13 +1,15 @@
 <template>
   <div class="flex flex-row space-x-2">
-    <TwInputText v-model="doi" class="input input-text-lg grow" :class="inputClass" wrapper-class="w-full" :placeholder="placeholder">
+    <TwInputText
+      v-model="doi"
+      class="input input-text-lg grow"
+      :class="inputClass"
+      wrapper-class="w-full"
+      :placeholder="placeholder"
+      :disabled="pending"
+    >
       <template #before>
-        <slot name="before" />
-      </template>
-      <template #after>
-        <slot name="after">
-          <PvProgressSpinner v-if="pending" class="mr-2 h-6 w-6" stroke-width="4" />
-        </slot>
+        <PvProgressSpinner v-if="pending" class="mr-2 h-6 w-6" stroke-width="4" />
       </template>
     </TwInputText>
     <button class="button button-lg button-accent-mid hover:button-accent-light" :class="submitClass" @click.stop.prevent="onSearch">

@@ -44,11 +44,11 @@
   }
   .input {
     @apply flex flex-row items-center space-x-2
-    bg-base dark:bg-primary disabled:bg-primary-80 input-border
+    bg-base dark:bg-primary input-border has-[:disabled]:bg-primary-80
       has-[:focus]:ring-2 has-[:disabled:focus]:ring-0 has-[:focus]:ring-accent-light has-[:focus]:hover:border-transparent
   }
   .input-ref, .textarea-ref {
-    @apply w-full p-0 bg-inherit border-none focus:ring-0
+    @apply w-full p-0 bg-inherit border-none focus:ring-0 disabled:text-primary-40
       text-inherit placeholder:text-primary dark:placeholder:text-primary-20 placeholder:italic;
     font-size: inherit;
   }
