@@ -37,14 +37,14 @@ const emits = defineEmits<{
 }>()
 
 const doi = defineModel<string>(`doi`, { required: false })
-const { resolve, abstract, citation, pending, error } = useDoi()
+const { resolve, abstract, citation, pending } = useDoi()
 async function onSearch() {
   if (doi.value) {
     await resolve(doi.value)
-    if (!error.value) {
+    if (citation.value || abstract.value) {
       emits(`resolve`, { citation: citation.value, abstract: abstract.value, doi: doi.value })
     } else {
-      emits(`error`, error.value)
+      emits(`error`, `DOI could not be resolved.`)
     }
   }
 }

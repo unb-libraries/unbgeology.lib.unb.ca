@@ -36,10 +36,14 @@ const { setContent, close } = useModal()
 
 function onAdd() {
   const openForm = () => setContent(() => <FormPublication onSave={onSave} onCancel={close} />)
+  const error = ref()
   setContent(() =>
-    <div class={`space-y-3`}>
+    <div class={`space-y-1`}>
       <TwFormField label={`Search by DOI`}>
-        <InputDoi placeholder={`Search by DOI, e.g. https://doi.org/10.1130/GES01535.1`} onResolve={onResolveDoi} />
+        <div>
+          <InputDoi placeholder={`Search by DOI, e.g. https://doi.org/10.1130/GES01535.1`} onResolve={onResolveDoi} onError={(msg: string) => { error.value = msg }} />
+          <span class={`text-sm ${error.value ? ` text-red` : ``}`}>{ error.value || `\u00A0`}</span>
+        </div>
       </TwFormField>
       <div class={`text-center text-sm`}>Or <a class={`cursor-pointer italic underline`} onClick={openForm}>enter manually</a> instead</div>
     </div>)
