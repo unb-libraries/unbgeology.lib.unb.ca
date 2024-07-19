@@ -85,12 +85,6 @@ const selected = computed<string[]>({
   },
 })
 
-onUpdated(() => {
-  console.log(`selected`, selected.value)
-  console.log(`model`, model.value)
-  console.log(`selected options`, selectedOptions.value)
-})
-
 const parentAttrs = inject<Partial<{ id: string, name: string }>>(`attrs`)
 const { id = parentAttrs?.id, name = parentAttrs?.name, class: classList } = useAttrs() as { id: string, name: string, class: string }
 const classes = computed(() => selected.value ? classList : `${classList} input-select-empty`)
