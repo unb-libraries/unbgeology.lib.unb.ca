@@ -17,7 +17,7 @@
       <div v-else>
         No specimens found
       </div>
-      <PvPaginator v-model="page" :total="Math.ceil((list?.total ?? 0) / pageSize)" :size="5" />
+      <TwPageIndex :page="page" :total="Math.ceil((list?.total ?? 0) / pageSize)" :size="5" @change="(index) => { page = index }" />
       <div class="relative flex items-center space-x-2">
         <button id="button-filter" class="button bg-primary-80/40 hover:bg-primary-60/40 button-md inline-flex space-x-2" @click.stop.prevent="filterMenuVisible = !filterMenuVisible">
           <IconFilter class="stroke-1.5 h-6 w-6 fill-none stroke-current" /><span>Filter<template v-if="filter.length"> ({{ filter.length }})</template></span>
@@ -252,6 +252,8 @@ definePageMeta({
   },
 })
 
+const routeQuery = useRoute().query
+
 const { hasPermission } = useCurrentUser()
 const columns = ref<[keyof Specimen, string][]>([
   [`images`, `Images`],
@@ -283,7 +285,10 @@ const columns = ref<[keyof Specimen, string][]>([
   [`status`, `Status`],
 ])
 
-const { list, entities: specimens, query, remove, removeMany } = await fetchEntityList<Specimen>(`Specimen`)
+const { list, entities: specimens, query, remove, removeMany } = await fetchEntityList<Specimen>(`Specimen`, {
+  sort: routeQuery.sort,
+  page: routeQuery.page,
+})
 
 const { filter, search, page, pageSize, sort } = query
 
@@ -294,7 +299,7 @@ const columnsOptions = ref<[string, string, boolean][]>(columns.value.filter(([i
 
 const sortMenuVisible = ref(false)
 const sortableColumIDs = [`mimsyID`, `name`, `classification`, `collection`, `pieces`, `legal`, `creator`, `editor`, `created`, `updated`]
-const { options: sortedColumnIDs, sortTop, sortUp, sortReverse, remove: unsort } = useSort(columns.value.filter(([id]) => sortableColumIDs.includes(id)).map(([id]) => id))
+const { options: sortedColumnIDs, sortTop, sortUp, sortReverse, remove: unsort } = useSort(columns.value.filter(([id]) => sortableColumIDs.includes(id)).map(([id]) => [id, sort.value.includes(id) ? 1 : sort.value.includes(`-${id}`) ? -1 : 0]))
 
 const sortOptions = computed(() => sortedColumnIDs.filter(([id]) => columns.value.find(([colID]) => colID === id)).map<[string, string, 1 | 0 | -1]>(([id, order]) => [id, columns.value.find(([colID]) => colID === id)![1], order]))
 const activeSortOptions = computed(() => sortOptions.value.filter(([_, __, direction]) => direction !== 0))

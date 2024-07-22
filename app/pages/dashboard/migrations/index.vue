@@ -25,6 +25,12 @@
         <span v-if="migration.status === MigrationStatus.RUNNING">Running</span>
       </template>
     </EntityTable>
+    <div class="flex w-full flex-row justify-between px-4">
+      <span v-if="list?.total" class="italic">
+        {{ (page - 1) * pageSize + 1 }} - {{ Math.min(list?.total ?? 0, page * pageSize) }} of {{ pluralize(list?.total ?? 0, `unit`, `units`) }}
+      </span>
+      <TwPageIndex :page="page" :total="Math.ceil((list?.total ?? 0) / pageSize)" :size="5" @change="(index) => { page = index }" />
+    </div>
 
     <template #sidebar>
       <EntityAdminSidebar v-if="selection" :entities="[selection]">
@@ -58,7 +64,7 @@ definePageMeta({
 
 const { hasPermission } = useCurrentUser()
 const { setContent, close: closeModal } = useModal()
-const { entities: migrations, remove, refresh, error } = await fetchEntityList<Migration>(`Migration`)
+const { entities: migrations, list, remove, refresh, error, query: { page, pageSize } } = await fetchEntityList<Migration>(`Migration`)
 const columns: [keyof Migration, string][] = [[`name`, `Name`], [`total`, `Records`], [`imported`, `Imported`], [`skipped`, `Skipped`], [`errored`, `Errored`], [`status`, `Status`]]
 const selection = ref<EntityJSON<Migration>>()
 
