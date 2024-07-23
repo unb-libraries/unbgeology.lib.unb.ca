@@ -1,24 +1,22 @@
-import type { Component } from "nuxt/schema"
-// import type { JsxElement } from "typescript"
-import { type DynamicContent } from "../types"
+import { type Component } from "#imports"
+const stack = ref<Component[]>([])
 
-export default function () {
-  const state = useState<DynamicContent | null>(`modal`, () => null)
-
-  const setContent = (component: JsxElement) => {
-    state.value = component
-  }
-
-  const close = () => {
-    state.value = null
-  }
-
-  const isOpen = computed(() => state.value !== null)
-
+export default function useModal() {
   return {
-    isOpen,
-    content: state,
-    setContent,
-    close,
+    content: computed(() => stack.value[0]),
+    stack,
+    setContent(component: Component) {
+      stack.value = [component]
+    },
+    isOpen: computed(() => stack.value.length > 0),
+    stackContent(component: Component) {
+      stack.value = [component, ...stack.value]
+    },
+    unstackContent() {
+      stack.value = stack.value.slice(1)
+    },
+    close() {
+      stack.value = []
+    },
   }
 }
