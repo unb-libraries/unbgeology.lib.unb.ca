@@ -38,14 +38,14 @@
 
 <script setup lang="tsx">
 import { type Image, FilterOperator } from '@unb-libraries/nuxt-layer-entity'
-import { IconCheck } from '#components'
+import { IconCheck, TwLightbox } from '#components'
 
 const Thumbnail = (props: { id: string, src: string, selected?: boolean }) => {
   const { src, selected } = props
   const url = `${src}?w=150&h=150`
   return (<div class="bg-primary w-full p-0">
     <div class="group relative aspect-square w-full cursor-pointer overflow-hidden">
-      <img src={url} class={`${`absolute left-0 top-0 h-full w-full rounded-md object-cover`} ${selected ? `group-hover:opacity-15 opacity-25` : ``}`} onClick={() => onClickThumbnail(src)} />
+      <img src={url} class={`${`absolute left-0 top-0 h-full w-full rounded-md object-cover`} ${selected ? `group-hover:opacity-15 opacity-25` : ``}`} onClick={() => onClickThumbnail(props.id, src, selected ?? false)} />
       <button onClick={() => onSelect(props.id, src)}>
         <IconCheck class={`fill-accent-mid stroke-1.5 absolute right-3 top-3 h-9 w-9 stroke-current${!selected ? ` invisible opacity-50 hover:opacity-100 group-hover:visible` : ``}`} />
       </button>
@@ -60,9 +60,21 @@ const props = defineProps<{
   maxTotalFileSize?: number
 }>()
 
-const { setImage } = useLightbox()
-function onClickThumbnail(src: string) {
-  setImage(src)
+const { stackContent, unstackContent } = useModal()
+function onClickThumbnail(id: string, src: string, selected: boolean) {
+  stackContent(
+    <TwLightbox
+      src={src}
+      selected={selected}
+      onSelect={() => {
+        onSelect(id, src)
+        unstackContent()
+      }}
+      onUnselect={() => {
+        onSelect(id, src)
+        unstackContent()
+      }}
+      onCancel={unstackContent} />)
 }
 
 const { list, entities: images, query: { page, pageSize } } = await fetchEntityList<Image>(`File`, {
