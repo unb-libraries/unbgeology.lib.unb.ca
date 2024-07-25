@@ -58,6 +58,6 @@ const onClickBrowse = () => {
 
 const onSelect = (selection: Record<string, string>) => {
   images.value = selection
-  closeModal()
+  unstackContent()
 }
 </script>
