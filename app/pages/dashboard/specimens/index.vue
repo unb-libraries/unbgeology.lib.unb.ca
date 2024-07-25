@@ -110,6 +110,15 @@
       :multi-select="true"
       selected-row-class="active"
     >
+      <template #images="{ entity: { images }}">
+        <img
+          v-if="images?.total > 0"
+          :src="`${images?.entities[0].uri}?w=40&h=40`"
+          class="aspect-square rounded-md object-cover hover:cursor-pointer"
+          @click.prevent.stop="onClickThumbnail(images?.entities[0].uri)"
+        >
+        <div v-else />
+      </template>
       <template #id="{ entity: specimen }">
         <NuxtLink :to="`/dashboard/specimens/${specimen.id.toLowerCase()}`" class="hover:underline" @click.stop="">
           {{ specimen.id.toUpperCase() }}
@@ -127,16 +136,6 @@
         <template v-if="specimen.classification">
           {{ specimen.classification.label }}
         </template>
-      </template>
-      <template #images="{ entity: specimen }">
-        <img
-          v-if="specimen.images?.total > 0"
-          :src="specimen.images?.entities[0].uri"
-          width="60"
-          height="60"
-          class="aspect-square rounded-md object-cover"
-        >
-        <div v-else />
       </template>
       <template #collection="{ entity: { collection } }">
         {{ collection?.label }}
@@ -242,7 +241,7 @@
 <script setup lang="tsx">
 import { FilterOperator, type EntityJSON } from '@unb-libraries/nuxt-layer-entity'
 import { type Specimen, Status, Legal, type Fossil, type Mineral, type Rock } from 'types/specimen'
-import { PvEntityDeleteConfirm } from '#components'
+import { PvEntityDeleteConfirm, TwLightbox, IconCancel } from '#components'
 
 definePageMeta({
   layout: false,
@@ -256,7 +255,7 @@ const routeQuery = useRoute().query
 
 const { hasPermission } = useCurrentUser()
 const columns = ref<[keyof Specimen, string][]>([
-  [`images`, `Images`],
+  [`images`, `Image`],
   [`id`, `ID`],
   [`mimsyID`, `Mimsy ID`],
   [`type`, `Category`],
@@ -295,7 +294,7 @@ const { filter, search, page, pageSize, sort } = query
 const filterMenuVisible = ref(false)
 
 const columnMenuVisible = ref(false)
-const columnsOptions = ref<[string, string, boolean][]>(columns.value.filter(([id]) => id !== `images`).map(([id, label], index) => [id, label, index < 4]))
+const columnsOptions = ref<[string, string, boolean][]>(columns.value.map(([id, label], index) => [id, label, index > 0 && index < 5]))
 
 const sortMenuVisible = ref(false)
 const sortableColumIDs = [`mimsyID`, `name`, `classification`, `collection`, `pieces`, `legal`, `creator`, `editor`, `created`, `updated`]
@@ -316,7 +315,11 @@ const selection = ref<EntityJSON<Specimen>[]>([])
 const categoryOptions = [`fossil`, `mineral`, `rock`]
 const categoryFilter = ref<string>()
 
-const { setContent, close: closeModal } = useModal()
+const { setContent, stackContent, unstackContent, close: closeModal } = useModal()
+const onClickThumbnail = (uri: string) => {
+  stackContent(<TwLightbox src={uri} onCancel={unstackContent} />)
+}
+
 const onClickDelete = () => {
   const label = selection.value.length > 1 ? `${selection.value.length} specimens` : `the specimen "${selection.value[0].id}"`
   setContent(() => <PvEntityDeleteConfirm label={label} onConfirm={onRemove} onCancel={closeModal} />)

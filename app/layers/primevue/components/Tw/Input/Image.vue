@@ -48,15 +48,7 @@ const { id = parentAttrs?.id, name = parentAttrs?.name, class: classList } = use
 const { stackContent, unstackContent } = useModal()
 
 const onClickImage = (uri: string) => {
-  stackContent(
-    <TwLightbox
-      src={uri}
-      onCancel={unstackContent}
-    >{{
-      controls: () => <div class={`bg-primary-60 hover:bg-primary-40 absolute right-4 top-4 rounded-md p-1 hover:cursor-pointer`} onClick={withModifiers(() => unstackContent(), [`prevent`, `stop`])}>
-          <IconCancel class={`h-9 w-9 stroke-current stroke-1`} />
-        </div>,
-    }}</TwLightbox>)
+  stackContent(<TwLightbox src={uri} onCancel={unstackContent} />)
 }
 
 const onClickBrowse = () => {
