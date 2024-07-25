@@ -79,7 +79,24 @@ function onClickThumbnail(id: string, src: string, selected: boolean) {
         onSelect(id, src)
         unstackContent()
       }}
-      onCancel={unstackContent} />)
+      onCancel={unstackContent}>
+      {{
+        controls: () =>
+          <div>
+            <div class={`bg-primary-60 hover:bg-primary-40 absolute right-4 top-4 rounded-md p-1 hover:cursor-pointer`} onClick={withModifiers(() => unstackContent(), [`prevent`, `stop`])}>
+              <IconCancel class={`h-9 w-9 stroke-current stroke-1`} />
+            </div>
+            <button
+              class={[`button button-lg absolute left-4 top-4`, { 'button-accent-mid hover:button-accent-light': !selected, 'button-red hover:button-red-light': selected }]}
+              onClick={withModifiers(() => {
+                onSelect(id, src)
+                unstackContent()
+              }, [`stop`, `prevent`])}>
+                { selected ? `Unselect` : `Select` }
+            </button>
+          </div>,
+      }}
+    </TwLightbox>)
 }
 
 const { list, entities: images, query: { page, pageSize } } = await fetchEntityList<Image>(`File`, {
