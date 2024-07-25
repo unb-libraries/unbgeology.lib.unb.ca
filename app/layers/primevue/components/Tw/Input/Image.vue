@@ -8,7 +8,9 @@
             class="absolute left-0 top-0 h-full w-full rounded-md object-cover"
           >
         </div>
-        <IconCancel class="fill-primary-80 hover:fill-red stroke-1.5 absolute -right-2 -top-2 hidden h-6 w-6 cursor-pointer stroke-current group-hover:flex" @click.stop.prevent="delete images![self]" />
+        <div class="bg-primary-80 hover:bg-red border-primary-20 absolute -right-2 -top-2 hidden cursor-pointer rounded-full border-2 p-1 group-hover:flex">
+          <IconCancel class="h-4 w-4 stroke-current stroke-2" @click.stop.prevent="delete images![self]" />
+        </div>
       </div>
       <button class="button button-lg button-outline-primary-60 hover:button-outline-accent-light hover:bg-primary bg-primary aspect-square w-full items-center justify-center" @click.stop.prevent="onClickBrowse">
         <IconImages class="h-2/3 w-2/3 fill-none stroke-current" />
