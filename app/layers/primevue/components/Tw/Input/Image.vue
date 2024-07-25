@@ -2,10 +2,11 @@
   <div :id="id" :name="name" :class="classList">
     <div v-if="images && Object.keys(images).length > 0" class="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10">
       <div v-for="(uri, self) of images" :key="self" class="group relative">
-        <div class=" relative aspect-square w-full overflow-hidden">
+        <div class="relative aspect-square w-full overflow-hidden">
           <img
             :src="`${uri}?w=150&h=150`"
-            class="absolute left-0 top-0 h-full w-full rounded-md object-cover"
+            class="absolute left-0 top-0 h-full w-full rounded-md object-cover hover:cursor-pointer hover:opacity-75"
+            @click.stop.prevent="onClickImage(uri)"
           >
         </div>
         <div class="bg-primary-80 hover:bg-red border-primary-20 absolute -right-2 -top-2 hidden cursor-pointer rounded-full border-2 p-1 group-hover:flex">
@@ -29,7 +30,7 @@
 </template>
 
 <script setup lang="tsx">
-import { TwImageBrowser } from '#components'
+import { TwImageBrowser, TwLightbox, IconCancel } from '#components'
 
 const images = defineModel<Record<string, string> | undefined>()
 const props = defineProps<{
@@ -45,6 +46,19 @@ const parentAttrs = inject<Partial<{ id: string, name: string }>>(`attrs`)
 const { id = parentAttrs?.id, name = parentAttrs?.name, class: classList } = useAttrs() as { id: string, name: string, class: string }
 
 const { stackContent, unstackContent } = useModal()
+
+const onClickImage = (uri: string) => {
+  stackContent(
+    <TwLightbox
+      src={uri}
+      onCancel={unstackContent}
+    >{{
+      controls: () => <div class={`bg-primary-60 hover:bg-primary-40 absolute right-4 top-4 rounded-md p-1 hover:cursor-pointer`} onClick={withModifiers(() => unstackContent(), [`prevent`, `stop`])}>
+          <IconCancel class={`h-9 w-9 stroke-current stroke-1`} />
+        </div>,
+    }}</TwLightbox>)
+}
+
 const onClickBrowse = () => {
   stackContent(
     <TwImageBrowser
