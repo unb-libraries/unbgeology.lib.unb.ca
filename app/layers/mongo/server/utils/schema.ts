@@ -427,7 +427,7 @@ export function DocumentQuery<D extends IDocumentBase = IDocumentBase, M extends
           const [fieldname, asc] = field
           sort.push([fieldname, asc])
         } else {
-          sort.push([field, true])
+          sort.push([field.startsWith(`-`) ? field.slice(1) : field, !field.startsWith(`-`)])
         }
       })
       return this

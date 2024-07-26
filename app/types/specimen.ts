@@ -103,8 +103,8 @@ export interface Specimen extends Entity, Stateful<typeof Status> {
   }
   date?: string
   age: {
-    unit: Unit
-    numeric?: number
+    relative: Unit[]
+    numeric?: number[]
   }
   origin: Place
   pieces: number

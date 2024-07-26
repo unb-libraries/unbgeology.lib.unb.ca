@@ -32,7 +32,7 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
       reason: optional(EnumValidator(Immeasurabibility)),
     })),
     date: optional(MatchValidator(validationPatterns.partialDate)),
-    age: optional(OrValidator<string | number>(MatchValidator(/^\/api\/terms\/[a-z0-9]{24}$/), NumberValidator)),
+    age: optional(OrValidator<string[] | number[]>(ArrayValidator(MatchValidator(/^\/api\/terms\/[a-z0-9]{24}$/)), ArrayValidator(NumberValidator))),
     composition: optional(ArrayValidator(MatchValidator(/^\/api\/terms\/[a-z0-9]{24}$/))),
     origin: optional(ObjectValidator({
       latitude: optional(NumberValidator),
@@ -82,9 +82,8 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
     classification: classification && { _id: classification.substring(1).split(`/`).at(-1)! },
     kollektion: collection && { _id: collection.substring(1).split(`/`).at(-1)! },
     images: images?.map(uri => ({ _id: uri.substring(1).split(`/`).at(-1)! })),
-    age: age && (typeof age === `string`
-      ? { unit: { _id: age.substring(1).split(`/`).at(-1)! }, numeric: null }
-      : { unit: null, numeric: age }),
+    relativeAge: (age && (age.every(a => typeof a === `string`)) && age.map(age => ({ _id: age.substring(1).split(`/`).at(-1)! }))) || (age?.length ? null : undefined),
+    numericAge: (age && (age.every(a => typeof a === `number`)) && age) || (age?.length ? null : undefined),
     composition: (composition && composition.map(c => ({ _id: c.substring(1).split(`/`).at(-1)! }))) || undefined,
     measurements: (measurements && Object.keys(measurements).length > 0 && {
       count: useEnum(MeasurementCount).valueOf(measurements.count),

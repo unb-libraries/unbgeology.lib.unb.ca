@@ -20,9 +20,8 @@ export interface Specimen extends Omit<SpecimenEntity, keyof Entity | `type` | `
   classificationModel: string
   kollektion: ICollection
   images: Image[]
-  age: {
-    unit: GeochronologicUnit
-  } & Pick<SpecimenEntity[`age`], `numeric`>
+  relativeAge: GeochronologicUnit[]
+  numericAge: SpecimenEntity[`age`][`numeric`]
   measurements: {
     count: MeasurementCount
     dimensions?: [number, number, number][]
@@ -233,16 +232,12 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
       message: `Invalid date. Expected format YYYY, YYYY-MM, or YYYY-MM-DD`,
     },
   },
-  age: {
-    type: {
-      unit: {
-        type: EntityFieldTypes.ObjectId,
-        ref: Geochronology.mongoose.model,
-      },
-      numeric: {
-        type: EntityFieldTypes.Number,
-      },
-    },
+  relativeAge: [{
+    type: EntityFieldTypes.ObjectId,
+    ref: Geochronology.mongoose.model,
+  }],
+  numericAge: {
+    type: [EntityFieldTypes.Number],
   },
   composition: [{
     type: EntityFieldTypes.ObjectId,
@@ -446,16 +441,20 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
       this.mimsyID = this.objectIDs?.find(({ type }) => type?.toLowerCase() === `mimsy`)?.id
 
       // Set relative age based on numeric age
-      if (this.age?.unit) {
-        this.age.numeric = undefined
+      if (this.relativeAge) {
+        // sort by earliest to latest
+        this.relativeAge = this.relativeAge.sort((a, b) => b.start - a.start)
       }
-      if (this.age?.numeric) {
-        const unit = await Geochronology.findOne()
-          .where(`start`).gte(this.age.numeric)
-          .sort(`-division start`)
-        if (unit) {
-          this.age.unit = unit
-        }
+      if (this.numericAge) {
+        // sort by earliest to latest
+        this.numericAge = this.numericAge.sort((a, b) => b - a)
+        this.relativeAge = (await Promise.all(this.numericAge.map(yearsAgo => Geochronology.findOne()
+          .where(`start`).gte(yearsAgo)
+          .sort(`start`, `-division`))))
+          .filter(unit => unit)
+          .reduce((units, unit) => units.some(u => u!._id === unit!._id)
+            ? units as GeochronologicUnit[]
+            : [...units, unit] as GeochronologicUnit[], [] as GeochronologicUnit[])
       }
       if (this.storage?.length) {
         this.storageLocations = this.storage

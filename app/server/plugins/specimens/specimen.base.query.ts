@@ -145,11 +145,15 @@ export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({
   },
   age: {
     default: true,
-    filter: (_, condition) => Numeric(`age.unit`, condition),
+    filter: (_, condition) => Numeric(`numericAge`, condition),
     definition: {
-      unit: {
+      relative: {
         default: true,
-        join: Term,
+        join: {
+          documentType: Term,
+          localField: `relativeAge`,
+          cardinality: `many`,
+        },
         filter: ObjectID,
         definition: {
           label: {
@@ -174,6 +178,7 @@ export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({
       },
       numeric: {
         default: true,
+        select: `numericAge`,
         filter: Numeric,
       },
     },

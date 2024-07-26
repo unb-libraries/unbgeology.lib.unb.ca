@@ -5,7 +5,7 @@ import { type StorageLocation } from "~/types/storagelocation"
 import { Immeasurabibility, Legal, MeasurementCount, Status } from "~/types/specimen"
 
 export default defineMongooseFormatter(Specimen.Base, async (doc) => {
-  const { slug, objectIDs, mimsyID, legal, lenderID, classification, name, description, kollektion, images, measurements, date, age, composition, origin, pieces, partial, collector, sponsor, loans, storage, storageLocations, publications, appraisal, status, creator, editor, created, updated } = doc
+  const { slug, objectIDs, mimsyID, legal, lenderID, classification, name, description, kollektion, images, measurements, date, relativeAge, numericAge, composition, origin, pieces, partial, collector, sponsor, loans, storage, storageLocations, publications, appraisal, status, creator, editor, created, updated } = doc
 
   function getAuthHeaders(): { Cookie?: string } {
     const event = useEvent()
@@ -48,9 +48,9 @@ export default defineMongooseFormatter(Specimen.Base, async (doc) => {
       reason: measurements.reason && useEnum(Immeasurabibility).labelOf(measurements.reason),
     },
     date,
-    age: (age && ((age.unit && Object.keys(age.unit).length > 0) || age.numeric) && {
-      unit: (age.unit && Object.keys(age.unit).length > 0 && await $fetch(`/api/terms/${age.unit._id}`, { headers: getAuthHeaders() ?? {} })) || undefined,
-      numeric: age.numeric,
+    age: ((relativeAge?.length || numericAge?.length) && {
+      relative: (relativeAge?.length && await Promise.all(relativeAge.map(unit => $fetch(`/api/terms/${unit._id}`, { headers: getAuthHeaders() ?? {} })))) || undefined,
+      numeric: numericAge?.length && numericAge,
     }) || undefined,
     origin,
     pieces,
