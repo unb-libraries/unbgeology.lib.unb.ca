@@ -1,12 +1,12 @@
 <template>
   <form class="flex h-full flex-col" @submit.prevent="onSubmit">
-    <div ref="browser" class="border-primary-60/20 flex h-full w-full flex-col overflow-y-scroll border p-2" @scroll="onScroll">
-      <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10">
+    <div ref="browser" class="border-primary-60/20 w-full grow overflow-y-scroll border p-2" @scroll="onScroll">
+      <div class="grid h-64 flex-1 grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10">
         <Thumbnail v-for="(uri, self) of selection" :id="self" :key="self" :src="uri" :selected="true" />
         <Thumbnail v-for="(uri, self) of options" :id="self" :key="self" :src="uri" />
       </div>
     </div>
-    <div class="text-primary-40 space-y-2">
+    <div class="text-primary-40 flex-none space-y-2">
       <div class="relative">
         <TwInputFileDrop :max-file-size="maxFileSize" :max-total-file-size="maxTotalFileSize" :max-files="maxFiles" @drop="onFilesDropped" @error="onFileError" />
         <div v-if="uploading" class="bg-base/80 absolute left-0 top-0 flex h-full w-full items-center justify-center">
@@ -27,7 +27,7 @@
         </div>
       </div>
     </div>
-    <div class="flex flex-row space-x-2">
+    <div class="flex flex-none flex-row space-x-2">
       <button type="submit" class="button-accent-mid hover:button-accent-light button-lg">
         Select
       </button>
