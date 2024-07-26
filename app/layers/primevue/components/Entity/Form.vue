@@ -4,7 +4,7 @@
     <div class="form-actions">
       <slot name="actions" :body="entityBody">
         <button type="submit" class="button button-lg button-accent-mid hover:button-accent-light disabled:button-primary-60 disabled:text-primary-20 flex-none disabled:cursor-not-allowed" :disabled="!isValid">
-          Save
+          {{ submitLabel ?? `Save` }}
         </button>
         <slot name="more-actions" :body="entityBody" />
       </slot>
@@ -20,6 +20,7 @@ import type { Entity } from '@unb-libraries/nuxt-layer-entity'
 
 const props = defineProps<{
   entity?: I
+  submitLabel?: string
 }>()
 
 const emits = defineEmits<{
