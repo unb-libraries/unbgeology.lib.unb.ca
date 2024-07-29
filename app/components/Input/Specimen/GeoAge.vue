@@ -1,7 +1,7 @@
 <template>
   <PvInputDropdown
     v-model="unit"
-    :options="units"
+    :options="options"
     option-field="self"
     label-field="label"
     class="input-select-lg"
@@ -11,6 +11,9 @@
     :add-new-option="true"
     @add="onAdd"
   >
+    <template #before>
+      <slot name="before" />
+    </template>
     <template #item="{ options: [option, label, selected] }">
       <div class="flex flex-col">
         <span>{{ label }}</span>
@@ -28,8 +31,19 @@ import useEntityFormModal from '~/layers/primevue/composables/useEntityFormModal
 import { FormGeochronology } from '#components'
 import { type Unit } from '~/types/geochronology'
 
+const props = defineProps<{
+  filter?:(unit: Unit) => boolean
+}>()
+
+const emits = defineEmits<{
+  select: [unit: Unit | undefined]
+}>()
+
 const unit = defineModel<string>({ required: false })
-const { entities: units, add: createUnit } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `geochronology`]], select: [`label`, `ancestors`], sort: [`label`], pageSize: 500 })
+const { entities: units, add: createUnit } = await fetchEntityList<Unit>(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `geochronology`]], select: [`label`, `ancestors`, `division`, `start`], sort: [`label`], pageSize: 500 })
+const options = computed(() => props.filter ? units.value.filter(props.filter) : units.value)
+watch(unit, unit => emits(`select`, units.value.find(op => op.self === unit)), { immediate: true })
+
 function onAdd() {
   const { open: openModal } = useEntityFormModal<Unit>(FormGeochronology, {
     onSave: async (values: Unit) => {
