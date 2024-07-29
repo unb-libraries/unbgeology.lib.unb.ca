@@ -8,9 +8,10 @@
       tabindex="0"
       @click.stop="optionsVisible = !optionsVisible"
     >
+      <slot name="before" />
       <div class="flex grow flex-row items-center space-x-3">
         <div v-if="multi" class="inline-flex space-x-1 text-sm">
-          <div v-for="[option, label] in selectedOptions" :key="option" class="text-nowrap bg-accent-mid inline-flex space-x-1 rounded-md px-1.5 text-sm leading-6">
+          <div v-for="[option, label] in selectedOptions" :key="option" class="bg-accent-mid inline-flex space-x-1 text-nowrap rounded-md px-1.5 text-sm leading-6">
             <span>{{ label }}</span>
             <button @click.prevent.stop="onRemoveItem(option)">
               <IconCancel class="h4 fill-accent-dark hover:stroke-base hover:fill-red stroke-accent-light w-4 stroke-2" />
