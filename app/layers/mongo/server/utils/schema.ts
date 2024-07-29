@@ -64,6 +64,12 @@ export const DocumentBase = defineDocumentSchema<IDocumentBase>({
     required: true,
     default: Date.now,
   },
+}, {
+  alterSchema(schema) {
+    schema.pre(`save`, function (this: Omit<IDocumentBase, `updated`> & { updated: number }) {
+      this.updated = Date.now()
+    })
+  },
 })
 
 export function defineDocumentModel<D extends IDocumentBase = IDocumentBase, B extends D | undefined = undefined>(name: string, definition: B extends undefined ? DocumentSchema<D> : DocumentSchema<NonNullable<B>>, base?: DocumentModel<D>): B extends undefined ? DocumentModel<D> : DocumentModel<NonNullable<B>> {
