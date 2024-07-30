@@ -76,14 +76,14 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
 
   return {
     ...body,
-    pk: (create && `UNB-${`${Math.floor(Math.random() * 1000000)}`.padStart(8, `0`)}`) || undefined,
+    // pk: (create && `UNB-${`${Math.floor(Math.random() * 1000000)}`.padStart(8, `0`)}`) || undefined,
     legal: legal && useEnum(Legal).valueOf(legal),
     lenderID,
     classification: classification && { _id: classification.substring(1).split(`/`).at(-1)! },
     kollektion: collection && { _id: collection.substring(1).split(`/`).at(-1)! },
     images: images?.map(uri => ({ _id: uri.substring(1).split(`/`).at(-1)! })),
-    relativeAge: (age && (age.every(a => typeof a === `string`)) && age.map(age => ({ _id: age.substring(1).split(`/`).at(-1)! }))) || (age?.length ? null : undefined),
-    numericAge: (age && (age.every(a => typeof a === `number`)) && age) || (age?.length ? null : undefined),
+    relativeAge: (age && (age.every(a => typeof a === `string`)) && age.map(age => ({ _id: age.substring(1).split(`/`).at(-1)! }))) || (age === null || age?.length ? null : undefined),
+    numericAge: (age && (age.every(a => typeof a === `number`)) && age) || (age === null || age?.length ? null : undefined),
     composition: (composition && composition.map(c => ({ _id: c.substring(1).split(`/`).at(-1)! }))) || undefined,
     measurements: (measurements && Object.keys(measurements).length > 0 && {
       count: useEnum(MeasurementCount).valueOf(measurements.count),

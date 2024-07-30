@@ -90,8 +90,8 @@ const emits = defineEmits<{
 
 const data = reactive({
   classification: props.specimen.classification?.self,
-  ageNumeric: props.specimen.age.numeric?.map(n => n / 1e6) ?? [],
-  ageRelative: props.specimen.age.relative?.map(u => u.self) ?? [],
+  ageNumeric: props.specimen.age?.numeric?.map(n => n / 1e6) ?? [],
+  ageRelative: props.specimen.age?.relative?.map(u => u.self) ?? [],
   composition: (props.specimen as Fossil | Rock).composition?.entities.map(c => c.self),
   pieces: props.specimen.pieces || 1,
   partial: props.specimen.partial,
@@ -122,8 +122,8 @@ const onSave = () => {
   const payload = {
     classification: classification ?? (props.specimen.classification ? null : undefined),
     age: ageType.value === `numeric`
-      ? (ageNumeric.filter(n => n).length && ageNumeric.filter(a => !isNaN(a)).map(age => age * 1e6)) || (props.specimen.age?.relative ? null : undefined)
-      : (ageRelative.filter(r => r).length && ageRelative.filter(a => a)) || (props.specimen.age?.numeric ? null : undefined),
+      ? (ageNumeric.filter(n => n).length && ageNumeric.filter(a => !isNaN(a)).map(age => age * 1e6)) || (props.specimen.age?.numeric ? null : undefined)
+      : (ageRelative.filter(r => r).length && ageRelative.filter(a => a)) || (props.specimen.age?.relative ? null : undefined),
     composition: composition || ((props.specimen as Fossil | Rock).composition ? null : undefined),
     pieces,
     partial,
