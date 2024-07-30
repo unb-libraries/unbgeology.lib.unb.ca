@@ -16,6 +16,7 @@ import { type Authorize as IAuthorize } from "~/layers/mongo/server/utils/mixins
 
 export interface Specimen extends Omit<SpecimenEntity, keyof Entity | `type` | `classification` | `collection` | `images` | `age` | `composition` | `measurements` | `collector` | `sponsor` | `loans` | `storage` | `creator` | `editor`>, IStateful<typeof Status>, IAuthorize, IDocumentBase {
   type: `Specimen.Fossil` | `Specimen.Mineral` | `Specimen.Rock`
+  ypik: string
   classification: FossilCD | MineralCD | RockCD
   classificationModel: string
   kollektion: ICollection
@@ -84,8 +85,18 @@ export const validationPatterns = {
 const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>({
   pk: {
     type: EntityFieldTypes.String,
-    required: true,
+    required: false,
     unique: true,
+    immutable: true,
+    default() {
+      return `UNB-${`${Math.floor(Math.random() * 1000000)}`.padStart(8, `0`)}`
+    },
+  },
+  ypik: {
+    type: EntityFieldTypes.String,
+    required: false,
+    unique: true,
+    immutable: true,
   },
   objectIDs: {
     type: [{
@@ -440,6 +451,19 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
       // Set mimsyID
       this.mimsyID = this.objectIDs?.find(({ type }) => type?.toLowerCase() === `mimsy`)?.id
 
+      // Set ypik
+      if (this.isNew && this.mimsyID) {
+        this.ypik = this.mimsyID.split(`-`).slice(1).join(`-`)
+      } else if (this.isNew) {
+        this.ypik = (await createYPIK(this.collection.collectionName))
+          .map(n => `${n}`.padStart(4, `0`))
+          .join(`-`)
+      }
+
+      if (!this.slug && this.ypik) {
+        this.slug = [`unb`, ...this.ypik.split(`-`)].join(`-`)
+      }
+
       // Set relative age based on numeric age
       if (this.relativeAge) {
         // sort by earliest to latest
@@ -463,9 +487,8 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
       }
     })
   },
-}).mixin(Slugified<Specimen>({
-  path: `pk`,
-}))
+}).mixin(Slugified<Specimen>())
+  .mixin(IPIKable)
   .mixin(State)
   .mixin(Authorize<Specimen>({
     paths: (specimen) => {

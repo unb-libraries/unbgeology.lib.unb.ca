@@ -76,7 +76,6 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
 
   return {
     ...body,
-    // pk: (create && `UNB-${`${Math.floor(Math.random() * 1000000)}`.padStart(8, `0`)}`) || undefined,
     legal: legal && useEnum(Legal).valueOf(legal),
     lenderID,
     classification: classification && { _id: classification.substring(1).split(`/`).at(-1)! },
