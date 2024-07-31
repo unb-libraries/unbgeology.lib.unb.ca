@@ -40,7 +40,8 @@ export declare module "nuxt/schema" {
         user: string
         pass: string
         authSource: string
-      },
+      }
+      defaultSchemaVersion: Record<string, number>
     },
   }
 }

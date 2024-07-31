@@ -64,6 +64,13 @@ export const DocumentBase = defineDocumentSchema<IDocumentBase>({
     required: true,
     default: Date.now,
   },
+  schemaVersion: {
+    type: Schema.Types.Number,
+    required: true,
+    default() {
+      return useRuntimeConfig()?.nitro?.defaultSchemaVersion?.[this.collection.collectionName] ?? 1
+    },
+  },
 }, {
   alterSchema(schema) {
     schema.pre(`save`, function (this: Omit<IDocumentBase, `updated`> & { updated: number }) {

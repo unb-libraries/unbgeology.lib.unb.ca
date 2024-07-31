@@ -10,6 +10,7 @@ export interface DocumentUpdate<D = any> {
 export interface DocumentBase {
   readonly _id: ObjectId
   readonly __type: string
+  schemaVersion: number
   readonly created: number
   readonly updated: number
 }
