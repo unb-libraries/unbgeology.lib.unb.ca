@@ -1,3 +1,4 @@
+import { consola } from "consola"
 import type { DocumentBase, DocumentModel } from "../../types/schema"
 
 type DocumentSchemaMigrationHandler<T extends DocumentBase> = (Migration: {
@@ -21,6 +22,7 @@ export function defineDocumentSchemaMigration<T extends DocumentBase>(Model: Doc
           return
         }
 
+        consola.info(`Migrating ${Model.fullName} schema to version ${version}...`)
         await handler({
           find() {
             return Model.mongoose.model
@@ -41,8 +43,9 @@ export function defineDocumentSchemaMigration<T extends DocumentBase>(Model: Doc
           },
         })
         if (options.setSchemaVersion) {
-          await Model.mongoose.model
+          const { modifiedCount } = await Model.mongoose.model
             .updateMany(filter, { schemaVersion: version })
+          consola.info(`${modifiedCount} documents updated.`)
         }
       }
     })
