@@ -12,38 +12,38 @@ interface DocumentSchemaMigrationOptions {
   setSchemaVersion: boolean
 }
 
-export function defineDocumentSchemaMigration<T extends DocumentBase>(Model: DocumentModel<T>, version: number, handler: DocumentSchemaMigrationHandler<T>, options?: Partial<DocumentSchemaMigrationOptions>) {
+export function defineDocumentSchemaMigration<T extends DocumentBase>(DocumentType: DocumentModel<T>, version: number, handler: DocumentSchemaMigrationHandler<T>, options?: Partial<DocumentSchemaMigrationOptions>) {
   options = { setSchemaVersion: true, ...options ?? {} }
   return defineNitroPlugin((nitro) => {
-    nitro.hooks.hook(`mongoose:schema:update`, async (collection) => {
-      if (Model.mongoose.model.collection.collectionName === collection) {
+    nitro.hooks.hook(`mongoose:schema:update`, async (Model) => {
+      if (DocumentType.mongoose.model.modelName === Model.modelName) {
         const filter = { $or: [{ schemaVersion: { $exists: false } }, { schemaVersion: { $lt: version } }] }
-        if (await Model.mongoose.model.countDocuments(filter) === 0) {
+        if (await DocumentType.mongoose.model.countDocuments(filter) === 0) {
           return
         }
 
-        consola.info(`Migrating ${Model.fullName} schema to version ${version}...`)
+        consola.info(`Migrating ${DocumentType.fullName} schema to version ${version}...`)
         await handler({
           find() {
-            return Model.mongoose.model
-              .find(filter)
+            return DocumentType.mongoose.model
+              .find<T>(filter)
           },
           aggregate() {
-            return Model.mongoose.model
-              .aggregate()
+            return DocumentType.mongoose.model
+              .aggregate<T>()
               .match(filter)
           },
           updateMany(update, options) {
-            return Model.mongoose.model
-              .updateMany(filter, update, options)
+            return DocumentType.mongoose.model
+              .updateMany<T>(filter, update, options)
           },
           deleteMany() {
-            return Model.mongoose.model
+            return DocumentType.mongoose.model
               .deleteMany(filter)
           },
         })
         if (options.setSchemaVersion) {
-          const { modifiedCount } = await Model.mongoose.model
+          const { modifiedCount } = await DocumentType.mongoose.model
             .updateMany(filter, { schemaVersion: version })
           consola.info(`${modifiedCount} documents updated.`)
         }
