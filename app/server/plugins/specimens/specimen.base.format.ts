@@ -50,7 +50,7 @@ export default defineMongooseFormatter(Specimen.Base, async (doc) => {
     date,
     age: ((relativeAge?.length || numericAge?.length) && {
       relative: (relativeAge?.length && await Promise.all(relativeAge.map(unit => $fetch(`/api/terms/${unit._id}`, { headers: getAuthHeaders() ?? {} })))) || undefined,
-      numeric: numericAge?.length && numericAge,
+      numeric: (numericAge?.length && numericAge) || undefined,
     }) || undefined,
     origin,
     pieces,

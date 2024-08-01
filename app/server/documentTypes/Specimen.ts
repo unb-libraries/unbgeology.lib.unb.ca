@@ -247,9 +247,9 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
     type: EntityFieldTypes.ObjectId,
     ref: Geochronology.mongoose.model,
   }],
-  numericAge: {
-    type: [EntityFieldTypes.Number],
-  },
+  numericAge: [{
+    type: EntityFieldTypes.Number,
+  }],
   composition: [{
     type: EntityFieldTypes.ObjectId,
     refPath: `compositionModel`,
@@ -465,11 +465,11 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
       }
 
       // Set relative age based on numeric age
-      if (this.relativeAge) {
+      if (this.relativeAge?.length) {
         // sort by earliest to latest
         this.relativeAge = this.relativeAge.sort((a, b) => b.start - a.start)
       }
-      if (this.numericAge) {
+      if (this.numericAge?.length) {
         // sort by earliest to latest
         this.numericAge = this.numericAge.sort((a, b) => b - a)
         this.relativeAge = (await Promise.all(this.numericAge.map(yearsAgo => Geochronology.findOne()
