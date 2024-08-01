@@ -19,6 +19,9 @@ export default defineNuxtConfig({
         pass: `pass`,
         authSource: ``,
       },
+      defaultSchemaVersion: {
+        specimens: 2,
+      },
     },
   },
 })
