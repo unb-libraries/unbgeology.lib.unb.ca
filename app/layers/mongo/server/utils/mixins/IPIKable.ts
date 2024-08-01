@@ -8,7 +8,8 @@ export default defineDocumentSchema<IPIKable>({
   ipik: {
     type: EntityFieldTypes.Number,
     required: false,
-    immutable: true,
+    // TODO: Set immutable after all data is migrated
+    // immutable: true,
   },
 }, {
   alterSchema(schema) {

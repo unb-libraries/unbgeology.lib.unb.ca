@@ -13,8 +13,9 @@ import type { DocumentBase as IDocumentBase } from "~/layers/mongo/types/schema"
 import ImageFile, { type Image } from "~/layers/mongo/server/documentTypes/Image"
 import { type User } from "~/layers/mongo/server/documentTypes/User"
 import { type Authorize as IAuthorize } from "~/layers/mongo/server/utils/mixins/Authorize"
+import type { IPIKable as IIPIKable } from "~/layers/mongo/server/utils/mixins/IPIKable"
 
-export interface Specimen extends Omit<SpecimenEntity, keyof Entity | `type` | `classification` | `collection` | `images` | `age` | `composition` | `measurements` | `collector` | `sponsor` | `loans` | `storage` | `creator` | `editor`>, IStateful<typeof Status>, IAuthorize, IDocumentBase {
+export interface Specimen extends Omit<SpecimenEntity, keyof Entity | `type` | `classification` | `collection` | `images` | `age` | `composition` | `measurements` | `collector` | `sponsor` | `loans` | `storage` | `creator` | `editor`>, IStateful<typeof Status>, IIPIKable, IAuthorize, IDocumentBase {
   type: `Specimen.Fossil` | `Specimen.Mineral` | `Specimen.Rock`
   ypik: string
   classification: FossilCD | MineralCD | RockCD
@@ -96,7 +97,8 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
     type: EntityFieldTypes.String,
     required: false,
     unique: true,
-    immutable: true,
+    // TODO: Set immutable after all data is migrated
+    // immutable: true,
   },
   objectIDs: {
     type: [{
@@ -453,7 +455,7 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
 
       // Set ypik
       if (this.isNew && this.mimsyID) {
-        this.ypik = this.mimsyID.split(`-`).slice(1).join(`-`)
+        this.ypik = this.mimsyID.split(`-`).slice(1).map(mid => mid.padStart(4, `0`)).join(`-`)
       } else if (this.isNew) {
         this.ypik = (await createYPIK(this.collection.collectionName))
           .map(n => `${n}`.padStart(4, `0`))
