@@ -1,6 +1,6 @@
 <template>
   <div class="input input-text-lg flex flex-row space-x-2">
-    <div v-for="{ id } in publications" :key="id" class="text-nowrap bg-accent-mid hover:bg-accent-light inline-flex space-x-1 rounded-md px-1.5 text-sm leading-6 text-white hover:cursor-pointer" @click.stop.prevent="onEdit(id)">
+    <div v-for="{ id } in publications" :key="id" class="bg-accent-mid hover:bg-accent-light inline-flex space-x-1 text-nowrap rounded-md px-1.5 text-sm leading-6 text-white hover:cursor-pointer" @click.stop.prevent="onEdit(id)">
       <span>{{ id }}</span>
       <button @click.prevent.stop="onRemove(id)">
         <IconCancel class="fill-accent-dark hover:stroke-base hover:fill-red stroke-accent-light size-4 stroke-2" />

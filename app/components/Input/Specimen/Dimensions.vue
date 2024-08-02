@@ -1,7 +1,7 @@
 <template>
   <TwInputText v-model="current" class="input input-text-lg">
     <template #before>
-      <div v-for="(dimensions, index) in measurements" :key="index" class="text-nowrap bg-accent-mid inline-flex space-x-1 rounded-md px-1.5 text-sm leading-6">
+      <div v-for="(dimensions, index) in measurements" :key="index" class="bg-accent-mid inline-flex space-x-1 text-nowrap rounded-md px-1.5 text-sm leading-6">
         {{ dimensions.map(d => `${d}cm`).join(` x `) }}
         <button class="px-1" @click.prevent.stop="onRemoveItem(index)">
           <IconCancel class="h4 fill-accent-dark hover:stroke-base hover:fill-red stroke-accent-light w-4 stroke-2" />

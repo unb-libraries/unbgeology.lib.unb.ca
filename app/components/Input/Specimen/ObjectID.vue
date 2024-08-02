@@ -1,7 +1,7 @@
 <template>
   <TwInputText v-model="newObjectID" name="objectID" placeholder="Comma separated pairs of &quot;type:ID&quot;, e.g. UNB:2024-13" class="input input-text-lg">
     <template #before>
-      <div v-for="{ id, type} in value" :key="type" class="text-nowrap bg-accent-mid inline-flex space-x-1 rounded-md px-1.5 text-sm leading-6">
+      <div v-for="{ id, type} in value" :key="type" class="bg-accent-mid inline-flex space-x-1 text-nowrap rounded-md px-1.5 text-sm leading-6">
         <template v-if="type">
           {{ `${type}:${id}` }}
         </template>
