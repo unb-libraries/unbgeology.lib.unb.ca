@@ -1,7 +1,7 @@
 <template>
   <PvEntityDetails :entity="specimen!" :fields="[[`id`, `ID`], [`name`, `Object name`], [`type`, `Category`], `classification`, `created`, `updated`, `status`]" class="space-y-4" label-class="font-bold italic" item-class="space-y-1">
     <template #id="{ value: id }">
-      {{ id }}
+      {{ id.toUpperCase() }}
     </template>
     <template #type="{ value: category }">
       {{ titleCased(category) }}
