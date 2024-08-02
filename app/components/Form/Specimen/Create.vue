@@ -13,9 +13,9 @@
         <template #label="{ option, label }">
           <div class="flex w-full flex-row items-center justify-between space-x-4">
             <div>{{ label }}</div>
-            <IconFossil v-if="option === `fossil`" class="h-12 w-12 stroke-current stroke-1" />
-            <IconMineral v-if="option === `mineral`" class="h-12 w-12 stroke-current stroke-1" />
-            <IconRock v-if="option === `rock`" class="h-12 w-12 stroke-current stroke-1" />
+            <IconFossil v-if="option === `fossil`" class="size-12 stroke-current stroke-1" />
+            <IconMineral v-if="option === `mineral`" class="size-12 stroke-current stroke-1" />
+            <IconRock v-if="option === `rock`" class="size-12 stroke-current stroke-1" />
           </div>
         </template>
       </TwInputRadioGroup>

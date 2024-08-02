@@ -9,8 +9,8 @@
     <div class="text-primary-40 flex-none space-y-2">
       <div class="relative">
         <TwInputFileDrop :max-file-size="maxFileSize" :max-total-file-size="maxTotalFileSize" :max-files="maxFiles" @drop="onFilesDropped" @error="onFileError" />
-        <div v-if="uploading" class="bg-base/80 absolute left-0 top-0 flex h-full w-full items-center justify-center">
-          <PvProgressSpinner class="h-9 w-9" stroke-width="8" />
+        <div v-if="uploading" class="bg-base/80 absolute left-0 top-0 flex size-full items-center justify-center">
+          <PvProgressSpinner class="size-9" stroke-width="8" />
         </div>
       </div>
       <div v-if="!error && maxFiles !== undefined" class="flex flex-col">
@@ -45,12 +45,12 @@ const Thumbnail = (props: { id: string, src: string, selected?: boolean }) => {
   const url = `${src}?w=150&h=150`
   return (<div class="bg-primary thumbnail w-full p-0">
     <div class="group relative aspect-square w-full cursor-pointer overflow-hidden">
-      <img src={url} class={`absolute left-0 top-0 h-full w-full rounded-md object-cover`} onClick={() => !selected && onSelect(props.id, src) } />
+      <img src={url} class={`absolute left-0 top-0 size-full rounded-md object-cover`} onClick={() => !selected && onSelect(props.id, src) } />
       <button onClick={() => onClickThumbnail(props.id, src, selected ?? false)} class={`hidden group-hover:block`}>
-        <IconMaximize class={`bg-primary stroke-1.5 absolute bottom-2 right-2 h-8 w-8 rounded-md stroke-current p-1 opacity-50 hover:opacity-100`} />
+        <IconMaximize class={`bg-primary stroke-1.5 absolute bottom-2 right-2 size-8 rounded-md stroke-current p-1 opacity-50 hover:opacity-100`} />
       </button>
       {selected &&
-        <div class={`group/check bg-accent-mid hover:bg-red absolute right-2 top-2 h-8 w-8 rounded-md p-1`} onClick={() => onSelect(props.id, src)}>
+        <div class={`group/check bg-accent-mid hover:bg-red absolute right-2 top-2 size-8 rounded-md p-1`} onClick={() => onSelect(props.id, src)}>
           <IconCheck class={`h-8-w-8 fill-transparent stroke-current stroke-2 group-hover/check:hidden`} />
           <IconCancel class={`h-8-w-8 hidden fill-transparent stroke-current stroke-2 group-hover/check:block`} />
         </div>}
@@ -84,7 +84,7 @@ function onClickThumbnail(id: string, src: string, selected: boolean) {
         controls: () =>
           <div>
             <div class={`bg-primary-60 hover:bg-primary-40 absolute right-4 top-4 rounded-md p-1 hover:cursor-pointer`} onClick={withModifiers(() => unstackContent(), [`prevent`, `stop`])}>
-              <IconCancel class={`h-9 w-9 stroke-current stroke-1`} />
+              <IconCancel class={`size-9 stroke-current stroke-1`} />
             </div>
             <button
               class={[`button button-lg absolute left-4 top-4`, { 'button-accent-mid hover:button-accent-light': !selected, 'button-red hover:button-red-light': selected }]}

@@ -20,13 +20,13 @@
       <TwPageIndex :page="page" :total="Math.ceil((list?.total ?? 0) / pageSize)" :size="5" @change="(index) => { page = index }" />
       <div class="relative flex items-center space-x-2">
         <button id="button-filter" class="button bg-primary-80/40 hover:bg-primary-60/40 button-md inline-flex space-x-2" @click.stop.prevent="filterMenuVisible = !filterMenuVisible">
-          <IconFilter class="stroke-1.5 h-6 w-6 fill-none stroke-current" /><span>Filter<template v-if="filter.length"> ({{ filter.length }})</template></span>
+          <IconFilter class="stroke-1.5 size-6 fill-none stroke-current" /><span>Filter<template v-if="filter.length"> ({{ filter.length }})</template></span>
         </button>
         <button id="button-sort" class="button bg-primary-80/40 hover:bg-primary-60/40 button-md inline-flex space-x-2" @click.prevent="sortMenuVisible = !sortMenuVisible">
-          <IconSort class="stroke-1.5 h-6 w-6 fill-none stroke-current" /><span>Sort<template v-if="activeSortOptions.length"> ({{ activeSortOptions.length }})</template></span>
+          <IconSort class="stroke-1.5 size-6 fill-none stroke-current" /><span>Sort<template v-if="activeSortOptions.length"> ({{ activeSortOptions.length }})</template></span>
         </button>
         <button id="button-columns" class="button bg-primary-80/40 hover:bg-primary-60/40 button-md inline-flex space-x-2" @click.prevent="columnMenuVisible = !columnMenuVisible">
-          <IconTable class="stroke-1.5 h-6 w-6 fill-none stroke-current" /><span>Columns ({{ columnsOptions.filter(([id, label, selected]) => selected).length }}/{{ columnsOptions.length }})</span>
+          <IconTable class="stroke-1.5 size-6 fill-none stroke-current" /><span>Columns ({{ columnsOptions.filter(([id, label, selected]) => selected).length }}/{{ columnsOptions.length }})</span>
         </button>
 
         <PvContextualDropdown v-model="filterMenuVisible" trigger-id="button-filter" class="bg-primary border-primary-60/40 right-0 top-12 w-96 rounded-md border p-6" @click.prevent.stop="filterMenuVisible = !filterMenuVisible">

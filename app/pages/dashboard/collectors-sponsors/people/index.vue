@@ -29,9 +29,9 @@
         </div>
       </template>
       <template #pronouns="{ entity: { pronouns }}">
-        <IconMale v-if="pronouns && useEnum(Pronouns).valueOf(pronouns) === Pronouns.HE" class="stroke-1.5 h-6 w-6 fill-current stroke-none" />
-        <IconFemale v-else-if="pronouns && useEnum(Pronouns).valueOf(pronouns) === Pronouns.SHE" class="stroke-1.5 h-6 w-6 fill-current stroke-none" />
-        <IconMaleFemale v-else-if="pronouns && useEnum(Pronouns).valueOf(pronouns) === Pronouns.THEY" class="stroke-1.5 h-6 w-6 fill-current stroke-none" />
+        <IconMale v-if="pronouns && useEnum(Pronouns).valueOf(pronouns) === Pronouns.HE" class="stroke-1.5 size-6 fill-current stroke-none" />
+        <IconFemale v-else-if="pronouns && useEnum(Pronouns).valueOf(pronouns) === Pronouns.SHE" class="stroke-1.5 size-6 fill-current stroke-none" />
+        <IconMaleFemale v-else-if="pronouns && useEnum(Pronouns).valueOf(pronouns) === Pronouns.THEY" class="stroke-1.5 size-6 fill-current stroke-none" />
         <template v-else />
       </template>
     </EntityTable>

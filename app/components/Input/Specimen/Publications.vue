@@ -3,7 +3,7 @@
     <div v-for="{ id } in publications" :key="id" class="text-nowrap bg-accent-mid hover:bg-accent-light inline-flex space-x-1 rounded-md px-1.5 text-sm leading-6 text-white hover:cursor-pointer" @click.stop.prevent="onEdit(id)">
       <span>{{ id }}</span>
       <button @click.prevent.stop="onRemove(id)">
-        <IconCancel class="fill-accent-dark hover:stroke-base hover:fill-red stroke-accent-light h-4 w-4 stroke-2" />
+        <IconCancel class="fill-accent-dark hover:stroke-base hover:fill-red stroke-accent-light size-4 stroke-2" />
       </button>
     </div>
     <div class="text-primary-40 grow italic hover:cursor-pointer" @click.stop.prevent="onAdd">

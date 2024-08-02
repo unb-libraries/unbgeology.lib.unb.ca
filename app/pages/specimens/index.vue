@@ -16,7 +16,7 @@
   <PvEntityList :entities="specimens" item-class="my-4 first:mt-0 last:mb-0 border border-primary-60 p-2 rounded-lg">
     <template #default="{ entity: specimen }">
       <article class="flex flex-row space-x-2">
-        <div class="h-32 w-32 flex-none">
+        <div class="size-32 flex-none">
           <nuxt-img
             v-if="specimen.images && specimen.images.length > 0"
             :src="`/image/${specimen.images[0].filename}`"

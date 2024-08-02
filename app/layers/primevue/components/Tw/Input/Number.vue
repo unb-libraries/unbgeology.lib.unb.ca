@@ -17,10 +17,10 @@
     </slot>
     <div class="flex flex-col -space-y-1">
       <button @click.stop.prevent="numeric ||= 0; numeric++">
-        <IconAngleUp class="hover:stroke-accent-mid stroke-primary-40 h-4 w-4 fill-none stroke-2 p-0" />
+        <IconAngleUp class="hover:stroke-accent-mid stroke-primary-40 size-4 fill-none stroke-2 p-0" />
       </button>
       <button @click.stop.prevent="numeric ||= 0; numeric--">
-        <IconAngleDown class="stroke-primary-40 hover:stroke-accent-mid h-4 w-4 fill-none stroke-2 p-0" />
+        <IconAngleDown class="stroke-primary-40 hover:stroke-accent-mid size-4 fill-none stroke-2 p-0" />
       </button>
     </div>
   </div>

@@ -17,7 +17,7 @@
       @click.stop=""
     >
     <slot>
-      <IconImages class="h-12 w-12 fill-none stroke-current" />
+      <IconImages class="size-12 fill-none stroke-current" />
       <span>
         Drop or browse files
       </span>

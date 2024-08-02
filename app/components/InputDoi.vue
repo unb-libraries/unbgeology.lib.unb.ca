@@ -9,7 +9,7 @@
       :disabled="pending"
     >
       <template #before>
-        <PvProgressSpinner v-if="pending" class="mr-2 h-6 w-6" stroke-width="4" />
+        <PvProgressSpinner v-if="pending" class="mr-2 size-6" stroke-width="4" />
       </template>
     </TwInputText>
     <button class="button button-lg button-accent-mid hover:button-accent-light" :class="submitClass" @click.stop.prevent="onSearch">

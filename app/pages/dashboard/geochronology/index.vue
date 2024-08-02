@@ -23,7 +23,7 @@
     >
       <template #label="{ entity: { label, slug, color } }">
         <div class="inline-flex items-center space-x-3">
-          <svg class="h-6 w-6 rounded-md" view-box="0 0 24 24"><rect width="24" height="24" :fill="color" /></svg>
+          <svg class="size-6 rounded-md" view-box="0 0 24 24"><rect width="24" height="24" :fill="color" /></svg>
           <NuxtLink v-if="hasPermission(/^update:term(:geochronology)?:/)" :to="`/dashboard/geochronology/${slug}`" class="hover:underline">
             {{ label }}
           </NuxtLink>
@@ -63,7 +63,7 @@
             </template>
           </template>
           <template #color="{ value: color }">
-            <svg class="mt-2 h-6 w-6 rounded-md"><rect width="100%" height="100%" x="0" y="0" :fill="color" /></svg>
+            <svg class="mt-2 size-6 rounded-md"><rect width="100%" height="100%" x="0" y="0" :fill="color" /></svg>
           </template>
           <template #status="{ value: status }">
             {{ titleCased(useEnum(Status).labelOf(status)) }}

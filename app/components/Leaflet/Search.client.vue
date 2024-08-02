@@ -11,7 +11,7 @@
     @input="onSearch"
   >
     <template #reset>
-      <PvProgressSpinner v-if="pending" class="mr-2 h-6 w-6" stroke-width="4" />
+      <PvProgressSpinner v-if="pending" class="mr-2 size-6" stroke-width="4" />
     </template>
   </PvInputDropdown>
 </template>

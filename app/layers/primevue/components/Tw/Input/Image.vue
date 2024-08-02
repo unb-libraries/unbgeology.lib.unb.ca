@@ -5,23 +5,23 @@
         <div class="relative aspect-square w-full overflow-hidden">
           <img
             :src="`${uri}?w=150&h=150`"
-            class="absolute left-0 top-0 h-full w-full rounded-md object-cover hover:cursor-pointer hover:opacity-75"
+            class="absolute left-0 top-0 size-full rounded-md object-cover hover:cursor-pointer hover:opacity-75"
             @click.stop.prevent="onClickImage(uri)"
           >
         </div>
         <div class="bg-primary-80 hover:bg-red border-primary-20 absolute -right-2 -top-2 hidden cursor-pointer rounded-full border-2 p-1 group-hover:flex">
-          <IconCancel class="h-4 w-4 stroke-current stroke-2" @click.stop.prevent="delete images![self]" />
+          <IconCancel class="size-4 stroke-current stroke-2" @click.stop.prevent="delete images![self]" />
         </div>
       </div>
       <button class="button button-lg button-outline-primary-60 hover:button-outline-accent-light hover:bg-primary bg-primary aspect-square w-full items-center justify-center" @click.stop.prevent="onClickBrowse">
-        <IconImages class="h-2/3 w-2/3 fill-none stroke-current" />
+        <IconImages class="size-2/3 fill-none stroke-current" />
         <span class="sr-only">
           Browse more images
         </span>
       </button>
     </div>
     <button v-else class="button button-outline-primary-60 hover:button-outline-accent-light button-lg hover:bg-primary bg-primary flex w-full flex-col space-y-2 border-dashed p-8" @click.stop.prevent="onClickBrowse">
-      <IconImages class="h-12 w-12 fill-none stroke-current" />
+      <IconImages class="size-12 fill-none stroke-current" />
       <span>
         Browse images
       </span>
