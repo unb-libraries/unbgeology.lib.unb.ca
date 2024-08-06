@@ -6,7 +6,7 @@
           All
         </div>
         <div :class="[`rounded-r-md px-4 py-1 text-center`, { 'bg-accent-mid rounded-l-md': tab === `selected`, 'hover:cursor-pointer': tab !== `selected` }]" @click.prevent.stop="tab = `selected`">
-          Selected
+          Selected ({{ Object.values(selection).length }})
         </div>
       </div>
       <TwPageIndex :page="page" :size="5" :total="pages" @change="newPage => page = newPage" />
