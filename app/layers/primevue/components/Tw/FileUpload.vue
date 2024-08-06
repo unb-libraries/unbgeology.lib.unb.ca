@@ -3,7 +3,7 @@
     <div class="relative">
       <TwInputFileDrop :max-file-size="maxFileSize" :max-total-file-size="maxTotalFileSize" :max-files="maxFiles" @drop="onFilesDropped" @error="e => error = e" />
       <div v-if="uploading" class="bg-base/80 absolute left-0 top-0 flex size-full items-center justify-center">
-        <PvProgressSpinner class="size-9" stroke-width="8" />
+        <PvProgressSpinner class="size-6" stroke-width="8" />
       </div>
     </div>
     <slot v-if="!error && maxFiles !== undefined" name="legend">
@@ -26,7 +26,7 @@
   </div>
 </template>
 
-<script lang="ts" setup>
+<script lang="ts" setup generic="T extends FileEntity">
 import { type File as FileEntity } from '@unb-libraries/nuxt-layer-entity'
 
 withDefaults(defineProps<{
@@ -40,8 +40,8 @@ withDefaults(defineProps<{
 })
 
 const emits = defineEmits<{
-  upload: [files: FileEntity[]]
-  error: [msg: string, file?: FileEntity]
+  upload: [files: T[]]
+  error: [msg: string, file?: T]
 }>()
 
 const uploading = ref(false)
@@ -50,11 +50,11 @@ const error = ref<string | undefined>()
 watch(error, msg => msg && emits(`error`, msg))
 
 function onFilesDropped(files: File[]) {
-  const { data, error: uploadError } = useFileUpload(files)
+  const { data, error: uploadError } = useFileUpload<T>(files)
   uploading.value = true
   watch(data, (files) => {
     uploading.value = false
-    emits(`upload`, files.entities)
+    emits(`upload`, files.entities as T[])
   }, { once: true })
   watch(uploadError, (msg) => {
     error.value = `${msg}`

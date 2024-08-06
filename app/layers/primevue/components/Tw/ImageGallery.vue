@@ -2,13 +2,13 @@
   <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10">
     <template v-for="image in images" :key="image.self">
       <slot>
-        <div class="bg-primary thumbnail aspect-square w-full overflow-hidden rounded-md p-0">
+        <div :class="[`bg-primary thumbnail relative aspect-square w-full overflow-hidden rounded-md p-0`, thumbnailWrapperClass]">
           <img
             :src="`${image.uri}?w=${thumbnailSize ?? 150}&h=${thumbnailSize ?? 150}`"
             :class="[`size-full object-cover`, thumbnailClass]"
-            @click="$emit('click', image)"
+            @click.prevent.stop="$emit('clickThumbnail', image)"
           >
-          <div class="absolute left-0 top-0 size-full empty:hidden">
+          <div class="absolute left-0 top-0 size-full empty:hidden" @click.prevent.stop="$emit(`clickThumbnail`, image)">
             <slot name="overlay" :image="image" />
           </div>
         </div>
@@ -23,11 +23,12 @@ import type { Image } from '@unb-libraries/nuxt-layer-entity'
 defineProps<{
   images: Image[]
   thumbnailClass?: string
+  thumbnailWrapperClass?: string
   thumbnailSize?: number
 }>()
 
 defineEmits<{
-  click: [id: Image]
+  clickThumbnail: [image: Image]
 }>()
 
 </script>

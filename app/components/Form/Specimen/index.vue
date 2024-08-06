@@ -55,7 +55,7 @@ const data = reactive({
   date: props.specimen.date ?? ``,
   name: props.specimen.name,
   description: props.specimen.description ?? ``,
-  images: Object.fromEntries((props.specimen.images?.entities ?? []).map(({ self, uri }) => [self, uri])),
+  images: props.specimen.images?.entities ?? [],
   publications: props.specimen.publications,
   appraisal: props.specimen.appraisal,
   externalID: ``,
@@ -77,7 +77,7 @@ const onSave = () => {
     date: date || (props.specimen.date ? null : undefined),
     name: name || (props.specimen.name ? null : undefined),
     description: description || (props.specimen.description ? null : undefined),
-    images: Object.keys(images),
+    images: images?.map(({ self }) => self) || (props.specimen.images?.entities?.length ? null : undefined),
     publications: (publications?.length && publications) || (props.specimen.publications?.length ? null : undefined),
     appraisal: appraisal || (props.specimen.appraisal ? null : undefined),
   }

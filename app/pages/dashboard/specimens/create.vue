@@ -53,6 +53,7 @@
 </template>
 
 <script setup lang="tsx">
+import type { Image } from '@unb-libraries/nuxt-layer-entity'
 import { Legal, type Specimen } from 'types/specimen'
 
 definePageMeta({
@@ -75,11 +76,11 @@ const data = reactive({
   name: undefined,
   loan: undefined,
   lenderID: undefined,
-  images: {} as Record<string, string>,
+  images: [] as Image[],
 })
 
 async function save() {
-  const { entity: specimen, error } = await create({ ...data, images: Object.keys(data.images), creator: `/api/users/${id.value}` })
+  const { entity: specimen, error } = await create({ ...data, images: data.images?.map(({ self }) => self), creator: `/api/users/${id.value}` })
   if (specimen.value) {
     createToast(`specimen-create-confirm-${specimen.value.id}`, () => `Specimen created.`, { type: `success` })
     return specimen.value
@@ -99,7 +100,7 @@ async function onClickSaveAndAdd() {
     data.name = undefined
     data.loan = undefined
     data.lenderID = undefined
-    data.images = {}
+    data.images = []
     unbOwned.value = true
   }
 }

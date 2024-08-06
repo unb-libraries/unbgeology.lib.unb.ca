@@ -1,16 +1,16 @@
 <template>
   <div :id="id" :name="name" :class="classList">
-    <div v-if="images && Object.keys(images).length > 0" class="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10">
-      <div v-for="(uri, self) of images" :key="self" class="group relative">
+    <div v-if="images.length" class="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10">
+      <div v-for="image in images" :key="image.self" class="group relative">
         <div class="relative aspect-square w-full overflow-hidden">
           <img
-            :src="`${uri}?w=150&h=150`"
+            :src="`${image.uri}?w=150&h=150`"
             class="absolute left-0 top-0 size-full rounded-md object-cover hover:cursor-pointer hover:opacity-75"
-            @click.stop.prevent="onClickImage(uri)"
+            @click.stop.prevent="onClickImage(image.uri)"
           >
         </div>
         <div class="bg-primary-80 hover:bg-red border-primary-20 absolute -right-2 -top-2 hidden cursor-pointer rounded-full border-2 p-1 group-hover:flex">
-          <IconCancel class="size-4 stroke-current stroke-2" @click.stop.prevent="delete images![self]" />
+          <IconCancel class="size-4 stroke-current stroke-2" @click.stop.prevent="onClickX(image)" />
         </div>
       </div>
       <button class="button button-lg button-outline-primary-60 hover:button-outline-accent-light hover:bg-primary bg-primary aspect-square w-full items-center justify-center" @click.stop.prevent="onClickBrowse">
@@ -30,9 +30,10 @@
 </template>
 
 <script setup lang="tsx">
+import { type Image } from '@unb-libraries/nuxt-layer-entity'
 import { TwImageBrowser, TwLightbox, IconCancel } from '#components'
 
-const images = defineModel<Record<string, string> | undefined>()
+const images = defineModel<Image[]>({ default: [] })
 const props = defineProps<{
   imgClass?: string
   resetActionClass?: string
@@ -64,8 +65,12 @@ const onClickBrowse = () => {
     />)
 }
 
-const onSelect = (selection: Record<string, string>) => {
+const onSelect = (selection: Image[]) => {
   images.value = selection
   unstackContent()
+}
+
+const onClickX = (image: Image) => {
+  images.value = images.value.filter(img => img.self !== image.self)
 }
 </script>
