@@ -4,6 +4,7 @@ import type { Classification } from "~/types/classification"
 import { Category, type Specimen, MeasurementCount, Immeasurabibility, type ObjectID } from "~/types/specimen"
 import type { Composition } from "~/types/composition"
 import type { Unit } from "~/types/geochronology"
+import type { EntityJSON } from "~/layers/entity/src/types"
 
 // New field: Collection (vocabulary)
 
@@ -147,13 +148,13 @@ export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (
       const yearMonth = /^\d{4}-\d{2}$|^\w+ \d{4}$/
 
       const date = new Date(parsed)
-      return parsed.match(yearOnly)
-        ? { year: date.getFullYear() }
+      return (parsed.match(yearOnly)
+        ? [date.getFullYear()]
         : parsed.match(yearMonth)
-          ? { year: date.getFullYear(), month: date.getMonth() + 1 }
+          ? [date.getFullYear(), date.getMonth() + 1]
           : date.toString() !== `Invalid Date`
-            ? { year: date.getFullYear(), month: date.getMonth() + 1, day: date.getDate() }
-            : undefined
+            ? [date.getFullYear(), date.getMonth() + 1, date.getDate()]
+            : []).join(`-`)
     })()) || undefined,
     composition: await (async () => {
       const findTerm = async (term: string) => (await $fetch<EntityJSONList<Composition>>(`/api/terms`, {
