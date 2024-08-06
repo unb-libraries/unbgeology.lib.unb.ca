@@ -3,6 +3,7 @@ import { type Image, type EntityJSONList } from "@unb-libraries/nuxt-layer-entit
 import type { Classification } from "~/types/classification"
 import { Category, type Specimen, MeasurementCount, Immeasurabibility, type ObjectID } from "~/types/specimen"
 import type { Composition } from "~/types/composition"
+import type { Unit } from "~/types/geochronology"
 
 // New field: Collection (vocabulary)
 
@@ -173,16 +174,16 @@ export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (
       return terms.length > 0 ? terms : undefined
     })(),
     age: await (async () => {
-      const unitEntities = await $fetch<EntityJSONList<Classification>>(`/api/terms`, {
+      const unitEntities = await $fetch<EntityJSONList<Unit>>(`/api/terms`, {
         query: {
           filter: [
-            `label:equals:${age}`,
             `type:equals:geochronology`,
+            ...age?.split(` to `).map(t => t.replaceAll(`?`, ``)).map(t => `label:equals:${t}`) ?? [],
           ],
         },
         headers,
       })
-      return unitEntities?.entities[0]?.self
+      return unitEntities?.entities?.sort(({ start: a }, { start: b }) => b - a).slice(0, 2).map(t => t.self)
     })(),
     measurements: (() => {
       if (!measurements || measurements.match(/^unknown/i)) { return }
