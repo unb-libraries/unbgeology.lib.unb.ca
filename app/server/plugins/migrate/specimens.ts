@@ -131,10 +131,13 @@ export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (
     description,
     images: await (async () => {
       try {
-        const { entities: files } = await $fetch<EntityJSONList<Image>>(`/api/files`, { query: { filter: [`filename:match:^[0-9a-z]{24}-(UNB)?${unbID}[a-z]?([- ]\\w*)?\\.JPG$`] }, headers })
+        const [year, index] = unbID.split(`-`).map(n => n.replace(/^0+/, ``))
+        const pattern = `^[0-9a-z]{24}-(UNB)?${year}-0*${index}[a-z]?([- ].*)?\\.JPG$`
+        const { entities: files } = await $fetch<EntityJSONList<Image>>(`/api/files`, { query: { filter: [`filename:match:${pattern}`] }, headers })
+        // console.log(unbID, pattern, files.length)
         return files.map(({ self }) => self)
       } catch (err: unknown) {
-        consola.error(`Failed to fetch images for specimen ${unbID}`)
+        consola.error(`Failed to fetch images for specimen ${unbID}: ${(err as Error).message}`)
         return undefined
       }
     })(),
