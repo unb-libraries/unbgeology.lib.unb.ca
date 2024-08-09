@@ -10,10 +10,10 @@
             @load="loaded[image.self] = true"
             @click.prevent.stop="$emit('clickThumbnail', image)"
           >
-          <div v-if="!loaded[image.self]" class="bg-primary-80/40 flex h-full items-center justify-center">
+          <div v-if="!loaded[image.self]" class="bg-primary-80/40 flex size-full items-center justify-center">
             <IconSpinner class="text-accent size-8 animate-spin fill-none stroke-current stroke-2" />
           </div>
-          <div class="absolute left-0 top-0 size-full empty:hidden" @click.prevent.stop="$emit(`clickThumbnail`, image)">
+          <div v-else class="absolute left-0 top-0 size-full empty:hidden" @click.prevent.stop="$emit(`clickThumbnail`, image)">
             <slot name="overlay" :image="image" />
           </div>
         </div>
