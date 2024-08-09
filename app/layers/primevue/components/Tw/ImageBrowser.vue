@@ -55,6 +55,7 @@ const { stackContent, unstackContent } = useModal()
 
 const { list, entities: images, query: { page, pageSize } } = await fetchEntityList<Image>(`File`, {
   filter: [[`type`, FilterOperator.EQUALS, `image`]],
+  sort: [`-created`],
   select: [`uri`],
   pageSize: 100,
 })
