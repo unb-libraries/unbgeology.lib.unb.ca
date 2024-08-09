@@ -6,7 +6,13 @@ export default defineMongooseFormatter(Migration, async (doc) => {
     id: _id && `${_id}`,
     name,
     entityType,
-    dependencies: dependencies && await renderDocumentList(dependencies, { model: Migration }),
+    dependencies: dependencies && await renderDocumentList(dependencies, {
+      model: Migration,
+      self: () => `/api/migrations`,
+      canonical: {
+        self: migration => `/api/migrations/${migration._id}`,
+      },
+    }),
     total,
     imported,
     skipped,

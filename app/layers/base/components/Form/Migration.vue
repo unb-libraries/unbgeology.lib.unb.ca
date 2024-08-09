@@ -23,8 +23,8 @@
   </EntityForm>
 </template>
 
-<script setup lang="tsx">
-import { type MigrationItem, type Migration } from "@unb-libraries/nuxt-layer-entity"
+<script setup lang="ts">
+import { type Migration } from "@unb-libraries/nuxt-layer-entity"
 
 const props = defineProps<{
   entity?: Migration
@@ -32,7 +32,7 @@ const props = defineProps<{
 }>()
 
 const emits = defineEmits<{
-  save: [migration: Pick<Migration, `name` | `entityType` | `dependencies`>, items?: Pick<MigrationItem, `id` | `data`>[]]
+  save: [migration: Partial<Pick<Migration, `name` | `entityType` | `dependencies`>>]
   cancel: []
 }>()
 
@@ -40,13 +40,12 @@ const { entities: migrations } = await fetchEntityList(`Migration`)
 const name = ref(props.entity?.name)
 const entityType = ref(props.entity?.entityType)
 const dependencies = ref<string[]>(props.entity?.dependencies?.entities.map(d => d.self) ?? [])
-const items = ref<Pick<MigrationItem, `sourceID` | `data`>[]>([])
 
 function onSave() {
   emits(`save`, {
-    name: name.value,
-    entityType: entityType.value,
-    dependencies: dependencies.value,
-  }, items.value)
+    name: name.value || (props.entity?.name ? null : undefined),
+    entityType: entityType.value || (props.entity?.entityType ? null : undefined),
+    dependencies: dependencies.value || (props.entity?.dependencies?.length ? null : undefined),
+  })
 }
 </script>
