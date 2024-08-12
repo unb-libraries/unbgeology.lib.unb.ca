@@ -15,6 +15,15 @@ export default defineDocumentModel<Term>(`Term`, defineDocumentSchema<Term>({
     schema.index({ label: 1, type: 1, parent: 1 }, { unique: true })
   },
 }).mixin(Slugified<Term>({
-  path: `label`,
+  async path(term) {
+    // REFACTOR: Terms are not hierarchical, move to Taxonomy type
+    const label = term.get(`label`)
+    if (`parent` in term && term.parent) {
+      await term.populate(`parent`)
+      const parent = term.parent as Term
+      return parent.slug ? `${parent.slug} ${label}` : label
+    }
+    return label
+  },
 }))
   .mixin(DocumentBase())())
