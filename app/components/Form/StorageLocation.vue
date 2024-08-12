@@ -4,14 +4,13 @@
       <TwInputText v-model="label" class="input input-text-lg" />
     </TwFormField>
     <TwFormField label="Parent">
-      <PvInputDropdown v-model="parent" :options="parents" option-field="self" label-field="label" class="input-select-lg" />
+      <InputStorageLocation v-model="parent" />
     </TwFormField>
     <PvCheckbox v-model="isPublic" label="&quot;On-display&quot; location" label-class="font-normal" />
   </EntityForm>
 </template>
 
 <script setup lang="ts">
-import { FilterOperator } from "@unb-libraries/nuxt-layer-entity"
 import type { StorageLocation, StorageLocationPayload } from "~/types/storagelocation"
 
 const props = defineProps<{
@@ -26,9 +25,6 @@ const emits = defineEmits<{
 const label = ref<string | undefined>(props.storageLocation?.label)
 const parent = ref<string | undefined>(props.storageLocation?.parent?.self)
 const isPublic = ref<boolean>(props.storageLocation?.public || false)
-
-const { fetchAll } = useEntityType<StorageLocation>(`Term`)
-const { entities: parents } = await fetchAll({ filter: [[`type`, FilterOperator.EQUALS, `storageLocation`]], select: [`label`], sort: [`label`], pageSize: 500 })
 
 function onSave() {
   if (label.value) {

@@ -1,7 +1,7 @@
 <template>
   <EntityForm @save="onSave" @cancel="$emit(`cancel`)">
     <TwFormField label="Location">
-      <PvInputDropdown v-model="location" :options="storageOptions" option-field="self" label-field="label" class="input-select-lg" />
+      <InputStorageLocation v-model="location" />
     </TwFormField>
     <div class="flex flex-row space-x-4">
       <TwFormField label="From">
@@ -32,7 +32,7 @@ const emits = defineEmits<{
   cancel: []
 }>()
 
-const { entities: storageOptions } = await fetchEntityList<StorageLocation>(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `storageLocation`]], select: [`label`], sort: [`label`], pageSize: 500 })
+const { entities: storageOptions } = await fetchEntityList<StorageLocation>(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `storageLocation`]], select: [`label`, `ancestors`], sort: [`label`], pageSize: 500 })
 
 function onSave() {
   emits(`save`, {
