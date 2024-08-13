@@ -401,7 +401,6 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
     type: [{
       location: EntityFieldTypes.ObjectId,
       dateIn: EntityFieldTypes.Number,
-      dateOut: EntityFieldTypes.Number,
     }],
     required: optionalForStatus(Status.MIGRATED | Status.DRAFT),
   },
@@ -482,6 +481,8 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
             ? units as GeochronologicUnit[]
             : [...units, unit] as GeochronologicUnit[], [] as GeochronologicUnit[])
       }
+
+      this.storage = this.storage?.sort((a, b) => a.dateIn - b.dateIn)
       if (this.storage?.length) {
         this.storageLocations = this.storage
           .map(({ location }) => location)

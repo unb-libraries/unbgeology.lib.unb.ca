@@ -68,7 +68,6 @@ export interface Storage {
   id: string
   location: StorageLocation
   dateIn: string
-  dateOut?: string
 }
 
 export interface Publication {

@@ -59,7 +59,6 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
     storage: optional(ArrayValidator(ObjectValidator({
       location: optional(MatchValidator(/^\/api\/terms\/[a-z0-9]{24}$/)),
       dateIn: optional(MatchValidator(validationPatterns.date)),
-      dateOut: optional(MatchValidator(validationPatterns.date)),
     }))),
     publications: optional(ArrayValidator(ObjectValidator({
       id: optional(StringValidator),
@@ -99,10 +98,9 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
       start: new Date(start).getUTCMilliseconds(),
       end: new Date(end).getUTCMilliseconds(),
     })),
-    storage: storage?.map(({ location, dateIn, dateOut }) => ({
+    storage: storage?.map(({ location, dateIn }) => ({
       location: location && location.substring(1).split(`/`).at(-1)!,
       dateIn: dateIn && new Date(dateIn).valueOf(),
-      dateOut: dateOut && new Date(dateOut).valueOf(),
     })),
     status: status && useEnum(Status).valueOf(status),
     creator: creator && { _id: creator.substring(1).split(`/`).at(-1)! },

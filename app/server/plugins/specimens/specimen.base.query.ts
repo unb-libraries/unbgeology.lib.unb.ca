@@ -337,11 +337,6 @@ export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({
         select: `storage.dateIn`,
         filter: (_, condition) => Date(`storage.dates.dateIn`, condition),
       },
-      dateOut: {
-        default: true,
-        select: `storage.dateOut`,
-        filter: (_, condition) => Date(`storage.dates.dateOut`, condition),
-      },
       location: {
         default: true,
         select: `storage.location`,
