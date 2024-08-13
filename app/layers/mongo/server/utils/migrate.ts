@@ -4,6 +4,25 @@ import type { EntityMatcher } from "../../types/migrate"
 import { type Migration } from "../documentTypes/Migration"
 import { type MigrationItem } from "../documentTypes/MigrationItem"
 
+export class MigrationLookupError extends Error {
+  private _sourceID: string
+  private _item?: MigrationItem
+
+  constructor(sourceID: string, message?: string, item?: MigrationItem) {
+    super(message || `MigrationLookup error: ${sourceID}`)
+    this._sourceID = sourceID
+    this._item = item
+  }
+
+  get sourceID(): string {
+    return this._sourceID
+  }
+
+  get item(): MigrationItem | undefined {
+    return this._item
+  }
+}
+
 export function getMigrationDependency(migration: Migration, entityType: string) {
   return migration.dependencies.find(d => d.entityType === entityType)
 }
@@ -16,11 +35,6 @@ export function useMigrationLookup<E extends Entity = Entity>(migration: Migrati
     const register = (unregister: () => void) => registry.push(unregister)
     const unregister = () => registry.forEach(unregister => unregister())
 
-    // console.log(`useMigrationLookup`, migration, sourceIDOrMatcher)
-
-    // const event = useEvent()
-    // const sessionName = useRuntimeConfig().public.session.name
-    // const Cookie = `${sessionName}=${getCookie(event, sessionName)}`
     const nitro = useNitroApp()
 
     if (typeof sourceIDOrMatcher === `string`) {
@@ -32,12 +46,12 @@ export function useMigrationLookup<E extends Entity = Entity>(migration: Migrati
             resolve(item.entityURI)
           } else if (item && !item.entityURI && !((item.status as MigrationItemStatus) & (MigrationItemStatus.PENDING | MigrationItemStatus.QUEUED))) {
             unregister()
-            reject(new Error(`Item ${sourceID} will not be imported.`))
+            reject(new MigrationLookupError(sourceID, `Item ${sourceID} will not be imported.`, item))
           } else if (item) {
             nitro.hooks.callHook(`migrate:import:item:wait`, item)
           } else if (!item) {
             unregister()
-            reject(new Error(`Item ${sourceID} does not exist.`))
+            reject(new MigrationLookupError(sourceID, `Item ${sourceID} does not exist.`))
           }
         })
         .catch((err: Error) => {
@@ -55,13 +69,13 @@ export function useMigrationLookup<E extends Entity = Entity>(migration: Migrati
         register(nitro.hooks.hook(`migrate:import:item:error`, (item) => {
           if (`${item.sourceID}` === sourceID && `${item.migration._id}` === `${migration._id}`) {
             unregister()
-            reject(new Error(`Item ${sourceID} errored during migration.`))
+            reject(new MigrationLookupError(sourceID, `Item ${sourceID} errored during migration.`, item))
           }
         }))
         register(nitro.hooks.hook(`migrate:import:item:skipped`, (item) => {
           if (`${item.sourceID}` === sourceID && `${item.migration._id}` === `${migration._id}`) {
             unregister()
-            reject(new Error(`Item ${sourceID} was skipped during migration.`))
+            reject(new MigrationLookupError(sourceID, `Item ${sourceID} was skipped during migration.`, item))
           }
         }))
       }
