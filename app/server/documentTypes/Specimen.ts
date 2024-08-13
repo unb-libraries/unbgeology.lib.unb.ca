@@ -462,7 +462,7 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
           .join(`-`)
       }
 
-      if (!this.slug && this.ypik) {
+      if (this.isNew && this.ypik) {
         this.slug = [`unb`, ...this.ypik.split(`-`)].join(`-`)
       }
 
@@ -489,7 +489,7 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
       }
     })
   },
-}).mixin(Slugified<Specimen>())
+}).mixin(Slugified<Specimen>({}))
   .mixin(IPIKable)
   .mixin(State)
   .mixin(Authorize<Specimen>({
