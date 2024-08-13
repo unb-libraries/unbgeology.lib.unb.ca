@@ -12,7 +12,9 @@
       <div class="flex grow flex-row items-center space-x-3">
         <div v-if="multi" class="inline-flex space-x-1 text-sm">
           <div v-for="[option, label] in selectedOptions" :key="option" class="bg-accent-mid inline-flex space-x-1 text-nowrap rounded-md px-1.5 text-sm leading-6">
-            <span>{{ label }}</span>
+            <slot name="selected-item" :label="label" :option="selectedOptions.find(([op]) => op === option)!">
+              <span>{{ label }}</span>
+            </slot>
             <button @click.prevent.stop="onRemoveItem(option)">
               <IconCancel class="h4 fill-accent-dark hover:stroke-base hover:fill-red stroke-accent-light w-4 stroke-2" />
             </button>
@@ -28,7 +30,9 @@
             :placeholder="placeholder || `Search`"
             @input="$emit(`input`, search)"
           >
-          <span v-else-if="!multi && selectedOptions.length > 0">{{ selectedOptions[0][1] }}</span>
+          <slot v-else-if="!multi && selectedOptions.length > 0" name="selected-item" :label="selectedOptions[0][1]" :option="selectedOptions[0][0]">
+            <span>{{ selectedOptions[0][1] }}</span>
+          </slot>
           <span v-else>{{ placeholder || `-- Select --` }}</span>
         </slot>
       </div>
