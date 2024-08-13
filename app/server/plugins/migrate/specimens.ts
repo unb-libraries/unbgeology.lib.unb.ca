@@ -4,7 +4,6 @@ import type { Classification } from "~/types/classification"
 import { Category, type Specimen, MeasurementCount, Immeasurabibility, type ObjectID } from "~/types/specimen"
 import type { Composition } from "~/types/composition"
 import type { Unit } from "~/types/geochronology"
-import type { EntityJSON } from "~/layers/entity/src/types"
 
 // New field: Collection (vocabulary)
 
@@ -251,13 +250,14 @@ export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (
       })
     })()) || undefined,
     storage: (storage && (await Promise.all(storage.map(async (loc) => {
-      const { name: names, date } = loc
-      const storageEntities = await $fetch(`/api/terms`, { query: { filter: [`type:equals:storageLocation`, `label:equals:${names.at(-1)}`] }, headers })
-      return {
-        location: storageEntities?.entities[0]?.self,
-        dateIn: date ?? undefined,
-      }
-    }))).filter(s => s.location)) || undefined,
+      const storageMigration = dependencies.find(m => m.entityType === `Term.StorageLocation`)
+      if (!storageMigration) { throw new Error(`Storage locations' migration not found`) }
+
+      const { name: labels, date: dateIn } = loc
+      const sourceID = labels.join(`|`).toLowerCase()
+      const location = await useMigrationLookup(storageMigration, sourceID)
+      return { location, dateIn }
+    })))) || undefined,
     created: new Date(created).toISOString(),
     creator: await (async () => {
       const userEntities = await $fetch(`/api/users`, { query: { filter: [`username:equals:${creator.toLowerCase()}`] }, headers })
