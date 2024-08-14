@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
   const query = MigrationItem.findOne()
     .join(`migration`, Migration)
     .where(`migration._id`).eq(parseObjectID(id))
-    .and(`sourceID`).eq(parseInt(sourceID))
+    .and(`sourceID`).eq(sourceID)
     .select(`_sourceID, $sourceID`)
     .select(`authTags`)
   await useEventQuery(event, query)
