@@ -103,6 +103,8 @@ export declare module "nitropack" {
     
     // migrate hooks
     migrate: (migrationID: string) => void | Promise<void>
+    "migrate:import:item:transform": (item: EntityJSON<MigrationItem>) => any | Promise<any>
+    "migrate:rollback:item": (item: EntityJSON<MigrationItem>) => void | Promise<void>
     "migrate:init": (migration: Migration | string, items: SourceItem[]) => void | Promise<void>
     "migrate:import:start": (migration: EntityJSON<Migration>, options?: Partial<MigrateOptions>) => void | Promise<void>
     "migrate:import:done": (migration: EntityJSON<Migration>, options?: Partial<MigrateOptions>) => void | Promise<void>
