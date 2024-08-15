@@ -152,6 +152,9 @@
             <button class="button-lg button button-outline-blue hover:button-blue w-full" @click.prevent.stop="onViewData(selected!.data)">
               Inspect
             </button>
+            <button v-if="useEnum(MigrationItemStatus).valueOf(selected.status) === MigrationItemStatus.INITIAL && hasPermission(/^update:migrationitem/)" class="button-lg button button-outline-accent-mid hover:button-accent-mid w-full" @click.prevent.stop="onClickImport(selected!)">
+              Import
+            </button>
             <button v-if="hasPermission(/^delete:migrationitem/)" class="button-lg button button-outline-red hover:button-red w-full" @click.prevent.stop="onClickDelete">
               Delete
             </button>
@@ -209,6 +212,23 @@ function onViewData(data: any) {
       <pre>{JSON.stringify(Object.fromEntries(Object.entries(data).filter(([id]) => id !== `self`)), null, 2)}</pre>
     </div>
   ))
+}
+
+async function onClickImport(item: MigrationItem) {
+  const { data, error } = await useFetch<Pick<EntityJSON<MigrationItem>, `self` | `status`>>(`${item.self}/import`, {
+    method: `POST`,
+  })
+
+  const { self, status } = data.value ?? {}
+  if (!error.value && self && status && useEnum(MigrationItemStatus).valueOf(status) & MigrationItemStatus.INITIAL | MigrationItemStatus.PENDING) {
+    const timeout = setInterval(async () => {
+      const { data, error } = await useFetch<Pick<MigrationItem, `status` | `entityURI` | `error`>>(self)
+      if (!error.value && data.value?.status && useEnum(MigrationItemStatus).valueOf(data.value.status) !== MigrationItemStatus.PENDING) {
+        clearInterval(timeout)
+        refresh()
+      }
+    }, 500)
+  }
 }
 
 const onClickDelete = () => {
