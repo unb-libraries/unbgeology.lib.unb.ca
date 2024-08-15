@@ -155,6 +155,9 @@
             <button v-if="useEnum(MigrationItemStatus).valueOf(selected.status) === MigrationItemStatus.INITIAL && hasPermission(/^update:migrationitem/)" class="button-lg button button-outline-accent-mid hover:button-accent-mid w-full" @click.prevent.stop="onClickImport(selected!)">
               Import
             </button>
+            <button v-if="useEnum(MigrationItemStatus).valueOf(selected.status) & (MigrationItemStatus.IMPORTED | MigrationItemStatus.ERRORED) && hasPermission(/^update:migrationitem/)" class="button-lg button button-outline-red hover:button-red w-full" @click.prevent.stop="onClickRollback(selected!)">
+              Rollback
+            </button>
             <button v-if="hasPermission(/^delete:migrationitem/)" class="button-lg button button-outline-red hover:button-red w-full" @click.prevent.stop="onClickDelete">
               Delete
             </button>
@@ -223,7 +226,24 @@ async function onClickImport(item: MigrationItem) {
   if (!error.value && self && status && useEnum(MigrationItemStatus).valueOf(status) & MigrationItemStatus.INITIAL | MigrationItemStatus.PENDING) {
     const timeout = setInterval(async () => {
       const { data, error } = await useFetch<Pick<MigrationItem, `status` | `entityURI` | `error`>>(self)
-      if (!error.value && data.value?.status && useEnum(MigrationItemStatus).valueOf(data.value.status) !== MigrationItemStatus.PENDING) {
+      if (!error.value && data.value?.status && useEnum(MigrationItemStatus).valueOf(data.value.status) & MigrationItemStatus.IMPORTED | MigrationItemStatus.SKIPPED | MigrationItemStatus.ERRORED) {
+        clearInterval(timeout)
+        refresh()
+      }
+    }, 500)
+  }
+}
+
+async function onClickRollback(item: MigrationItem) {
+  const { data, error } = await useFetch<Pick<EntityJSON<MigrationItem>, `self` | `status`>>(`${item.self}/import`, {
+    method: `DELETE`,
+  })
+
+  const { self, status } = data.value ?? {}
+  if (!error.value && self && status && useEnum(MigrationItemStatus).valueOf(status) & ~MigrationItemStatus.INITIAL) {
+    const timeout = setInterval(async () => {
+      const { data, error } = await useFetch<Pick<MigrationItem, `status` | `entityURI` | `error`>>(self)
+      if (!error.value && data.value?.status && useEnum(MigrationItemStatus).valueOf(data.value.status) & MigrationItemStatus.INITIAL) {
         clearInterval(timeout)
         refresh()
       }
