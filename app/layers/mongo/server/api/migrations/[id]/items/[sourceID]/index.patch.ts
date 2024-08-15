@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
   const update = await MigrationItem.updateOne(body)
     .join(`migration`, Migration)
     .where(`migration._id`).eq(parseObjectID(id))
-    .and(`sourceID`).eq(parseInt(sourceID))
+    .and(`sourceID`).eq(sourceID)
 
   if (update) {
     const [beforeStatus, afterStatus] = update.map(({ status }) => useEnum(MigrationItemStatus).valueOf(status))

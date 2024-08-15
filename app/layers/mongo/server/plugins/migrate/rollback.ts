@@ -1,21 +1,21 @@
-import { MigrationItemStatus, type EntityJSON, type MigrationItem } from "@unb-libraries/nuxt-layer-entity"
+import { MigrationItemStatus, type EntityJSON } from "@unb-libraries/nuxt-layer-entity"
 
-export default defineNitroPlugin(async (nitro) => {
-  const { consola } = await import(`consola`)
-  nitro.hooks.hook(`migrate:rollback:item`, (item) => {
-    // Depending on item's status, create, update, or reject rollback of item
-    const Status = useEnum(MigrationItemStatus)
-    const status = Status.valueOf(item.status)
-    if (status & (MigrationItemStatus.IMPORTED | MigrationItemStatus.ERRORED)) {
-      consola.info(`Rollback ${item.migration.name}:${item.id}`)
-      doRollback(item)
-    } else {
-      const label = Status.labelOf(status)
+export default defineNitroPlugin((nitro) => {
+  nitro.hooks.hook(`migrate:rollback:item`, async (item, options) => {
+    const status = item.get(`status`)
+    const entityURI = item.get(`entityURI`)
+
+    if (status & ~(MigrationItemStatus.IMPORTED | MigrationItemStatus.ERRORED)) {
+      const label = useEnum(MigrationItemStatus).labelOf(status)
       throw new Error(`Cannot import "${label}" item`)
     }
-  })
 
-  function doRollback(item: EntityJSON<MigrationItem>) {
-    // Rollback logic here
-  }
+    if (entityURI) {
+      const { fetch } = options
+      await fetch<EntityJSON>(entityURI, { method: `DELETE` })
+    }
+
+    item.set({ status: MigrationItemStatus.INITIAL, entityURI: null, error: null })
+    await item.save()
+  })
 })

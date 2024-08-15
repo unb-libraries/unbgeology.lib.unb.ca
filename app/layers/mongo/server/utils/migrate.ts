@@ -126,11 +126,11 @@ export function useMigrationLookup<E extends Entity = Entity>(migration: Migrati
   })
 }
 
-export function defineMigrateHandler<T, E extends Entity = Entity>(entityType: string, handler: (data: T, item: MigrationItem) => E | null | Promise<E | null>): MigrateHandler {
+export function defineMigrateHandler<T, E extends Entity = Entity>(entityType: string, handler: (data: Partial<T>, item: MigrationItem) => E | null | Promise<E | null>): MigrateHandler {
   return defineNitroPlugin((nitro) => {
+    // REFACTOR: This shall use an EntitJSON<MigrationItem>
     nitro.hooks.hook(`migrate:import:item:transform`, async (item) => {
       if (item.migration.entityType === entityType) {
-        // console.log(`Calling handler for ${entityType}`)
         return await handler(item.data, item)
       }
       return {}
