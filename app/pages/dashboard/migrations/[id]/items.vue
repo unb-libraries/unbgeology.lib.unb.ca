@@ -155,6 +155,9 @@
             <button v-if="useEnum(MigrationItemStatus).valueOf(selected.status) === MigrationItemStatus.INITIAL && hasPermission(/^update:migrationitem/)" class="button-lg button button-outline-accent-mid hover:button-accent-mid w-full" @click.prevent.stop="onClickImport(selected!)">
               Import
             </button>
+            <button v-if="useEnum(MigrationItemStatus).valueOf(selected.status) === MigrationItemStatus.IMPORTED && hasPermission(/^update:migrationitem/)" class="button-lg button button-outline-accent-mid hover:button-accent-mid w-full" @click.prevent.stop="onClickUpdate(selected!)">
+              Update
+            </button>
             <button v-if="useEnum(MigrationItemStatus).valueOf(selected.status) & (MigrationItemStatus.IMPORTED | MigrationItemStatus.ERRORED) && hasPermission(/^update:migrationitem/)" class="button-lg button button-outline-red hover:button-red w-full" @click.prevent.stop="onClickRollback(selected!)">
               Rollback
             </button>
@@ -170,9 +173,9 @@
 </template>
 
 <script setup lang="tsx">
-import { type MigrationItem, type Migration, MigrationItemStatus, FilterOperator } from '@unb-libraries/nuxt-layer-entity'
+import { type MigrationItem, type Migration, MigrationItemStatus, FilterOperator, type EntityJSON } from '@unb-libraries/nuxt-layer-entity'
 import useEntityFormModal from '~/layers/primevue/composables/useEntityFormModal'
-import { FormMigrationItems, PvEntityDeleteConfirm } from '#components'
+import { FormMigrationItems, FormMigrationItemUpdate, PvEntityDeleteConfirm } from '#components'
 
 definePageMeta({
   layout: false,
@@ -232,6 +235,31 @@ async function onClickImport(item: MigrationItem) {
       }
     }, 500)
   }
+}
+
+function onClickUpdate(item: MigrationItem) {
+  setContent(() => (
+    <FormMigrationItemUpdate
+      item={selected.value!}
+      onSave={async (fields) => {
+        closeModal()
+        const { data, error } = await useFetch<Pick<EntityJSON<MigrationItem>, `self` | `status`>>(`${item.self}/import`, {
+          method: `PATCH`,
+          body: Object.fromEntries(fields.map(field => [field, 1])),
+        })
+
+        const { self, status } = data.value ?? {}
+        if (!error.value && self && status && useEnum(MigrationItemStatus).valueOf(status) & MigrationItemStatus.PENDING) {
+          const timeout = setInterval(async () => {
+            const { data, error } = await useFetch<Pick<MigrationItem, `status` | `entityURI` | `error`>>(self)
+            if (!error.value && data.value?.status && useEnum(MigrationItemStatus).valueOf(data.value.status) & MigrationItemStatus.IMPORTED | MigrationItemStatus.SKIPPED | MigrationItemStatus.ERRORED) {
+              clearInterval(timeout)
+              refresh()
+            }
+          }, 500)
+        }
+      }}
+      onCancel={closeModal} />))
 }
 
 async function onClickRollback(item: MigrationItem) {
