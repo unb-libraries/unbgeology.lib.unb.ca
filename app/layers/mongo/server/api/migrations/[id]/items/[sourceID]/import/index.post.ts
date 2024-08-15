@@ -1,26 +1,54 @@
-import { MigrationItemStatus, type EntityJSON, type MigrationItem } from "@unb-libraries/nuxt-layer-entity"
+import { MigrationItemStatus, type Entity, type EntityJSON, type MigrationItem } from "@unb-libraries/nuxt-layer-entity"
+import { type HTTPMethod } from "h3"
 
 export default defineEventHandler(async (event) => {
-  const self = getRequestURL(event).pathname
-  const itemURI = self.split(`/`).slice(0, -1).join(`/`)
-  const sessionName = useRuntimeConfig().public.session.name
-  const cookie = `${sessionName}=${getCookie(event, sessionName)}`
-  const item = await $fetch<EntityJSON<MigrationItem>>(itemURI, { headers: { Cookie: cookie } })
+  const { id, sourceID } = getRouterParams(event)
+
+  const migrationResources = getAuthorizedResources(event, r => /^migration(:\w)*$/.test(r))
+  const migration = await Migration.findByID(id).select(`authTags`)
+  if (!migration) {
+    return create404()
+  } else if (!migrationResources.length || !migration.authTags.some(t => migrationResources.includes(t))) {
+    return create403()
+  }
+
+  const resources = getAuthorizedResources(event, r => /^migrationitem(:\w)*$/.test(r))
+  if (!resources.length) {
+    return create403()
+  }
+
+  const item = await MigrationItem.mongoose.model.findOne()
+    .populate({
+      path: `migration`,
+      populate: `dependencies`,
+    })
+    .where(`migration`).equals(parseObjectID(id))
+    .where(`sourceID`).equals(sourceID)
 
   if (!item) {
     return create404()
   }
 
-  const status = useEnum(MigrationItemStatus)
-  if (status.valueOf(item.status) !== MigrationItemStatus.INITIAL) {
+  if (item.status !== MigrationItemStatus.INITIAL) {
+    const statusLabel = useEnum(MigrationItemStatus).labelOf(item.status)
     return sendError(event, createError({
       statusCode: 400,
-      statusMessage: `Cannot import "${status.labelOf(item.status)}" item`,
+      statusMessage: `Cannot import "${statusLabel}" item`,
     }))
   }
 
   const nitro = useNitroApp()
-  nitro.hooks.callHook(`migrate:import:item`, item)
+  nitro.hooks.callHook(`migrate:import:item`, item, {
+    fetch<E extends Entity = Entity>(uri: string, options?: Partial<{ method: HTTPMethod, body: any }>): Promise<EntityJSON<E>> {
+      const { method = `GET`, body = {} } = options ?? {}
+      const sessionName = useRuntimeConfig().public.session.name
+      const cookie = `${sessionName}=${getCookie(event, sessionName)}`
+      return $fetch(uri, { method, body, headers: { Cookie: cookie } })
+    },
+  })
 
-  return $fetch<EntityJSON<MigrationItem>>(self, { headers: { Cookie: cookie } })
+  return {
+    self: getRequestURL(event).pathname,
+    status: useEnum(MigrationItemStatus).labelOf(item.status).toLowerCase(),
+  }
 })
