@@ -248,5 +248,6 @@ export interface MigrationItem extends Stateful<typeof MigrationItemStatus>, Ent
   data: any
   entityURI?: string
   migration: Migration
+  queue?: string
   error?: string
 }
