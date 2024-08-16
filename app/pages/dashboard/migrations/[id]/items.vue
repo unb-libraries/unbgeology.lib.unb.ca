@@ -94,6 +94,7 @@
           :columns="[[`id`, `ID`], `status`, [`entityURI`, `URI`], `error`]"
           class="w-full"
           header-cell-class="group"
+          :multi-select="true"
           row-class="table-row"
           selected-row-class="active"
         >
@@ -115,16 +116,16 @@
     </div>
 
     <template #sidebar>
-      <EntityAdminSidebar v-if="selected" :entities="[selected]">
+      <EntityAdminSidebar v-if="selected?.length === 1" :entities="selected">
         <PvEntityDetails
-          :entity="selected"
+          :entity="selected[0]"
           :fields="[
             [`id`, `ID`],
             [`status`, `Status`],
-            useEnum(MigrationItemStatus).valueOf(selected.status) === MigrationItemStatus.ERRORED
+            useEnum(MigrationItemStatus).valueOf(selected[0].status) === MigrationItemStatus.ERRORED
               ? [`error`, `Error`]
               : [],
-            useEnum(MigrationItemStatus).valueOf(selected.status) === MigrationItemStatus.ERRORED
+            useEnum(MigrationItemStatus).valueOf(selected[0].status) === MigrationItemStatus.ERRORED
               ? [`entityURI`, `URI`]
               : [],
             [`created`, `Created`],
@@ -149,24 +150,25 @@
         </PvEntityDetails>
         <template #actions>
           <div class="flex flex-col space-y-2">
-            <button class="button-lg button button-outline-blue hover:button-blue w-full" @click.prevent.stop="onViewData(selected!.data)">
+            <button class="button-lg button button-outline-blue hover:button-blue w-full" @click.prevent.stop="onViewData(selected[0].data)">
               Inspect
             </button>
-            <button v-if="useEnum(MigrationItemStatus).valueOf(selected.status) === MigrationItemStatus.INITIAL && hasPermission(/^update:migrationitem/)" class="button-lg button button-outline-accent-mid hover:button-accent-mid w-full" @click.prevent.stop="onClickImport(selected!)">
+            <button v-if="useEnum(MigrationItemStatus).valueOf(selected[0].status) === MigrationItemStatus.INITIAL && hasPermission(/^update:migrationitem/)" class="button-lg button button-outline-accent-mid hover:button-accent-mid w-full" @click.prevent.stop="onClickImport(selected[0])">
               Import
             </button>
-            <button v-if="useEnum(MigrationItemStatus).valueOf(selected.status) === MigrationItemStatus.IMPORTED && hasPermission(/^update:migrationitem/)" class="button-lg button button-outline-accent-mid hover:button-accent-mid w-full" @click.prevent.stop="onClickUpdate(selected!)">
+            <button v-if="useEnum(MigrationItemStatus).valueOf(selected[0].status) === MigrationItemStatus.IMPORTED && hasPermission(/^update:migrationitem/)" class="button-lg button button-outline-accent-mid hover:button-accent-mid w-full" @click.prevent.stop="onClickUpdate(selected[0])">
               Update
             </button>
-            <button v-if="useEnum(MigrationItemStatus).valueOf(selected.status) & (MigrationItemStatus.IMPORTED | MigrationItemStatus.ERRORED) && hasPermission(/^update:migrationitem/)" class="button-lg button button-outline-red hover:button-red w-full" @click.prevent.stop="onClickRollback(selected!)">
+            <button v-if="useEnum(MigrationItemStatus).valueOf(selected[0].status) & (MigrationItemStatus.IMPORTED | MigrationItemStatus.ERRORED) && hasPermission(/^update:migrationitem/)" class="button-lg button button-outline-red hover:button-red w-full" @click.prevent.stop="onClickRollback(selected[0])">
               Rollback
             </button>
-            <button v-if="hasPermission(/^delete:migrationitem/)" class="button-lg button button-outline-red hover:button-red w-full" @click.prevent.stop="onClickDelete">
+            <button v-if="hasPermission(/^delete:migrationitem/)" class="button-lg button button-outline-red hover:button-red w-full" @click.prevent.stop="onClickDelete(selected[0])">
               Delete
             </button>
           </div>
         </template>
       </EntityAdminSidebar>
+      <span v-else-if="selected?.length > 1">{{ selected.length }} items selected.</span>
       <span v-else>No items selected.</span>
     </template>
   </NuxtLayout>
@@ -231,6 +233,7 @@ async function onClickImport(item: MigrationItem) {
       const { data, error } = await useFetch<Pick<MigrationItem, `status` | `entityURI` | `error`>>(self)
       if (!error.value && data.value?.status && useEnum(MigrationItemStatus).valueOf(data.value.status) & MigrationItemStatus.IMPORTED | MigrationItemStatus.SKIPPED | MigrationItemStatus.ERRORED) {
         clearInterval(timeout)
+        selected.value = []
         refresh()
       }
     }, 500)
@@ -240,7 +243,7 @@ async function onClickImport(item: MigrationItem) {
 function onClickUpdate(item: MigrationItem) {
   setContent(() => (
     <FormMigrationItemUpdate
-      item={selected.value!}
+      item={item}
       onSave={async (fields) => {
         closeModal()
         const { data, error } = await useFetch<Pick<EntityJSON<MigrationItem>, `self` | `status`>>(`${item.self}/import`, {
@@ -254,6 +257,7 @@ function onClickUpdate(item: MigrationItem) {
             const { data, error } = await useFetch<Pick<MigrationItem, `status` | `entityURI` | `error`>>(self)
             if (!error.value && data.value?.status && useEnum(MigrationItemStatus).valueOf(data.value.status) & MigrationItemStatus.IMPORTED | MigrationItemStatus.SKIPPED | MigrationItemStatus.ERRORED) {
               clearInterval(timeout)
+              selected.value = []
               refresh()
             }
           }, 500)
@@ -273,27 +277,28 @@ async function onClickRollback(item: MigrationItem) {
       const { data, error } = await useFetch<Pick<MigrationItem, `status` | `entityURI` | `error`>>(self)
       if (!error.value && data.value?.status && useEnum(MigrationItemStatus).valueOf(data.value.status) & MigrationItemStatus.INITIAL) {
         clearInterval(timeout)
+        selected.value = []
         refresh()
       }
     }, 500)
   }
 }
 
-const onClickDelete = () => {
+const onClickDelete = (item: MigrationItem) => {
   setContent(() => <PvEntityDeleteConfirm
-    label={`the item with ID ${selected.value?.id}`}
+    label={`the item with ID ${item.id}`}
     onConfirm={async () => {
-      if (selected.value) {
-        await remove(selected.value)
+      if (item) {
+        await remove(item)
       }
-      selected.value = undefined
+      selected.value = []
       closeModal()
     }}
     onCancel={closeModal} />)
 }
 
 const { list, entities: items, query: { filter, page, pageSize, sort }, remove, refresh } = await fetchEntityList<MigrationItem>(`/api/migrations/${id}/items`)
-const selected = ref<MigrationItem>()
+const selected = ref<MigrationItem[]>([])
 
 const sortMenuVisible = ref(false)
 const filterMenuVisible = ref(false)
