@@ -23,6 +23,7 @@ export default defineMongooseReader(MigrationItem, async (payload, { op }) => {
       throw new TypeError(`Invalid input: "data" must be JSON serializable object.`)
     }),
     entityURI: requireIf(status === MigrationItemStatus.IMPORTED, StringValidator),
+    queue: optional(StringValidator),
     error: requireIf(status === MigrationItemStatus.ERRORED, StringValidator),
   })
 

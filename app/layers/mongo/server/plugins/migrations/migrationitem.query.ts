@@ -67,6 +67,10 @@ export default defineMongooseEventQueryHandler(MigrationItem, defineEventQuery({
     default: true,
     filter: false,
   },
+  queue: {
+    default: true,
+    filter: String,
+  },
   status: {
     default: true,
     filter: Enum(MigrationItemStatus),

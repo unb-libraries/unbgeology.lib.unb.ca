@@ -26,6 +26,10 @@ export default defineDocumentModel<MigrationItem>(`MigrationItem`, defineDocumen
     ref: `Migration`,
     required: true,
   },
+  queue: {
+    type: EntityFieldTypes.String,
+    required: false,
+  },
   error: {
     type: EntityFieldTypes.String,
     required: false,
