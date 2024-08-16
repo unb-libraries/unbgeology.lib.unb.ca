@@ -116,8 +116,9 @@
     </div>
 
     <template #sidebar>
-      <EntityAdminSidebar v-if="selected?.length === 1" :entities="selected">
+      <EntityAdminSidebar v-if="selected.length" :entities="selected">
         <PvEntityDetails
+          v-if="selected.length === 1"
           :entity="selected[0]"
           :fields="[
             [`id`, `ID`],
@@ -148,18 +149,19 @@
             >{{ status }}</span>
           </template>
         </PvEntityDetails>
+        <span v-else>{{ selected.length }} items selected.</span>
         <template #actions>
           <div class="flex flex-col space-y-2">
-            <button class="button-lg button button-outline-blue hover:button-blue w-full" @click.prevent.stop="onViewData(selected[0].data)">
+            <button class="button-lg button button-outline-blue hover:button-blue w-full" @click.prevent.stop="onViewData(selected)">
               Inspect
             </button>
-            <button v-if="useEnum(MigrationItemStatus).valueOf(selected[0].status) === MigrationItemStatus.INITIAL && hasPermission(/^update:migrationitem/)" class="button-lg button button-outline-accent-mid hover:button-accent-mid w-full" @click.prevent.stop="onClickImport(selected[0])">
+            <button v-if="selected.length === 1 && canImport(selected)" class="button-lg button button-outline-accent-mid hover:button-accent-mid w-full" @click.prevent.stop="onClickImport(selected)">
               Import
             </button>
-            <button v-if="useEnum(MigrationItemStatus).valueOf(selected[0].status) === MigrationItemStatus.IMPORTED && hasPermission(/^update:migrationitem/)" class="button-lg button button-outline-accent-mid hover:button-accent-mid w-full" @click.prevent.stop="onClickUpdate(selected[0])">
+            <button v-if="selected.length === 1 && canUpdate(selected)" class="button-lg button button-outline-accent-mid hover:button-accent-mid w-full" @click.prevent.stop="onClickUpdate(selected[0])">
               Update
             </button>
-            <button v-if="useEnum(MigrationItemStatus).valueOf(selected[0].status) & (MigrationItemStatus.IMPORTED | MigrationItemStatus.ERRORED) && hasPermission(/^update:migrationitem/)" class="button-lg button button-outline-red hover:button-red w-full" @click.prevent.stop="onClickRollback(selected[0])">
+            <button v-if="selected.length === 1 && canRollback(selected)" class="button-lg button button-outline-red hover:button-red w-full" @click.prevent.stop="onClickRollback(selected)">
               Rollback
             </button>
             <button v-if="hasPermission(/^delete:migrationitem/)" class="button-lg button button-outline-red hover:button-red w-full" @click.prevent.stop="onClickDelete(selected[0])">
@@ -168,7 +170,6 @@
           </div>
         </template>
       </EntityAdminSidebar>
-      <span v-else-if="selected?.length > 1">{{ selected.length }} items selected.</span>
       <span v-else>No items selected.</span>
     </template>
   </NuxtLayout>
@@ -214,82 +215,73 @@ function onAddItems() {
   open()
 }
 
-function onViewData(data: any) {
+function onViewData(items: MigrationItem[]) {
+  const json = items.map(({ data }) => Object.fromEntries(Object.entries(data).filter(([id]) => id !== `self`)))
   setContent(() => (
     <div class="bg-primary-80/20 border-primary-80 max-h-144 overflow-y-scroll border p-4 font-mono">
-      <pre>{JSON.stringify(Object.fromEntries(Object.entries(data).filter(([id]) => id !== `self`)), null, 2)}</pre>
+      <pre>{JSON.stringify(json.length > 1 ? json : json[0], null, 2)}</pre>
     </div>
   ))
 }
 
-async function onClickImport(item: MigrationItem) {
-  const { data, error } = await useFetch<Pick<EntityJSON<MigrationItem>, `self` | `status`>>(`${item.self}/import`, {
+function canImport(items: MigrationItem[]) {
+  return items.every(({ status }) => useEnum(MigrationItemStatus).valueOf(status) === MigrationItemStatus.INITIAL && hasPermission(/^update:migrationitem/))
+}
+async function onClickImport(items: MigrationItem[]) {
+  const { data, error } = await useFetch<EntityJSON<MigrationItem, `self`>>(`${items[0].self}/import`, {
     method: `POST`,
   })
 
-  const { self, status } = data.value ?? {}
-  if (!error.value && self && status && useEnum(MigrationItemStatus).valueOf(status) & MigrationItemStatus.INITIAL | MigrationItemStatus.PENDING) {
-    const timeout = setInterval(async () => {
-      const { data, error } = await useFetch<Pick<MigrationItem, `status` | `entityURI` | `error`>>(self)
-      if (!error.value && data.value?.status && useEnum(MigrationItemStatus).valueOf(data.value.status) & MigrationItemStatus.IMPORTED | MigrationItemStatus.SKIPPED | MigrationItemStatus.ERRORED) {
-        clearInterval(timeout)
-        selected.value = []
-        refresh()
-      }
-    }, 500)
+  if (!error.value && data.value?.self) {
+    refresh()
+    selected.value = []
   }
 }
 
-function onClickUpdate(item: MigrationItem) {
+function canUpdate(items: MigrationItem[]) {
+  return items.every(({ status }) => useEnum(MigrationItemStatus).valueOf(status) === MigrationItemStatus.IMPORTED && hasPermission(/^update:migrationitem/))
+}
+
+function onClickUpdate(items: MigrationItem[]) {
   setContent(() => (
     <FormMigrationItemUpdate
-      item={item}
+      item={items[0]}
       onSave={async (fields) => {
         closeModal()
-        const { data, error } = await useFetch<Pick<EntityJSON<MigrationItem>, `self` | `status`>>(`${item.self}/import`, {
+        const { data, error } = await useFetch<EntityJSON<MigrationItem>>(`${items[0].self}/import`, {
           method: `PATCH`,
           body: Object.fromEntries(fields.map(field => [field, 1])),
         })
 
-        const { self, status } = data.value ?? {}
-        if (!error.value && self && status && useEnum(MigrationItemStatus).valueOf(status) & MigrationItemStatus.PENDING) {
-          const timeout = setInterval(async () => {
-            const { data, error } = await useFetch<Pick<MigrationItem, `status` | `entityURI` | `error`>>(self)
-            if (!error.value && data.value?.status && useEnum(MigrationItemStatus).valueOf(data.value.status) & MigrationItemStatus.IMPORTED | MigrationItemStatus.SKIPPED | MigrationItemStatus.ERRORED) {
-              clearInterval(timeout)
-              selected.value = []
-              refresh()
-            }
-          }, 500)
+        if (!error.value && data.value?.self) {
+          refresh()
+          selected.value = []
         }
       }}
       onCancel={closeModal} />))
 }
 
-async function onClickRollback(item: MigrationItem) {
-  const { data, error } = await useFetch<Pick<EntityJSON<MigrationItem>, `self` | `status`>>(`${item.self}/import`, {
+function canRollback(items: MigrationItem[]) {
+  return items.every(({ status }) => useEnum(MigrationItemStatus).valueOf(status) & (MigrationItemStatus.IMPORTED | MigrationItemStatus.ERRORED) && hasPermission(/^update:migrationitem/))
+}
+
+async function onClickRollback(items: MigrationItem[]) {
+  const { data, error } = await useFetch<Pick<EntityJSON<MigrationItem>, `self` | `status`>>(`${items[0].self}/import`, {
     method: `DELETE`,
   })
 
-  const { self, status } = data.value ?? {}
-  if (!error.value && self && status && useEnum(MigrationItemStatus).valueOf(status) & ~MigrationItemStatus.INITIAL) {
-    const timeout = setInterval(async () => {
-      const { data, error } = await useFetch<Pick<MigrationItem, `status` | `entityURI` | `error`>>(self)
-      if (!error.value && data.value?.status && useEnum(MigrationItemStatus).valueOf(data.value.status) & MigrationItemStatus.INITIAL) {
-        clearInterval(timeout)
-        selected.value = []
-        refresh()
-      }
-    }, 500)
+  if (!error.value && data.value?.self) {
+    refresh()
+    selected.value = []
   }
 }
 
-const onClickDelete = (item: MigrationItem) => {
+const onClickDelete = (items: MigrationItem[]) => {
   setContent(() => <PvEntityDeleteConfirm
-    label={`the item with ID ${item.id}`}
+    label={`the item with ID ${items[0].id}`}
     onConfirm={async () => {
-      if (item) {
-        await remove(item)
+      if (items[0]) {
+        await remove(items[0])
       }
       selected.value = []
       closeModal()
@@ -299,6 +291,19 @@ const onClickDelete = (item: MigrationItem) => {
 
 const { list, entities: items, query: { filter, page, pageSize, sort }, remove, refresh } = await fetchEntityList<MigrationItem>(`/api/migrations/${id}/items`)
 const selected = ref<MigrationItem[]>([])
+
+const shallPoll = computed(() => items.value.some(({ status }) => useEnum(MigrationItemStatus).valueOf(status) & (MigrationItemStatus.PENDING | MigrationItemStatus.QUEUED)))
+const pollTimeout = ref<NodeJS.Timeout>()
+
+onMounted(() => {
+  watch(shallPoll, (current, previous) => {
+    if (current && !previous) {
+      pollTimeout.value = setInterval(refresh, 1000)
+    } else if (!current && previous) {
+      clearInterval(pollTimeout.value)
+    }
+  }, { immediate: true })
+})
 
 const sortMenuVisible = ref(false)
 const filterMenuVisible = ref(false)
