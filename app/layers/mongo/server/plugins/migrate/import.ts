@@ -30,14 +30,19 @@ export default defineNitroPlugin((nitro) => {
 
       const entity = await fetch<EntityJSON>(uri, { method, body })
 
-      item.set({ status: MigrationItemStatus.IMPORTED, entityURI: entity.self })
+      item.set({ status: MigrationItemStatus.IMPORTED, entityURI: entity.self, error: null })
       await item.save()
 
       nitro.hooks.callHook(`migrate:import:item:imported`, item)
     }
 
     async function onError(err: Error, item: Document<MigrationItem>) {
-      item.set({ status: MigrationItemStatus.ERRORED, error: err.message })
+      if (!entityURI) {
+        item.set({ status: MigrationItemStatus.ERRORED })
+      } else {
+        item.set({ status })
+      }
+      item.set({ error: err.message })
       await item.save()
       nitro.hooks.callHook(`migrate:import:item:error`, item)
     }

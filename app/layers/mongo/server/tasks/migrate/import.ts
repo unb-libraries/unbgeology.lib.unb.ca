@@ -5,15 +5,13 @@ function queue(qid: string, options?: Partial<{ fields: string[], batchSize: num
   let batch = 1
 
   const fetchItems = async (batch: number) => {
-    const items = await MigrationItem.mongoose.model.find()
+    return await MigrationItem.mongoose.model.find()
       .where(`queue`).equals(qid)
       .populate({ path: `migration`, populate: { path: `dependencies` } })
       .sort(`sourceID`)
-      .select(`sourceID migration queue status ${(fields?.length && fields?.map(f => `data.${f}`).join(` `)) || `data`}`)
+      .select(`sourceID migration queue entityURI status ${(fields?.length && fields?.map(f => `data.${f}`).join(` `)) || `data`}`)
       .skip((batch - 1) * batchSize)
       .limit(batchSize)
-    MigrationItem.mongoose.model.updateMany({ _id: items })
-    return items
   }
 
   async function* doLoad() {
