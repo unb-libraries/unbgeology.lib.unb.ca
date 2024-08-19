@@ -1,44 +1,23 @@
-import { MigrationItemStatus, MigrationStatus } from "@unb-libraries/nuxt-layer-entity"
-import { consola } from "consola"
-import { type MigrationItem as IMigrationItem } from "../../documentTypes/MigrationItem"
-import { type Migration as IMigration } from "../../documentTypes/Migration"
+import { MigrationItemStatus } from "@unb-libraries/nuxt-layer-entity"
 
-function getAuthHeaders(): { Cookie?: string } {
-  const event = useEvent()
-  if (event) {
-    const sessionName = useRuntimeConfig().public.session.name
-    return { Cookie: `${sessionName}=${getCookie(event, sessionName)}` }
-  }
-  return {}
-}
+function queue(qid: string, options?: Partial<{ batchSize?: number }>) {
+  const { batchSize = 1 } = options || {}
+  let batch = 1
 
-async function loadMigration(id: string) {
-  return await Migration.mongoose.model.findById(id)
-}
-
-async function setItem(item: IMigrationItem, values: Partial<IMigrationItem>) {
-  return await MigrationItem.mongoose.model.findByIdAndUpdate(item._id, values, { returnDocument: `after` }).populate(`migration`)
-}
-
-async function setItemStatus(item: IMigrationItem, status: MigrationItemStatus) {
-  return await setItem(item, { status })
-}
-
-async function setMigrationStatus(migration: IMigration, status: MigrationStatus) {
-  return await Migration.mongoose.model.findByIdAndUpdate(migration._id, { status }, { returnDocument: `after` })
-}
-
-function loadProcessed(migration: IMigration) {
-  const fetchItems = async () => {
+  const fetchItems = async (batch: number) => {
     return await MigrationItem.mongoose.model
-      .find({ migration: migration._id, $or: [{ status: MigrationItemStatus.IMPORTED }, { status: MigrationItemStatus.ERRORED }] })
+      .find({ queue: qid })
+      .populate({ path: `migration`, populate: { path: `dependencies` } })
+      .sort(`sourceID`)
+      .skip((batch - 1) * batchSize)
+      .limit(batchSize)
   }
 
   async function* doLoad() {
-    const items = await fetchItems()
+    const items = await fetchItems(batch++)
     while (items.length) {
       if (items.length < 2) {
-        items.push(...await fetchItems())
+        items.push(...await fetchItems(batch++))
       }
       yield items.pop()
     }
@@ -53,54 +32,20 @@ export default defineTask({
     description: `Rollback a migration`,
   },
   async run({ payload }) {
-    const { migration: migrationID } = payload as { migration: string }
-    if (!migrationID) {
-      throw new Error(`No migration provided`)
-    }
+    const { qid, options: { fetch = $fetch, batchSize = 100 } } = payload as { qid: string, options: { fetch: typeof $fetch, batchSize?: number } }
 
-    const migration = await loadMigration(migrationID)
-    if (!migration) {
-      throw new Error(`Migration ${migrationID} not found`)
-    }
+    const nitro = useNitroApp()
+    await MigrationItem.mongoose.model.updateMany({ queue: qid }, { status: MigrationItemStatus.QUEUED })
+    const q = queue(qid)
 
-    async function cycle() {
-      const queue = loadProcessed(migration!)
-      let item = await queue.next()
-      while (!item.done && item.value) {
-        await setItemStatus(item.value, MigrationItemStatus.PENDING)
-        await doRollback(item.value)
-        item = await queue.next()
+    async function next() {
+      const item = (await q.next()).value
+      if (item?.status === MigrationItemStatus.QUEUED) {
+        await nitro.hooks.callHookParallel(`migrate:rollback:item`, item, { fetch })
       }
-      await Migration.mongoose.model.findByIdAndUpdate(migration!._id, { status: MigrationStatus.IDLE })
-      consola.log(`Done!`)
     }
 
-    async function doRollback(item: IMigrationItem) {
-      const { entityURI } = item
-      if (entityURI) {
-        try {
-          await $fetch(entityURI, { method: `DELETE`, headers: getAuthHeaders() })
-        } catch (err: unknown) {
-          consola.error(`Error deleting entity ${entityURI}`, (err as Error).message)
-        }
-      }
-
-      await MigrationItem.mongoose.model.findByIdAndUpdate(item._id, {
-        status: MigrationItemStatus.INITIAL,
-        $unset: { entityURI: 1, error: 1 },
-      })
-
-      await Migration.mongoose.model.findByIdAndUpdate(migration!._id, {
-        $inc: item.status === MigrationItemStatus.IMPORTED
-          ? { imported: -1 }
-          : { errored: -1 },
-      })
-    }
-
-    consola.info(`Rollback ${migration.name}`)
-    await setMigrationStatus(migration, MigrationStatus.RUNNING)
-    cycle()
-
+    Array.from({ length: batchSize }).map(next)
     return { result: true }
   },
 })

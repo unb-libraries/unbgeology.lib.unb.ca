@@ -5,7 +5,7 @@ export default defineNitroPlugin((nitro) => {
     const status = item.get(`status`)
     const entityURI = item.get(`entityURI`)
 
-    if (status & ~(MigrationItemStatus.IMPORTED | MigrationItemStatus.ERRORED)) {
+    if (!(status & (MigrationItemStatus.IMPORTED | MigrationItemStatus.ERRORED | MigrationItemStatus.QUEUED))) {
       const label = useEnum(MigrationItemStatus).labelOf(status)
       throw new Error(`Cannot import "${label}" item`)
     }
