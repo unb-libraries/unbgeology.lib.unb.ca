@@ -1,20 +1,26 @@
 import { MigrationItemStatus } from "@unb-libraries/nuxt-layer-entity"
 
-function queue(qid: string, options?: Partial<{ batchSize?: number }>) {
-  const { batchSize = 1 } = options || {}
+function queue(qid: string, options?: Partial<{ fields: string[], batchSize: number }>) {
+  const { batchSize = 1, fields = [] } = options || {}
+  let batch = 1
 
-  const fetchItems = async () => {
-    return await MigrationItem.mongoose.model
-      .find({ queue: qid, status: MigrationItemStatus.QUEUED })
+  const fetchItems = async (batch: number) => {
+    const items = await MigrationItem.mongoose.model.find()
+      .where(`queue`).equals(qid)
       .populate({ path: `migration`, populate: { path: `dependencies` } })
+      .sort(`sourceID`)
+      .select(`sourceID migration queue status ${(fields?.length && fields?.map(f => `data.${f}`).join(` `)) || `data`}`)
+      .skip((batch - 1) * batchSize)
       .limit(batchSize)
+    MigrationItem.mongoose.model.updateMany({ _id: items })
+    return items
   }
 
   async function* doLoad() {
-    const items = await fetchItems()
+    const items = await fetchItems(batch++)
     while (items.length) {
       if (items.length < 2) {
-        items.push(...await fetchItems())
+        items.push(...await fetchItems(batch++))
       }
       yield items.pop()
     }
@@ -30,12 +36,12 @@ export default defineTask({
     description: `Batch import migration items`,
   },
   async run({ payload }) {
-    const { qid, options: { fetch = $fetch, batchSize = 100 } } = payload as { qid: string, options: { fetch: typeof $fetch, batchSize?: number } }
+    const { qid, options: { fields = [], fetch = $fetch, batchSize = 100 } } = payload as { qid: string, options: { fields: string[], fetch: typeof $fetch, batchSize?: number } }
 
     const nitro = useNitroApp()
 
     await MigrationItem.mongoose.model.updateMany({ queue: qid }, { status: MigrationItemStatus.QUEUED })
-    const q = queue(qid)
+    const q = queue(qid, { fields })
 
     async function next() {
       const item = (await q.next()).value

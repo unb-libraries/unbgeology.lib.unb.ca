@@ -2,7 +2,6 @@ import { MigrationItemStatus, type Entity, type EntityJSON } from "@unb-librarie
 
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
-  const { pageSize, page, filter } = getMigrationItemsDocumentQuery(event)
 
   const resources = getAuthorizedResources(event, r => /^migration(:\w)*$/.test(r), { action: `update` })
   const migration = await Migration.mongoose.model.findById(id).select(`authTags`)
@@ -12,13 +11,12 @@ export default defineEventHandler(async (event) => {
     return create403()
   }
 
-  const { qid = `${new Date().valueOf()}` } = await readBody(event) ?? {}
-  const items = await MigrationItem.mongoose.model.find({
-    migration: migration._id,
-    status: MigrationItemStatus.INITIAL,
-    ...filter.id ?? {},
-  }).skip((page - 1) * pageSize).limit(pageSize).select(`_id`)
-  await MigrationItem.mongoose.model.updateMany({ _id: { $in: items } }, { queue: qid })
+  const { qid = `${new Date().valueOf()}`, type, ids, fields } = await readBody<{ qid?: string, type?: `import` | `rollback`, ids?: string[], fields?: string[] }>(event)
+  const query = MigrationItem.mongoose.model.updateMany({}, { queue: qid })
+    .where(`migration`).equals(migration)
+    .where(`status`).in([MigrationItemStatus.IMPORTED, type === `import` ? MigrationItemStatus.INITIAL : MigrationItemStatus.ERRORED])
+  ids?.length && query.where(`sourceID`).in(ids)
+  await query
 
   function authorizedFetch<E extends Entity = Entity>(...params: Parameters<typeof $fetch>): Promise<EntityJSON<E>> {
     const sessionName = useRuntimeConfig().public.session.name
@@ -29,10 +27,11 @@ export default defineEventHandler(async (event) => {
     return $fetch(...params)
   }
 
-  const { result } = await runTask(`migrate:import`, {
+  const { result } = await runTask(type === `import` ? `migrate:import` : `migrate:rollback`, {
     payload: {
       qid,
       options: {
+        fields: type === `import` ? fields : undefined,
         fetch: authorizedFetch,
       },
     },
