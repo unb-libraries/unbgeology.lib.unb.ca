@@ -17,7 +17,7 @@ export default defineNitroPlugin((nitro) => {
 
   nitro.hooks.hook(`migrate:rollback:item`, (item) => {
     const status = item.get(`status`)
-    if (status & (MigrationItemStatus.IMPORTED | MigrationItemStatus.ERRORED)) {
+    if (status & (MigrationItemStatus.IMPORTED | MigrationItemStatus.ERRORED | MigrationItemStatus.QUEUED)) {
       consola.info(`Rollback ${item.get(`migration.name`)}:${item.get(`sourceID`)}`)
     }
   })
