@@ -155,16 +155,16 @@
             <button class="button-lg button button-outline-blue hover:button-blue w-full" @click.prevent.stop="onViewData(selected)">
               Inspect
             </button>
-            <button v-if="selected.length === 1 && canImport(selected)" class="button-lg button button-outline-accent-mid hover:button-accent-mid w-full" @click.prevent.stop="onClickImport(selected)">
+            <button v-if="canImport(selected)" class="button-lg button button-outline-accent-mid hover:button-accent-mid w-full" @click.prevent.stop="onClickImport(selected)">
               Import
             </button>
-            <button v-if="selected.length === 1 && canUpdate(selected)" class="button-lg button button-outline-accent-mid hover:button-accent-mid w-full" @click.prevent.stop="onClickUpdate(selected[0])">
+            <button v-if="canUpdate(selected)" class="button-lg button button-outline-accent-mid hover:button-accent-mid w-full" @click.prevent.stop="onClickUpdate(selected)">
               Update
             </button>
-            <button v-if="selected.length === 1 && canRollback(selected)" class="button-lg button button-outline-red hover:button-red w-full" @click.prevent.stop="onClickRollback(selected)">
+            <button v-if="canRollback(selected)" class="button-lg button button-outline-red hover:button-red w-full" @click.prevent.stop="onClickRollback(selected)">
               Rollback
             </button>
-            <button v-if="hasPermission(/^delete:migrationitem/)" class="button-lg button button-outline-red hover:button-red w-full" @click.prevent.stop="onClickDelete(selected[0])">
+            <button v-if="hasPermission(/^delete:migrationitem/)" class="button-lg button button-outline-red hover:button-red w-full" @click.prevent.stop="onClickDelete(selected)">
               Delete
             </button>
           </div>
@@ -224,14 +224,23 @@ function onViewData(items: MigrationItem[]) {
   ))
 }
 
+async function createQueue(type: `import` | `rollback`, items: MigrationItem[], options?: { fields: string[] }) {
+  return await useFetch<EntityJSON<MigrationItem, `self`>>(`${migration.value!.self}/queues`, {
+    method: `POST`,
+    body: {
+      ids: items.map(({ id }) => id),
+      fields: options?.fields,
+      type,
+    },
+  })
+}
+
 function canImport(items: MigrationItem[]) {
   return items.every(({ status }) => useEnum(MigrationItemStatus).valueOf(status) === MigrationItemStatus.INITIAL && hasPermission(/^update:migrationitem/))
 }
-async function onClickImport(items: MigrationItem[]) {
-  const { data, error } = await useFetch<EntityJSON<MigrationItem, `self`>>(`${items[0].self}/import`, {
-    method: `POST`,
-  })
 
+async function onClickImport(items: MigrationItem[]) {
+  const { data, error } = await createQueue(`import`, items)
   if (!error.value && data.value?.self) {
     refresh()
     selected.value = []
@@ -248,11 +257,7 @@ function onClickUpdate(items: MigrationItem[]) {
       item={items[0]}
       onSave={async (fields) => {
         closeModal()
-        const { data, error } = await useFetch<EntityJSON<MigrationItem>>(`${items[0].self}/import`, {
-          method: `PATCH`,
-          body: Object.fromEntries(fields.map(field => [field, 1])),
-        })
-
+        const { data, error } = await createQueue(`import`, items, { fields })
         if (!error.value && data.value?.self) {
           refresh()
           selected.value = []
@@ -266,10 +271,7 @@ function canRollback(items: MigrationItem[]) {
 }
 
 async function onClickRollback(items: MigrationItem[]) {
-  const { data, error } = await useFetch<Pick<EntityJSON<MigrationItem>, `self` | `status`>>(`${items[0].self}/import`, {
-    method: `DELETE`,
-  })
-
+  const { data, error } = await createQueue(`rollback`, items)
   if (!error.value && data.value?.self) {
     refresh()
     selected.value = []
