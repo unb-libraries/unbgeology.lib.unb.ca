@@ -23,7 +23,9 @@ export default defineNitroPlugin((nitro) => {
       const method = entityURI ? `PATCH` : `POST`
 
       const bodies = await nitro.hooks.callHookParallel(`migrate:import:item:transform`, item, options)
-      const body = bodies.reduce((acc, body) => ({ ...acc, ...body }), {})
+      const body = Object.fromEntries(Object.entries(bodies
+        .reduce((acc, body) => ({ ...acc, ...body }), {}))
+        .filter(([key]) => options.fields?.includes(key) || !options.fields?.length))
       if (!entityURI) {
         body.status = `migrated`
       }

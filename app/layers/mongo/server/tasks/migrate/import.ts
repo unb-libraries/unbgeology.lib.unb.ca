@@ -1,7 +1,7 @@
 import { MigrationItemStatus } from "@unb-libraries/nuxt-layer-entity"
 
-function queue(qid: string, options?: Partial<{ fields: string[], batchSize: number }>) {
-  const { batchSize = 1, fields = [] } = options || {}
+function queue(qid: string, options?: Partial<{ batchSize: number }>) {
+  const { batchSize = 1 } = options || {}
   let batch = 1
 
   const fetchItems = async (batch: number) => {
@@ -9,7 +9,6 @@ function queue(qid: string, options?: Partial<{ fields: string[], batchSize: num
       .where(`queue`).equals(qid)
       .populate({ path: `migration`, populate: { path: `dependencies` } })
       .sort(`sourceID`)
-      .select(`sourceID migration queue entityURI status ${(fields?.length && fields?.map(f => `data.${f}`).join(` `)) || `data`}`)
       .skip((batch - 1) * batchSize)
       .limit(batchSize)
   }
@@ -39,12 +38,12 @@ export default defineTask({
     const nitro = useNitroApp()
 
     await MigrationItem.mongoose.model.updateMany({ queue: qid }, { status: MigrationItemStatus.QUEUED })
-    const q = queue(qid, { fields })
+    const q = queue(qid)
 
     async function next() {
       const item = (await q.next()).value
       if (item?.get(`status`) === MigrationItemStatus.QUEUED) {
-        nitro.hooks.callHookParallel(`migrate:import:item`, item, { fetch })
+        nitro.hooks.callHookParallel(`migrate:import:item`, item, { fetch, fields })
       }
     }
 

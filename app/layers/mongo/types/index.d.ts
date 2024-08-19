@@ -97,6 +97,7 @@ export interface DocumentPayloadReadOptions<D extends DocumentBase = DocumentBas
 
 export interface MigrateItemHookOptions {
   fetch: <E extends Entity = Entity>(uri: string, options?: Partial<{ method: HTTPMethod, body: any }>) => Promise<EntityJSON<E>>
+  fields?: string[]
 }
 
 
