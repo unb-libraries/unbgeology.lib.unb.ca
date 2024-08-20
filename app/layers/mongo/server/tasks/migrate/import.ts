@@ -38,12 +38,18 @@ export default defineTask({
     const nitro = useNitroApp()
 
     await MigrationItem.mongoose.model.updateMany({ queue: qid }, { status: MigrationItemStatus.QUEUED })
+    nitro.hooks.callHook(`migrate:queue`, qid)
     const q = queue(qid)
 
     async function next() {
       const item = (await q.next()).value
       if (item?.get(`status`) === MigrationItemStatus.QUEUED) {
         nitro.hooks.callHookParallel(`migrate:import:item`, item, { fetch, fields })
+      } else if (!item) {
+        const remaining = await MigrationItem.mongoose.model.countDocuments({ queue: qid, status: { $in: [MigrationItemStatus.QUEUED, MigrationItemStatus.PENDING] } })
+        if (!remaining) {
+          nitro.hooks.callHook(`migrate:queue:done`, qid)
+        }
       }
     }
 

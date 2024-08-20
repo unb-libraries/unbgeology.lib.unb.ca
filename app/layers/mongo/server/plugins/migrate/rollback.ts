@@ -17,5 +17,6 @@ export default defineNitroPlugin((nitro) => {
 
     item.set({ status: MigrationItemStatus.INITIAL, entityURI: null, error: null })
     await item.save()
+    nitro.hooks.callHook(`migrate:rollback:item:done`, item, options)
   })
 })

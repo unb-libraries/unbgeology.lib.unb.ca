@@ -35,7 +35,7 @@ export default defineNitroPlugin((nitro) => {
       item.set({ status: MigrationItemStatus.IMPORTED, entityURI: entity.self, error: null })
       await item.save()
 
-      nitro.hooks.callHook(`migrate:import:item:imported`, item)
+      nitro.hooks.callHook(!entityURI ? `migrate:import:item:imported` : `migrate:import:item:updated`, item)
     }
 
     async function onError(err: Error, item: Document<MigrationItem>) {
@@ -46,7 +46,7 @@ export default defineNitroPlugin((nitro) => {
       }
       item.set({ error: err.message })
       await item.save()
-      nitro.hooks.callHook(`migrate:import:item:error`, item)
+      nitro.hooks.callHook(`migrate:import:item:error`, item, err)
     }
 
     function onComplete(item: Document<MigrationItem>) {
