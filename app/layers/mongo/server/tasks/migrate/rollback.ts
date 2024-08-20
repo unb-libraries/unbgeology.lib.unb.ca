@@ -42,10 +42,16 @@ export default defineTask({
       const item = (await q.next()).value
       if (item?.status === MigrationItemStatus.QUEUED) {
         await nitro.hooks.callHookParallel(`migrate:rollback:item`, item, { fetch })
+      } else if (!item) {
+        const remaining = await MigrationItem.mongoose.model.countDocuments({ queue: qid, status: { $in: [MigrationItemStatus.QUEUED, MigrationItemStatus.PENDING] } })
+        if (!remaining) {
+          nitro.hooks.callHook(`migrate:queue:done`, qid)
+        }
       }
     }
 
     Array.from({ length: batchSize }).map(next)
+    nitro.hooks.hook(`migrate:rollback:item:done`, next)
     return { result: true }
   },
 })
