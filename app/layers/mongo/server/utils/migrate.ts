@@ -1,17 +1,33 @@
-import { type Entity, type EntityJSONBody, type EntityJSON, type Status, MigrationStatus, MigrationItemStatus, type EntityJSONList } from "@unb-libraries/nuxt-layer-entity"
+import { type Entity, MigrationItemStatus } from "@unb-libraries/nuxt-layer-entity"
 import type { MigrateHandler } from "../../types"
-import type { EntityMatcher } from "../../types/migrate"
 import { type Migration } from "../documentTypes/Migration"
 import { type MigrationItem } from "../documentTypes/MigrationItem"
 
+enum MigrationLookupErrorReason {
+  UNAVAILABLE = 1,
+  SKIPPED = 2,
+  ERRORED = 4,
+}
+
+interface MigrationLookupErrorDetails {
+  item: MigrationItem
+  reason: MigrationLookupErrorReason
+}
 export class MigrationLookupError extends Error {
   private _sourceID: string
-  private _item?: MigrationItem
+  private _details: Partial<MigrationLookupErrorDetails>
 
-  constructor(sourceID: string, message?: string, item?: MigrationItem) {
-    super(message || `MigrationLookup error: ${sourceID}`)
+  constructor(sourceID: string, details?: Partial<MigrationLookupErrorDetails>, message?: string) {
+    super(message || details?.reason === MigrationLookupErrorReason.UNAVAILABLE
+      ? `Item "${sourceID}" does not exist.`
+      : details?.reason === MigrationLookupErrorReason.SKIPPED
+        ? `Item "${sourceID}" not imported.`
+        : details?.reason === MigrationLookupErrorReason.ERRORED
+          ? `Item "${sourceID}" errored.`
+          : ``,
+    )
     this._sourceID = sourceID
-    this._item = item
+    this._details = details || {}
   }
 
   get sourceID(): string {
@@ -19,7 +35,11 @@ export class MigrationLookupError extends Error {
   }
 
   get item(): MigrationItem | undefined {
-    return this._item
+    return this._details?.item
+  }
+
+  get reason(): MigrationLookupErrorReason | undefined {
+    return this._details?.reason
   }
 }
 
@@ -27,102 +47,58 @@ export function getMigrationDependency(migration: Migration, entityType: string)
   return migration.dependencies.find(d => d.entityType === entityType)
 }
 
-export function useMigrationLookup(migration: Migration, sourceID: string): Promise<string>
-export function useMigrationLookup<E extends Entity = Entity>(migration: Migration, matcher: EntityMatcher<E>): Promise<string | null>
-export function useMigrationLookup<E extends Entity = Entity>(migration: Migration, sourceIDOrMatcher: string | EntityMatcher<E>): Promise<string | null> {
-  return new Promise<string | null>((resolve, reject) => {
+export function useMigrationLookup(migration: Migration, sourceID: string): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
     const registry: (() => void)[] = []
     const register = (unregister: () => void) => registry.push(unregister)
     const unregister = () => registry.forEach(unregister => unregister())
 
     const nitro = useNitroApp()
 
-    if (typeof sourceIDOrMatcher === `string`) {
-      const sourceID = sourceIDOrMatcher
-      MigrationItem.mongoose.model.findOne({ migration: migration._id, sourceID })
-        .then((item) => {
-          if (item && item.entityURI) {
-            unregister()
-            resolve(item.entityURI)
-          } else if (item && !item.entityURI && !((item.status as MigrationItemStatus) & (MigrationItemStatus.PENDING | MigrationItemStatus.QUEUED))) {
-            unregister()
-            reject(new MigrationLookupError(sourceID, `Item ${sourceID} will not be imported.`, item))
-          } else if (item) {
-            nitro.hooks.callHook(`migrate:import:item:wait`, item)
-          } else if (!item) {
-            unregister()
-            reject(new MigrationLookupError(sourceID, `Item ${sourceID} does not exist.`))
-          }
-        })
-        .catch((err: Error) => {
-          unregister()
-          reject(err)
-        })
-
-      if (nitro) {
-        register(nitro.hooks.hook(`migrate:import:item:imported`, (item) => {
-          if (`${item.sourceID}` === sourceID && `${item.migration._id}` === `${migration._id}`) {
-            unregister()
-            resolve(item.entityURI!)
-          }
-        }))
-        register(nitro.hooks.hook(`migrate:import:item:error`, (item) => {
-          if (`${item.sourceID}` === sourceID && `${item.migration._id}` === `${migration._id}`) {
-            unregister()
-            reject(new MigrationLookupError(sourceID, `Item ${sourceID} errored during migration.`, item))
-          }
-        }))
-        register(nitro.hooks.hook(`migrate:import:item:skipped`, (item) => {
-          if (`${item.sourceID}` === sourceID && `${item.migration._id}` === `${migration._id}`) {
-            unregister()
-            reject(new MigrationLookupError(sourceID, `Item ${sourceID} was skipped during migration.`, item))
-          }
-        }))
+    function onImport(item: MigrationItem) {
+      if (`${item.sourceID}` === sourceID && `${item.migration._id}` === `${migration._id}`) {
+        unregister()
+        resolve(item.entityURI!)
       }
-    } else {
-      const matcher = sourceIDOrMatcher
-      MigrationItem.mongoose.model.find({ _id: migration._id, entityURI: { $regex: `(/[a-z0-9]+)+` } })
-        .then(async (items) => {
-          await Promise.all(items.map(async (item) => {
-            function getAuthHeaders(): { Cookie?: string } {
-              const event = useEvent()
-              if (event) {
-                const sessionName = useRuntimeConfig().public.session.name
-                return { Cookie: `${sessionName}=${getCookie(event, sessionName)}` }
-              }
-              return {}
-            }
-            const entity = await $fetch<EntityJSON<E>>(item.entityURI!, { headers: getAuthHeaders() })
-            if (matcher(entity)) {
-              resolve(entity.self)
-            }
-          }))
-          if (migration.status === MigrationStatus.IDLE) {
-            resolve(null)
-          }
-        })
-        .catch((err: Error) => {
-          unregister()
-          reject(err)
-        })
-
-      register(useNitroApp().hooks.hook(`migrate:import:item:imported`, async (item) => {
-        // console.log(`dependency imported`)
-        const entity = await $fetch<EntityJSON>(item.entityURI!)
-        if (matcher(entity)) {
-          unregister()
-          resolve(entity.self)
-        }
-      }))
     }
 
-    register(useNitroApp().hooks.hook(`migrate:pause`, (paused) => {
-      // console.log(`migration paused`)
-      if (`${paused._id}` === `${migration._id}`) {
+    function onSkip(item: MigrationItem) {
+      if (`${item.sourceID}` === sourceID && `${item.migration._id}` === `${migration._id}`) {
         unregister()
-        reject(new Error(`Migration ${migration._id} is paused.`))
+        reject(new MigrationLookupError(sourceID, { item, reason: MigrationLookupErrorReason.SKIPPED }))
       }
-    }))
+    }
+
+    function onError(item: MigrationItem, err: Error) {
+      if (`${item.sourceID}` === sourceID && `${item.migration._id}` === `${migration._id}`) {
+        unregister()
+        reject(new MigrationLookupError(sourceID, { item, reason: MigrationLookupErrorReason.ERRORED }, err.message))
+      }
+    }
+
+    nitro && [
+      nitro.hooks.hook(`migrate:import:item:imported`, onImport),
+      nitro.hooks.hook(`migrate:import:item:error`, onError),
+      nitro.hooks.hook(`migrate:import:item:skipped`, onSkip),
+    ].forEach(register)
+
+    MigrationItem.mongoose.model.findOne({ migration: migration._id, sourceID })
+      .then((item) => {
+        const status = item?.get(`status`)
+        unregister()
+        switch (status) {
+          case MigrationItemStatus.INITIAL: onSkip(item!); break
+          case MigrationItemStatus.IMPORTED: onImport(item!); break
+          case MigrationItemStatus.ERRORED: onError(item!, new Error(item!.error)); break
+          case MigrationItemStatus.QUEUED:
+          case MigrationItemStatus.PENDING: nitro.hooks.callHook(`migrate:import:item:wait`, item!); break
+          default: reject(new Error(`Item "${sourceID}" does not exist.`))
+        }
+      })
+      .catch((err: Error) => {
+        unregister()
+        reject(new MigrationLookupError(sourceID, { reason: MigrationLookupErrorReason.UNAVAILABLE }, err.message))
+      })
   })
 }
 
