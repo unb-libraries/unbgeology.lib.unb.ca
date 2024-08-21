@@ -22,10 +22,11 @@ export default defineNitroPlugin((nitro) => {
   })
 
   nitro.hooks.hook(`migrate:rollback:item`, (item) => {
-    const status = item.get(`status`)
-    if (status & (MigrationItemStatus.IMPORTED | MigrationItemStatus.ERRORED | MigrationItemStatus.QUEUED)) {
-      consola.info(`Rollback ${getLabel(item)}`)
-    }
+    consola.info(`Rollback ${getLabel(item)}`)
+  })
+
+  nitro.hooks.hook(`migrate:rollback:item:error`, (item, error) => {
+    consola.error(`Error rolling back ${getLabel(item)}: ${error}`)
   })
 
   nitro.hooks.hook(`migrate:queue:done`, async (queue) => {
