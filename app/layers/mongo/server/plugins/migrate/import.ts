@@ -3,62 +3,36 @@ import { type Document } from "mongoose"
 import type { MigrationItem } from "../../documentTypes/MigrationItem"
 
 export default defineNitroPlugin((nitro) => {
-  nitro.hooks.hook(`migrate:import:item`, async (item, options) => {
-    const status = item.get(`status`)
-    const entityURI = item.get(`entityURI`)
-    const entityType = item.get(`migration.entityType`)
+  const { INITIAL, QUEUED, PENDING, IMPORTED, ERRORED } = MigrationItemStatus
 
-    if (status & ~(MigrationItemStatus.INITIAL | MigrationItemStatus.QUEUED | MigrationItemStatus.IMPORTED)) {
-      const label = useEnum(MigrationItemStatus).labelOf(status)
+  nitro.hooks.hook(`migrate:import:item`, async (item, options) => {
+    if (!(item.status & INITIAL)) {
+      const label = useEnum(MigrationItemStatus).labelOf(item.status)
       throw new Error(`Cannot import "${label}" item`)
     }
 
-    async function doImport(item: Document<MigrationItem>) {
+    async function doImport(item: Document<any, {}, MigrationItem> & MigrationItem) {
       const { fetch } = options
-
-      item.set(`status`, MigrationItemStatus.PENDING)
-      await item.save()
-
-      const uri = entityURI || useAppConfig().entityTypes[entityType].baseURI
-      const method = entityURI ? `PATCH` : `POST`
-
       const bodies = await nitro.hooks.callHookParallel(`migrate:import:item:transform`, item, options)
-      const body = Object.fromEntries(Object.entries(bodies
-        .reduce((acc, body) => ({ ...acc, ...body }), {}))
-        .filter(([key]) => options.fields?.includes(key) || !options.fields?.length))
-      if (!entityURI) {
-        body.status = `migrated`
-      }
-
-      const entity = await fetch<EntityJSON>(uri, { method, body })
-
-      item.set({ status: MigrationItemStatus.IMPORTED, entityURI: entity.self, error: null })
-      await item.save()
-
-      nitro.hooks.callHook(!entityURI ? `migrate:import:item:imported` : `migrate:import:item:updated`, item)
-    }
-
-    async function onError(err: Error, item: Document<MigrationItem>) {
-      if (!entityURI) {
-        item.set({ status: MigrationItemStatus.ERRORED })
-      } else {
-        item.set({ status })
-      }
-      item.set({ error: err.message })
-      await item.save()
-      nitro.hooks.callHook(`migrate:import:item:error`, item, err)
-    }
-
-    function onComplete(item: Document<MigrationItem>) {
-      nitro.hooks.callHook(`migrate:import:item:done`, item)
+      const body = { ...bodies.reduce((acc, body) => ({ ...acc, ...body }), {}), status: `migrated` }
+      const uri = useAppConfig().entityTypes[item.migration.entityType].baseURI
+      return await fetch<EntityJSON>(uri, { method: `POST`, body })
     }
 
     try {
-      await doImport(item)
+      await item.set({ status: item.status & ~QUEUED | PENDING }).save()
+      nitro.hooks.callHook(`migrate:import:item:pending`, item, options)
+      const { self: entityURI } = await doImport(item)
+      await item.set({ entityURI, status: IMPORTED }).save()
+      nitro.hooks.callHook(`migrate:import:item:imported`, item)
     } catch (err: unknown) {
-      await onError(err as Error, item)
+      const { message: error } = err as Error
+      try {
+        await item.set({ error, status: ERRORED }).save()
+        nitro.hooks.callHook(`migrate:import:item:error`, item, error)
+      } catch (err: unknown) {}
     } finally {
-      onComplete(item)
+      nitro.hooks.callHook(`migrate:import:item:done`, item)
     }
   })
 })

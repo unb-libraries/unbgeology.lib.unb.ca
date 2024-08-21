@@ -1,5 +1,5 @@
 import { H3Event, HTTPMethod } from "h3"
-import { type MigrationItem } from "../server/documentTypes/MigrationItem"
+import { type MigrationItem, type MigrationItem } from "../server/documentTypes/MigrationItem"
 import type { Entity, EntityJSON, EntityJSONBody, Migration, MigrationStatus } from "@unb-libraries/nuxt-layer-entity"
 import type { DocumentFindQuery, DocumentBaseQuery, DocumentQueryMethod, EntityDocument, DocumentQuery } from "./entity"
 import type { SourceItem } from "./migrate"
@@ -110,12 +110,14 @@ export declare module "nitropack" {
     // migrate hooks
     migrate: (migrationID: string) => void | Promise<void>
     // REFACTOR: All migrate hooks shall use EntityJSON<MigrationItem>
-    "migrate:import:item": (item: Document<MigrationItem>, options: MigrateItemHookOptions) => void | Promise<void>
-    "migrate:import:item:transform": (item: Document<MigrationItem>, options: MigrateItemHookOptions) => any | Promise<any>
-    // "migrate:import:item:done": (item: Document<MigrationItem>) => void | Promise<void>
+    "migrate:import:item": (item: Document<any, {}, MigrationItem> & MigrationItem, options: MigrateItemHookOptions) => void | Promise<void>
+    "migrate:import:item:update": (item: Document<any, {}, MigrationItem> & MigrationItem, options: MigrateItemHookOptions) => void | Promise<void>
+    "migrate:import:item:pending": (item: Document<any, {}, MigrationItem> & MigrationItem, options: MigrateItemHookOptions) => void | Promise<void>
+    "migrate:import:item:transform": (item: Document<any, {}, MigrationItem> & MigrationItem, options: MigrateItemHookOptions) => any | Promise<any>
+    // "migrate:import:item:done": (item: Document<any, {}, MigrationItem> & MigrationItem) => void | Promise<void>
     
-    "migrate:rollback:item": (item: Document<MigrationItem>, options: MigrateItemHookOptions) => void | Promise<void>
-    "migrate:rollback:item:done": (item: Document<MigrationItem>, options: MigrateItemHookOptions) => void | Promise<void>
+    "migrate:rollback:item": (item: Document<any, {}, MigrationItem> & MigrationItem, options: MigrateItemHookOptions) => void | Promise<void>
+    "migrate:rollback:item:done": (item: Document<any, {}, MigrationItem> & MigrationItem, options: MigrateItemHookOptions) => void | Promise<void>
 
     "migrate:queue": (queue: string) => void | Promise<void>
     "migrate:queue:done": (queue: string) => void | Promise<void>
@@ -123,14 +125,14 @@ export declare module "nitropack" {
     "migrate:init": (migration: Migration | string, items: SourceItem[]) => void | Promise<void>
     "migrate:import:start": (migration: EntityJSON<Migration>, options?: Partial<MigrateOptions>) => void | Promise<void>
     "migrate:import:done": (migration: EntityJSON<Migration>, options?: Partial<MigrateOptions>) => void | Promise<void>
-    // "migrate:import:item": (item: Document<MigrationItem>) => any | Promise<any>
-    // "migrate:import:item:queued": (item: Document<MigrationItem>) => void | Promise<void>
-    "migrate:import:item:done": (item: Document<MigrationItem>, entity?: EntityJSON<E>, error?: string) => void | Promise<void>
-    "migrate:import:item:imported": <E extends Entity = Entity>(item: Document<MigrationItem>) => void | Promise<void>
-    "migrate:import:item:updated": <E extends Entity = Entity>(item: Document<MigrationItem>) => void | Promise<void>
-    "migrate:import:item:error": (item: Document<MigrationItem>, error: Error | string) => void | Promise<void>
-    "migrate:import:item:skipped": (item: Document<MigrationItem>) => void | Promise<void>
-    "migrate:import:item:wait": (item: Document<MigrationItem>) => void | Promise<void>
+    // "migrate:import:item": (item: Document<any, {}, MigrationItem> & MigrationItem) => any | Promise<any>
+    // "migrate:import:item:queued": (item: Document<any, {}, MigrationItem> & MigrationItem) => void | Promise<void>
+    "migrate:import:item:done": (item: Document<any, {}, MigrationItem> & MigrationItem, entity?: EntityJSON<E>, error?: string) => void | Promise<void>
+    "migrate:import:item:imported": <E extends Entity = Entity>(item: Document<any, {}, MigrationItem> & MigrationItem) => void | Promise<void>
+    "migrate:import:item:updated": <E extends Entity = Entity>(item: Document<any, {}, MigrationItem> & MigrationItem) => void | Promise<void>
+    "migrate:import:item:error": (item: Document<any, {}, MigrationItem> & MigrationItem, error: Error | string) => void | Promise<void>
+    "migrate:import:item:skipped": (item: Document<any, {}, MigrationItem> & MigrationItem) => void | Promise<void>
+    "migrate:import:item:wait": (item: Document<any, {}, MigrationItem> & MigrationItem) => void | Promise<void>
     "migrate:rollback:start": (migration: EntityJSON<Migration>) => void | Promise<void>
     "migrate:rollback:done": (migration: EntityJSON<Migration>) => void | Promise<void>
     "migrate:pause": (migration: Migration) => void | Promise<void>
