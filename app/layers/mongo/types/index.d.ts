@@ -117,6 +117,7 @@ export declare module "nitropack" {
     // "migrate:import:item:done": (item: Document<any, {}, MigrationItem> & MigrationItem) => void | Promise<void>
     
     "migrate:rollback:item": (item: Document<any, {}, MigrationItem> & MigrationItem, options: MigrateItemHookOptions) => void | Promise<void>
+    "migrate:rollback:item:error": (item: Document<any, {}, MigrationItem> & MigrationItem, error: Error | string) => void | Promise<void>
     "migrate:rollback:item:done": (item: Document<any, {}, MigrationItem> & MigrationItem, options: MigrateItemHookOptions) => void | Promise<void>
 
     "migrate:queue": (queue: string) => void | Promise<void>
