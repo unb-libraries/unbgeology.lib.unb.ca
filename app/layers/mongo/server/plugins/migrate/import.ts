@@ -26,11 +26,16 @@ export default defineNitroPlugin((nitro) => {
       await item.set({ entityURI, status: IMPORTED }).save()
       nitro.hooks.callHook(`migrate:import:item:imported`, item)
     } catch (err: unknown) {
-      const { message: error } = err as Error
-      try {
-        await item.set({ error, status: ERRORED }).save()
-        nitro.hooks.callHook(`migrate:import:item:error`, item, error)
-      } catch (err: unknown) {}
+      if (err instanceof MigrationLookupNotImportedError) {
+        await item.set({ status: item.status & ~PENDING }).save()
+        nitro.hooks.callHook(`migrate:import:item:skipped`, item)
+      } else {
+        const { message: error } = err as Error
+        try {
+          await item.set({ error, status: ERRORED }).save()
+          nitro.hooks.callHook(`migrate:import:item:error`, item, error)
+        } catch (err: unknown) {}
+      }
     } finally {
       nitro.hooks.callHook(`migrate:import:item:done`, item)
     }

@@ -1,4 +1,3 @@
-import { MigrationItemStatus } from "@unb-libraries/nuxt-layer-entity"
 import { consola } from "consola"
 
 export default defineNitroPlugin((nitro) => {
@@ -7,26 +6,23 @@ export default defineNitroPlugin((nitro) => {
   }
 
   nitro.hooks.hook(`migrate:import:item:imported`, (item) => {
-    const label = `${getLabel(item)}`
-    consola.success(`Imported ${label}`)
+    consola.success(`Imported ${getLabel(item)}`)
   })
 
   nitro.hooks.hook(`migrate:import:item:updated`, (item) => {
-    const label = `${getLabel(item)}`
-    consola.success(`Updated ${label}`)
+    consola.success(`Updated ${getLabel(item)}`)
   })
 
   nitro.hooks.hook(`migrate:import:item:error`, (item, error) => {
-    const label = `${getLabel(item)}: ${error}`
-    consola.error(`Error importing ${label}`)
+    consola.error(`Error importing ${getLabel(item)}: ${error}`)
+  })
+
+  nitro.hooks.hook(`migrate:import:item:skipped`, (item) => {
+    consola.info(`Skipped ${`${getLabel(item)}`}`)
   })
 
   nitro.hooks.hook(`migrate:rollback:item`, (item) => {
     consola.info(`Rollback ${getLabel(item)}`)
-  })
-
-  nitro.hooks.hook(`migrate:rollback:item:error`, (item, error) => {
-    consola.error(`Error rolling back ${getLabel(item)}: ${error}`)
   })
 
   nitro.hooks.hook(`migrate:queue:done`, async (queue) => {
