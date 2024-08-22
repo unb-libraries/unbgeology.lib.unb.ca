@@ -140,16 +140,16 @@
         <span v-else>{{ selected.length || `No` }} items selected.</span>
         <template #actions>
           <div class="flex flex-col space-y-2">
-            <button v-if="selected.length" class="button-lg button button-outline-blue hover:button-blue w-full" @click.prevent.stop="onViewData(selected)">
+            <button v-if="selected.length" class="button-lg button button-outline-blue hover:button-blue w-full" @click.prevent.stop="onViewData">
               Inspect
             </button>
-            <button v-if="canImport(selected)" class="button-lg button button-outline-accent-mid hover:button-accent-mid w-full" @click.prevent.stop="onClickImport(selected)">
+            <button v-if="canImport" class="button-lg button button-outline-accent-mid hover:button-accent-mid w-full" @click.prevent.stop="onClickImport">
               Import
             </button>
-            <button v-if="canUpdate(selected)" class="button-lg button button-outline-accent-mid hover:button-accent-mid w-full" @click.prevent.stop="onClickUpdate(selected)">
+            <button v-if="canUpdate" class="button-lg button button-outline-accent-mid hover:button-accent-mid w-full" @click.prevent.stop="onClickUpdate">
               Update
             </button>
-            <button v-if="canRollback(selected)" class="button-lg button button-outline-red hover:button-red w-full" @click.prevent.stop="onClickRollback(selected)">
+            <button v-if="canRollback" class="button-lg button button-outline-red hover:button-red w-full" @click.prevent.stop="onClickRollback">
               Rollback
             </button>
             <button v-if="hasPermission(/^delete:migrationitem/)" class="button-lg button button-outline-red hover:button-red w-full" @click.prevent.stop="onClickDelete(selected)">
@@ -172,7 +172,7 @@ definePageMeta({
   name: `Edit migration items`,
 })
 
-const { INITIAL, PENDING, QUEUED, IMPORTED } = MigrationItemStatus
+const { INITIAL, PENDING, QUEUED, IMPORTED, ERRORED } = MigrationItemStatus
 function getStatus(status: MigrationItem[`status`]) {
   return useEnum(MigrationItemStatus).valueOf(status)
 }
@@ -187,6 +187,10 @@ const { entity: migration } = await fetchByPK(id as string)
 if (!migration) {
   throw new Error(`Migration with id ${id} not found`)
 }
+
+const canImport = computed(() => selected.value.length && selected.value.every(({ status }) => useEnum(MigrationItemStatus).valueOf(status) === INITIAL && hasPermission(/^update:migrationitem/)))
+const canUpdate = computed(() => selected.value.length && selected.value.every(({ status }) => useEnum(MigrationItemStatus).valueOf(status) === IMPORTED && hasPermission(/^update:migrationitem/)))
+const canRollback = computed(() => selected.value.length && selected.value.every(({ status }) => useEnum(MigrationItemStatus).valueOf(status) & (IMPORTED | ERRORED) && hasPermission(/^update:migrationitem/)))
 
 function onAddItems() {
   const { open } = useEntityFormModal(() => <FormMigrationItems />, {
@@ -207,8 +211,8 @@ function onAddItems() {
   open()
 }
 
-function onViewData(items: MigrationItem[]) {
-  const json = items.map(({ data }) => Object.fromEntries(Object.entries(data).filter(([id]) => id !== `self`)))
+function onViewData() {
+  const json = selected.value.map(({ data }) => Object.fromEntries(Object.entries(data).filter(([id]) => id !== `self`)))
   setContent(() => (
     <div class="bg-primary-80/20 border-primary-80 max-h-144 overflow-y-scroll border p-4 font-mono">
       <pre>{JSON.stringify(json.length > 1 ? json : json[0], null, 2)}</pre>
@@ -216,11 +220,11 @@ function onViewData(items: MigrationItem[]) {
   ))
 }
 
-async function onCreateQueue(type: `import` | `update` | `rollback`, items: MigrationItem[], options?: { fields: string[] }) {
+async function onCreateQueue(type: `import` | `update` | `rollback`, options?: { fields: string[] }) {
   const { data, error } = await useFetch<EntityJSON<MigrationItem, `self`>>(`${migration.value!.self}/queues`, {
     method: `POST`,
     body: {
-      ids: items.map(({ id }) => id),
+      ids: selected.value.map(({ id }) => id),
       fields: options?.fields,
       type,
     },
@@ -231,84 +235,40 @@ async function onCreateQueue(type: `import` | `update` | `rollback`, items: Migr
   }
 }
 
-function canImport(items: MigrationItem[]) {
-  return items.every(({ status }) => useEnum(MigrationItemStatus).valueOf(status) === MigrationItemStatus.INITIAL && hasPermission(/^update:migrationitem/))
+function onClickImport() {
+  const { length: count } = selected.value
+  const question = `Import ${pluralize(count, `item`, `items`)}`
+  const onConfirm = () => { onCreateQueue(`import`); closeModal() }
+  setContent(() => <PvConfirm question={question} onConfirm={onConfirm} onCancel={closeModal} />)
 }
 
-function onClickImport(items: MigrationItem[]) {
-  const count = items.length || list.value!.total
-  if (count) {
-    setContent(() => (
-      <PvConfirm
-        question={`Import ${pluralize(count, `item`, `items`)}`}
-        onConfirm={() => {
-          onCreateQueue(`import`, items)
-          closeModal()
-        }}
-        onCancel={closeModal}
-      />
-    ))
-  } else {
-    onCreateQueue(`import`, items)
-  }
-}
-
-function canUpdate(items: MigrationItem[]) {
-  return items.every(({ status }) => useEnum(MigrationItemStatus).valueOf(status) === MigrationItemStatus.IMPORTED && hasPermission(/^update:migrationitem/))
-}
-
-function onClickUpdate(items: MigrationItem[]) {
+function onClickUpdate() {
   stackContent(() => (
     <FormMigrationItemUpdate
       // TODO: Use migration schema instead of one item's schema
-      item={items[0]}
+      item={selected.value[0]}
       onSave={(fields) => {
-        const count = items.length || list.value!.total
-        if (count !== 1) {
-          stackContent(() => (
-            <PvConfirm
-              question={`Update ${pluralize(count, `item`, `items`)}`}
-              onConfirm={() => {
-                closeModal()
-                onCreateQueue(`update`, items, { fields })
-              }}
-              onCancel={closeModal}
-            />
-          ))
-        } else {
-          onCreateQueue(`update`, items, { fields })
-        }
+        const { length: count } = selected.value
+        const question = `Update ${pluralize(count, `item`, `items`)}`
+        const onConfirm = () => { onCreateQueue(`update`, { fields }); closeModal() }
+        stackContent(() => <PvConfirm question={question} onConfirm={onConfirm} onCancel={closeModal} />)
       }}
       onCancel={closeModal}
     />
   ))
 }
 
-function canRollback(items: MigrationItem[]) {
-  return items.every(({ status }) => useEnum(MigrationItemStatus).valueOf(status) & (MigrationItemStatus.IMPORTED | MigrationItemStatus.ERRORED) && hasPermission(/^update:migrationitem/))
-}
-
-function onClickRollback(items: MigrationItem[]) {
-  const count = items.length || list.value!.total
-  if (count) {
-    setContent(() => (
-      <PvConfirm
-        question={`Rollback ${pluralize(count, `item`, `items`)}`}
-        onConfirm={() => {
-          onCreateQueue(`rollback`, items)
-          closeModal()
-        }}
-        onCancel={closeModal}
-      />
-    ))
-  } else {
-    onCreateQueue(`rollback`, items)
-  }
+function onClickRollback() {
+  const { length: count } = selected.value
+  const question = `Rollback ${pluralize(count, `item`, `items`)}`
+  const onConfirm = () => { onCreateQueue(`rollback`); closeModal() }
+  setContent(() => <PvConfirm question={question} onConfirm={onConfirm} onCancel={closeModal} />)
 }
 
 const onClickDelete = (items: MigrationItem[]) => {
+  const label = pluralize(items.length, `item`, `items`)
   setContent(() => <PvEntityDeleteConfirm
-    label={pluralize(items.length, `item`, `items`)}
+    label={label}
     onConfirm={() => {
       removeMany(items)
       selected.value = []

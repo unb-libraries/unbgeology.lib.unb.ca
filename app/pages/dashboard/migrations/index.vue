@@ -40,6 +40,12 @@
             <button v-if="hasPermission(/^update:migrationitem/)" class="button button-lg button-outline-blue hover:button-blue w-full" @click.stop.prevent="onClickImport">
               Import
             </button>
+            <button v-if="hasPermission(/^update:migrationitem/)" class="button button-lg button-outline-accent-mid hover:button-accent-mid w-full" @click.stop.prevent="onClickUpdate">
+              Update
+            </button>
+            <button v-if="hasPermission(/^update:migrationitem/)" class="button button-lg button-outline-red hover:button-red w-full" @click.stop.prevent="onClickRollback">
+              Rollback
+            </button>
             <button v-if="hasPermission(/^delete:migration/)" class="button button-lg button-outline-red-dark hover:button-red-dark w-full" @click.stop.prevent="onClickRemove">
               Delete
             </button>
@@ -51,8 +57,8 @@
 </template>
 
 <script setup lang="tsx">
-import { type EntityJSONBody, type Migration, MigrationStatus, type EntityJSON } from "@unb-libraries/nuxt-layer-entity"
-import { PvEntityDeleteConfirm } from "#components"
+import { type Migration, MigrationStatus, type EntityJSON } from "@unb-libraries/nuxt-layer-entity"
+import { PvConfirm, PvEntityDeleteConfirm } from "#components"
 
 definePageMeta({
   layout: false,
@@ -64,16 +70,32 @@ definePageMeta({
 
 const { hasPermission } = useCurrentUser()
 const { setContent, close: closeModal } = useModal()
-const { entities: migrations, list, remove, refresh, error, query: { page, pageSize } } = await fetchEntityList<Migration>(`Migration`)
+const { createToast } = useToasts()
+
+const { entities: migrations, list, remove, error, query: { page, pageSize } } = await fetchEntityList<Migration>(`Migration`)
 const columns: [keyof Migration, string][] = [[`name`, `Name`], [`total`, `Records`], [`imported`, `Imported`], [`skipped`, `Skipped`], [`errored`, `Errored`], [`status`, `Status`]]
 const selection = ref<EntityJSON<Migration>>()
+
+function onClickImport() {
+  const onConfirm = () => { useFetch(`/api/migrations/${selection.value!.id}/queues`, { method: `POST`, body: { type: `import` } }); closeModal() }
+  setContent(() => <PvConfirm question={`Import "${selection.value!.name}"?`} onConfirm={onConfirm} onCancel={closeModal} />)
+}
+
+function onClickUpdate() {
+  const onConfirm = () => { useFetch(`/api/migrations/${selection.value!.id}/queues`, { method: `POST`, body: { type: `update` } }); closeModal() }
+  setContent(() => <PvConfirm question={`Update "${selection.value!.name}"?`} onConfirm={onConfirm} onCancel={closeModal} />)
+}
+
+function onClickRollback() {
+  const onConfirm = () => { useFetch(`/api/migrations/${selection.value!.id}/queues`, { method: `POST`, body: { type: `rollback` } }); closeModal() }
+  setContent(() => <PvConfirm question={`Rollback "${selection.value!.name}"?`} onConfirm={onConfirm} onCancel={closeModal} />)
+}
 
 function onClickRemove() {
   const label = `the migration "${selection.value!.name}"`
   setContent(() => <PvEntityDeleteConfirm label={label} onConfirm={onRemove} onCancel={closeModal} />)
 }
 
-const { createToast } = useToasts()
 async function onRemove() {
   const name = selection.value!.name
   await remove(selection.value!)
@@ -84,41 +106,5 @@ async function onRemove() {
   }
   selection.value = undefined
   closeModal()
-}
-
-async function onClickImport() {
-  const { error } = await useFetch(`/api/migrations/${selection.value!.id}/items/import`, { method: `POST` })
-  if (!error.value) {
-    createToast(`migration-import-started`, () => `Import started: "${selection.value!.name}"`, { type: `success`, duration: 4000 })
-  } else {
-    createToast(`migration-import-error`, () => `Failed to import "${selection.value!.name}": ${error.value}`, { type: `error` })
-  }
-}
-
-function canImport({ status, total, imported, skipped, errored }: EntityJSON<Migration>) {
-  return status === MigrationStatus.IDLE && total > imported + skipped + errored
-}
-
-function canRollback({ status, imported, skipped, errored }: EntityJSON<Migration>) {
-  return status === MigrationStatus.IDLE && imported + skipped + errored > 0
-}
-
-function canPause({ status }: EntityJSONBody<Migration>) {
-  return status === MigrationStatus.RUNNING
-}
-
-async function onImportMigration(migration: EntityJSON<Migration>) {
-  await useFetch(`/api/migrations/${migration.id}/items/import`, { method: `POST` })
-  refresh()
-}
-
-async function onRollbackMigration(migration: EntityJSON<Migration>) {
-  await useFetch(`/api/migrations/${migration.id}/items/rollback`, { method: `POST` })
-  refresh()
-}
-
-async function onPauseMigration(migration: EntityJSON<Migration>) {
-  await useFetch(`/api/migrations/${migration.id}/items/pause`, { method: `POST` })
-  refresh()
 }
 </script>
