@@ -86,23 +86,29 @@ export function useMigrationLookup(migration: Migration, sourceID: string): Prom
       }
     }
 
-    nitro && [
-      nitro.hooks.hook(`migrate:import:item:imported`, onImport),
-      nitro.hooks.hook(`migrate:import:item:error`, onError),
-      nitro.hooks.hook(`migrate:import:item:skipped`, onSkip),
-    ].forEach(register)
+    register(nitro?.hooks.hook(`migrate:import:item:imported`, onImport))
+    register(nitro?.hooks.hook(`migrate:import:item:error`, onError))
+    register(nitro?.hooks.hook(`migrate:import:item:skipped`, onSkip))
 
-    MigrationItem.mongoose.model.findOne({ migration: migration._id, sourceID })
+    MigrationItem.mongoose.model
+      .findOne({ migration: migration._id, sourceID })
+      .populate({ path: `migration`, populate: { path: `dependencies` } })
       .then((item) => {
-        const status = item?.get(`status`)
-        unregister()
-        switch (status) {
-          case MigrationItemStatus.INITIAL: onSkip(item!); break
-          case MigrationItemStatus.IMPORTED: onImport(item!); break
-          case MigrationItemStatus.ERRORED: onError(item!, new Error(item!.error)); break
-          case MigrationItemStatus.QUEUED:
-          case MigrationItemStatus.PENDING: nitro.hooks.callHook(`migrate:import:item:wait`, item!); break
-          default: reject(new Error(`Item "${sourceID}" does not exist.`))
+        if (!item) {
+          reject(new Error(`Item "${sourceID}" does not exist.`))
+          return
+        }
+
+        const status = item.get(`status`)
+        const { INITIAL, IMPORTED, ERRORED, QUEUED, PENDING } = MigrationItemStatus
+        if (status === INITIAL) {
+          onSkip(item)
+        } else if (status === IMPORTED) {
+          onImport(item)
+        } else if (status === ERRORED) {
+          onError(item, new Error(item.error))
+        } else if (status & (QUEUED | PENDING)) {
+          nitro?.hooks.callHook(`migrate:import:item:wait`, item)
         }
       })
       .catch(() => {
