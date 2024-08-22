@@ -15,7 +15,7 @@ export default defineNitroPlugin((nitro) => {
       const { fetch } = options
       const bodies = await nitro.hooks.callHookParallel(`migrate:import:item:transform`, item, options)
       const body = { ...bodies.reduce((acc, body) => ({ ...acc, ...body }), {}), status: `migrated` }
-      const uri = useAppConfig().entityTypes[item.migration.entityType].baseURI
+      const uri = useAppConfig().entityTypes[item.migration.entityType.split(`.`)[0]].baseURI
       return await fetch<EntityJSON>(uri, { method: `POST`, body })
     }
 
