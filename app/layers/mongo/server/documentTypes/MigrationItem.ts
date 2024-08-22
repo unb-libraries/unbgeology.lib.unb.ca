@@ -50,7 +50,8 @@ export default defineDocumentModel<MigrationItem>(`MigrationItem`, defineDocumen
 
       // Validate status does not transition from IMPORTED to ERRORED or vice versa
       if (this.isNew) {
-        const before = await MigrationItem.mongoose.model.findById(this._id)
+        const Model = this.constructor as typeof MigrationItem.mongoose.model
+        const before = await Model.findById(this._id)
         const { IMPORTED, ERRORED } = MigrationItemStatus
         if (before && ((before.status & IMPORTED && this.status & ERRORED) || (before.status & ERRORED && this.status & IMPORTED))) {
           const [beforeLabel, afterLabel] = [before, this].map(item => useEnum(MigrationItemStatus).labelOf(item.status))
