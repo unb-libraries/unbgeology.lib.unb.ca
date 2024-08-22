@@ -102,11 +102,10 @@ export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (
   }
 
   return {
-    objectIDs: [{ id: `UNB-${unbID}`, type: `Mimsy` }, ...(legacyIDs ?? []).map<ObjectID>(lid => ({
+    objectIDs: [{ id: `UNB-${unbID.replace(/\D/g, `-`).split(`-`).slice(0, 2).join(`-`)}`, type: `Mimsy` }, ...(legacyIDs ?? []).map<ObjectID>(lid => ({
       id: lid.id,
       type: lid.type ?? lid.source ?? undefined,
     }))],
-    mimsyID: `UNB-${unbID}`,
     type: category,
     classification: await (async () => {
       if (!Array.isArray(classifications) || classifications.length < 1) { return }
