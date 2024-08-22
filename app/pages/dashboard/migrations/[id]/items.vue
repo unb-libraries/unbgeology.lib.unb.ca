@@ -98,18 +98,12 @@
           row-class="table-row"
           selected-row-class="active"
         >
-          <template #status="{ entity: { status }}">
-            <span
-              class="rounded px-1.5 py-1 text-xs uppercase"
-              :class="{
-                'bg-primary-20 text-primary': useEnum(MigrationItemStatus).valueOf(status) === MigrationItemStatus.INITIAL,
-                'bg-red': useEnum(MigrationItemStatus).valueOf(status) === MigrationItemStatus.ERRORED,
-                'bg-green text-primary': useEnum(MigrationItemStatus).valueOf(status) === MigrationItemStatus.IMPORTED,
-                'bg-yellow text-primary': useEnum(MigrationItemStatus).valueOf(status) === MigrationItemStatus.PENDING,
-                'bg-blue': useEnum(MigrationItemStatus).valueOf(status) === MigrationItemStatus.QUEUED,
-                'bg-primary-60': useEnum(MigrationItemStatus).valueOf(status) === MigrationItemStatus.SKIPPED,
-              }"
-            >{{ status }}</span>
+          <template #status="{ entity: { status } }">
+            <span v-if="getStatus(status) & PENDING" class="bg-yellow text-primary rounded px-1.5 py-1 text-xs uppercase">Pending</span>
+            <span v-else-if="getStatus(status) & QUEUED" class="bg-blue rounded px-1.5 py-1 text-xs uppercase">Queued</span>
+            <span v-else-if="getStatus(status) & INITIAL" class="bg-primary-20 text-primary rounded px-1.5 py-1 text-xs uppercase">Idle</span>
+            <span v-else-if="getStatus(status) & IMPORTED" class="bg-green text-primary rounded px-1.5 py-1 text-xs uppercase">Imported</span>
+            <span v-else class="bg-red rounded px-1.5 py-1 text-xs uppercase">Errored</span>
           </template>
         </EntityTable>
       </div>
@@ -136,17 +130,11 @@
           label-class="font-bold italic"
         >
           <template #status="{ value: status }">
-            <span
-              class="rounded px-1.5 py-1 text-xs uppercase"
-              :class="{
-                'bg-primary-20 text-primary': useEnum(MigrationItemStatus).valueOf(status) === MigrationItemStatus.INITIAL,
-                'bg-red': useEnum(MigrationItemStatus).valueOf(status) === MigrationItemStatus.ERRORED,
-                'bg-green text-primary': useEnum(MigrationItemStatus).valueOf(status) === MigrationItemStatus.IMPORTED,
-                'bg-yellow text-primary': useEnum(MigrationItemStatus).valueOf(status) === MigrationItemStatus.PENDING,
-                'bg-blue': useEnum(MigrationItemStatus).valueOf(status) === MigrationItemStatus.QUEUED,
-                'bg-primary-60': useEnum(MigrationItemStatus).valueOf(status) === MigrationItemStatus.SKIPPED,
-              }"
-            >{{ status }}</span>
+            <span v-if="getStatus(status) & PENDING" class="bg-yellow text-primary rounded px-1.5 py-1 text-xs uppercase">Pending</span>
+            <span v-else-if="getStatus(status) & QUEUED" class="bg-blue rounded px-1.5 py-1 text-xs uppercase">Queued</span>
+            <span v-else-if="getStatus(status) & INITIAL" class="bg-primary-20 text-primary rounded px-1.5 py-1 text-xs uppercase">Idle</span>
+            <span v-else-if="getStatus(status) & IMPORTED" class="bg-green text-primary rounded px-1.5 py-1 text-xs uppercase">Imported</span>
+            <span v-else class="bg-red rounded px-1.5 py-1 text-xs uppercase">Errored</span>
           </template>
         </PvEntityDetails>
         <span v-else>{{ selected.length || `No` }} items selected.</span>
@@ -183,6 +171,11 @@ definePageMeta({
   layout: false,
   name: `Edit migration items`,
 })
+
+const { INITIAL, PENDING, QUEUED, IMPORTED } = MigrationItemStatus
+function getStatus(status: MigrationItem[`status`]) {
+  return useEnum(MigrationItemStatus).valueOf(status)
+}
 
 const { id } = useRoute().params
 const { hasPermission } = useCurrentUser()
