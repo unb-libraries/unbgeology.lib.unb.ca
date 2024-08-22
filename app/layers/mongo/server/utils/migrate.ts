@@ -10,36 +10,46 @@ enum MigrationLookupErrorReason {
 }
 
 interface MigrationLookupErrorDetails {
-  item: MigrationItem
-  reason: MigrationLookupErrorReason
+  cause: MigrationLookupErrorReason
+  message: string
 }
 export class MigrationLookupError extends Error {
-  private _sourceID: string
-  private _details: Partial<MigrationLookupErrorDetails>
+  private _item?: MigrationItem
 
-  constructor(sourceID: string, details?: Partial<MigrationLookupErrorDetails>, message?: string) {
-    super(message || details?.reason === MigrationLookupErrorReason.UNAVAILABLE
-      ? `Item "${sourceID}" does not exist.`
-      : details?.reason === MigrationLookupErrorReason.SKIPPED
-        ? `Item "${sourceID}" not imported.`
-        : details?.reason === MigrationLookupErrorReason.ERRORED
-          ? `Item "${sourceID}" errored.`
-          : ``,
-    )
-    this._sourceID = sourceID
-    this._details = details || {}
+  constructor(item?: MigrationItem, options?: Partial<MigrationLookupErrorDetails>) {
+    super(options?.message, { cause: options?.cause })
+    this._item = item
   }
 
-  get sourceID(): string {
-    return this._sourceID
+  get sourceID(): string | undefined {
+    return this._item?.sourceID
   }
+}
 
-  get item(): MigrationItem | undefined {
-    return this._details?.item
+export class MigrationLookupNotFoundError extends MigrationLookupError {
+  constructor(sourceID: string) {
+    super(undefined, {
+      message: `Item "${sourceID}" does not exist.`,
+      cause: MigrationLookupErrorReason.UNAVAILABLE,
+    })
   }
+}
 
-  get reason(): MigrationLookupErrorReason | undefined {
-    return this._details?.reason
+export class MigrationLookupNotImportedError extends MigrationLookupError {
+  constructor(item: MigrationItem) {
+    super(item, {
+      message: `Item "${item.sourceID}" not imported.`,
+      cause: MigrationLookupErrorReason.SKIPPED,
+    })
+  }
+}
+
+export class MigrationLookupNotSuccessful extends MigrationLookupError {
+  constructor(item: MigrationItem) {
+    super(item, {
+      message: `Item "${item.sourceID}" errored.`,
+      cause: MigrationLookupErrorReason.ERRORED,
+    })
   }
 }
 
@@ -65,14 +75,14 @@ export function useMigrationLookup(migration: Migration, sourceID: string): Prom
     function onSkip(item: MigrationItem) {
       if (`${item.sourceID}` === sourceID && `${item.migration._id}` === `${migration._id}`) {
         unregister()
-        reject(new MigrationLookupError(sourceID, { item, reason: MigrationLookupErrorReason.SKIPPED }))
+        reject(new MigrationLookupNotImportedError(item))
       }
     }
 
-    function onError(item: MigrationItem, err: Error) {
+    function onError(item: MigrationItem, err: Error | string) {
       if (`${item.sourceID}` === sourceID && `${item.migration._id}` === `${migration._id}`) {
         unregister()
-        reject(new MigrationLookupError(sourceID, { item, reason: MigrationLookupErrorReason.ERRORED }, err.message))
+        reject(new MigrationLookupNotSuccessful(item))
       }
     }
 
@@ -95,9 +105,9 @@ export function useMigrationLookup(migration: Migration, sourceID: string): Prom
           default: reject(new Error(`Item "${sourceID}" does not exist.`))
         }
       })
-      .catch((err: Error) => {
+      .catch(() => {
         unregister()
-        reject(new MigrationLookupError(sourceID, { reason: MigrationLookupErrorReason.UNAVAILABLE }, err.message))
+        reject(new MigrationLookupNotFoundError(sourceID))
       })
   })
 }
