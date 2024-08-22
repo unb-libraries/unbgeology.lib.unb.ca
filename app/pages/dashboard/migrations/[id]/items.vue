@@ -216,7 +216,7 @@ function onViewData(items: MigrationItem[]) {
   ))
 }
 
-async function onCreateQueue(type: `import` | `rollback`, items: MigrationItem[], options?: { fields: string[] }) {
+async function onCreateQueue(type: `import` | `update` | `rollback`, items: MigrationItem[], options?: { fields: string[] }) {
   const { data, error } = await useFetch<EntityJSON<MigrationItem, `self`>>(`${migration.value!.self}/queues`, {
     method: `POST`,
     body: {
@@ -270,13 +270,13 @@ function onClickUpdate(items: MigrationItem[]) {
               question={`Update ${pluralize(count, `item`, `items`)}`}
               onConfirm={() => {
                 closeModal()
-                onCreateQueue(`import`, items, { fields })
+                onCreateQueue(`update`, items, { fields })
               }}
               onCancel={closeModal}
             />
           ))
         } else {
-          onCreateQueue(`import`, items, { fields })
+          onCreateQueue(`update`, items, { fields })
         }
       }}
       onCancel={closeModal}
@@ -308,18 +308,16 @@ function onClickRollback(items: MigrationItem[]) {
 
 const onClickDelete = (items: MigrationItem[]) => {
   setContent(() => <PvEntityDeleteConfirm
-    label={`the item with ID ${items[0].id}`}
-    onConfirm={async () => {
-      if (items[0]) {
-        await remove(items[0])
-      }
+    label={pluralize(items.length, `item`, `items`)}
+    onConfirm={() => {
+      removeMany(items)
       selected.value = []
       closeModal()
     }}
     onCancel={closeModal} />)
 }
 
-const { list, entities: items, query: { filter, page, pageSize, sort }, remove, refresh } = await fetchEntityList<MigrationItem>(`/api/migrations/${id}/items`)
+const { list, entities: items, query: { filter, page, pageSize, sort }, removeMany, refresh } = await fetchEntityList<MigrationItem>(`/api/migrations/${id}/items`)
 const selected = ref<MigrationItem[]>([])
 
 const shallPoll = computed(() => items.value.some(({ status }) => useEnum(MigrationItemStatus).valueOf(status) & (MigrationItemStatus.PENDING | MigrationItemStatus.QUEUED)))
