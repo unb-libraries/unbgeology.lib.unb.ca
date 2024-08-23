@@ -454,7 +454,12 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
 
       // Set ypik
       if (this.isNew && this.mimsyID) {
-        this.ypik = this.mimsyID.split(`-`).slice(1).map(mid => mid.padStart(4, `0`)).join(`-`)
+        this.ypik = this.mimsyID
+          .replace(/UNB-(\d{4}-\d{1,4}).*/g, `$1`)
+          .split(`-`)
+          .map(mid => mid.padStart(4, `0`))
+          .slice(0, 2)
+          .join(`-`)
       } else if (this.isNew) {
         this.ypik = (await createYPIK(this.collection.collectionName))
           .map(n => `${n}`.padStart(4, `0`))
