@@ -1,5 +1,5 @@
 <template>
-  <div v-if="modelValue" :id="id" v-on-window="hide" class="absolute" :class="classList">
+  <div v-if="modelValue" :id="id" v-on-window="hide" class="absolute z-10" :class="classList">
     <slot />
   </div>
 </template>
