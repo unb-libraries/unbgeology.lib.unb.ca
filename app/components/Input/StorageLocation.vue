@@ -30,12 +30,24 @@ import { FilterOperator } from "@unb-libraries/nuxt-layer-entity"
 import type { StorageLocation } from "~/types/storagelocation"
 
 const value = defineModel<string>({ required: false })
-const { entities: locations } = await fetchEntityList<StorageLocation>(`Term`, {
-  filter: [[`type`, FilterOperator.EQUALS, `storageLocation`]],
-  select: [`label`, `ancestors`],
-  sort: [`label`],
-  pageSize: 500,
-})
+const locations = ref<StorageLocation[]>([])
+
+let allLoaded = false
+let page = 1
+while (!allLoaded) {
+  const { list, entities } = await fetchEntityList<StorageLocation>(`Term`, {
+    filter: [[`type`, FilterOperator.EQUALS, `storageLocation`]],
+    select: [`label`, `ancestors`],
+    sort: [`label`],
+    page,
+    pageSize: 500,
+  })
+
+  allLoaded = !list.value?.nav?.next ?? true
+  page++
+
+  locations.value.push(...entities.value)
+}
 
 function getAncestorLabels(option: string) {
   return locations.value.find(op => op.self === option)?.ancestors?.entities.map(acs => acs.label).reverse()
