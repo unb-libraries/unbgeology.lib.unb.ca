@@ -219,7 +219,7 @@ export async function fetchEntityList <E extends Entity = Entity>(entityTypeOrId
   watch(search, resetPage)
   watch(filter, resetPage)
 
-  const { data: list, error, refresh } = await useFetch<EntityJSONList<E>>(url, fetchOptions)
+  const { data: list, error, refresh, pending } = await useFetch<EntityJSONList<E>>(url, fetchOptions)
   return {
     list: list as Ref<EntityJSONList<E> | null>,
     entities: computed(() => list.value?.entities ?? []),
@@ -231,6 +231,7 @@ export async function fetchEntityList <E extends Entity = Entity>(entityTypeOrId
       select,
       sort,
     },
+    pending,
     refresh,
     async add(entity: EntityJSONCreateBody<E>) {
       const response = typeof entityTypeOrIdOrURI === `string`

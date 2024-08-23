@@ -12,7 +12,7 @@
         </th>
       </tr>
     </thead>
-    <tbody>
+    <tbody class="relative">
       <tr
         v-for="(entity, index) in entities"
         :key="entity.id"
@@ -31,6 +31,11 @@
           </slot>
         </td>
       </tr>
+      <div v-if="loading" :class="[`absolute left-0 top-0 flex size-full justify-center p-16`, loadingOverlayClass]">
+        <slot name="loading">
+          <IconSpinner class="text-accent size-12 animate-spin fill-none stroke-current stroke-2" />
+        </slot>
+      </div>
     </tbody>
   </table>
 </template>
@@ -49,6 +54,8 @@ const props = defineProps<{
   rowClass?: string
   selectedRowClass? : string
   cellClass?: string
+  loading?: boolean
+  loadingOverlayClass?: string
 }>()
 
 const emits = defineEmits<{

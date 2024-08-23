@@ -109,6 +109,8 @@
       :columns="columnsOptions.filter(([,, selected]) => selected).map(([id, label]) => [id, label])"
       :multi-select="true"
       selected-row-class="active"
+      :loading="loading"
+      loading-overlay-class="bg-accent-dark/40"
     >
       <template #images="{ entity: { images }}">
         <img
@@ -278,7 +280,7 @@ const columns = ref<[keyof Specimen, string][]>([
   [`status`, `Status`],
 ])
 
-const { list, entities: specimens, query, remove, removeMany } = await fetchEntityList<Specimen>(`Specimen`, {
+const { list, entities: specimens, query, remove, removeMany, pending: loading } = await fetchEntityList<Specimen>(`Specimen`, {
   sort: routeQuery.sort || `-id`,
   page: routeQuery.page,
 })
