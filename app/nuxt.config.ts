@@ -9,6 +9,7 @@ export default defineNuxtConfig({
     `./layers/base`,
     `./layers/mongo`,
     `./layers/primevue`,
+    `./layers/admin`,
   ],
   alias: {
     "document-types": url.fileURLToPath(new URL(`./server/documentTypes`, import.meta.url)),

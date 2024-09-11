@@ -25,6 +25,8 @@
 </template>
 
 <style scoped>
+@config "../tailwind.config.js";
+
 .placeholder {
   @apply aspect-auto h-40 md:h-80 bg-primary-20 dark:bg-primary hover:bg-primary-40 dark:hover:bg-primary-60
 }

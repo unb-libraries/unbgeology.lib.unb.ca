@@ -7,3 +7,7 @@
     <page-footer />
   </div>
 </template>
+
+<script lang="ts" setup>
+import '~/assets/css/theme.main.css'
+</script>

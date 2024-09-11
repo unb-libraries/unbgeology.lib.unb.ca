@@ -126,7 +126,9 @@ function sortByWeight(a: { weight: number }, b: { weight: number }) {
 </script>
 
 <style scoped>
-  .twa-column {
-    @apply flex flex-col mx-2 first:ml-0 last:mr-0 overflow-y-scroll rounded-xl first:rounded-l-none last:rounded-r-none bg-primary-60/10 first:border-l-0 last:border-r-0 border border-primary-40/10
-  }
+@config "../../../tailwind.config.js";
+
+.twa-column {
+  @apply flex flex-col mx-2 first:ml-0 last:mr-0 overflow-y-scroll rounded-xl first:rounded-l-none last:rounded-r-none bg-primary-60/10 first:border-l-0 last:border-r-0 border border-primary-40/10
+}
 </style>

@@ -8,10 +8,4 @@ export default defineNuxtConfig({
   modules: [
     `@nuxt/image`,
   ],
-  postcss: {
-    plugins: {
-      tailwindcss: {},
-      autoprefixer: {},
-    },
-  },
 })
