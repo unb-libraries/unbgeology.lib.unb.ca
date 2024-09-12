@@ -3,3 +3,20 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    @apply text-white text-100 bg-base-dark-600;
+  }
+}
+
+@layer components {
+  .unbliblogo-g-icon,
+  .unbliblogo-g-libraries {
+    @apply fill-red;
+  }
+  .unbliblogo-g-unb,
+  .unbliblogo-g-spacer {
+    @apply fill-white;
+  }
+}
