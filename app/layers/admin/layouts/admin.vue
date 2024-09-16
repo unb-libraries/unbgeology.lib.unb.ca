@@ -22,26 +22,22 @@
     <main class="flex grow flex-row overflow-y-hidden">
       <div :class="[`text-base-light-500 bg-base-dark-500 flex h-full min-w-fit flex-col`]">
         <nav :class="[`w-full grow overflow-y-scroll`]">
-          <AdNavBarItem
-            v-for="{ name, to, icon } in menu"
-            :key="to"
-            :destination="to"
-            :label="name"
-            :collapsed="collapsed"
-          >
+          <MenuLink v-for="{ name, to, icon } in menu" :key="to" :to="to" :label="name" :collapsed="collapsed">
             <template #icon>
               <Icon :name="icon" />
             </template>
-          </AdNavBarItem>
+          </MenuLink>
         </nav>
-        <AdNavBarItem label="Collapse" collapsed-label="Expand" :collapsed="collapsed" class="cursor-pointer" @click.prevent="onClickCollapse">
+        <SidebarItem label="Collapse" collapsed-label="Expand" :collapsed="collapsed" class="cursor-pointer"
+          @click.prevent="onClickCollapse">
           <template #icon>
-            <div :class="[`-space-x-25 inline-flex size-fit transition-transform duration-500`, { 'rotate-180': collapsed }]">
+            <div
+              :class="[`-space-x-25 inline-flex size-fit transition-transform duration-500`, { 'rotate-180': collapsed }]">
               <IconAngleL class="h-100 stroke-base-light-500 group-hover:stroke-accent stroke-1.5 fill-none" />
               <IconAngleL class="h-100 stroke-base-light-500 group-hover:stroke-accent stroke-1.5 fill-none" />
             </div>
           </template>
-        </AdNavBarItem>
+        </SidebarItem>
       </div>
       <div class="bg-base-dark-300 grow">
         <slot />
