@@ -5,17 +5,22 @@
         <UNBLibrariesLogo class="unbliblogo" />
         <div>Earth Science Collections</div>
       </div>
-      <div class="space-x-100 text-75 flex grow flex-row items-center justify-end">
-        <div>
-          Hello Ann
+      <div class="space-x-100 text-75 text-base-light-400 flex grow flex-row items-center justify-end">
+        <div class="space-x-50">
+          <span>Hello {{ username }}</span><span>👋</span>
         </div>
         <IconHSpace class="stroke-base-light-100 h-100 w-px fill-none stroke-1" />
-        <div>Add New</div>
-        <div>
-          View Site
-        </div>
-        <div>
-          Logout
+        <NuxtLink to="/admin/specimens/add" class="text-accent space-x-25 inline-flex items-center uppercase">
+          <span class="hover:underline">Add New</span>
+          <IconPlus class="size-100 stroke-accent stroke-1.5" />
+        </NuxtLink>
+        <NuxtLink to="/" class="space-x-25 group inline-flex items-center uppercase">
+          <span class="group-hover:underline">View Site</span>
+          <IconLaptop class="size-100 stroke-base-light-400 stroke-1" />
+        </NuxtLink>
+        <div class="space-x-25 group inline-flex items-center uppercase">
+          <span class="group-hover:underline">Logout</span>
+          <IconArrowR class="size-100 stroke-base-light-100 stroke-1.5" />
         </div>
       </div>
     </header>
@@ -44,13 +49,8 @@
       </div>
     </main>
     <footer class="p-75 bg-base-dark-500 flex flex-none flex-row items-center justify-between">
-      <UNBLibrariesLogo
-        class="h-[20px]"
-        icon-class="fill-base-light-100"
-        unb-class="fill-base-light-100"
-        spacer-class="fill-base-light-100"
-        libraries-class="fill-base-light-100"
-      />
+      <UNBLibrariesLogo class="h-[20px]" icon-class="fill-base-light-100" unb-class="fill-base-light-100"
+        spacer-class="fill-base-light-100" libraries-class="fill-base-light-100" />
       <div class="text-base-light-100 text-75">
         Built and maintained by UNB Libraries<br>
         University of New Brunswick &copy; {{ new Date().getFullYear() }}
@@ -91,6 +91,11 @@ const Icon = ({ name }: IconProps) => {
       return <div class="size-100" />
   }
 }
+
+const username = computed(() => {
+  const user = useCurrentUser()
+  return user.profile.value?.firstName || user.username.value
+})
 
 const collapsed = ref(false)
 function onClickCollapse() {
