@@ -2,6 +2,7 @@
   "private": true,
   "scripts": {
     "lint": "eslint .",
+    "lint:inspect": "npx @eslint/config-inspector@latest",
     "lint:commit": "npx eslint $(find $(git diff --diff-filter=d --name-only --cached | xargs) -type f -name \"*.ts\") --no-error-on-unmatched-pattern",
     "lint:fix": "npx eslint . --fix",
     "test": "npm run test:unit && npm run test:e2e",
@@ -10,10 +11,10 @@
     "test:e2e:headless": "cypress run -C ./tests/e2e/cypress.config.ts"
   },
   "devDependencies": {
-    "@nuxtjs/eslint-config-typescript": "^12.0.0",
+    "@nuxt/eslint-config": "^0.5.7",
     "cross-fetch": "^4.0.0",
     "cypress": "^12.9.0",
-    "eslint": "^8.37.0",
+    "eslint": "^9.10.0",
     "eslint-plugin-tailwindcss": "^3.11.0",
     "typescript": "^5.0.2",
     "vitest": "^0.29.8"
