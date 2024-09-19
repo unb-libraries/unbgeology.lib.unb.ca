@@ -24,6 +24,7 @@ export default defineNuxtModule({
       src: resolver.resolve(`./types/index.d.ts`),
     })
 
+    addImportsDir(resolver.resolve(`./runtime/composables`))
     addComponentsDir({
       path: resolver.resolve(`./runtime/components`),
     })
