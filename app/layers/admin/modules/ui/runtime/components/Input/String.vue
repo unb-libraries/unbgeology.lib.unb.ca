@@ -3,7 +3,7 @@
     <div :class="[`input-text-before`, theme?.class?.before]">
       <slot name="before" />
     </div>
-    <input v-model="value" type="text"
+    <input v-model="value" type="text" :required="required"
       :class="[`input-text`, theme?.class?.input, { [theme?.class?.inputInvalid ?? `invalid`]: valid !== undefined && !valid }]"
       v-bind="attrs" @blur.stop="validate(value)">
     <div :class="[`input-text-after`, theme?.class?.after]">
