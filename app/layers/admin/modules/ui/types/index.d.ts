@@ -27,3 +27,7 @@ export interface ValidatedFieldOptions<T extends string> {
   value: T
   caption: string
 }
+
+export interface ValidatorOptions {
+  message: string
+}
