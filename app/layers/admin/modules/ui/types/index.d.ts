@@ -22,3 +22,8 @@ export type ValidatedInputProps<T> = {
 export type ValidatedInputEmits = {
   validated: [valid: boolean, errors?: string[]]
 }
+
+export interface ValidatedFieldOptions<T extends string> {
+  value: T
+  caption: string
+}

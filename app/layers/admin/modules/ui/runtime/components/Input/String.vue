@@ -5,7 +5,7 @@
     </div>
     <input v-model="value" type="text"
       :class="[`input-text`, theme?.class?.input, { [theme?.class?.inputInvalid ?? `invalid`]: valid !== undefined && !valid }]"
-      v-bind="attrs" @blur.stop="onBlur">
+      v-bind="attrs" @blur.stop="validate(value)">
     <div :class="[`input-text-after`, theme?.class?.after]">
       <slot name="after" />
     </div>
@@ -24,13 +24,6 @@ const props = defineProps<ThemedComponentProps<[`input`, `inputInvalid`, `before
 const emits = defineEmits<ValidatedInputEmits>()
 
 const { class: classList, ...attrs } = useInputAttrs()
-const valid = ref()
-
-function onBlur() {
-  const errors = (props.validators ?? [])
-    .map(validator => validator(value.value) || ``)
-    .filter(error => error)
-  valid.value = errors.length === 0
-  emits(`validated`, valid.value, errors)
-}
+const { valid, errors, validate } = useValidate(props.validators)
+watch(valid, valid => emits(`validated`, valid, errors.value))
 </script>
