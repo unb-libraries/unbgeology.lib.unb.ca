@@ -13,9 +13,12 @@
     --header-logo-width: calc(var(--header-logo-height) * 9);
     --navbar-item-logo-width: 1.25rem;
     --navbar-item-logo-label-space: 0.75rem;
-    --navbar-item-label-width: calc(var(--header-logo-width) + var(--header-padding) - 2 * var(--navbar-item-padding) - var(--navbar-item-logo-width) - var(--navbar-item-logo-label-space))
+    --navbar-item-label-width: calc(
+      var(--header-logo-width) + var(--header-padding) - 2 * var(--navbar-item-padding) -
+        var(--navbar-item-logo-width) - var(--navbar-item-logo-label-space)
+    );
   }
-  
+
   body {
     @apply text-white text-100 bg-base;
   }
@@ -23,6 +26,10 @@
   .site-header {
     padding: var(--header-padding);
     @apply bg-base-dark-500 flex w-full flex-none;
+  }
+
+  form {
+    @apply flex flex-col w-full space-y-200;
   }
 }
 
@@ -40,7 +47,6 @@
   .unbliblogo-g-spacer {
     @apply fill-white;
   }
-  
 
   /* Navbar */
   .navbar-item {
@@ -65,7 +71,58 @@
   .navbar-item-label-floating {
     left: calc((var(--navbar-item-padding) * 2) + var(--navbar-item-logo-width) + 0.5rem);
     @apply z-10 hidden absolute;
-    @apply p-50 rounded-lg;
+    @apply p-50 rounded-50;
     @apply text-100 bg-base-dark-400;
+  }
+
+  /* Form */
+  .form-field {
+    @apply flex flex-col w-full;
+  }
+  .form-field-before {
+    @apply space-x-75;
+  }
+  .form-field-label {
+    @apply font-bold;
+  }
+  .form-field-required {
+    @apply text-75 text-red;
+  }
+  .form-field-footer {
+    @apply text-75 text-base-light-300 leading-none;
+    @apply group-has-[.invalid]:text-red;
+  }
+
+  /* Input */
+  .input-wrapper {
+    @apply inline-flex border-2 rounded-50 w-full py-50 px-75;
+    @apply bg-base hover:border-accent border-base-dark-200;
+    @apply has-[:focus]:ring-1 has-[:focus]:ring-accent has-[:focus]:ring-inset has-[:focus]:ring-offset-1 has-[:focus]:ring-offset-accent;
+    @apply has-[.invalid]:border-red has-[:focus.invalid]:ring-red has-[:focus.invalid]:ring-offset-red;
+  }
+  .input {
+    @apply bg-base w-full p-0 border-0 focus:ring-0;
+  }
+  .input.invalid {
+    @apply text-red;
+  }
+
+  /* Text */
+  .input-text {
+    @apply input grow items-center;
+    @apply placeholder:text-base-light-300 placeholder:italic;
+  }
+  .input-text-wrapper {
+    @apply input-wrapper;
+  }
+  .input-text-before,
+  .input-text-after {
+    @apply flex-none empty:hidden text-nowrap flex-nowrap items-center flex;
+  }
+  .input-text-before {
+    @apply mr-50 empty:mr-0;
+  }
+  .input-text-after {
+    @apply ml-50 empty:ml-0;
   }
 }
