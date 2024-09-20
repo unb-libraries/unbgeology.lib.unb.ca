@@ -24,6 +24,6 @@ const props = defineProps<ThemedComponentProps<[`input`, `inputInvalid`, `before
 const emits = defineEmits<ValidatedInputEmits>()
 
 const { class: classList, ...attrs } = useInputAttrs()
-const { valid, errors, validate } = useValidate(props.validators)
-watch(valid, valid => emits(`validated`, valid, errors.value))
+const { valid, errors, validate } = useValidate(props.required && [RequiredValidator(), ...props.validators] || props.validators)
+watch(errors, errors => emits(`validated`, errors.length === 0, errors))
 </script>
