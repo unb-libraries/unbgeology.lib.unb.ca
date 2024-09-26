@@ -137,7 +137,7 @@ export async function fetchEntity <E extends Entity = Entity>(pkOrUri: string, e
     update: async <B extends Partial<E> = Partial<E>>(body: B) => {
       if (entity.value) {
         await updateEntity<E, B>({ self: entity.value.self, ...body })
-        refresh()
+        await refresh()
       }
     },
     remove: async () => {
@@ -237,17 +237,17 @@ export async function fetchEntityList <E extends Entity = Entity>(entityTypeOrId
       const response = typeof entityTypeOrIdOrURI === `string`
         ? await createEntity(entity, entityTypeOrIdOrURI)
         : await createEntity(entity, entityTypeOrIdOrURI)
-      refresh()
+      await refresh()
       return response
     },
     async update(entity: EntityJSONBody<E>) {
       const response = await updateEntity(entity)
-      refresh()
+      await refresh()
       return response
     },
     async remove(entity: EntityJSON<E>) {
       const response = await deleteEntity(entity)
-      refresh()
+      await refresh()
       return response
     },
     async removeMany(entities: EntityJSON<E>[]) {
@@ -257,7 +257,7 @@ export async function fetchEntityList <E extends Entity = Entity>(entityTypeOrId
       typeof entityTypeOrIdOrURI === `string`
         ? await deleteEntityList(entityTypeOrIdOrURI, options)
         : await deleteEntityList(entityTypeOrIdOrURI.name, options)
-      refresh()
+      await refresh()
     },
     error,
   }
