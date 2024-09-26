@@ -1,15 +1,19 @@
 <template>
-  <TermForm type="composition/fossil" @save="onSave" @cancel="navigateTo(returnUrl)" />
+  <FormCompositionCreate
+    @save="onSave"
+    @cancel="navigateTo(returnUrl)"
+  />
 </template>
 
 <script setup lang="ts">
-import type { Composition, CompositionCreateBody } from "~/types/composition"
+import type { Composition, CompositionCreateBody } from '~/types/composition'
+
 definePageMeta({
-  name: `Add fossil composition`,
+  name: `Add composition`,
   layout: `dashboard-page`,
   auth: {
     redirect: true,
-    permission: /^create:term(:composition(:fossil)?)?/,
+    permission: /^create:term(:composition(:fossil|rock)?)?/,
   },
   menu: {
     weight: 0,
@@ -23,5 +27,4 @@ async function onSave({ label, type }: CompositionCreateBody) {
   await create({ label, type })
   navigateTo(returnUrl)
 }
-
 </script>
