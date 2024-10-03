@@ -1,5 +1,5 @@
-import { createConfigForNuxt } from "@nuxt/eslint-config/flat"
-import tailwindcss from "eslint-plugin-tailwindcss"
+import { createConfigForNuxt } from '@nuxt/eslint-config/flat'
+import tailwindcss from 'eslint-plugin-tailwindcss'
 
 export default createConfigForNuxt({
   features: {
@@ -12,12 +12,12 @@ export default createConfigForNuxt({
   .append(tailwindcss.configs[`flat/recommended`])
   .override(`nuxt/vue/rules`, {
     rules: {
-      "vue/no-multiple-template-root": `warn`,
+      'vue/no-multiple-template-root': `warn`,
     },
   })
   .override(`nuxt/typescript/rules`, {
     rules: {
-      "@typescript-eslint/no-unused-vars": [
+      '@typescript-eslint/no-unused-vars': [
         `warn`,
         {
           args: `none`,
@@ -25,9 +25,14 @@ export default createConfigForNuxt({
       ],
     },
   })
+  .override(`nuxt/stylistic`, {
+    rules: {
+      "@stylistic/quotes": [`warn`, `backtick`],
+    },
+  })
   .override(`tailwindcss:rules`, {
     rules: {
-      "tailwindcss/no-custom-classname": [
+      'tailwindcss/no-custom-classname': [
         `warn`,
         {
           config: `app/tailwind.config.js`,
