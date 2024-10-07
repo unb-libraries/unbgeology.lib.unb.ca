@@ -1,4 +1,4 @@
-import { MigrationItemStatus } from "@unb-libraries/nuxt-layer-entity"
+import { MigrationItemStatus, type EntityUpdate, type MigrationItem } from "@unb-libraries/nuxt-layer-entity"
 
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
@@ -16,6 +16,15 @@ export default defineEventHandler(async (event) => {
   const fields = getAuthorizedFields(event, ...resources)
   if (!resources.length) {
     return create403()
+  }
+
+  const bodyOrBodies = await readBody(event)
+  if (Array.isArray(bodyOrBodies)) {
+    const bodies = await readDocumentBodyListOr400(event, { model: MigrationItem, flat: false, fields })
+    const updates = await Promise.all(bodies
+      .filter(({ sourceID }) => sourceID)
+      .map(({ sourceID, ...body }) => $fetchWithSession<EntityUpdate<MigrationItem>>(event)(`/api/migrations/${id}/items/${sourceID}`, { method: `PATCH`, body })))
+    return renderList<EntityUpdate<MigrationItem>>(updates)
   }
 
   const body = await readOneDocumentBodyOr400(event, { model: MigrationItem, flat: true, fields })
