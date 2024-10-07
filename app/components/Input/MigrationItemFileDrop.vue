@@ -6,8 +6,10 @@
 import type { MigrationItem } from "@unb-libraries/nuxt-layer-entity"
 import { parse } from "csv-parse/browser/esm"
 
+type Item = { id: string } & Pick<MigrationItem, `data`>
+
 const emits = defineEmits<{
-  drop: [items: Pick<MigrationItem, `sourceID` | `data`>[]]
+  drop: [items: Item[]]
   error: [msg: string]
   cancel: []
 }>()
@@ -27,7 +29,7 @@ async function onDrop(files: File[]) {
     }
   }))
 
-  const items = parsed.filter(f => f).map(f => f!.map<Pick<MigrationItem, `sourceID` | `data`>>((p) => {
+  const items = parsed.filter(f => f).map(f => f!.map<Item>((p) => {
     const data = Object.entries(p)
     const [[, sourceID]] = data
     return { id: `${sourceID}`, data: Object.fromEntries(data) }

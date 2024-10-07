@@ -165,7 +165,7 @@
 <script setup lang="tsx">
 import { type MigrationItem, type Migration, MigrationItemStatus, FilterOperator, type EntityJSON } from '@unb-libraries/nuxt-layer-entity'
 import useEntityFormModal from '~/layers/primevue/composables/useEntityFormModal'
-import { FormMigrationItems, FormMigrationItemUpdate, PvEntityDeleteConfirm, PvConfirm } from '#components'
+import { FormMigrationItems, FormMigrationItemUpdate, PvEntityDeleteConfirm, PvConfirm, InputMigrationItemFileDrop } from '#components'
 
 definePageMeta({
   layout: false,
@@ -212,10 +212,60 @@ function onAddItems() {
 }
 
 function onViewData() {
-  const json = selected.value.map(({ data }) => Object.fromEntries(Object.entries(data).filter(([id]) => id !== `self`)))
+  const json = ref(selected.value.map(({ data }) => Object.fromEntries(Object.entries(data).filter(([id]) => id !== `self`))))
+  const edited = ref(false)
+  const dropped = ref<({ id: string } & Pick<MigrationItem, `data`>)[]>()
+
+  const onDrop = (items: ({ id: string } & Pick<MigrationItem, `data`>)[]) => {
+    const acceptedItems = items.filter(({ id }) => json.value.find(({ id: jid }) => String(jid) === String(id)))
+    if (acceptedItems.length) dropped.value = acceptedItems
+  }
+
+  const onReplace = (event: MouseEvent) => {
+    event.preventDefault()
+    event.stopPropagation()
+    json.value = dropped.value!.map(({ data }) => data)
+    dropped.value = undefined
+    edited.value = true
+  }
+
+  const onMerge = (event: MouseEvent) => {
+    event.preventDefault()
+    event.stopPropagation()
+    json.value = dropped.value!.map(({ id, data }) => ({ ...json.value.find(({ id: jid }) => String(jid) === String(id)), ...data }))
+    dropped.value = undefined
+    edited.value = true
+  }
+
+  const onDiscard = (event: MouseEvent) => {
+    event.preventDefault()
+    event.stopPropagation()
+    dropped.value = undefined
+  }
+
+  const onUpdate = async (event: MouseEvent) => {
+    event.preventDefault()
+    event.stopPropagation()
+    await updateMany(selected.value, json.value.map(data => ({ id: String(data.id), data })))
+  }
+
   setContent(() => (
-    <div class="bg-primary-80/20 border-primary-80 max-h-144 overflow-y-scroll border p-4 font-mono">
-      <pre>{JSON.stringify(json.length > 1 ? json : json[0], null, 2)}</pre>
+    <div class="space-y-4">
+      <div class="bg-primary-80/20 border-primary-80 max-h-144 overflow-y-scroll border p-4 font-mono">
+        <pre>{JSON.stringify(json.value.length > 1 ? json.value : json.value[0], null, 2)}</pre>
+      </div>
+      <InputMigrationItemFileDrop onDrop={onDrop} />
+      {dropped.value && (
+        <div class="bg-yellow-light inline-flex w-full items-center justify-between rounded-md p-2 text-black">
+          <span>{`Merge or replace ${dropped.value.length} items?`}</span>
+          <div class="inline-flex gap-2">
+            <button class="button button-sm button-yellow hover:button-yellow-light text-black hover:text-black" onClick={onReplace}>Replace</button>
+            <button class="button button-sm button-yellow hover:button-yellow-light text-black hover:text-black" onClick={onMerge}>Merge</button>
+            <button class="button button-sm button-yellow hover:button-yellow-light text-black hover:text-black" onClick={onDiscard}>Discard</button>
+          </div>
+        </div>
+      )}
+      {edited.value && <button class="button button-md button-accent-mid hover:button-accent-light" onClick={onUpdate}>Update</button>}
     </div>
   ))
 }
@@ -277,7 +327,7 @@ const onClickDelete = (items: MigrationItem[]) => {
     onCancel={closeModal} />)
 }
 
-const { list, entities: items, query: { filter, page, pageSize, sort }, removeMany, refresh } = await fetchEntityList<MigrationItem>(`/api/migrations/${id}/items`)
+const { list, entities: items, query: { filter, page, pageSize, sort }, updateMany, removeMany, refresh } = await fetchEntityList<MigrationItem>(`/api/migrations/${id}/items`)
 const selected = ref<MigrationItem[]>([])
 
 const shallPoll = computed(() => items.value.some(({ status }) => useEnum(MigrationItemStatus).valueOf(status) & (MigrationItemStatus.PENDING | MigrationItemStatus.QUEUED)))

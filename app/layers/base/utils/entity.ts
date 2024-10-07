@@ -245,6 +245,16 @@ export async function fetchEntityList <E extends Entity = Entity>(entityTypeOrId
       await refresh()
       return response
     },
+    async updateMany(entities: EntityJSON<E>[], body: Partial<E> | Partial<E>[]) {
+      const options = {
+        filter: entities.map<[string, FilterOperator, string]>(({ id }) => [`id`, FilterOperator.EQUALS, id]),
+        body,
+      }
+      typeof entityTypeOrIdOrURI === `string`
+        ? await updateEntityList(entityTypeOrIdOrURI, body, options)
+        : await updateEntityList(entityTypeOrIdOrURI.name, body, options)
+      await refresh()
+    },
     async remove(entity: EntityJSON<E>) {
       const response = await deleteEntity(entity)
       await refresh()
@@ -263,12 +273,27 @@ export async function fetchEntityList <E extends Entity = Entity>(entityTypeOrId
   }
 }
 
-async function deleteEntityList<E extends Entity = Entity>(entityTypeID: string, options?: FetchEntityListOptions) {
+async function updateEntityList<E extends Entity = Entity>(uriOrEntityTypeID: string, body: Partial<E> | (Partial<E>)[], options?: FetchEntityListOptions) {
+  if (!uriOrEntityTypeID.startsWith(`/`)) return await updateEntityList(useEntityType<E>(uriOrEntityTypeID).definition.baseURI, body, options)
+
+  const url = uriOrEntityTypeID
+  const { filter, page, pageSize, search, select, sort } = options ?? {}
+  const fetchOptions: UseFetchOptions<EntityJSONList<E>> = {
+    method: `PATCH`,
+    body,
+    query: { filter: filter?.map(f => f.join(`:`)), page, pageSize, search, select, sort },
+  }
+  return await useFetch<EntityJSONList<E>>(url, fetchOptions)
+}
+
+async function deleteEntityList<E extends Entity = Entity>(uriOrEntityTypeID: string, options?: FetchEntityListOptions) {
+  if (!uriOrEntityTypeID.startsWith(`/`)) return deleteEntityList(useEntityType<E>(uriOrEntityTypeID).definition.baseURI, options)
+
+  const url = uriOrEntityTypeID
   const { filter, page, pageSize, search, select, sort } = options ?? {}
   const fetchOptions: UseFetchOptions<EntityJSONList<E>> = {
     method: `DELETE`,
     query: { filter: filter?.map(f => f.join(`:`)), page, pageSize, search, select, sort },
   }
-  const url = useEntityType<E>(entityTypeID).definition.baseURI
   return await useFetch<EntityJSONList<E>>(url, fetchOptions)
 }
