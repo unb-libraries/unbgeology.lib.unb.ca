@@ -247,6 +247,8 @@ function onViewData() {
     event.preventDefault()
     event.stopPropagation()
     await updateMany(selected.value, json.value.map(data => ({ id: String(data.id), data })))
+    selected.value = []
+    closeModal()
   }
 
   setContent(() => (
