@@ -251,6 +251,12 @@ function onViewData() {
     closeModal()
   }
 
+  const onCancel = async (event: MouseEvent) => {
+    event.preventDefault()
+    event.stopPropagation()
+    closeModal()
+  }
+
   setContent(() => (
     <div class="space-y-4">
       <div class="bg-primary-80/20 border-primary-80 max-h-144 overflow-y-scroll border p-4 font-mono">
@@ -267,7 +273,12 @@ function onViewData() {
           </div>
         </div>
       )}
-      {edited.value && <button class="button button-md button-accent-mid hover:button-accent-light" onClick={onUpdate}>Update</button>}
+      {edited.value && (
+        <div class="inline-flex items-center space-x-2">
+          <button class="button button-md button-accent-mid hover:button-accent-light" onClick={onUpdate}>Update</button>
+          <a class="cursor-pointer underline" onClick={onCancel}>Cancel</a>
+        </div>
+      )}
     </div>
   ))
 }
