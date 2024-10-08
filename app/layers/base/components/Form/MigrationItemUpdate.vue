@@ -1,7 +1,13 @@
 <template>
-  <EntityForm @save="onSave" @cancel="$emit(`cancel`)">
+  <EntityForm
+    @save="onSave"
+    @cancel="$emit(`cancel`)"
+  >
     <TwFormField label="Fields">
-      <PvMultipleChoice v-model="fields" :options="options" />
+      <PvMultipleChoice
+        v-model="fields"
+        :options="options"
+      />
     </TwFormField>
   </EntityForm>
 </template>
@@ -19,7 +25,7 @@ const emits = defineEmits<{
   cancel: []
 }>()
 
-const fields = ref<Record<string, boolean>>(Object.fromEntries(Object.keys(props.item.data).map(field => [field, true])))
+const fields = ref<Record<string, boolean>>(Object.fromEntries(Object.keys(props.item.data).map(field => [field, false])))
 const options = computed(() => Object.keys(props.item.data)
   .filter(k => k !== `self`)
   .filter((k, index) => props.sourceIDField ? k !== props.sourceIDField : index > 0)
