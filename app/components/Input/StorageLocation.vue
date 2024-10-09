@@ -14,7 +14,10 @@
     <template #item="{ options: [option, name, selected] }">
       <div class="flex flex-col">
         <span>{{ name }}</span>
-        <span class="group-hover:text-primary-80 text-xs italic" :class="{ 'text-primary-20': !selected, 'text-primary-80': selected }">
+        <span
+          class="group-hover:text-primary-80 text-xs italic"
+          :class="{ 'text-primary-20': !selected, 'text-primary-80': selected }"
+        >
           {{ (getAncestorLabels(option as string) ?? []).join(` &raquo; `) ?? `&nbsp;` }}
         </span>
       </div>
@@ -50,6 +53,6 @@ while (!allLoaded) {
 }
 
 function getAncestorLabels(option: string) {
-  return locations.value.find(op => op.self === option)?.ancestors?.entities.map(acs => acs.label).reverse()
+  return locations.value.find(op => op.self === option)?.ancestors?.entities.map(acs => acs.label).reverse() ?? []
 }
 </script>
