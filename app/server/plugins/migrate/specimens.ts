@@ -1,5 +1,5 @@
 import { consola } from "consola"
-import { type Image, type EntityJSONList } from "@unb-libraries/nuxt-layer-entity"
+import type { Image, EntityJSONList } from "@unb-libraries/nuxt-layer-entity"
 import type { Classification } from "~/types/classification"
 import { Category, type Specimen, MeasurementCount, Immeasurabibility, type ObjectID } from "~/types/specimen"
 import type { Composition } from "~/types/composition"
@@ -16,7 +16,7 @@ interface MimsySpecimen {
     id: string
     type: string | null // null = "unknown"
     source: string | null
-  }[],
+  }[]
   // Ore? and others?
   // Ore to be imported as "Rock", leave note
   // "Mineral; Rock" or "Rock; Mineral" -> Rock
@@ -85,30 +85,25 @@ function getAuthHeaders(): { Cookie?: string } {
 }
 
 export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (data, { sourceID, migration: { dependencies } }) => {
-  const { unb_id: unbID, other_ids: legacyIDs, type, classification: classifications, name, description, pieces, composition, age, partial, measurements, origin, collected, collector_ids: collectorIDs, publications, location_history: storage, created, creator } = data
+  const { unb_id: unbID, other_ids: legacyIDs, type, classification: classifications, name, description, images, pieces, composition, age, partial, measurements, origin, collected, collector_ids: collectorIDs, publications, location_history: storage, created, creator, updated, editor } = data
   const headers = getAuthHeaders()
 
-  let category
-  if (type.toLowerCase().match(/rock|ore/)) {
-    category = Category.ROCK
-  } else if (type.toLowerCase().match(/fossil/)) {
-    category = Category.FOSSIL
-  } else if (type.toLowerCase().match(/mineral/)) {
-    category = Category.MINERAL
-  }
-
-  if (!category) {
-    throw new Error(`Unknown specimen type: ${type}`)
-  }
+  const category = type?.toLowerCase().match(/rock|ore/)
+    ? Category.ROCK
+    : type?.toLowerCase().match(/fossil/)
+      ? Category.FOSSIL
+      : type?.toLowerCase().match(/mineral/)
+        ? Category.MINERAL
+        : undefined
 
   return {
-    objectIDs: [{ id: `UNB-${unbID}`, type: `Mimsy` }, ...(legacyIDs ?? []).map<ObjectID>(lid => ({
+    objectIDs: unbID && [{ id: `UNB-${unbID}`, type: `Mimsy` }, ...(legacyIDs ?? []).map<ObjectID>(lid => ({
       id: lid.id,
       type: lid.type ?? lid.source ?? undefined,
     }))],
     type: category,
-    classification: await (async () => {
-      if (!Array.isArray(classifications) || classifications.length < 1) { return }
+    classification: classifications && category && await (async () => {
+      if (!Array.isArray(classifications) || classifications.length < 1) return null
       for (const classification of classifications.reverse()) {
         const classificationEntities = await $fetch<EntityJSONList<Classification>>(`/api/terms`, {
           query: {
@@ -123,11 +118,11 @@ export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (
           return classificationEntities?.entities[0]?.self
         }
       }
-      return undefined
+      return null
     })(),
-    name: name !== `Unknown` ? name : undefined,
+    name: name && (name !== `Unknown` ? name : null),
     description,
-    images: await (async () => {
+    images: images && unbID && await (async () => {
       try {
         const [year, index] = unbID.split(`-`).map(n => n.replace(/^0+/, ``))
         const pattern = `^[0-9a-z]{24}-(UNB)?${year}-0*${index}[a-z]?([- ].*)?\\.JPG$`
@@ -136,10 +131,10 @@ export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (
         return files.map(({ self }) => self)
       } catch (err: unknown) {
         consola.error(`Failed to fetch images for specimen ${unbID}: ${(err as Error).message}`)
-        return undefined
+        return null
       }
     })(),
-    date: (collected && collected.toLowerCase() !== `unknown` && (() => {
+    date: collected && ((collected.toLowerCase() !== `unknown` && (() => {
       const parsed = collected
         .replace(/[?.,]/g, ``)
         .replace(/(\d)(st|nd|rd|th)/g, `$1`)
@@ -156,13 +151,13 @@ export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (
           : date.toString() !== `Invalid Date`
             ? [date.getFullYear(), date.getMonth() + 1, date.getDate()]
             : []).join(`-`)
-    })()) || undefined,
-    composition: await (async () => {
+    })()) || null),
+    composition: composition && await (async () => {
       const findTerm = async (term: string) => (await $fetch<EntityJSONList<Composition>>(`/api/terms`, {
         query: {
           filter: [
-              `label:equals:${term}`,
-              `type:equals:composition/${category}`,
+            `label:equals:${term}`,
+            `type:equals:composition/${category}`,
           ],
         },
         headers,
@@ -173,9 +168,9 @@ export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (
         .map(c => c.trim())
         .map(findTerm) ?? []))
         .filter(c => typeof c === `string`)
-      return terms.length > 0 ? terms : undefined
+      return terms.length > 0 ? terms : null
     })(),
-    age: await (async () => {
+    age: age && await (async () => {
       const unitEntities = await $fetch<EntityJSONList<Unit>>(`/api/terms`, {
         query: {
           filter: [
@@ -185,10 +180,10 @@ export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (
         },
         headers,
       })
-      return unitEntities?.entities?.sort(({ start: a }, { start: b }) => b - a).slice(0, 2).map(t => t.self)
+      return unitEntities?.entities?.sort(({ start: a }, { start: b }) => b - a).slice(0, 2).map(t => t.self) ?? null
     })(),
-    measurements: (() => {
-      if (!measurements || measurements.match(/^unknown/i)) { return }
+    measurements: measurements && (() => {
+      if (!measurements || measurements.match(/^unknown/i)) return null
       if (measurements.match(/^(unmeasur|microscopic|too)/)) {
         return {
           count: MeasurementCount.IMMEASURABLE,
@@ -226,47 +221,48 @@ export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (
     })(),
     pieces,
     partial: partial && !partial.toLowerCase().includes(`whole`),
-    origin: (origin && {
+    origin: origin && {
       name: origin?.place?.join(`, `) ?? origin.place_raw ?? ``,
       description: origin.site,
-    }) || undefined,
-    collector: (collectorIDs && collectorIDs.length && await (async () => {
+    },
+    collector: collectorIDs && ((collectorIDs.length && await (async () => {
+      console.log(`collectorIDs`, collectorIDs)
       const collectorsMigration = dependencies.find(m => m.entityType === `Term.Affiliate`)
-      if (!collectorsMigration) { throw new Error(`Collectors migration not found`) }
-
+      if (!collectorsMigration) throw new Error(`Collectors migration not found`)
       for (const collectorID of collectorIDs) {
         const collector = await useMigrationLookup(collectorsMigration, `${collectorID}`)
         if (collector) {
           return collector
         }
       }
-    })()) || undefined,
-    publications: (Array.isArray(publications) && (() => {
+    })()) || null),
+    publications: publications && ((Array.isArray(publications) && (() => {
       return publications.map((publication, i) => {
         const { citation, abstract, url } = publication
         const id = (citation?.substring(0, citation?.indexOf(`,`) > 0 ? citation?.indexOf(`,`) : 10)) || `${i}`
         return { id, citation: citation || url || undefined, abstract: abstract || undefined, doi: url || undefined }
       })
-    })()) || undefined,
-    storage: (storage && (await Promise.all(storage.map(async (loc) => {
+    })()) || null),
+    storage: storage && ((await Promise.all(storage.map(async (loc) => {
+      console.log(`storage`, storage)
       const storageMigration = dependencies.find(m => m.entityType === `Term.StorageLocation`)
-      if (!storageMigration) { throw new Error(`Storage locations' migration not found`) }
+      if (!storageMigration) throw new Error(`Storage locations' migration not found`)
 
       const { name: labels, date: dateIn } = loc
       const sourceID = labels.join(`|`).toLowerCase()
       const location = await useMigrationLookup(storageMigration, sourceID)
       return { location, dateIn }
-    })))) || undefined,
-    created: new Date(created).toISOString(),
-    creator: await (async () => {
+    }))) || null),
+    created: created && (new Date(created).toISOString() || null),
+    creator: creator && await (async () => {
       const userEntities = await $fetch(`/api/users`, { query: { filter: [`username:equals:${creator.toLowerCase()}`] }, headers })
-      return userEntities?.entities[0]?.self
+      return userEntities?.entities[0]?.self ?? null
     })(),
-    updated: new Date().toISOString(),
-    editor: await (async () => {
+    updated: updated && (new Date().toISOString() ?? null),
+    editor: editor && await (async () => {
       const { user } = useCurrentServerSession(useEvent()).data
       const userEntities = await $fetch(`/api/users`, { query: { filter: [`username:equals:${user}`] }, headers })
-      return userEntities?.entities[0]?.self
+      return userEntities?.entities[0]?.self ?? null
     })(),
   }
 })
