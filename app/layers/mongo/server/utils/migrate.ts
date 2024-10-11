@@ -1,7 +1,7 @@
 import { type Entity, MigrationItemStatus } from "@unb-libraries/nuxt-layer-entity"
 import type { MigrateHandler } from "../../types"
-import type { Migration } from "../documentTypes/Migration"
-import type { MigrationItem } from "../documentTypes/MigrationItem"
+import type { Migration as IMigration } from "../documentTypes/Migration"
+import type { MigrationItem as IMigrationItem } from "../documentTypes/MigrationItem"
 
 enum MigrationLookupErrorReason {
   UNAVAILABLE = 1,
@@ -14,9 +14,9 @@ interface MigrationLookupErrorDetails {
   message: string
 }
 export class MigrationLookupError extends Error {
-  private _item?: MigrationItem
+  private _item?: IMigrationItem
 
-  constructor(item?: MigrationItem, options?: Partial<MigrationLookupErrorDetails>) {
+  constructor(item?: IMigrationItem, options?: Partial<MigrationLookupErrorDetails>) {
     super(options?.message, { cause: options?.cause })
     this._item = item
   }
@@ -36,7 +36,7 @@ export class MigrationLookupNotFoundError extends MigrationLookupError {
 }
 
 export class MigrationLookupNotImportedError extends MigrationLookupError {
-  constructor(item: MigrationItem) {
+  constructor(item: IMigrationItem) {
     super(item, {
       message: `Item "${item.sourceID}" not imported.`,
       cause: MigrationLookupErrorReason.SKIPPED,
@@ -45,7 +45,7 @@ export class MigrationLookupNotImportedError extends MigrationLookupError {
 }
 
 export class MigrationLookupNotSuccessful extends MigrationLookupError {
-  constructor(item: MigrationItem) {
+  constructor(item: IMigrationItem) {
     super(item, {
       message: `Item "${item.sourceID}" errored.`,
       cause: MigrationLookupErrorReason.ERRORED,
@@ -53,11 +53,11 @@ export class MigrationLookupNotSuccessful extends MigrationLookupError {
   }
 }
 
-export function getMigrationDependency(migration: Migration, entityType: string) {
+export function getMigrationDependency(migration: IMigration, entityType: string) {
   return migration.dependencies.find(d => d.entityType === entityType)
 }
 
-export function useMigrationLookup(migration: Migration, sourceID: string): Promise<string> {
+export function useMigrationLookup(migration: IMigration, sourceID: string): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     const registry: (() => void)[] = []
     const register = (unregister: () => void) => registry.push(unregister)
@@ -65,21 +65,21 @@ export function useMigrationLookup(migration: Migration, sourceID: string): Prom
 
     const nitro = useNitroApp()
 
-    function onImport(item: MigrationItem) {
+    function onImport(item: IMigrationItem) {
       if (`${item.sourceID}` === sourceID && `${item.migration._id}` === `${migration._id}`) {
         unregister()
         resolve(item.entityURI!)
       }
     }
 
-    function onSkip(item: MigrationItem) {
+    function onSkip(item: IMigrationItem) {
       if (`${item.sourceID}` === sourceID && `${item.migration._id}` === `${migration._id}`) {
         unregister()
         reject(new MigrationLookupNotImportedError(item))
       }
     }
 
-    function onError(item: MigrationItem, err: Error | string) {
+    function onError(item: IMigrationItem, err: Error | string) {
       if (`${item.sourceID}` === sourceID && `${item.migration._id}` === `${migration._id}`) {
         unregister()
         reject(new MigrationLookupNotSuccessful(item))
@@ -118,12 +118,13 @@ export function useMigrationLookup(migration: Migration, sourceID: string): Prom
   })
 }
 
-export function defineMigrateHandler<T, E extends Entity = Entity>(entityType: string, handler: (data: T, item: MigrationItem) => E | null | Promise<E | null>): MigrateHandler {
+export function defineMigrateHandler<T, E extends Entity = Entity>(entityType: string, handler: (data: T, item: IMigrationItem) => E | null | Promise<E | null>): MigrateHandler {
   return defineNitroPlugin((nitro) => {
     // REFACTOR: This shall use an EntitJSON<MigrationItem>
     nitro.hooks.hook(`migrate:import:item:transform`, async (item, { fields }) => {
       if (item.migration.entityType === entityType) {
         const data = Object.fromEntries(Object.entries(item.data).filter(([key]) => fields?.includes(key) ?? true)) as T
+        console.log(`migrate:import:item:transform`, data)
         return await handler(data, item)
       }
       return {}
@@ -131,7 +132,7 @@ export function defineMigrateHandler<T, E extends Entity = Entity>(entityType: s
   })
 }
 
-export async function migrateSkip(item: MigrationItem) {
+export async function migrateSkip(item: IMigrationItem) {
   const nitro = useNitroApp()
   // await $fetch<EntityJSON<MigrationItem>>(item.self, {
   //   method: `PATCH`,
