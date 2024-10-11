@@ -1,7 +1,7 @@
 import { type Entity, MigrationItemStatus } from "@unb-libraries/nuxt-layer-entity"
 import type { MigrateHandler } from "../../types"
-import { type Migration } from "../documentTypes/Migration"
-import { type MigrationItem } from "../documentTypes/MigrationItem"
+import type { Migration } from "../documentTypes/Migration"
+import type { MigrationItem } from "../documentTypes/MigrationItem"
 
 enum MigrationLookupErrorReason {
   UNAVAILABLE = 1,
@@ -121,9 +121,10 @@ export function useMigrationLookup(migration: Migration, sourceID: string): Prom
 export function defineMigrateHandler<T, E extends Entity = Entity>(entityType: string, handler: (data: T, item: MigrationItem) => E | null | Promise<E | null>): MigrateHandler {
   return defineNitroPlugin((nitro) => {
     // REFACTOR: This shall use an EntitJSON<MigrationItem>
-    nitro.hooks.hook(`migrate:import:item:transform`, async (item) => {
+    nitro.hooks.hook(`migrate:import:item:transform`, async (item, { fields }) => {
       if (item.migration.entityType === entityType) {
-        return await handler(item.data, item)
+        const data = Object.fromEntries(Object.entries(item.data).filter(([key]) => fields?.includes(key) ?? true)) as T
+        return await handler(data, item)
       }
       return {}
     })

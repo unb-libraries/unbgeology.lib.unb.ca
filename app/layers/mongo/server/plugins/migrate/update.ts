@@ -12,12 +12,9 @@ export default defineNitroPlugin((nitro) => {
     }
 
     async function doUpdate(item: Document<any, {}, MigrationItem> & MigrationItem) {
-      const { fetch, fields } = options
-      const originalData = item.data
-      item.set(`data`, Object.fromEntries(Object.entries(item.data).filter(([key]) => fields?.includes(key) ?? true)))
+      const { fetch } = options
       const bodies = await nitro.hooks.callHookParallel(`migrate:import:item:transform`, item, options)
       const body = Object.fromEntries(Object.entries(bodies.reduce((acc, body) => ({ ...acc, ...body }), {})))
-      item.set(`data`, originalData)
       return await fetch<EntityJSON>(item.entityURI!, { method: `PATCH`, body })
     }
 
