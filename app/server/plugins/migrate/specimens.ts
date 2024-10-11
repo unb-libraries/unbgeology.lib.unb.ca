@@ -250,9 +250,9 @@ export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (
 
       const { name: labels, date: dateIn } = loc
       const sourceID = labels.join(`|`).toLowerCase()
-      const location = await useMigrationLookup(storageMigration, sourceID)
+      const location = sourceID && await useMigrationLookup(storageMigration, sourceID)
       return { location, dateIn }
-    }))) || null),
+    }))).filter(({ location }) => location) || null),
     created: created && (new Date(created).toISOString() || null),
     creator: creator && await (async () => {
       const userEntities = await $fetch(`/api/users`, { query: { filter: [`username:equals:${creator.toLowerCase()}`] }, headers })
