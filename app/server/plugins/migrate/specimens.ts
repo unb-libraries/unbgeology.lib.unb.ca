@@ -226,7 +226,6 @@ export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (
       description: origin.site,
     },
     collector: collectorIDs && ((collectorIDs.length && await (async () => {
-      console.log(`collectorIDs`, collectorIDs)
       const collectorsMigration = dependencies.find(m => m.entityType === `Term.Affiliate`)
       if (!collectorsMigration) throw new Error(`Collectors migration not found`)
       for (const collectorID of collectorIDs) {
@@ -244,7 +243,6 @@ export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (
       })
     })()) || null),
     storage: storage && ((await Promise.all(storage.map(async (loc) => {
-      console.log(`storage`, storage)
       const storageMigration = dependencies.find(m => m.entityType === `Term.StorageLocation`)
       if (!storageMigration) throw new Error(`Storage locations' migration not found`)
 
