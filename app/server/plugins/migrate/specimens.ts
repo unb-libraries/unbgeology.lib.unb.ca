@@ -147,9 +147,9 @@ export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (
       return (parsed.match(yearOnly)
         ? [date.getFullYear()]
         : parsed.match(yearMonth)
-          ? [date.getFullYear(), date.getMonth() + 1]
+          ? [date.getFullYear(), `${date.getMonth() + 1}`.padStart(2, `0`)]
           : date.toString() !== `Invalid Date`
-            ? [date.getFullYear(), date.getMonth() + 1, date.getDate()]
+            ? [date.getFullYear(), `${date.getMonth() + 1}`.padStart(2, `0`), `${date.getDate()}`.padStart(2, `0`)]
             : []).join(`-`)
     })()) || null),
     composition: composition && await (async () => {
