@@ -33,7 +33,7 @@ async function onDrop(files: File[]) {
     const data = Object.entries(p)
     const [[, sourceID]] = data
     return { id: `${sourceID}`, data: Object.fromEntries(data) }
-  })).flat()
+  })).flat().reduce((all, item) => ({ ...all, [item.id]: { id: item.id, data: { ...all[item.id]?.data ?? {}, ...item.data } } }), {} as Record<string, Item>)
 
   emits(`drop`, Object.values(items))
 }
