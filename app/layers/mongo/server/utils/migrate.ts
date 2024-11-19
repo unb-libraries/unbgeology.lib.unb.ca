@@ -124,7 +124,6 @@ export function defineMigrateHandler<T, E extends Entity = Entity>(entityType: s
     nitro.hooks.hook(`migrate:import:item:transform`, async (item, { fields }) => {
       if (item.migration.entityType === entityType) {
         const data = Object.fromEntries(Object.entries(item.data).filter(([key]) => fields?.includes(key) ?? true)) as T
-        console.log(`migrate:import:item:transform`, data)
         return await handler(data, item)
       }
       return {}

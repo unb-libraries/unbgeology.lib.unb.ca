@@ -198,7 +198,9 @@ export default defineMigrateHandler<MimsySpecimen, Specimen>(`Specimen`, async (
       } else {
         const sla = [`small`, `large`, `average`]
         const parsed = measurements.split(`;`)
+          .filter(m => m)
           .map(m => m.replace(/cm|:|x/g, ``).replace(/\s+/g, ` `).trim().split(` `))
+          .map(measurements => Array.from({ length: Math.max(measurements.length, 3) }, (_, i) => measurements[i] ?? `0`))
           .map(measurements => [
             [...measurements].reverse().slice(3).reverse().join(` `),
             ...measurements.slice(-3).map(e => e.startsWith(`.`) ? `0${e}` : e).map(e => Number(e) * 10).map(e => isNaN(e) ? 0 : e),
