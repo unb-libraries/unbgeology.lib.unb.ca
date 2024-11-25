@@ -1,7 +1,7 @@
 import { EntityFieldTypes } from "layers/mongo/types/entity"
 import { Immeasurabibility, Legal, MeasurementCount, Status } from "types/specimen"
 import type { Entity, Stateful as IStateful } from "@unb-libraries/nuxt-layer-entity"
-import type { Specimen as SpecimenEntity, Loan } from "types/specimen"
+import type { Specimen as SpecimenEntity } from "types/specimen"
 import type { Fossil as FossilCD, Mineral as MineralCD, Rock as RockCD } from "./Classification"
 import type { Portion } from "./Portion"
 import type { Person, Organization } from "./Affiliate"
@@ -11,8 +11,8 @@ import type { Collection as ICollection } from "./Collection"
 import type { Composition as IComposition } from "./Composition"
 import type { DocumentBase as IDocumentBase } from "~/layers/mongo/types/schema"
 import ImageFile, { type Image } from "~/layers/mongo/server/documentTypes/Image"
-import { type User } from "~/layers/mongo/server/documentTypes/User"
-import { type Authorize as IAuthorize } from "~/layers/mongo/server/utils/mixins/Authorize"
+import type { User } from "~/layers/mongo/server/documentTypes/User"
+import type { Authorize as IAuthorize } from "~/layers/mongo/server/utils/mixins/Authorize"
 import type { IPIKable as IIPIKable } from "~/layers/mongo/server/utils/mixins/IPIKable"
 
 export interface Specimen extends Omit<SpecimenEntity, keyof Entity | `type` | `classification` | `collection` | `images` | `age` | `composition` | `measurements` | `collector` | `sponsor` | `loans` | `storage` | `creator` | `editor`>, IStateful<typeof Status>, IIPIKable, IAuthorize, IDocumentBase {
@@ -34,10 +34,6 @@ export interface Specimen extends Omit<SpecimenEntity, keyof Entity | `type` | `
   collectorModel: string
   sponsor?: Person | Organization
   sponsorModel: string
-  loans: Array<Omit<Loan, `start` | `end`> & {
-    start: number
-    end: number
-  }>
   storageLocations: IStorageLocation[]
   storage: {
     id: string
@@ -234,7 +230,10 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
     required: false,
     validate: {
       validator: function (dateStr: Specimen[`date`]) {
-        if (!dateStr) { return true }
+        if (!dateStr) {
+          return true
+        }
+
         try {
           const date = new Date(dateStr)
           return date !== undefined && !isNaN(date.getTime())
@@ -346,50 +345,6 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
     default() {
       return Term.mongoose.model.modelName
     },
-  },
-  loans: {
-    type: [{
-      received: {
-        type: EntityFieldTypes.Boolean,
-        required: true,
-      },
-      contact: {
-        name: {
-          type: EntityFieldTypes.String,
-          required: true,
-        },
-        affiliation: {
-          type: EntityFieldTypes.String,
-          required: true,
-        },
-        email: {
-          type: EntityFieldTypes.String,
-          match: validationPatterns.email,
-          required: true,
-        },
-        phone: {
-          type: EntityFieldTypes.String,
-          match: validationPatterns.phone,
-          required: true,
-        },
-      },
-      start: {
-        type: EntityFieldTypes.Number,
-        required: true,
-      },
-      end: {
-        type: EntityFieldTypes.Number,
-        required: true,
-      },
-    }],
-    validate: [
-      {
-        validator: function (loans: Specimen[`loans`]) {
-          return !loans || loans.every(loan => loan.start <= loan.end)
-        },
-        message: `Loan start date must precede end date.`,
-      },
-    ],
   },
   storageLocations: {
     type: [{

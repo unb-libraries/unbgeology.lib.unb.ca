@@ -51,19 +51,6 @@ export interface Place {
   description?: string
 }
 
-export interface Loan {
-  received: boolean
-  contact: {
-    name: string
-    affiliation: string
-    email: string
-    phone: string
-  }
-  start: string
-  end: string
-  contract: string
-}
-
 export interface Storage {
   id: string
   location: StorageLocation
@@ -111,9 +98,8 @@ export interface Specimen extends Entity, Stateful<typeof Status> {
   collector?: Affiliate
   sponsor?: Affiliate
   appraisal?: number
-  loans?: Loan[],
-  storage: Storage[],
-  publications?: Publication[],
+  storage: Storage[]
+  publications?: Publication[]
   creator: User
   editor: User
 }
