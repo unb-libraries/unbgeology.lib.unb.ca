@@ -3,39 +3,14 @@ import type { Loan as LoanEntity } from "types/loan"
 import type { Specimen } from "./Specimen"
 import { EntityFieldTypes } from "~/layers/mongo/types/entity"
 import type { DocumentBase as IDocumentBase } from "~/layers/mongo/types/schema"
+import type { ObjectID } from "~/types/specimen"
+import type { File } from "~/layers/mongo/server/documentTypes/FileBase"
 
 export interface Loan extends Omit<LoanEntity, keyof Entity | `start` | `end` | `specimens`>, IDocumentBase {
   start: number
   end: number
+  specimens: ObjectID[]
 }
-
-export interface Specimen_Loan extends IDocumentBase {
-  loan: Loan
-  specimen: Specimen
-  id?: string
-  url?: string
-}
-
-export defineDocumentModel(`Specimen_Loan`, defineDocumentSchema<Specimen_Loan>({
-  loan: {
-    type: EntityFieldTypes.ObjectId,
-    ref: `Loan`,
-    required: true,
-  },
-  specimen: {
-    type: EntityFieldTypes.ObjectId,
-    ref: `Specimen`,
-    required: true,
-  },
-  id: {
-    type: EntityFieldTypes.String,
-    required: false,
-  },
-  url: {
-    type: EntityFieldTypes.String,
-    required: false,
-  },
-}).mixin(DocumentBase()))
 
 export default defineDocumentModel(`Loan`, defineDocumentSchema<Loan>({
   description: {
@@ -77,9 +52,14 @@ export default defineDocumentModel(`Loan`, defineDocumentSchema<Loan>({
     },
     required: true,
   },
+  specimens: [{
+    type: EntityFieldTypes.ObjectId,
+    ref: `Specimen`,
+    required: true,
+  }],
   contract: {
     type: EntityFieldTypes.ObjectId,
     ref: `File`,
     required: false,
   },
-}).mixin(DocumentBase()))
+}).mixin(DocumentBase())())

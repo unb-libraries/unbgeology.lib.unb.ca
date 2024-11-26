@@ -11,7 +11,7 @@ import type { Collection as ICollection } from "./Collection"
 import type { Composition as IComposition } from "./Composition"
 import type { DocumentBase as IDocumentBase } from "~/layers/mongo/types/schema"
 import ImageFile, { type Image } from "~/layers/mongo/server/documentTypes/Image"
-import type { User } from "~/layers/mongo/server/documentTypes/User"
+import type { User as IUser } from "~/layers/mongo/server/documentTypes/User"
 import type { Authorize as IAuthorize } from "~/layers/mongo/server/utils/mixins/Authorize"
 import type { IPIKable as IIPIKable } from "~/layers/mongo/server/utils/mixins/IPIKable"
 
@@ -41,8 +41,8 @@ export interface Specimen extends Omit<SpecimenEntity, keyof Entity | `type` | `
     dateIn: number
     dateOut?: number
   }[]
-  creator: User
-  editor: User
+  creator: IUser
+  editor: IUser
 }
 
 export interface FossilSpecimen extends Omit<Specimen, `classification` | `composition` | keyof Entity>, IDocumentBase {
