@@ -62,4 +62,24 @@ export default defineDocumentModel(`Loan`, defineDocumentSchema<Loan>({
     ref: `File`,
     required: false,
   },
+}, {
+  alterSchema: (schema) => {
+    schema.set(`toJSON`, {
+      transform: ({ _id, description, start, end, contact, specimens, contract }: Partial<Omit<Loan, `specimens` | `contract`> & { specimens: Specimen[], contract: File }>) => ({
+        self: `/api/loans/${_id}`,
+        id: `${_id}`,
+        description,
+        start: start && new Date(start).toISOString(),
+        end: end && new Date(end).toISOString(),
+        contact: contact && {
+          name: contact.name,
+          affiliation: contact.affiliation,
+          email: contact.email,
+          phone: contact.phone,
+        },
+        specimens: specimens?.map(({ slug }) => ({ self: `/api/specimens/${slug}`, id: slug })),
+        contract: contract && { self: `/api/files/${contract._id}`, id: contract._id },
+      }),
+    })
+  },
 }).mixin(DocumentBase())())
