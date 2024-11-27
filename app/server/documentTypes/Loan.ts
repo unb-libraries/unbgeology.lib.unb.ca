@@ -77,8 +77,14 @@ export default defineDocumentModel(`Loan`, defineDocumentSchema<Loan>({
           email: contact.email,
           phone: contact.phone,
         },
-        specimens: specimens?.map(({ slug }) => ({ self: `/api/specimens/${slug}`, id: slug })),
-        contract: contract && { self: `/api/files/${contract._id}`, id: contract._id },
+        specimens: specimens?.map(({ slug }) => ({
+          self: `/api/specimens/${slug}`,
+          id: slug,
+        })),
+        contract: contract && {
+          self: `/api/files/${contract._id}`,
+          id: contract._id,
+        },
       }),
     })
   },
