@@ -31,6 +31,13 @@ export default defineEventHandler(async (event) => {
     query.where({ "contact.affiliation": { [`$regex`]: filter.contact.affiliation[1] } })
   }
 
+  if ([`eq`, `ne`, `gt`, `gte`, `lt`, `lte`].includes(filter.specimens?.count?.[0])) {
+    const count = parseInt(filter.specimens.count[1])
+    if (!isNaN(count) && count >= 0) {
+      query.where({ $expr: { [`$${filter.specimens.count[0]}`]: [{ $size: `$specimens` }, count] } })
+    }
+  }
+
   const total = await (query.clone().countDocuments())
   select
     .filter(field => [`specimens`, `contract`].includes(field))

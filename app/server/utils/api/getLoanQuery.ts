@@ -5,8 +5,8 @@ import type { Loan } from "~/types/loan"
 type FilterParam = `${string}:${string}:${string}`
 type Filter<T> = {
   [K in keyof T]: T[K] extends Record<string, unknown>
-    ? Filter<T[K]>
-    : [string, string]
+    ? Filter<T[K]> : T[K] extends Array<infer S>
+      ? { count: [string, string] } & Filter<S> : [string, string]
 }
 
 interface EntityQuery<T extends Entity> {
