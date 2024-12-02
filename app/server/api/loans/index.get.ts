@@ -2,40 +2,48 @@ import { getLoanQueryParams } from "~/server/utils/api/getLoanQuery"
 import type { Loan as ILoan } from "~/types/loan"
 
 export default defineEventHandler(async (event) => {
-  const { select, filter } = getLoanQueryParams(event)
+  const { select, where: { self, start, end, contract, specimens } = {} } = getLoanQueryParams(event)
 
   const query = Loan.mongoose.model.find()
-  if ([`gt`, `gte`, `lt`, `lte`].includes(filter.start?.[0])) {
-    const date = new Date(filter.start[1])?.valueOf()
-    if (!isNaN(date)) {
-      query.where({ start: { [`$${filter.start[0]}`]: date } })
-    }
+  if (self?.eq) {
+    query.where({ _id: Array.isArray(self.eq) ? { $in: self.eq.map(uri => uri.split(`/`)[3]) } : self.eq.split(`/`)[3] })
+  } else if (self?.ne) {
+    query.where({ _id: Array.isArray(self.ne) ? { $nin: self.ne.map(uri => uri.split(`/`)[3]) } : { $ne: self.ne.split(`/`)[3] } })
   }
 
-  if ([`gt`, `gte`, `lt`, `lte`].includes(filter.end?.[0])) {
-    const date = new Date(filter.end[1])?.valueOf()
-    if (!isNaN(date)) {
-      query.where({ end: { [`$${filter.end[0]}`]: date } })
-    }
+  if (start?.gt) {
+    query.where({ start: { $gt: new Date(start.gt)?.valueOf() } })
+  } else if (start?.gte) {
+    query.where({ start: { $gte: new Date(start.gte)?.valueOf() } })
+  }
+  if (start?.lt) {
+    query.where({ start: { $lt: new Date(start.lt)?.valueOf() } })
+  } else if (start?.lte) {
+    query.where({ start: { $lte: new Date(start.lte)?.valueOf() } })
   }
 
-  if ([`eq`, `ne`].includes(filter.contact?.name?.[0])) {
-    query.where({ "contact.name": { [`$${filter.contact.name[0]}`]: filter.contact.name[1] } })
-  } else if (filter.contact?.name?.[0] === `rx`) {
-    query.where({ "contact.name": { [`$regex`]: filter.contact.name[1] } })
+  if (end?.gt) {
+    query.where({ end: { $gt: new Date(end.gt)?.valueOf() } })
+  } else if (end?.gte) {
+    query.where({ end: { $gte: new Date(end.gte)?.valueOf() } })
+  }
+  if (end?.lt) {
+    query.where({ end: { $lt: new Date(end.lt)?.valueOf() } })
+  } else if (end?.lte) {
+    query.where({ end: { $lte: new Date(end.lte)?.valueOf() } })
   }
 
-  if ([`eq`, `ne`].includes(filter.contact?.affiliation?.[0])) {
-    query.where({ "contact.affiliation": { [`$${filter.contact.affiliation[0]}`]: filter.contact.affiliation[1] } })
-  } else if (filter.contact?.affiliation?.[0] === `rx`) {
-    query.where({ "contact.affiliation": { [`$regex`]: filter.contact.affiliation[1] } })
+  if (typeof contract === `boolean`) {
+    query.where({ contract: { $exists: contract } })
   }
 
-  if ([`eq`, `ne`, `gt`, `gte`, `lt`, `lte`].includes(filter.specimens?.count?.[0])) {
-    const count = parseInt(filter.specimens.count[1])
-    if (!isNaN(count) && count >= 0) {
-      query.where({ $expr: { [`$${filter.specimens.count[0]}`]: [{ $size: `$specimens` }, count] } })
-    }
+  if (specimens?.count?.gt || specimens?.count?.gte) {
+    const count = parseInt(specimens.count.gt || specimens.count.gte as string)
+    query.where({ $expr: { [specimens.count?.gt ? `$gt` : `$gte`]: [{ $size: `$specimens` }, count] } })
+  }
+  if (specimens?.count?.lt || specimens?.count?.lte) {
+    const count = parseInt(specimens.count.lt || specimens.count.lte as string)
+    query.where({ $expr: { [specimens.count?.lt ? `$lt` : `$lte`]: [{ $size: `$specimens` }, count] } })
   }
 
   const total = await (query.clone().countDocuments())
