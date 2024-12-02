@@ -11,7 +11,11 @@ interface LoanPayload extends Omit<Loan, keyof Entity | `start` | `end` | `speci
   contract?: string
 }
 
-export async function readLoanBody(event: H3Event) {
+interface ReadLoanBodyOptions {
+  optional: boolean
+}
+
+export async function readLoanBody<T extends ReadLoanBodyOptions = { optional: false }>(event: H3Event, options?: Partial<T>): Promise<T[`optional`] extends false ? LoanPayload : Partial<LoanPayload>> {
   const schema = z.object({
     description: z.string()
       .optional(),
@@ -19,7 +23,7 @@ export async function readLoanBody(event: H3Event) {
       .transform(date => new Date(date).valueOf()),
     end: z.string().date()
       .transform(date => new Date(date).valueOf()),
-    contact: z.object({
+    contact: ((schema: Parameters<typeof z[`object`]>[0]) => options?.optional ? z.object(schema).partial() : z.object(schema))({
       name: z.string(),
       affiliation: z.string(),
       email: z.string().email(),
@@ -39,9 +43,9 @@ export async function readLoanBody(event: H3Event) {
       .optional(),
   })
 
-  return await readValidatedBody<LoanPayload>(event, async (body) => {
+  return await readValidatedBody(event, async (body) => {
     try {
-      return await schema.parseAsync(body)
+      return await (options?.optional ? schema.partial().parseAsync(body) : schema.parseAsync(body)) as T[`optional`] extends false ? LoanPayload : Partial<LoanPayload>
     } catch (error: unknown) {
       throw new Error(error instanceof ZodError ? `"${error.issues[0].path}": ${error.issues[0].message}` : `Invalid payload.`)
     }
