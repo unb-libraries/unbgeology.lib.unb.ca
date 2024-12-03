@@ -1,4 +1,4 @@
-import { type Specimen } from "types/specimen"
+import type { Specimen } from "types/specimen"
 
 export default defineAppConfig({
   entityTypes: {
@@ -15,6 +15,14 @@ export default defineAppConfig({
       baseURI: `/api/terms`,
       uri(term) {
         return `/api/terms/${term.id}`
+      },
+    },
+
+    Loan: {
+      name: `Loan`,
+      baseURI: `/api/loans`,
+      uri(loan) {
+        return `/api/loans/${loan.id}`
       },
     },
 
