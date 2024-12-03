@@ -1,7 +1,7 @@
 import { z, ZodError } from "zod"
 import type { H3Event } from "h3"
 import type { File as IFile, Entity } from "@unb-libraries/nuxt-layer-entity"
-import type { Loan } from "~/types/loan"
+import { LoanType, type Loan } from "~/types/loan"
 import type { Specimen as ISpecimen } from "~/types/specimen"
 
 interface LoanPayload extends Omit<Loan, keyof Entity | `start` | `end` | `specimens` | `contract`> {
@@ -40,6 +40,10 @@ export async function readLoanBody<T extends ReadLoanBodyOptions = { optional: f
       .transform(async uri => await $fetchWithSession<IFile>(event)(uri))
       .transform(async ({ id }) => await FileBase.mongoose.model.findById(id))
       .transform(doc => `${doc!._id}`)
+      .optional(),
+    type: z.string()
+      .regex(/incoming|outgoing/i)
+      .transform(t => useEnum(LoanType).valueOf(t as LoanType | `incoming` | `outgoing`))
       .optional(),
   })
 

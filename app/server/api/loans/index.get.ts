@@ -1,8 +1,8 @@
 import { getLoanQueryParams } from "~/server/utils/api/getLoanQuery"
-import type { Loan as ILoan } from "~/types/loan"
+import { LoanType, type Loan as ILoan } from "~/types/loan"
 
 export default defineEventHandler(async (event) => {
-  const { select, where: { self, id, start, end, contract, specimens } = {} } = getLoanQueryParams(event)
+  const { select, where: { self, id, start, end, contract, specimens, type } = {} } = getLoanQueryParams(event)
 
   const query = Loan.mongoose.model.find()
   if (self?.eq) {
@@ -50,6 +50,12 @@ export default defineEventHandler(async (event) => {
   if (specimens?.count?.lt || specimens?.count?.lte) {
     const count = parseInt(specimens.count.lt || specimens.count.lte as string)
     query.where({ $expr: { [specimens.count?.lt ? `$lt` : `$lte`]: [{ $size: `$specimens` }, count] } })
+  }
+
+  if (type?.eq) {
+    query.where({ type: Array.isArray(type.eq) ? { $in: type.eq.map(value => useEnum(LoanType).valueOf(value as `incoming` | `outgoing`)) } : useEnum(LoanType).valueOf(type.eq as `incoming` | `outgoing`) })
+  } else if (type?.ne) {
+    query.where({ type: Array.isArray(type.ne) ? { $nin: type.ne.map(value => useEnum(LoanType).valueOf(value as `incoming` | `outgoing`)) } : { $ne: useEnum(LoanType).valueOf(type.ne as `incoming` | `outgoing`) } })
   }
 
   const total = await (query.clone().countDocuments())

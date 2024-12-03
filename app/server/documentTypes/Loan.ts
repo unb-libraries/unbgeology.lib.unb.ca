@@ -1,6 +1,6 @@
 import LoanMeta from "./LoanMeta"
 import type { Entity } from "@unb-libraries/nuxt-layer-entity"
-import type { Loan as LoanEntity } from "types/loan"
+import { LoanType, type Loan as LoanEntity } from "types/loan"
 import type { Specimen } from "./Specimen"
 import { EntityFieldTypes } from "~/layers/mongo/types/entity"
 import type { DocumentBase as IDocumentBase } from "~/layers/mongo/types/schema"
@@ -14,6 +14,12 @@ export interface Loan extends Omit<LoanEntity, keyof Entity | `start` | `end` | 
 }
 
 export default defineDocumentModel(`Loan`, defineDocumentSchema<Loan>({
+  type: {
+    type: EntityFieldTypes.Number,
+    required: true,
+    enum: LoanType,
+    default: LoanType.INCOMING,
+  },
   start: {
     type: EntityFieldTypes.Number,
     required: true,
@@ -66,7 +72,7 @@ export default defineDocumentModel(`Loan`, defineDocumentSchema<Loan>({
 }, {
   alterSchema: (schema) => {
     schema.set(`toJSON`, {
-      transform: ({ _id, slug, description, start, end, contact, specimens, contract }: Partial<Loan>) => ({
+      transform: ({ _id, slug, description, start, end, contact, specimens, contract, type }: Partial<Loan>) => ({
         self: `/api/loans/${_id}`,
         id: slug,
         description,
@@ -86,6 +92,9 @@ export default defineDocumentModel(`Loan`, defineDocumentSchema<Loan>({
           self: `/api/files/${contract._id}`,
           id: contract._id,
         },
+        type: type && useEnum(LoanType)
+          .labelOf(type)
+          .toLowerCase(),
       }),
     })
   },
