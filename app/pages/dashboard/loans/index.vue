@@ -13,7 +13,7 @@
     <EntityTable
       v-model="selection"
       :entities="loans"
-      :columns="['id', 'start', 'end', ['specimens', '#Specimens']]"
+      :columns="[['id', 'ID'], 'start', 'end', 'type', ['specimens', '#Specimens']]"
       class="border-primary-60/75 w-full border-b"
       header-cell-class="group"
       row-class="table-row"
@@ -28,10 +28,10 @@
         </NuxtLink>
       </template>
       <template #start="{ entity: { start } }">
-        {{ new Date(start).toLocaleDateString() }}
+        {{ new Date(start).toISOString().slice(0, 10) }}
       </template>
       <template #end="{ entity: { end } }">
-        {{ new Date(end).toLocaleDateString() }}
+        {{ new Date(end).toISOString().slice(0, 10) }}
       </template>
       <template #specimens="{ entity: { specimens } }">
         {{ specimens.length }}
@@ -132,7 +132,7 @@ const { setContent, close: closeModal } = useModal()
 const { createToast } = useToasts()
 
 const { entities: loans, list, remove, error, query: { page, pageSize } } = await fetchEntityList<Loan>(`Loan`)
-const columns: [keyof Loan, string][] = [[`id`, `ID`], [`start`, `Start`], [`end`, `End`], [`specimens`, `#Specimens`], [`contact`, `Contact`], [`contract`, `Contract`]]
+const columns: [keyof Loan, string][] = [[`id`, `ID`], [`start`, `Start`], [`end`, `End`], [`type`, `Type`], [`specimens`, `#Specimens`], [`contact`, `Contact`], [`contract`, `Contract`]]
 const selection = ref<EntityJSON<Loan>>()
 
 function onClickRemove() {
