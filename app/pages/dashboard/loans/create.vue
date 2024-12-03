@@ -1,0 +1,32 @@
+<template>
+  <FormLoan
+    @save="onSave"
+    @cancel="navigateTo(returnUrl)"
+  />
+</template>
+
+<script lang="ts" setup>
+import type { Loan } from '~/types/loan'
+
+definePageMeta({
+  name: `Add loan`,
+  layout: `dashboard-page`,
+  auth: {
+    redirect: true,
+    permission: /^create:loan/,
+  },
+  menu: {
+    weight: 0,
+  },
+})
+
+const { create } = useEntityType<Loan>(`Loan`)
+const returnUrl = `/dashboard/loans`
+
+async function onSave(loan: Loan) {
+  const { error } = await create(loan)
+  if (!error.value) {
+    navigateTo(returnUrl)
+  }
+}
+</script>

@@ -1,5 +1,8 @@
 <template>
-  <div class="relative w-full p-0" :class="wrapperClass">
+  <div
+    class="relative w-full p-0"
+    :class="wrapperClass"
+  >
     <div
       :id="id"
       :name="name"
@@ -10,9 +13,20 @@
     >
       <slot name="before" />
       <div class="flex grow flex-row items-center space-x-3">
-        <div v-if="multi" class="inline-flex space-x-1 text-sm">
-          <div v-for="[option, label] in selectedOptions" :key="option" class="bg-accent-mid inline-flex space-x-1 text-nowrap rounded-md px-1.5 text-sm leading-6">
-            <slot name="selected-item" :label="label" :option="selectedOptions.find(([op]) => op === option)!">
+        <div
+          v-if="multi"
+          class="inline-flex space-x-1 text-sm"
+        >
+          <div
+            v-for="[option, label] in selectedOptions"
+            :key="option"
+            class="bg-accent-mid inline-flex space-x-1 text-nowrap rounded-md px-1.5 text-sm leading-6"
+          >
+            <slot
+              name="selected-item"
+              :label="label"
+              :option="selectedOptions.find(([op]) => op === option)!"
+            >
               <span>{{ label }}</span>
             </slot>
             <button @click.prevent.stop="onRemoveItem(option)">
@@ -30,17 +44,31 @@
             :placeholder="placeholder || `Search`"
             @input="$emit(`input`, search)"
           >
-          <slot v-else-if="!multi && selectedOptions.length > 0" name="selected-item" :label="selectedOptions[0][1]" :option="selectedOptions[0][0]">
+          <slot
+            v-else-if="!multi && selectedOptions.length > 0"
+            name="selected-item"
+            :label="selectedOptions[0][1]"
+            :option="selectedOptions[0][0]"
+          >
             <span>{{ selectedOptions[0][1] }}</span>
           </slot>
           <span v-else>{{ placeholder || `-- Select --` }}</span>
         </slot>
       </div>
       <slot name="reset">
-        <a v-if="selected.length > 0" class="input-select-reset" :class="resetActionClass" @click.stop="onReset">Reset</a>
+        <a
+          v-if="selected.length > 0"
+          class="input-select-reset"
+          :class="resetActionClass"
+          @click.stop="onReset"
+        >Reset</a>
       </slot>
     </div>
-    <ul v-if="optionsVisible" class="bg-primary border-primary-60/40 absolute z-[100] max-h-64 w-full overflow-y-scroll rounded-b-md border border-t-0" :class="listClass">
+    <ul
+      v-if="optionsVisible"
+      class="bg-primary border-primary-60/40 absolute z-[100] max-h-64 w-full overflow-y-scroll rounded-b-md border border-t-0"
+      :class="listClass"
+    >
       <li
         v-for="[option, label] in options.filter(([id]) => !multi || !selected.includes(id))"
         :key="option"
@@ -50,7 +78,10 @@
         :class="{ [`${selectedItemClass ?? ``} input-select-item-selected`]: selected[0] === option, [itemClass]: true }"
         @click.stop="onSelect(option)"
       >
-        <slot name="item" :options="[option, label, selected[0] === option]">
+        <slot
+          name="item"
+          :options="[option, label, selected[0] === option]"
+        >
           {{ label }}
         </slot>
       </li>
@@ -61,7 +92,7 @@
 <script setup lang="ts">
 const model = defineModel<string | number | string[] | number[]>({ required: false })
 const props = defineProps<{
-  options:(string | [string, string] | object)[] | Record<string, string | object>
+  options: (string | [string, string] | object)[] | Record<string, string | object>
   multi?: boolean
   optionField?: string
   labelField?: string
