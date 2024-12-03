@@ -19,7 +19,6 @@ export default defineEventHandler(async (event) => {
 
   return {
     self: `/api/loans/${id}`,
-    id: `${id}`,
     ...Object.fromEntries(Object.entries(loan.toJSON<ILoan>()).filter(([key]) => select.includes(key as keyof ILoan))),
   }
 })

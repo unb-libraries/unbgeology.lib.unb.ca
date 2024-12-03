@@ -2,13 +2,19 @@ import { getLoanQueryParams } from "~/server/utils/api/getLoanQuery"
 import type { Loan as ILoan } from "~/types/loan"
 
 export default defineEventHandler(async (event) => {
-  const { select, where: { self, start, end, contract, specimens } = {} } = getLoanQueryParams(event)
+  const { select, where: { self, id, start, end, contract, specimens } = {} } = getLoanQueryParams(event)
 
   const query = Loan.mongoose.model.find()
   if (self?.eq) {
     query.where({ _id: Array.isArray(self.eq) ? { $in: self.eq.map(uri => uri.split(`/`)[3]) } : self.eq.split(`/`)[3] })
   } else if (self?.ne) {
     query.where({ _id: Array.isArray(self.ne) ? { $nin: self.ne.map(uri => uri.split(`/`)[3]) } : { $ne: self.ne.split(`/`)[3] } })
+  }
+
+  if (id?.eq) {
+    query.where({ slug: Array.isArray(id.eq) ? { $in: id.eq } : id.eq })
+  } else if (id?.ne) {
+    query.where({ slug: Array.isArray(id.ne) ? { $nin: id.ne } : { $ne: id.ne } })
   }
 
   if (start?.gt) {
@@ -55,7 +61,6 @@ export default defineEventHandler(async (event) => {
     self: `/api/loans`,
     entities: (await query).map(loan => ({
       self: `/api/loans/${loan._id}`,
-      id: `${loan._id}`,
       ...Object.fromEntries(Object.entries(loan.toJSON<ILoan>()).filter(([key]) => select.includes(key as keyof ILoan))),
     })),
     ...usePaginator({ total }),

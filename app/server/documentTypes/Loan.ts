@@ -1,22 +1,19 @@
+import LoanMeta from "./LoanMeta"
 import type { Entity } from "@unb-libraries/nuxt-layer-entity"
 import type { Loan as LoanEntity } from "types/loan"
 import type { Specimen } from "./Specimen"
 import { EntityFieldTypes } from "~/layers/mongo/types/entity"
 import type { DocumentBase as IDocumentBase } from "~/layers/mongo/types/schema"
-import type { ObjectID } from "~/types/specimen"
 import type { File } from "~/layers/mongo/server/documentTypes/FileBase"
 
-export interface Loan extends Omit<LoanEntity, keyof Entity | `start` | `end` | `specimens`>, IDocumentBase {
+export interface Loan extends Omit<LoanEntity, keyof Entity | `start` | `end` | `specimens` | `contract`>, IDocumentBase {
   start: number
   end: number
-  specimens: ObjectID[]
+  specimens: Specimen[]
+  contract: File
 }
 
 export default defineDocumentModel(`Loan`, defineDocumentSchema<Loan>({
-  description: {
-    type: EntityFieldTypes.String,
-    required: false,
-  },
   start: {
     type: EntityFieldTypes.Number,
     required: true,
@@ -30,6 +27,10 @@ export default defineDocumentModel(`Loan`, defineDocumentSchema<Loan>({
       },
       message: `End date must be past start date.`,
     }],
+  },
+  description: {
+    type: EntityFieldTypes.String,
+    required: false,
   },
   contact: {
     type: {
@@ -65,9 +66,9 @@ export default defineDocumentModel(`Loan`, defineDocumentSchema<Loan>({
 }, {
   alterSchema: (schema) => {
     schema.set(`toJSON`, {
-      transform: ({ _id, description, start, end, contact, specimens, contract }: Partial<Omit<Loan, `specimens` | `contract`> & { specimens: Specimen[], contract: File }>) => ({
+      transform: ({ _id, slug, description, start, end, contact, specimens, contract }: Partial<Loan>) => ({
         self: `/api/loans/${_id}`,
-        id: `${_id}`,
+        id: slug,
         description,
         start: start && new Date(start).toISOString(),
         end: end && new Date(end).toISOString(),
@@ -88,4 +89,21 @@ export default defineDocumentModel(`Loan`, defineDocumentSchema<Loan>({
       }),
     })
   },
-}).mixin(DocumentBase())())
+}).mixin(Slugified<Loan>({
+  async path(loan) {
+    const year = new Date(loan.get(`start`)).getFullYear()
+    const { yearCounter: map } = await LoanMeta.mongoose.model
+      .findOneAndUpdate({ name: loan.collection.collectionName }, {
+        $inc: {
+          [`yearCounter.${year}`]: 1,
+        },
+      }, {
+        upsert: true,
+        returnDocument: `after`,
+      })
+      .select(`yearCounter`)
+    const counter = String(map.get(`${year}`)).padStart(2, `0`)
+    return `${year}-${counter}`
+  },
+}))
+  .mixin(DocumentBase())())
