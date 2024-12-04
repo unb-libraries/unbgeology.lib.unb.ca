@@ -32,6 +32,7 @@ export default defineMongooseEventQueryHandler(FileBase, (event, query) => {
       const [op, value] = condition
       switch (field) {
         case `id`: query.use(ObjectID(`_id`, condition)); break
+        case `type`: query.use(String(field, [op, `File.${value[0].toUpperCase()}${value.slice(1)}`])); break
         case `filename`: query.use(String(field, condition)); break
         case `filesize`: query.use(Numeric(field, condition)); break
         case `mimetype`: query.use(String(field, condition)); break
