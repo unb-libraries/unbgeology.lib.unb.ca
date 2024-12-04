@@ -127,7 +127,7 @@
 </template>
 
 <script setup lang="ts">
-import type { EntityJSONBody, EntityJSONProperties } from "@unb-libraries/nuxt-layer-entity"
+import { FilterOperator, type EntityJSONBody, type EntityJSONProperties } from "@unb-libraries/nuxt-layer-entity"
 import { type Loan, LoanType } from 'types/loan'
 import type { Specimen } from "~/types/specimen"
 
@@ -140,8 +140,9 @@ const emits = defineEmits<{
   cancel: []
 }>()
 
-const { entities: specimens, query: { search: specimenSearch } } = await fetchEntityList<Specimen>(`Specimen`)
-const selectedSpecimenOptions = ref([] as [string, [string, string]][])
+const { fetchAll } = useEntityType<Specimen>(`Specimen`)
+const { entities: specimens, query: { search: specimenSearch } } = await fetchAll()
+const selectedSpecimenOptions = ref(props.entity?.specimens?.length ? (await fetchAll({ filter: props.entity?.specimens?.map(({ id }) => [`id`, FilterOperator.EQUALS, id]), select: [`id`, `name`] })).entities.value.map(({ self, id, name }) => [self, [id, name]]) : [] as [string, [string, string]][])
 const specimenOptions = computed(() => {
   if (!specimenSearch.value) {
     return selectedSpecimenOptions.value
@@ -156,15 +157,15 @@ async function onSearchSpecimens(search: string) {
 
 const loan = reactive({
   description: props.entity?.description,
-  start: props.entity?.start,
-  end: props.entity?.end,
+  start: props.entity?.start?.slice(0, 10),
+  end: props.entity?.end?.slice(0, 10),
   contact: {
     name: props.entity?.contact.name,
     affiliation: props.entity?.contact.affiliation,
     email: props.entity?.contact.email,
     phone: props.entity?.contact.phone,
   },
-  type: props.entity?.type,
+  type: props.entity?.type ? useEnum(LoanType).valueOf(props.entity.type as LoanType | `incoming` | `outgoing`) : undefined,
   specimens: props.entity?.specimens?.map(({ self }) => self) ?? [],
   contract: props.entity?.contract?.self,
 })
