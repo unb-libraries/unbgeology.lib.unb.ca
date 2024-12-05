@@ -14,5 +14,10 @@ export default defineNitroPlugin((nitro) => {
     //   await createSearchIndex(User, { username: 1 })
     //   await User?.mongoose?.model?.ensureIndexes()
     // })()
+
+    // (async () => {
+    //   await createSearchIndex(FileBase, { uploadName: 1 })
+    //   await FileBase?.mongoose?.model?.ensureIndexes()
+    // })()
   })
 })
