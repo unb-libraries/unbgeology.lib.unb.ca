@@ -90,7 +90,12 @@
             </div>
           </template>
           <template #contract="{ entity: { contract } }">
-            <span v-if="contract">{{ contract.id }}</span>
+            <a
+              v-if="contract"
+              :href="contract.uri"
+              target="_blank"
+              class="hover:underline"
+            >{{ contract.filename.slice(contract.filename.indexOf(`-`) + 1) }}</a>
             <span v-else>Nothing attached</span>
           </template>
         </PvEntityDetails>
@@ -132,7 +137,7 @@ const { setContent, close: closeModal } = useModal()
 const { createToast } = useToasts()
 
 const { entities: loans, list, remove, error, query: { page, pageSize } } = await fetchEntityList<Loan>(`Loan`)
-const columns: [keyof Loan, string][] = [[`id`, `ID`], [`start`, `Start`], [`end`, `End`], [`type`, `Type`], [`specimens`, `#Specimens`], [`contact`, `Contact`], [`contract`, `Contract`]]
+const columns: [keyof Loan, string][] = [[`id`, `ID`], [`start`, `Start`], [`end`, `End`], [`type`, `Type`], [`specimens`, `Specimens`], [`contact`, `Contact`], [`contract`, `Contract`]]
 const selection = ref<EntityJSON<Loan>>()
 
 function onClickRemove() {
