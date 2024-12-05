@@ -2,7 +2,7 @@ import { getLoanQueryParams } from "~/server/utils/api/getLoanQuery"
 import { LoanType, type Loan as ILoan } from "~/types/loan"
 
 export default defineEventHandler(async (event) => {
-  const { select, where: { self, id, start, end, contract, specimens, type } = {} } = getLoanQueryParams(event)
+  const { select, sort, where: { self, id, start, end, contract, specimens, type } = {} } = getLoanQueryParams(event)
 
   const query = Loan.mongoose.model.find()
   if (self?.eq) {
@@ -57,6 +57,8 @@ export default defineEventHandler(async (event) => {
   } else if (type?.ne) {
     query.where({ type: Array.isArray(type.ne) ? { $nin: type.ne.map(value => useEnum(LoanType).valueOf(value as `incoming` | `outgoing`)) } : { $ne: useEnum(LoanType).valueOf(type.ne as `incoming` | `outgoing`) } })
   }
+
+  query.sort(sort?.map(([field, direction]) => direction === 1 ? field : `-${field})`).join(` `))
 
   const total = await (query.clone().countDocuments())
   select

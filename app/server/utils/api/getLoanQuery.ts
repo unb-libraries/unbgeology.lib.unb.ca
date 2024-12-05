@@ -38,6 +38,7 @@ type EntityQuery<T extends Entity> = {
   pageSize?: number
   select?: keyof T | (keyof T)[]
   search?: string
+  sort?: `-${string}` | string | (`-${string}` | string)[]
 } & Record<string, FilterParam | FilterParam[]>
 
 const defu = createDefu((obj, key, value) => {
@@ -79,12 +80,15 @@ export function getLoanQueryParams(event: H3Event) {
   return {
     page: page || 1,
     pageSize: pageSize || 25,
+    search,
     select: (Array.isArray(select) ? select : select ? [select] : props)
       .filter(field => props.includes(`${field}`)),
+    sort: (Array.isArray(sort) ? sort : sort ? [sort] : [])
+      .filter(field => props.includes(field.replace(/^-/, ``)))
+      .map(field => field.startsWith(`-`) ? [field.slice(1), -1] : [field, 1]) as [keyof Loan, 1 | -1][],
     where: Object.entries(where)
       .filter(([key]) => props.includes(key))
       .map(parse)
       .reduce((merged, single) => defu(merged, single), {}),
-    search,
   }
 }
