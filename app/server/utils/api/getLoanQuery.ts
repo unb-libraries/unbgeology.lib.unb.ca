@@ -55,8 +55,8 @@ const defu = createDefu((obj, key, value) => {
 })
 
 export function getLoanQueryParams(event: H3Event) {
-  const { page, pageSize, select, search, ...where } = getQuery<EntityQuery<Loan>>(event)
-  const props = [`self`, `id`, `description`, `start`, `end`, `contact`, `contact.name`, `contact.affiliation`, `specimens`, `specimens.count`, `specimens.id`, `contract`, `type`]
+  const { page, pageSize, select, search, sort, ...where } = getQuery<EntityQuery<Loan>>(event)
+  const props = [`self`, `id`, `description`, `start`, `end`, `contact`, `contact.name`, `contact.affiliation`, `specimens`, `specimens.count`, `specimens.id`, `contract`, `contract.filename`, `contract.uri`, `type`]
 
   const opMap = { "=": `eq`, "!": `ne`, ">=": `gte`, ">": `gt`, "<=": `lte`, "<": `lt`, "%": `rx` }
   const pattern = new RegExp(`^(${Object.keys(opMap).join(`|`)})?(.*)$`)

@@ -77,6 +77,36 @@
       </PvInputDropdown>
     </TwFormField>
 
+    <TwFormField label="Contract">
+      <div
+        v-if="loan.contract"
+        class="bg-primary border-primary-80 flex flex-row justify-between rounded-md border p-3"
+      >
+        <div class="flex items-center justify-start space-x-3">
+          <div><IconFileText class="size-8 stroke-current stroke-1" /></div>
+          <div>
+            {{ loan.contract.filename.slice(loan.contract.filename.indexOf(`-`) + 1) }}
+          </div>
+        </div>
+        <button
+          class="bg-primary-80 hover:bg-primary-60 rounded-md p-1 hover:cursor-pointer"
+          @click.stop.prevent="loan.contract = undefined"
+        >
+          <IconCancel class="stroke-primary-20 size-6 stroke-2" />
+        </button>
+      </div>
+      <button
+        v-else
+        class="button button-outline-primary-60 hover:button-outline-accent-light button-lg hover:bg-primary bg-primary flex w-full flex-col space-y-2 border-dashed p-8"
+        @click.stop.prevent="onClickFileBrowse"
+      >
+        <IconFileText class="size-12 fill-none stroke-current" />
+        <span>
+          Browse documents
+        </span>
+      </button>
+    </TwFormField>
+
     <!-- Contact -->
     <div class="space-y-4">
       <h2 class="input-label">
@@ -126,9 +156,10 @@
   </EntityForm>
 </template>
 
-<script setup lang="ts">
-import { FilterOperator, type EntityJSONBody, type EntityJSONProperties } from "@unb-libraries/nuxt-layer-entity"
+<script setup lang="tsx">
+import { FilterOperator, type EntityJSONBody, type EntityJSONProperties, type Document } from "@unb-libraries/nuxt-layer-entity"
 import { type Loan, LoanType } from 'types/loan'
+import { TwDocumentBrowser } from "#components"
 import type { Specimen } from "~/types/specimen"
 
 const props = defineProps<{
@@ -136,9 +167,12 @@ const props = defineProps<{
 }>()
 
 const emits = defineEmits<{
-  save: [loan: EntityJSONBody<Loan>]
+  save: [loan: Partial<EntityJSONBody<Loan>>]
   cancel: []
 }>()
+
+const { stackContent, unstackContent } = useModal()
+const { createToast } = useToasts()
 
 const loan = reactive({
   description: props.entity?.description,
@@ -152,25 +186,66 @@ const loan = reactive({
   },
   type: props.entity?.type ? useEnum(LoanType).valueOf(props.entity.type as LoanType | `incoming` | `outgoing`) : undefined,
   specimens: props.entity?.specimens?.map(({ self }) => self) ?? [],
-  contract: props.entity?.contract?.self,
+  contract: props.entity?.contract,
 })
 
-const { fetchAll } = useEntityType<Specimen>(`Specimen`)
+const { fetchAll: fetchSpecimens } = useEntityType<Specimen>(`Specimen`)
 const specimenOpts = ref<[string, [string, string]][]>(props.entity?.specimens?.map(({ self, id, name }) => [self, [id, name]]) ?? [] as [string, [string, string]][])
-
 async function onSearchSpecimens(search: string) {
   specimenOpts.value = [
     ...(specimenOpts.value.filter(([self]) => loan.specimens.includes(self))),
-    ...((search && (await fetchAll({ search })).entities.value.map(({ self, id, name }) => [self, [id, name]])) || []),
+    ...((search && (await fetchSpecimens({ search })).entities.value.map(({ self, id, name }) => [self, [id, name]])) || []),
   ].filter(([self], i, arr) => arr.findIndex(([opt]) => opt === self) === i) as [string, [string, string]][]
 }
 
-function onSave(loan: EntityJSONBody<Loan>) {
+function onClickFileBrowse() {
+  const document = ref(loan.contract)
+
+  const onSelect = () => {
+    loan.contract = document.value
+    unstackContent()
+  }
+
+  stackContent(
+    <div class="flex flex-col space-y-4">
+      <TwDocumentBrowser
+        onUpdate:modelValue={v => document.value = v}
+      />
+      <div class="inline-flex space-x-2">
+        <button class="button button-lg button-accent-mid hover:button-accent-light" onClick={onSelect}>
+          Select
+        </button>
+        <button class="button button-lg button-outline-primary-60 hover:button-outline-primary-40" onClick={unstackContent}>
+          Cancel
+        </button>
+      </div>
+    </div>,
+  )
+}
+
+function onSave() {
+  const { start, end, description, contact: { name, affiliation, email, phone }, type, specimens, contract } = loan
+  if ([start, end, name, affiliation, email, phone, type, specimens].some(v => !v)) {
+    createToast(`error-loan-create`, {
+      message: `Please fill out all required fields`,
+      type: `error`,
+    })
+    return
+  }
+
   emits(`save`, {
-    ...loan,
-    start: new Date(loan.start).toISOString().slice(0, 10),
-    end: new Date(loan.end).toISOString().slice(0, 10),
+    start: new Date(start!).toISOString().slice(0, 10),
+    end: new Date(end!).toISOString().slice(0, 10),
+    description,
+    contact: {
+      name: name!,
+      affiliation: affiliation!,
+      email: email!,
+      phone: phone!,
+    },
     type: loan.type === LoanType.INCOMING ? `incoming` : `outgoing`,
+    specimens: specimens,
+    contract: contract?.self,
   })
 }
 
