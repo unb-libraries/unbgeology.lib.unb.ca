@@ -62,7 +62,7 @@
     <TwFormField label="Specimens">
       <PvInputDropdown
         v-model="loan.specimens"
-        :options="specimenOptions"
+        :options="specimenOpts"
         :input="true"
         :multi="true"
         class="input-select-lg"
@@ -140,21 +140,6 @@ const emits = defineEmits<{
   cancel: []
 }>()
 
-const { fetchAll } = useEntityType<Specimen>(`Specimen`)
-const { entities: specimens, query: { search: specimenSearch } } = await fetchAll()
-const selectedSpecimenOptions = ref(props.entity?.specimens?.length ? (await fetchAll({ filter: props.entity?.specimens?.map(({ id }) => [`id`, FilterOperator.EQUALS, id]), select: [`id`, `name`] })).entities.value.map(({ self, id, name }) => [self, [id, name]]) : [] as [string, [string, string]][])
-const specimenOptions = computed(() => {
-  if (!specimenSearch.value) {
-    return selectedSpecimenOptions.value
-  }
-  return [...specimens.value.map(({ self, id, name }) => [self, [id, name]]), ...selectedSpecimenOptions.value]
-    .filter(([self], index, arr) => arr.map(([self]) => self).indexOf(self) === index)
-})
-
-async function onSearchSpecimens(search: string) {
-  specimenSearch.value = search
-}
-
 const loan = reactive({
   description: props.entity?.description,
   start: props.entity?.start?.slice(0, 10),
@@ -170,9 +155,15 @@ const loan = reactive({
   contract: props.entity?.contract?.self,
 })
 
-watch(() => loan.specimens, (specimens) => {
-  selectedSpecimenOptions.value = specimens.map(self => specimenOptions.value.find(([option]) => option === self)! as [string, [string, string]])
-})
+const { fetchAll } = useEntityType<Specimen>(`Specimen`)
+const specimenOpts = ref<[string, [string, string]][]>(props.entity?.specimens?.map(({ self, id, name }) => [self, [id, name]]) ?? [] as [string, [string, string]][])
+
+async function onSearchSpecimens(search: string) {
+  specimenOpts.value = [
+    ...(specimenOpts.value.filter(([self]) => loan.specimens.includes(self))),
+    ...((search && (await fetchAll({ search })).entities.value.map(({ self, id, name }) => [self, [id, name]])) || []),
+  ].filter(([self], i, arr) => arr.findIndex(([opt]) => opt === self) === i) as [string, [string, string]][]
+}
 
 function onSave(loan: EntityJSONBody<Loan>) {
   emits(`save`, {
