@@ -7,7 +7,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { EntityJSONBody } from '@unb-libraries/nuxt-layer-entity'
+import type { EntityJSONList, EntityJSONBody } from '@unb-libraries/nuxt-layer-entity'
 import type { Loan } from '~/types/loan'
 
 definePageMeta({
@@ -24,23 +24,37 @@ if (!id) {
   showError(`Loan not found.`)
 }
 
-const { fetchBy } = useEntityType<Loan>(`Loan`)
-const { entity: loan, update } = await fetchBy({ id: id as string })
-if (!loan.value) {
+const { data } = await useFetch<EntityJSONList<Loan>>(`/api/loans?id=${id}`)
+const loan = data.value?.entities[0]
+if (!loan) {
   showError(`Loan not found.`)
 }
 
 const returnUrl = `/dashboard/loans`
 
-async function onSave({ type, start, end, description, specimens, contract, contact }: EntityJSONBody<Loan>) {
-  await update({
-    type,
-    start,
-    end,
-    description: description ?? (loan.value?.description ? `` : undefined),
-    contact,
-    specimens,
-    contract,
+async function onSave({ type, start, end, description, specimens, contract, contact }: EntityJSONBody<Omit<Loan, `subjects`>> & { specimens: string[] }) {
+  await useFetch(loan!.self, {
+    method: `PATCH`,
+    body: {
+      type,
+      start,
+      end,
+      description: description ?? (loan?.description ? `` : undefined),
+      contact,
+      subjects: [
+        ...loan?.subjects
+          .filter(({ specimen }) => specimens.includes(specimen.self))
+          .map(subject => ({
+            specimen: subject.specimen.self,
+            foreignID: subject.foreignID,
+            url: subject.url,
+          })) ?? [],
+        ...specimens
+          .filter(self => !loan?.subjects.map(({ specimen }) => specimen.self).includes(self))
+          .map(specimen => ({ specimen })),
+      ],
+      contract,
+    },
   })
   navigateTo(returnUrl)
 }

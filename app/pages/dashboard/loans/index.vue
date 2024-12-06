@@ -13,7 +13,7 @@
     <EntityTable
       v-model="selection"
       :entities="loans"
-      :columns="[['id', 'ID'], 'start', 'end', 'type', ['specimens', '#Specimens']]"
+      :columns="[['id', 'ID'], 'start', 'end', 'type', ['subjects', '#Specimens']]"
       :multi-select="true"
       class="border-primary-60/75 w-full border-b"
       header-cell-class="group"
@@ -34,8 +34,8 @@
       <template #end="{ entity: { end } }">
         {{ new Date(end).toISOString().slice(0, 10) }}
       </template>
-      <template #specimens="{ entity: { specimens } }">
-        {{ specimens.length }}
+      <template #subjects="{ entity: { subjects } }">
+        {{ subjects.length }}
       </template>
     </EntityTable>
     <div class="flex w-full flex-row justify-between px-4">
@@ -70,10 +70,10 @@
           <template #end="{ entity: { end } }">
             {{ new Date(end).toLocaleDateString() }}
           </template>
-          <template #specimens="{ entity: { specimens } }">
+          <template #subjects="{ entity: { subjects } }">
             <ul>
               <li
-                v-for="specimen in specimens"
+                v-for="{ specimen } in subjects"
                 :key="specimen.id"
               >
                 <NuxtLink :to="`/dashboard/specimens/${specimen.id}`">
@@ -141,7 +141,7 @@ const { setContent, close: closeModal } = useModal()
 const { createToast } = useToasts()
 
 const { entities: loans, list, removeMany, error, query: { page, pageSize } } = await fetchEntityList<Loan>(`Loan`)
-const columns: [keyof Loan, string][] = [[`id`, `ID`], [`start`, `Start`], [`end`, `End`], [`type`, `Type`], [`specimens`, `Specimens`], [`contact`, `Contact`], [`contract`, `Contract`]]
+const columns: [keyof Loan, string][] = [[`id`, `ID`], [`start`, `Start`], [`end`, `End`], [`type`, `Type`], [`subjects`, `Specimens`], [`contact`, `Contact`], [`contract`, `Contract`]]
 const selection = ref<EntityJSON<Loan>[]>([])
 
 function onClickRemove() {
