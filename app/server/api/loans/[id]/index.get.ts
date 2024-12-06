@@ -5,8 +5,8 @@ export default defineEventHandler(async (event) => {
   const { select } = getLoanQueryParams(event)
 
   const query = Loan.mongoose.model.findById(id)
-  if (select.includes(`specimens`)) {
-    query.populate(`specimens`)
+  if (select.includes(`subjects`)) {
+    query.populate(`subjects.specimen`)
   }
   if (select.includes(`contract`)) {
     query.populate(`contract`)

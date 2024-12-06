@@ -17,6 +17,10 @@ export interface Loan extends Entity, Slugified {
     email: string
     phone: string
   }
-  specimens: Specimen[]
+  subjects: {
+    specimen: Specimen
+    foreignID: string
+    url: string
+  }[]
   contract?: File
 }

@@ -29,11 +29,15 @@ export async function readLoanBody<T extends ReadLoanBodyOptions = { optional: f
       email: z.string().email(),
       phone: z.string(),
     }),
-    specimens: z.array(
-      z.string().regex(/\/api\/specimens\/unb-\d{4}-\d{4}/)
-        .transform(async uri => await $fetchWithSession<ISpecimen>(event)(uri))
-        .transform(async ({ id }) => await Specimen.Base?.mongoose.model.findOne({ slug: id }))
-        .transform(doc => `${doc!._id}`),
+    subjects: z.array(
+      z.object({
+        specimen: z.string().regex(/\/api\/specimens\/unb-\d{4}-\d{4}/)
+          .transform(async uri => await $fetchWithSession<ISpecimen>(event)(uri))
+          .transform(async ({ id }) => await Specimen.Base?.mongoose.model.findOne({ slug: id }))
+          .transform(doc => `${doc!._id}`),
+        foreignID: z.string().optional(),
+        url: z.string().url().optional(),
+      }),
     ),
     contract: z.string()
       .regex(/\/api\/files\/[a-z0-9]{24}/)

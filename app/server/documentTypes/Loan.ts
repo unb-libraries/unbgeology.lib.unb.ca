@@ -1,3 +1,4 @@
+import { Types } from "mongoose"
 import { encode } from "ufo"
 import LoanMeta from "./LoanMeta"
 import type { Entity } from "@unb-libraries/nuxt-layer-entity"
@@ -7,10 +8,14 @@ import { EntityFieldTypes } from "~/layers/mongo/types/entity"
 import type { DocumentBase as IDocumentBase } from "~/layers/mongo/types/schema"
 import type { File } from "~/layers/mongo/server/documentTypes/FileBase"
 
-export interface Loan extends Omit<LoanEntity, keyof Entity | `start` | `end` | `specimens` | `contract`>, IDocumentBase {
+export interface Loan extends Omit<LoanEntity, keyof Entity | `start` | `end` | `subjects` | `contract`>, IDocumentBase {
   start: number
   end: number
-  specimens: Specimen[]
+  subjects: Array<{
+    specimen: Specimen
+    foreignID: string
+    url: string
+  }>
   contract: File
 }
 
@@ -60,11 +65,24 @@ export default defineDocumentModel(`Loan`, defineDocumentSchema<Loan>({
     },
     required: true,
   },
-  specimens: [{
-    type: EntityFieldTypes.ObjectId,
-    ref: `Specimen`,
+  subjects: {
+    type: [{
+      specimen: {
+        type: EntityFieldTypes.ObjectId,
+        ref: `Specimen`,
+        required: true,
+      },
+      foreignID: {
+        type: EntityFieldTypes.String,
+        required: false,
+      },
+      url: {
+        type: EntityFieldTypes.String,
+        required: false,
+      },
+    }],
     required: true,
-  }],
+  },
   contract: {
     type: EntityFieldTypes.ObjectId,
     ref: `File`,
@@ -73,7 +91,7 @@ export default defineDocumentModel(`Loan`, defineDocumentSchema<Loan>({
 }, {
   alterSchema: (schema) => {
     schema.set(`toJSON`, {
-      transform: ({ _id, slug, description, start, end, contact, specimens, contract, type }: Partial<Loan>) => ({
+      transform: ({ _id, slug, description, start, end, contact, subjects, contract, type }: Partial<Loan>) => ({
         self: `/api/loans/${_id}`,
         id: slug,
         description,
@@ -85,10 +103,16 @@ export default defineDocumentModel(`Loan`, defineDocumentSchema<Loan>({
           email: contact.email,
           phone: contact.phone,
         },
-        specimens: specimens?.map(({ slug, name }) => ({
-          self: `/api/specimens/${slug}`,
-          id: slug,
-          name,
+        subjects: subjects?.map(({ specimen, foreignID, url }) => ({
+          specimen: !(specimen instanceof Types.ObjectId)
+            ? {
+                self: `/api/specimens/${specimen.slug}`,
+                id: specimen.slug,
+                name: specimen.name,
+              }
+            : undefined,
+          foreignID,
+          url,
         })),
         contract: contract && {
           self: `/api/files/${contract._id}`,
