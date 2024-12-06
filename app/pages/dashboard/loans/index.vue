@@ -14,6 +14,7 @@
       v-model="selection"
       :entities="loans"
       :columns="[['id', 'ID'], 'start', 'end', 'type', ['specimens', '#Specimens']]"
+      :multi-select="true"
       class="border-primary-60/75 w-full border-b"
       header-cell-class="group"
       row-class="table-row"
@@ -54,11 +55,11 @@
 
     <template #sidebar>
       <EntityAdminSidebar
-        v-if="selection"
-        :entities="[selection]"
+        :entities="selection"
       >
         <PvEntityDetails
-          :entity="selection"
+          v-if="selection.length === 1"
+          :entity="selection[0]"
           :fields="columns"
           class="space-y-4"
           label-class="font-bold italic"
@@ -99,6 +100,9 @@
             <span v-else>Nothing attached</span>
           </template>
         </PvEntityDetails>
+        <div v-else-if="selection.length > 1">
+          {{ pluralize(selection.length, `loan`, `loans`) }} selected
+        </div>
         <template #actions>
           <div class="space-y-2">
             <button
@@ -136,24 +140,24 @@ const { hasPermission } = useCurrentUser()
 const { setContent, close: closeModal } = useModal()
 const { createToast } = useToasts()
 
-const { entities: loans, list, remove, error, query: { page, pageSize } } = await fetchEntityList<Loan>(`Loan`)
+const { entities: loans, list, removeMany, error, query: { page, pageSize } } = await fetchEntityList<Loan>(`Loan`)
 const columns: [keyof Loan, string][] = [[`id`, `ID`], [`start`, `Start`], [`end`, `End`], [`type`, `Type`], [`specimens`, `Specimens`], [`contact`, `Contact`], [`contract`, `Contract`]]
-const selection = ref<EntityJSON<Loan>>()
+const selection = ref<EntityJSON<Loan>[]>([])
 
 function onClickRemove() {
-  const label = `the loan "${selection.value!.id}"`
+  const label = pluralize(selection.value.length, `loan`, `loans`)
   setContent(() => <PvEntityDeleteConfirm label={label} onConfirm={onRemove} onCancel={closeModal} />)
 }
 
 async function onRemove() {
-  const id = selection.value!.id
-  await remove(selection.value!)
+  const count = selection.value.length
+  await removeMany(selection.value!)
   if (error.value) {
     createToast(`loan-delete-error`, () => error.value, { type: `error` })
   } else {
-    createToast(`loan-delete-success`, () => `Deleted loan "${id}".`, { type: `success`, duration: 4000 })
+    createToast(`loan-delete-success`, () => `Deleted ${pluralize(count, `loan`, `loans`)}`, { type: `success`, duration: 4000 })
   }
-  selection.value = undefined
+  selection.value = []
   closeModal()
 }
 </script>
