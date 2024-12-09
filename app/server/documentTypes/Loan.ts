@@ -1,5 +1,5 @@
+import { Types } from "mongoose"
 import { encode } from "ufo"
-import LoanMeta from "./LoanMeta"
 import type { Entity } from "@unb-libraries/nuxt-layer-entity"
 import { LoanType, type Loan as LoanEntity } from "types/loan"
 import type { Specimen } from "./Specimen"
@@ -85,17 +85,17 @@ export default defineDocumentModel(`Loan`, defineDocumentSchema<Loan>({
           email: contact.email,
           phone: contact.phone,
         },
-        specimens: specimens?.map(({ slug, name }) => ({
-          self: `/api/specimens/${slug}`,
-          id: slug,
-          name,
-        })),
-        contract: contract && {
+        specimens: specimens?.map(specimen => (!(specimen instanceof Types.ObjectId) && ({
+          self: `/api/specimens/${specimen.slug}`,
+          id: specimen.slug,
+          name: specimen.name,
+        })) || specimen),
+        contract: (contract && !(contract instanceof Types.ObjectId) && {
           self: `/api/files/${contract._id}`,
           id: contract._id,
           filename: contract.filename,
           uri: contract.filename && encode(`/upload/${contract.filename}`),
-        },
+        }) || undefined,
         type: type && useEnum(LoanType)
           .labelOf(type)
           .toLowerCase(),
