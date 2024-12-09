@@ -2,7 +2,7 @@ import { getLoanQueryParams } from "~/server/utils/api/getLoanQuery"
 import { LoanType, type Loan as ILoan } from "~/types/loan"
 
 export default defineEventHandler(async (event) => {
-  const { select, sort, where: { self, id, start, end, contract, subjects, type } = {} } = getLoanQueryParams(event)
+  const { select, sort, where: { self, id, start, end, contract, specimens, type } = {} } = getLoanQueryParams(event)
 
   const query = Loan.mongoose.model.find()
   if (self?.eq) {
@@ -43,13 +43,13 @@ export default defineEventHandler(async (event) => {
     query.where({ contract: { $exists: contract } })
   }
 
-  if (subjects?.count?.gt || subjects?.count?.gte) {
-    const count = parseInt(subjects.count.gt || subjects.count.gte as string)
-    query.where({ $expr: { [subjects.count?.gt ? `$gt` : `$gte`]: [{ $size: `$subjects` }, count] } })
+  if (specimens?.count?.gt || specimens?.count?.gte) {
+    const count = parseInt(specimens.count.gt || specimens.count.gte as string)
+    query.where({ $expr: { [specimens.count?.gt ? `$gt` : `$gte`]: [{ $size: `$specimens` }, count] } })
   }
-  if (subjects?.count?.lt || subjects?.count?.lte) {
-    const count = parseInt(subjects.count.lt || subjects.count.lte as string)
-    query.where({ $expr: { [subjects.count?.lt ? `$lt` : `$lte`]: [{ $size: `$specimens` }, count] } })
+  if (specimens?.count?.lt || specimens?.count?.lte) {
+    const count = parseInt(specimens.count.lt || specimens.count.lte as string)
+    query.where({ $expr: { [specimens.count?.lt ? `$lt` : `$lte`]: [{ $size: `$specimens` }, count] } })
   }
 
   if (type?.eq) {
@@ -61,12 +61,9 @@ export default defineEventHandler(async (event) => {
   query.sort(sort?.map(([field, direction]) => direction === 1 ? field : `-${field})`).join(` `))
 
   const total = await (query.clone().countDocuments())
-  if (select.includes(`subjects`)) {
-    query.populate(`subjects.specimen`)
-  }
-  if (select.includes(`contract`)) {
-    query.populate(`contract`)
-  }
+  select
+    .filter(field => [`specimens`, `contract`].includes(field))
+    .forEach(field => query.populate(field))
 
   return {
     self: `/api/loans`,
