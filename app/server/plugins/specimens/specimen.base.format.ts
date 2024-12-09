@@ -1,11 +1,10 @@
-import { type User as UserEntity } from "@unb-libraries/nuxt-layer-entity"
+import type { User as UserEntity } from "@unb-libraries/nuxt-layer-entity"
 import User from "~/layers/mongo/server/documentTypes/User"
-import { type Affiliate } from "~/types/affiliate"
-import { type StorageLocation } from "~/types/storagelocation"
+import type { Affiliate } from "~/types/affiliate"
 import { Immeasurabibility, Legal, MeasurementCount, Status } from "~/types/specimen"
 
 export default defineMongooseFormatter(Specimen.Base, async (doc) => {
-  const { slug, objectIDs, mimsyID, legal, lenderID, classification, name, description, kollektion, images, measurements, date, relativeAge, numericAge, composition, origin, pieces, partial, collector, sponsor, loans, storage, storageLocations, publications, appraisal, status, creator, editor, created, updated } = doc
+  const { slug, objectIDs, mimsyID, legal, lenderID, lenderURL, classification, name, description, kollektion, images, measurements, date, relativeAge, numericAge, composition, origin, pieces, partial, collector, sponsor, loans, storage, storageLocations, publications, appraisal, status, creator, editor, created, updated } = doc
 
   function getAuthHeaders(): { Cookie?: string } {
     const event = useEvent()
@@ -22,6 +21,7 @@ export default defineMongooseFormatter(Specimen.Base, async (doc) => {
     objectIDs: objectIDs && objectIDs.map(({ id, type }) => ({ id, type })),
     legal: legal && useEnum(Legal).labelOf(legal).toLowerCase(),
     lenderID,
+    lenderURL,
     classification: (classification && Object.keys(classification).length > 0 && await $fetch(`/api/terms/${classification._id}`, { headers: getAuthHeaders() ?? {} })) || undefined,
     name,
     description,
@@ -57,17 +57,6 @@ export default defineMongooseFormatter(Specimen.Base, async (doc) => {
     partial,
     collector: (collector && Object.keys(collector).length > 0 && await renderDocument(collector, { model: Term, self: term => `/api/terms/${term._id}` })) as Affiliate || undefined,
     sponsor: (sponsor && Object.keys(sponsor).length > 0 && await renderDocument(sponsor, { model: Term, self: term => `/api/terms/${term._id}` })) as Affiliate || undefined,
-    loans: loans && loans.map(loan => ({
-      received: loan.received,
-      contact: loan.contact && {
-        name: loan.contact.name,
-        affiliation: loan.contact.affiliation,
-        email: loan.contact.email,
-        phone: loan.contact.phone,
-      },
-      start: loan.start && new Date(loan.start).toISOString(),
-      end: loan.end && new Date(loan.end).toISOString(),
-    })),
     storage: (storage && storage.length > 0 && await Promise.all(storage
       .map(({ location, ...s }) => ({ location: storageLocations.find(sl => `${sl._id}` === `${location._id}`), ...s }))
       .map(async ({ location, dateIn }, index) => ({

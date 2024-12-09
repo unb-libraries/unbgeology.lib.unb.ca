@@ -10,6 +10,7 @@ import type {
 } from "types/classification"
 import type { Collection } from "./collection"
 import type { Composition } from "./composition"
+import type { Loan } from "./loan"
 
 export enum Status {
   MIGRATED = 1,
@@ -76,6 +77,7 @@ export interface Specimen extends Entity, Stateful<typeof Status> {
   objectIDs: ObjectID[]
   legal: Legal
   lenderID?: string
+  lenderURL?: string
   slug: string
   collection: Collection
   name: string

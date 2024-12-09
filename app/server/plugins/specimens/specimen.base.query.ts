@@ -37,6 +37,10 @@ export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({
     default: true,
     filter: String,
   },
+  lenderURL: {
+    default: true,
+    filter: String,
+  },
   classification: {
     default: true,
     join: Term,

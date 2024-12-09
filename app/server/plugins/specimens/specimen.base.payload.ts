@@ -14,13 +14,14 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
 
   // REFACTOR: Because URIEntityTypeValidator cannot authorize against the API, MatchValidator is used instead
 
-  const { legal, lenderID, classification, collection, images, age, composition, measurements, collector, sponsor, loans, storage, creator, editor, created, updated, ...body } = await validateBody(payload, {
+  const { legal, classification, collection, images, age, composition, measurements, collector, sponsor, storage, creator, editor, created, updated, ...body } = await validateBody(payload, {
     objectIDs: optional(ArrayValidator(ObjectValidator({
       id: require(StringValidator),
       type: optional(StringValidator),
     }))),
     legal: optional(EnumValidator(Legal)),
     lenderID: optional(StringValidator),
+    lenderURL: optional(StringValidator),
     name: optional(StringValidator),
     description: optional(StringValidator),
     classification: optional(MatchValidator(/^\/api\/terms\/[a-z0-9]{24}$/)),
@@ -45,17 +46,6 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
     partial: optional(BooleanValidator),
     collector: optional(MatchValidator(/^\/api\/terms\/[a-z0-9]{24}$/)),
     sponsor: optional(MatchValidator(/^\/api\/terms\/[a-z0-9]{24}$/)),
-    loans: optional(ArrayValidator(ObjectValidator({
-      received: optional(BooleanValidator),
-      contact: optional(ObjectValidator({
-        name: optional(StringValidator),
-        affiliation: optional(StringValidator),
-        email: optional(MatchValidator(validationPatterns.email)),
-        phone: optional(MatchValidator(validationPatterns.phone)),
-      })),
-      start: optional(MatchValidator(validationPatterns.date)),
-      end: optional(MatchValidator(validationPatterns.date)),
-    }))),
     storage: optional(ArrayValidator(ObjectValidator({
       location: optional(MatchValidator(/^\/api\/terms\/[a-z0-9]{24}$/)),
       dateIn: optional(MatchValidator(validationPatterns.date)),
@@ -76,7 +66,6 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
   return {
     ...body,
     legal: legal && useEnum(Legal).valueOf(legal),
-    lenderID,
     classification: classification && { _id: classification.substring(1).split(`/`).at(-1)! },
     kollektion: collection && { _id: collection.substring(1).split(`/`).at(-1)! },
     images: images?.map(uri => ({ _id: uri.substring(1).split(`/`).at(-1)! })),
@@ -93,11 +82,6 @@ export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
     // collectorModel: collector && Term.fullName,
     sponsor: sponsor && { _id: sponsor.substring(1).split(`/`).at(-1)! },
     // sponsorModel: sponsor && Term.fullName,
-    loans: loans?.map(({ start, end, ...loan }) => ({
-      ...loan,
-      start: new Date(start).getUTCMilliseconds(),
-      end: new Date(end).getUTCMilliseconds(),
-    })),
     storage: storage?.map(({ location, dateIn }) => ({
       location: location && location.substring(1).split(`/`).at(-1)!,
       dateIn: dateIn && new Date(dateIn).valueOf(),

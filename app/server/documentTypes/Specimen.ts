@@ -15,7 +15,7 @@ import type { User as IUser } from "~/layers/mongo/server/documentTypes/User"
 import type { Authorize as IAuthorize } from "~/layers/mongo/server/utils/mixins/Authorize"
 import type { IPIKable as IIPIKable } from "~/layers/mongo/server/utils/mixins/IPIKable"
 
-export interface Specimen extends Omit<SpecimenEntity, keyof Entity | `type` | `classification` | `collection` | `images` | `age` | `composition` | `measurements` | `collector` | `sponsor` | `loans` | `storage` | `creator` | `editor`>, IStateful<typeof Status>, IIPIKable, IAuthorize, IDocumentBase {
+export interface Specimen extends Omit<SpecimenEntity, keyof Entity | `type` | `classification` | `collection` | `images` | `age` | `composition` | `measurements` | `collector` | `sponsor` | `storage` | `creator` | `editor`>, IStateful<typeof Status>, IIPIKable, IAuthorize, IDocumentBase {
   type: `Specimen.Fossil` | `Specimen.Mineral` | `Specimen.Rock`
   ypik: string
   classification: FossilCD | MineralCD | RockCD
@@ -120,18 +120,15 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
   },
   lenderID: {
     type: EntityFieldTypes.String,
-    required: false,
-    validate: [{
-      validator: function (this: Specimen) {
-        return this.legal !== Legal.LOAN || this.lenderID
-      },
-      message: `Loanded specimens must provide a Lender ID.`,
-    }, {
-      validator: function (this: Specimen) {
-        return this.legal !== Legal.PERMANENT || !this.lenderID
-      },
-      message: `Permanent collection specimens must not provide a Lender ID.`,
-    }],
+    required(this: Specimen) {
+      return !((this.status as Status) & (Status.DRAFT | Status.MIGRATED)) && this.legal === Legal.LOAN
+    },
+  },
+  lenderURL: {
+    type: EntityFieldTypes.String,
+    required(this: Specimen) {
+      return !((this.status as Status) & (Status.DRAFT | Status.MIGRATED)) && this.legal === Legal.LOAN
+    },
   },
   kollektion: {
     type: EntityFieldTypes.ObjectId,
