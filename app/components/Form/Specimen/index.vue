@@ -1,10 +1,17 @@
 <template>
-  <EntityForm @save="onSave" @cancel="$emit(`cancel`)">
+  <EntityForm
+    @save="onSave"
+    @cancel="$emit(`cancel`)"
+  >
     <TwFormField label="Object IDs">
       <InputSpecimenObjectID v-model="data.objectIDs" />
     </TwFormField>
     <TwFormField label="Legal Status">
-      <TwInputRadioGroup v-model="data.legal" :options="useEnum(Legal).toTuples().map(([value, label]) => [value, sentenceCased(label)])" class="input-radio-group flex-row space-x-3" />
+      <TwInputRadioGroup
+        v-model="data.legal"
+        :options="useEnum(Legal).toTuples().map(([value, label]) => [value, sentenceCased(label)])"
+        class="input-radio-group flex-row space-x-3"
+      />
     </TwFormField>
     <div
       v-if="data.legal === Legal.LOAN"
@@ -33,22 +40,43 @@
       <InputSpecimenCollection v-model="data.collection" />
     </TwFormField>
     <TwFormField label="Date added">
-      <TwInputText v-model="data.date" placeholder="e.g. 1974, 1974-08, or 1974-08-12" class="input input-text-lg" />
+      <TwInputText
+        v-model="data.date"
+        placeholder="e.g. 1974, 1974-08, or 1974-08-12"
+        class="input input-text-lg"
+      />
     </TwFormField>
     <TwFormField label="Object name">
-      <TwInputText v-model="data.name" class="input input-text-lg" />
+      <TwInputText
+        v-model="data.name"
+        class="input input-text-lg"
+      />
     </TwFormField>
     <TwFormField label="Description">
-      <TwInputTextArea v-model="data.description" :rows="5" class="input input-textarea-lg" />
+      <TwInputTextArea
+        v-model="data.description"
+        :rows="5"
+        class="input input-textarea-lg"
+      />
     </TwFormField>
     <TwFormField label="Images">
-      <TwInputImage v-model="data.images" :max-files="maxFiles" :max-file-size="maxFileSize" :max-total-file-size="maxTotalFileSize" class="w-full" />
+      <TwInputImage
+        v-model="data.images"
+        :max-files="maxFiles"
+        :max-file-size="maxFileSize"
+        :max-total-file-size="maxTotalFileSize"
+        class="w-full"
+      />
     </TwFormField>
     <TwFormField label="Publications">
       <InputSpecimenPublications v-model="data.publications" />
     </TwFormField>
     <TwFormField label="Appraisal">
-      <TwInputNumber v-model="data.appraisal" :min="0" class="input input-number-lg" />
+      <TwInputNumber
+        v-model="data.appraisal"
+        :min="0"
+        class="input input-number-lg"
+      />
     </TwFormField>
   </EntityForm>
 </template>
