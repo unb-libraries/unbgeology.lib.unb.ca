@@ -6,9 +6,29 @@
     <TwFormField label="Legal Status">
       <TwInputRadioGroup v-model="data.legal" :options="useEnum(Legal).toTuples().map(([value, label]) => [value, sentenceCased(label)])" class="input-radio-group flex-row space-x-3" />
     </TwFormField>
-    <TwFormField v-if="data.legal === Legal.LOAN" label="Lender ID">
-      <TwInputText v-model="data.lenderID" class="input input-text-lg" />
-    </TwFormField>
+    <div
+      v-if="data.legal === Legal.LOAN"
+      class="inline-flex space-x-3"
+    >
+      <TwFormField
+        label="Lender ID"
+        class="w-1/2 "
+      >
+        <TwInputText
+          v-model="data.lenderID"
+          class="input input-text-lg"
+        />
+      </TwFormField>
+      <TwFormField
+        label="Lender URL"
+        class="w-1/2 "
+      >
+        <TwInputText
+          v-model="data.lenderURL"
+          class="input input-text-lg"
+        />
+      </TwFormField>
+    </div>
     <TwFormField label="Collection">
       <InputSpecimenCollection v-model="data.collection" />
     </TwFormField>
@@ -50,7 +70,8 @@ const { maxFiles, maxFileSize, maxTotalFileSize } = useRuntimeConfig().public
 const data = reactive({
   objectIDs: (props.specimen.objectIDs ?? []),
   legal: (props.specimen.legal && useEnum(Legal).valueOf(props.specimen.legal)) || undefined,
-  lenderID: (props.specimen.lenderID),
+  lenderID: props.specimen.lenderID,
+  lenderURL: props.specimen.lenderURL,
   collection: props.specimen.collection?.self,
   date: props.specimen.date ?? ``,
   name: props.specimen.name,
@@ -63,16 +84,18 @@ const data = reactive({
 
 const onSave = () => {
   const { objectIDs, legal, collection, date, name, description, images, publications, appraisal } = data
-  let { lenderID } = data
+  let { lenderID, lenderURL } = data
 
   if (legal !== Legal.LOAN) {
     lenderID = undefined
+    lenderURL = undefined
   }
 
   const payload = {
     objectIDs: objectIDs.length ? data.objectIDs : props.specimen.objectIDs ? null : undefined,
     legal: legal || (props.specimen.legal ? null : undefined),
     lenderID: lenderID || (props.specimen.lenderID ? null : undefined),
+    lenderURL: lenderURL || (props.specimen.lenderURL ? null : undefined),
     collection: collection ?? (props.specimen.collection ? null : undefined),
     date: date || (props.specimen.date ? null : undefined),
     name: name || (props.specimen.name ? null : undefined),
