@@ -28,6 +28,7 @@ export default createConfigForNuxt({
   .override(`nuxt/stylistic`, {
     rules: {
       "@stylistic/quotes": [`warn`, `backtick`],
+      "@stylistic/brace-style": [`warn`, `1tbs`, { allowSingleLine: true }],
     },
   })
   .override(`tailwindcss:rules`, {
