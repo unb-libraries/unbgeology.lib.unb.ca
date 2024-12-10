@@ -1,8 +1,18 @@
-export default defineEventHandler(async (event) => {
-  const { where: { self } = {} } = getLoanQueryParams(event)
-  const { contact, ...body } = await readLoanBody(event, { optional: true })
+import type { Loan as ILoan } from "~/server/documentTypes/Loan"
 
-  const query = Loan.mongoose.model.updateMany({}, {
+export default defineEventHandler(async (event) => {
+  const resources = getAuthorizedResources(event, r => /^loan$/.test(r))
+  const fields = getAuthorizedFields(event, ...resources)
+  if (!resources.length) {
+    return create403()
+  }
+
+  const { where: { self } = {} } = getLoanQueryParams(event)
+  const { contact, ...body }: Partial<ILoan> = Object.entries(await readLoanBody(event, { optional: true }))
+    .filter(([key]) => fields.includes(key))
+    .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {})
+
+  const query = Loan.mongoose.model.updateMany({ authTags: { $in: resources } }, {
     ...body,
     ...Object.fromEntries(Object.entries(contact ?? {}).map(([key, value]) => [[`contact.${key}`], value])),
   }, { new: true })

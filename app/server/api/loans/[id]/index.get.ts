@@ -2,13 +2,22 @@ import type { Loan as ILoan } from "~/types/loan"
 
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
-  const { select } = getLoanQueryParams(event)
 
-  const query = Loan.mongoose.model.findById(id)
+  const resources = getAuthorizedResources(event, r => /^loan$/.test(r))
+  if (!resources.length) {
+    return create403()
+  }
+
+  const { select } = getLoanQueryParams(event)
+  const fields = getAuthorizedFields(event, ...resources).filter(field => select.includes(field))
+
+  const query = Loan.mongoose.model.findById(id).where(`authTags`).in(resources)
   if (select.includes(`specimens`)) {
+    // TODO: check for authTags in specimens
     query.populate(`specimens`)
   }
   if (select.includes(`contract`)) {
+    // TODO: check for authTags in contract
     query.populate(`contract`)
   }
 
@@ -19,6 +28,6 @@ export default defineEventHandler(async (event) => {
 
   return {
     self: `/api/loans/${id}`,
-    ...Object.fromEntries(Object.entries(loan.toJSON<ILoan>()).filter(([key]) => select.includes(key as keyof ILoan))),
+    ...Object.fromEntries(Object.entries(loan.toJSON<ILoan>()).filter(([key]) => fields.includes(key as keyof ILoan))),
   }
 })

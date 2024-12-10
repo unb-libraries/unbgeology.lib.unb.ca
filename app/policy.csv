@@ -6,6 +6,7 @@ p, sysadmin, migration, *, create|read|update|delete
 p, sysadmin, migrationitem, *, create|read|update|delete
 p, sysadmin, term, *, create|read|update|delete
 p, sysadmin, specimen, *, create|read|update|delete
+p, sysadmin, loan, *, create|read|update|delete
 p, migrator, migration, *, create|read|update|delete
 p, migrator, migrationitem, *, create|read|update|delete
 p, migrator, term, *, create|read|delete
@@ -16,6 +17,7 @@ p, editor, term, *, create|read|update|delete
 p, editor, file, *, create|read|update|delete
 p, editor, user, id|profile, read
 p, editor, migrationitem:imported, *, read
+p, editor, loan, *, create|read|update|delete
 p, public, specimen:published, type|objectIDs|slug|description|images|classification|measurements|date|age|origin|pieces|partial|collector|sponsor|publications, read
 p, public, term:published, label, read
 p, public, file:persisted, uri, read

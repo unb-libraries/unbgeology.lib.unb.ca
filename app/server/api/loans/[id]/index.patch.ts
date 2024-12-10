@@ -1,6 +1,16 @@
+import type { Loan as ILoan } from "~/server/documentTypes/Loan"
+
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
-  const { contact, ...body } = await readLoanBody(event, { optional: true })
+  const resources = getAuthorizedResources(event, r => /^loan$/.test(r))
+  if (!resources.length) {
+    return create403()
+  }
+
+  const fields = getAuthorizedFields(event, ...resources)
+  const { contact, ...body }: Partial<ILoan> = Object.entries(await readLoanBody(event, { optional: true }))
+    .filter(([key]) => fields.includes(key))
+    .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {})
 
   const loan = await Loan.mongoose.model.findByIdAndUpdate(id, {
     ...body,

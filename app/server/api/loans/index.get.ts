@@ -2,9 +2,17 @@ import { getLoanQueryParams } from "~/server/utils/api/getLoanQuery"
 import { LoanType, type Loan as ILoan } from "~/types/loan"
 
 export default defineEventHandler(async (event) => {
+  const resources = getAuthorizedResources(event, r => /^loan$/.test(r))
+  if (!resources.length) {
+    return create403()
+  }
+
   const { select, sort, where: { self, id, start, end, contract, specimens, type } = {} } = getLoanQueryParams(event)
+  const fields = getAuthorizedFields(event, ...resources).filter(field => select.includes(field))
 
   const query = Loan.mongoose.model.find()
+    .where(`authTags`).in(resources)
+
   if (self?.eq) {
     query.where({ _id: Array.isArray(self.eq) ? { $in: self.eq.map(uri => uri.split(`/`)[3]) } : self.eq.split(`/`)[3] })
   } else if (self?.ne) {
@@ -69,7 +77,7 @@ export default defineEventHandler(async (event) => {
     self: `/api/loans`,
     entities: (await query).map(loan => ({
       self: `/api/loans/${loan._id}`,
-      ...Object.fromEntries(Object.entries(loan.toJSON<ILoan>()).filter(([key]) => select.includes(key as keyof ILoan))),
+      ...Object.fromEntries(Object.entries(loan.toJSON<ILoan>()).filter(([key]) => fields.includes(key as keyof ILoan))),
     })),
     ...usePaginator({ total }),
   }
