@@ -34,8 +34,8 @@
       <template #end="{ entity: { end } }">
         {{ new Date(end).toISOString().slice(0, 10) }}
       </template>
-      <template #subjects="{ entity: { subjects } }">
-        {{ subjects.length }}
+      <template #specimens="{ entity: { specimens } }">
+        {{ specimens.length }}
       </template>
     </EntityTable>
     <div class="flex w-full flex-row justify-between px-4">
@@ -70,10 +70,10 @@
           <template #end="{ entity: { end } }">
             {{ new Date(end).toLocaleDateString() }}
           </template>
-          <template #subjects="{ entity: { subjects } }">
+          <template #specimens="{ entity: { specimens } }">
             <ul>
               <li
-                v-for="{ specimen } in subjects"
+                v-for="specimen in specimens"
                 :key="specimen.id"
               >
                 <NuxtLink :to="`/dashboard/specimens/${specimen.id}`">
@@ -141,7 +141,7 @@ const { setContent, close: closeModal } = useModal()
 const { createToast } = useToasts()
 
 const { entities: loans, list, removeMany, error, query: { page, pageSize } } = await fetchEntityList<Loan>(`Loan`)
-const columns: [keyof Loan, string][] = [[`id`, `ID`], [`start`, `Start`], [`end`, `End`], [`type`, `Type`], [`subjects`, `Specimens`], [`contact`, `Contact`], [`contract`, `Contract`]]
+const columns: [keyof Loan, string][] = [[`id`, `ID`], [`start`, `Start`], [`end`, `End`], [`type`, `Type`], [`specimens`, `Specimens`], [`contact`, `Contact`], [`contract`, `Contract`]]
 const selection = ref<EntityJSON<Loan>[]>([])
 
 function onClickRemove() {

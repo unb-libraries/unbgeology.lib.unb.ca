@@ -41,18 +41,7 @@ async function onSave({ type, start, end, description, specimens, contract, cont
       end,
       description: description ?? (loan?.description ? `` : undefined),
       contact,
-      subjects: [
-        ...loan?.subjects
-          .filter(({ specimen }) => specimens.includes(specimen.self))
-          .map(subject => ({
-            specimen: subject.specimen.self,
-            foreignID: subject.foreignID,
-            url: subject.url,
-          })) ?? [],
-        ...specimens
-          .filter(self => !loan?.subjects.map(({ specimen }) => specimen.self).includes(self))
-          .map(specimen => ({ specimen })),
-      ],
+      specimens,
       contract,
     },
   })
