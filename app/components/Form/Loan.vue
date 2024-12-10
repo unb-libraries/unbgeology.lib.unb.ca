@@ -199,6 +199,11 @@ async function onSearchSpecimens(search: string) {
   ].filter(([self], i, arr) => arr.findIndex(([opt]) => opt === self) === i) as [string, [string, string]][]
 }
 
+watch(() => loan.type, () => {
+  specimenOpts.value = []
+  loan.specimens = []
+})
+
 function onClickFileBrowse() {
   const document = ref(loan.contract)
 
@@ -245,7 +250,7 @@ function onSave() {
       phone: phone!,
     },
     type: loan.type === LoanType.INCOMING ? `incoming` : `outgoing`,
-    specimens: specimens,
+    specimens,
     contract: contract?.self,
   })
 }
