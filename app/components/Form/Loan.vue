@@ -37,6 +37,7 @@
       >
         <TwInputText
           v-model="loan.start"
+          placeholder="YYYY-MM-DD"
           class="input input-text-lg"
         />
       </TwFormField>
@@ -47,6 +48,7 @@
       >
         <TwInputText
           v-model="loan.end"
+          placeholder="YYYY-MM-DD"
           class="input input-text-lg"
         />
       </TwFormField>
@@ -76,36 +78,6 @@
           <span>{{ `${id}`.toUpperCase() }}</span>
         </template>
       </PvInputDropdown>
-    </TwFormField>
-
-    <TwFormField label="Contract">
-      <div
-        v-if="loan.contract"
-        class="bg-primary border-primary-80 flex flex-row justify-between rounded-md border p-3"
-      >
-        <div class="flex items-center justify-start space-x-3">
-          <div><IconFileText class="size-8 stroke-current stroke-1" /></div>
-          <div>
-            {{ loan.contract.filename.slice(loan.contract.filename.indexOf(`-`) + 1) }}
-          </div>
-        </div>
-        <button
-          class="bg-primary-80 hover:bg-primary-60 rounded-md p-1 hover:cursor-pointer"
-          @click.stop.prevent="loan.contract = undefined"
-        >
-          <IconCancel class="stroke-primary-20 size-6 stroke-2" />
-        </button>
-      </div>
-      <button
-        v-else
-        class="button button-outline-primary-60 hover:button-outline-accent-light button-lg hover:bg-primary bg-primary flex w-full flex-col space-y-2 border-dashed p-8"
-        @click.stop.prevent="onClickFileBrowse"
-      >
-        <IconFileText class="size-12 fill-none stroke-current" />
-        <span>
-          Browse documents
-        </span>
-      </button>
     </TwFormField>
 
     <!-- Contact -->
@@ -154,6 +126,36 @@
         </div>
       </div>
     </div>
+
+    <TwFormField label="Contract">
+      <div
+        v-if="loan.contract"
+        class="bg-primary border-primary-80 flex flex-row justify-between rounded-md border p-3"
+      >
+        <div class="flex items-center justify-start space-x-3">
+          <div><IconFileText class="size-8 stroke-current stroke-1" /></div>
+          <div>
+            {{ loan.contract.filename.slice(loan.contract.filename.indexOf(`-`) + 1) }}
+          </div>
+        </div>
+        <button
+          class="bg-primary-80 hover:bg-primary-60 rounded-md p-1 hover:cursor-pointer"
+          @click.stop.prevent="loan.contract = undefined"
+        >
+          <IconCancel class="stroke-primary-20 size-6 stroke-2" />
+        </button>
+      </div>
+      <button
+        v-else
+        class="button button-outline-primary-60 hover:button-outline-accent-light button-lg hover:bg-primary bg-primary flex w-full flex-col space-y-2 border-dashed p-8"
+        @click.stop.prevent="onClickFileBrowse"
+      >
+        <IconFileText class="size-12 fill-none stroke-current" />
+        <span>
+          Browse documents
+        </span>
+      </button>
+    </TwFormField>
   </EntityForm>
 </template>
 
