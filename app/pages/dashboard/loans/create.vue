@@ -24,8 +24,8 @@ definePageMeta({
 const { create } = useEntityType<Loan>(`Loan`)
 const returnUrl = `/dashboard/loans`
 
-async function onSave({ specimens, ...loan }: EntityJSONBody<Omit<Loan, `subjects`> & { specimens: string[] }>) {
-  const { error } = await create({ ...loan, subjects: specimens.map(specimen => ({ specimen })) })
+async function onSave(loan: EntityJSONBody<Omit<Loan, `specimens`> & { specimens: string[] }>) {
+  const { error } = await create(loan)
   if (!error.value) {
     navigateTo(returnUrl)
   }
