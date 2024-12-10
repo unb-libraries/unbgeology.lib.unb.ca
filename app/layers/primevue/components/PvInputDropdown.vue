@@ -9,7 +9,7 @@
       class="input"
       :class="classes"
       tabindex="0"
-      @click.stop="optionsVisible = !optionsVisible"
+      @click.stop="_ => { if (!disabled) { optionsVisible = !optionsVisible } }"
     >
       <slot name="before" />
       <div class="flex grow flex-row items-center space-x-3">
@@ -39,6 +39,7 @@
             v-if="input && (multi || selected.length < 1)"
             v-model="search"
             type="text"
+            :disabled="disabled"
             class="input-ref"
             :class="inputClass"
             :placeholder="placeholder || `Search`"
@@ -94,6 +95,7 @@ const model = defineModel<string | number | string[] | number[]>({ required: fal
 const props = defineProps<{
   options: (string | [string, string] | object)[] | Record<string, string | object>
   multi?: boolean
+  disabled?: boolean
   optionField?: string
   labelField?: string
   placeholder?: string
@@ -139,6 +141,10 @@ const optionsVisible = ref(false)
 const selectedOptions = computed(() => options.value.filter(([id]) => selected.value.includes(`${id}`)))
 
 function onSelect(value: string) {
+  if (props.disabled) {
+    return
+  }
+
   if (value === `addNew`) {
     emits(`add`)
     optionsVisible.value = false
@@ -151,10 +157,16 @@ function onSelect(value: string) {
 }
 
 function onRemoveItem(value: string) {
+  if (props.disabled) {
+    return
+  }
   selected.value = selected.value.filter(id => id !== value)
 }
 
 function onReset() {
+  if (props.disabled) {
+    return
+  }
   selected.value = []
 }
 </script>
