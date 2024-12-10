@@ -55,6 +55,7 @@
 
     <template #sidebar>
       <EntityAdminSidebar
+        v-if="selection.length"
         :entities="selection"
       >
         <PvEntityDetails
@@ -115,6 +116,9 @@
           </div>
         </template>
       </EntityAdminSidebar>
+      <div v-else>
+        No loan selected.
+      </div>
     </template>
   </NuxtLayout>
 </template>
