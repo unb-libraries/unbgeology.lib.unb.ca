@@ -63,6 +63,7 @@
       <PvInputDropdown
         v-model="loan.specimens"
         :options="specimenOpts"
+        :disabled="!loan.type"
         :input="true"
         :multi="true"
         class="input-select-lg"
@@ -157,10 +158,10 @@
 </template>
 
 <script setup lang="tsx">
-import { FilterOperator, type EntityJSONBody, type EntityJSONProperties, type Document } from "@unb-libraries/nuxt-layer-entity"
+import { FilterOperator, type EntityJSONBody, type EntityJSONProperties } from "@unb-libraries/nuxt-layer-entity"
 import { type Loan, LoanType } from 'types/loan'
 import { TwDocumentBrowser } from "#components"
-import type { Specimen } from "~/types/specimen"
+import { Legal, type Specimen } from "~/types/specimen"
 
 const props = defineProps<{
   entity?: EntityJSONProperties<Loan>
@@ -194,7 +195,7 @@ const specimenOpts = ref<[string, [string, string]][]>(props.entity?.specimens?.
 async function onSearchSpecimens(search: string) {
   specimenOpts.value = [
     ...(specimenOpts.value.filter(([self]) => loan.specimens.includes(self))),
-    ...((search && (await fetchSpecimens({ search })).entities.value.map(({ self, id, name }) => [self, [id, name]])) || []),
+    ...((search && (await fetchSpecimens({ search, filter: [[`legal`, FilterOperator.EQUALS, useEnum(Legal).labelOf(loan.type === LoanType.INCOMING ? Legal.LOAN : Legal.PERMANENT)]] })).entities.value.map<[string, [string, string, Legal]]>(({ self, id, name, legal }) => [self, [id, name, useEnum(Legal).valueOf(legal)]])) || []),
   ].filter(([self], i, arr) => arr.findIndex(([opt]) => opt === self) === i) as [string, [string, string]][]
 }
 

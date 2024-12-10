@@ -6,6 +6,7 @@ import type { Specimen } from "./Specimen"
 import { EntityFieldTypes } from "~/layers/mongo/types/entity"
 import type { DocumentBase as IDocumentBase } from "~/layers/mongo/types/schema"
 import type { File } from "~/layers/mongo/server/documentTypes/FileBase"
+import { Legal } from "~/types/specimen"
 
 export interface Loan extends Omit<LoanEntity, keyof Entity | `start` | `end` | `specimens` | `contract`>, IDocumentBase {
   start: number
@@ -89,6 +90,7 @@ export default defineDocumentModel(`Loan`, defineDocumentSchema<Loan>({
           self: `/api/specimens/${specimen.slug}`,
           id: specimen.slug,
           name: specimen.name,
+          legal: useEnum(Legal).labelOf(specimen.legal).toLowerCase(),
         })) || specimen),
         contract: (contract && !(contract instanceof Types.ObjectId) && {
           self: `/api/files/${contract._id}`,
