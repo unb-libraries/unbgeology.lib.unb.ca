@@ -121,4 +121,7 @@ export default defineDocumentModel(`Loan`, defineDocumentSchema<Loan>({
     return `${year}-${counter}`
   },
 }))
+  .mixin(Authorize<Loan>({
+    paths: _ => `loan`,
+  }))
   .mixin(DocumentBase())())

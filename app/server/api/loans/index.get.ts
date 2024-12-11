@@ -8,7 +8,8 @@ export default defineEventHandler(async (event) => {
   }
 
   const { select, sort, where: { self, id, start, end, contract, specimens, type } = {} } = getLoanQueryParams(event)
-  const fields = getAuthorizedFields(event, ...resources).filter(field => select.includes(field))
+  const authFields = getAuthorizedFields(event, ...resources)
+  const fields = select.filter(field => !authFields.length || authFields.includes(field))
 
   const query = Loan.mongoose.model.find()
     .where(`authTags`).in(resources)

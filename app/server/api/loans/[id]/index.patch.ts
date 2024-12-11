@@ -7,9 +7,9 @@ export default defineEventHandler(async (event) => {
     return create403()
   }
 
-  const fields = getAuthorizedFields(event, ...resources)
+  const authFields = getAuthorizedFields(event, ...resources)
   const { contact, ...body }: Partial<ILoan> = Object.entries(await readLoanBody(event, { optional: true }))
-    .filter(([key]) => fields.includes(key))
+    .filter(([key]) => !authFields.length || authFields.includes(key))
     .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {})
 
   const loan = await Loan.mongoose.model.findByIdAndUpdate(id, {
