@@ -144,7 +144,7 @@ const { hasPermission } = useCurrentUser()
 const { setContent, close: closeModal } = useModal()
 const { createToast } = useToasts()
 
-const { entities: loans, list, removeMany, error, query: { page, pageSize } } = await fetchEntityList<Loan>(`Loan`)
+const { entities: loans, list, refresh, query: { page, pageSize } } = await fetchEntityList<Loan>(`Loan`)
 const columns: [keyof Loan, string][] = [[`id`, `ID`], [`start`, `Start`], [`end`, `End`], [`type`, `Type`], [`specimens`, `Specimens`], [`contact`, `Contact`], [`contract`, `Contract`]]
 const selection = ref<EntityJSON<Loan>[]>([])
 
@@ -155,11 +155,16 @@ function onClickRemove() {
 
 async function onRemove() {
   const count = selection.value.length
-  await removeMany(selection.value!)
-  if (error.value) {
-    createToast(`loan-delete-error`, () => error.value, { type: `error` })
-  } else {
+  const { error } = await useFetch(`/api/loans`, {
+    method: `DELETE`,
+    query: { self: selection.value.map(({ self }) => self) },
+  })
+
+  if (!error.value) {
+    refresh()
     createToast(`loan-delete-success`, () => `Deleted ${pluralize(count, `loan`, `loans`)}`, { type: `success`, duration: 4000 })
+  } else {
+    createToast(`loan-delete-error`, () => error.value, { type: `error` })
   }
   selection.value = []
   closeModal()
