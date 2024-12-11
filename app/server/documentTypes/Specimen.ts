@@ -446,6 +446,22 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
           .filter((loc, index, arr) => arr.indexOf(loc) === index)
       }
     })
+
+    // schema.index({ ypik: 1 }, { unique: true })
+    schema.index({ slug: -1 })
+    schema.index({ name: 1 })
+    schema.index(Object.fromEntries([
+      `description`,
+      `mimsyID`,
+      `objectIDs.id`,
+      `origin.description`,
+      `origin.name`,
+      `pk`,
+      `slug`,
+      `name`,
+    ].map(field => [field, `text`])), {
+      name: `full_text_search`,
+    })
   },
 }).mixin(Slugified<Specimen>({}))
   .mixin(IPIKable)

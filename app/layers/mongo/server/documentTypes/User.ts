@@ -1,8 +1,8 @@
-import { type User as UserEntity, type Entity, type Permission } from "@unb-libraries/nuxt-layer-entity"
 import { EntityFieldTypes } from "../../types/entity"
 import { DocumentBase } from "../utils/schema"
-import { type DocumentBase as IDocumentBase } from "../../types/schema"
-import { type Authorize as IAuthorize } from "../utils/mixins/Authorize"
+import type { User as UserEntity, Entity, Permission } from "@unb-libraries/nuxt-layer-entity"
+import type { DocumentBase as IDocumentBase } from "../../types/schema"
+import type { Authorize as IAuthorize } from "../utils/mixins/Authorize"
 
 export interface User extends Omit<UserEntity, keyof Entity | `permissions`>, IAuthorize, IDocumentBase {
   permissions: Permission[]
@@ -40,6 +40,12 @@ export default defineDocumentModel<User>(`User`, defineDocumentSchema<User>({
   roles: {
     type: [EntityFieldTypes.String],
     required: false,
+  },
+}, {
+  alterSchema: (schema) => {
+    schema.index({ active: 1, username: 1 })
+    schema.index({ "active": 1, "profile.firstName": 1, "profile.lastName": 1 })
+    schema.index({ "username": `text`, "profile.firstName": `text`, "profile.lastName": `text` }, { name: `full_text_search` })
   },
 }).mixin(Authorize<User>({
   paths: (user) => {

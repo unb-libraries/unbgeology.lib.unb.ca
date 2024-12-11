@@ -7,7 +7,7 @@ export function getMongooseConnectURI() {
 
 export function getMongooseConnectOptions() {
   const { authSource } = useRuntimeConfig().nitro.mongodb
-  const connectOptions: ConnectOptions = {}
+  const connectOptions: ConnectOptions = { autoIndex: false }
   if (authSource) {
     connectOptions.authSource = authSource
   }

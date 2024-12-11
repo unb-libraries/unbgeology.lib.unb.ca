@@ -1,7 +1,7 @@
 import { EntityFieldTypes } from "layers/mongo/types/entity"
-import { type File as FileEntity, type Entity, FileState } from "@unb-libraries/nuxt-layer-entity"
 import { Stateful } from "../utils/mixins"
-import { type DocumentBase as Base } from "../../types/schema"
+import { type File as FileEntity, type Entity, FileState } from "@unb-libraries/nuxt-layer-entity"
+import type { DocumentBase as Base } from "../../types/schema"
 import type { Authorize as IAuthorize } from "../utils/mixins/Authorize"
 
 export interface File extends Omit<FileEntity, keyof Entity | `uri`>, IAuthorize, Base {
@@ -41,6 +41,11 @@ export default defineDocumentModel<File>(`File`, defineDocumentSchema<File>({
   uploadName: {
     type: EntityFieldTypes.String,
     required: true,
+  },
+}, {
+  alterSchema: (schema) => {
+    schema.index({ filename: 1, uploadName: 1 })
+    schema.index({ filename: `text`, uploadName: `text` }, { name: `full_text_search` })
   },
 }).mixin(Mimetyped({}))
   .mixin(Stateful<typeof FileState>({
