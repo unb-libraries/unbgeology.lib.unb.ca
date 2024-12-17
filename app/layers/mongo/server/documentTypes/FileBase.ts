@@ -1,4 +1,5 @@
 import { EntityFieldTypes } from "layers/mongo/types/entity"
+import { encode } from "ufo"
 import { Stateful } from "../utils/mixins"
 import { type File as FileEntity, type Entity, FileState } from "@unb-libraries/nuxt-layer-entity"
 import type { DocumentBase as Base } from "../../types/schema"
@@ -20,6 +21,19 @@ export const Mimetyped = defineDocumentSchema<Pick<FileEntity, `mimetype`>, Mime
     enum: options.accept,
   },
 }))
+
+export function renderFile(doc: File, ret: File) {
+  const { filename, filesize, mimetype } = ret
+  return {
+    ...renderDocumentBase(doc),
+    self: `/api/files/${doc._id}`,
+    uri: encode(`/upload/${filename}`),
+    filename,
+    filesize,
+    mimetype,
+    type: `other`,
+  }
+}
 
 export default defineDocumentModel<File>(`File`, defineDocumentSchema<File>({
   filename: {
@@ -46,6 +60,9 @@ export default defineDocumentModel<File>(`File`, defineDocumentSchema<File>({
   alterSchema: (schema) => {
     schema.index({ filename: 1, uploadName: 1 })
     schema.index({ filename: `text`, uploadName: `text` }, { name: `full_text_search` })
+    schema.set(`toJSON`, {
+      transform: renderFile,
+    })
   },
 }).mixin(Mimetyped({}))
   .mixin(Stateful<typeof FileState>({
