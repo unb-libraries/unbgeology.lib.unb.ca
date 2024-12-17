@@ -1,5 +1,5 @@
-import { type Entity, type Migration as MigrationEntity, MigrationStatus } from "@unb-libraries/nuxt-layer-entity"
 import { EntityFieldTypes } from "../../types/entity"
+import { type Entity, type Migration as MigrationEntity, MigrationStatus } from "@unb-libraries/nuxt-layer-entity"
 import { type DocumentBase as IDocumentBase } from "../../types/schema"
 import { type Authorize as IAuthorize } from "../utils/mixins/Authorize"
 
@@ -49,6 +49,23 @@ export default defineDocumentModel(`Migration`, defineDocumentSchema<Migration>(
   alterSchema(schema) {
     schema.post(`deleteOne`, { document: true, query: false }, async function () {
       await MigrationItem.mongoose.model.deleteMany({ migration: this._id })
+    })
+    schema.set(`toJSON`, {
+      transform: (doc, { name, entityType, dependencies, total, imported, skipped, errored, status }) => ({
+        ...renderDocumentBase(doc),
+        name,
+        entityType,
+        dependencies: {
+          self: `/api/migrations`,
+          entities: dependencies,
+          total: dependencies?.length,
+        },
+        total,
+        imported,
+        skipped,
+        errored,
+        status,
+      }),
     })
   },
 }).mixin(Authorize<Migration>({
