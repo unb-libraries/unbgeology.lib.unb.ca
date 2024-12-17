@@ -52,17 +52,26 @@ export function defineDocumentSchema<D = any, TOptions extends any | undefined =
   return define
 }
 
+export function renderDocumentBase(doc: IDocumentBase) {
+  return {
+    created: doc.created && new Date(doc.created).toISOString(),
+    updated: doc.updated && new Date(doc.updated).toISOString(),
+  }
+}
+
 export const DocumentBase = defineDocumentSchema<IDocumentBase>({
   created: {
     type: Schema.Types.Number,
     required: true,
     immutable: true,
     default: Date.now,
+    transform: (datetime: number) => new Date(datetime).toISOString(),
   },
   updated: {
     type: Schema.Types.Number,
     required: true,
     default: Date.now,
+    transform: (datetime: number) => new Date(datetime).toISOString(),
   },
   schemaVersion: {
     type: Schema.Types.Number,
@@ -75,6 +84,9 @@ export const DocumentBase = defineDocumentSchema<IDocumentBase>({
   alterSchema(schema) {
     schema.pre(`save`, function (this: Omit<IDocumentBase, `updated`> & { updated: number }) {
       this.updated = Date.now()
+    })
+    schema.set(`toJSON`, {
+      transform: renderDocumentBase,
     })
   },
 })
