@@ -57,5 +57,23 @@ export default <T extends DocumentBase>(options?: { sort: keyof Omit<T, keyof Do
     schema.post(`deleteOne`, { document: true, query: false }, async function () {
       await this.model().deleteMany({ ancestors: this._id })
     })
+
+    const toJSON = schema.get(`toJSON`)
+    schema.set(`toJSON`, {
+      transform(doc, ret, options) {
+        const transformed = toJSON?.transform?.(doc, ret, options) ?? {}
+        return {
+          ...transformed,
+          parents: {
+            // TODO: add "self"
+            entities: ret.ancestors.map((ancestor) => {
+              delete ancestor.parents
+              return ancestor
+            }),
+            total: ret.ancestors?.length ?? 0,
+          },
+        }
+      },
+    })
   },
 })()
