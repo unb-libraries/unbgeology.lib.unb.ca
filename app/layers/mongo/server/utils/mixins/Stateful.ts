@@ -16,5 +16,8 @@ export default <T extends typeof Status>(options: StatefulOptions<T>) => defineD
     required: true,
     enum: options.values,
     default: options.default,
+    transform: (value: T[keyof T]) => {
+      return String(useEnum(options.values).labelOf(value)).toLowerCase()
+    },
   },
 }))(options)
