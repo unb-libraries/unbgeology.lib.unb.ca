@@ -107,6 +107,7 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
         required: false,
       },
     }],
+    transform: (objectIDs: Specimen[`objectIDs`]) => objectIDs?.map(({ id, type }) => ({ id, type: type?.toLowerCase() })),
   },
   mimsyID: {
     type: EntityFieldTypes.String,
@@ -117,6 +118,7 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
     enum: Legal,
     required: true,
     default: Legal.PERMANENT,
+    transform: (legal: Specimen[`legal`]) => legal && useEnum(Legal).labelOf(legal).toLowerCase(),
   },
   lenderID: {
     type: EntityFieldTypes.String,
@@ -172,12 +174,14 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
   measurements: {
     type: {
       count: {
+        // FIX: Set to number, convert all DB values from string to number; update transform
         type: EntityFieldTypes.String,
         enum: MeasurementCount,
         default: MeasurementCount.INDIVIDUAL,
       },
       dimensions: [[EntityFieldTypes.Number, EntityFieldTypes.Number, EntityFieldTypes.Number]],
       reason: {
+        // FIX: Set to number, convert all DB values from string to number; update transform
         type: EntityFieldTypes.String,
         enum: Immeasurabibility,
       },
@@ -214,6 +218,11 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
         message: `Must provide a reason for immeasurable items.`,
       },
     ],
+    transform: (measurements: Specimen[`measurements`]) => ({
+      count: measurements?.count && useEnum(MeasurementCount).labelOf(parseInt(measurements.count)).toLowerCase(),
+      dimensions: measurements?.dimensions,
+      reason: measurements?.reason && useEnum(Immeasurabibility).labelOf(parseInt(measurements.reason)).toLowerCase(),
+    }),
   },
   longestEdge: {
     type: EntityFieldTypes.Number,
@@ -240,6 +249,7 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
       },
       message: `Invalid date. Expected format YYYY, YYYY-MM, or YYYY-MM-DD`,
     },
+    transform: (date: Specimen[`date`]) => date && new Date(date).toLocaleDateString(),
   },
   relativeAge: [{
     type: EntityFieldTypes.ObjectId,
@@ -351,8 +361,14 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
   },
   storage: {
     type: [{
-      location: EntityFieldTypes.ObjectId,
-      dateIn: EntityFieldTypes.Number,
+      location: {
+        type: EntityFieldTypes.ObjectId,
+        ref: StorageLocation.mongoose.model,
+      },
+      dateIn: {
+        type: EntityFieldTypes.Number,
+        transform: (dateIn: number) => new Date(dateIn).toISOString(),
+      },
     }],
     required: optionalForStatus(Status.MIGRATED | Status.DRAFT),
   },
@@ -385,6 +401,7 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
     required: true,
     enum: Status,
     default: Status.DRAFT,
+    transform: (status: Specimen[`status`]) => status && useEnum(Status).labelOf(status),
   },
   creator: {
     type: EntityFieldTypes.ObjectId,
@@ -461,6 +478,62 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
       `name`,
     ].map(field => [field, `text`])), {
       name: `full_text_search`,
+    })
+
+    schema.set(`toJSON`, {
+      transform: (doc, { slug, objectIDs, legal, lenderID, lenderURL, kollektion, classification, name, description, images, measurements, date, relativeAge, numericAge, composition, origin, pieces, partial, collector, sponsor, storage, publications, appraisal, creator, editor, score }: Specimen) => ({
+        ...renderDocumentBase(doc),
+        self: `/api/specimens/${slug}`,
+        objectIDs,
+        legal,
+        lenderID,
+        lenderURL,
+        collection: kollektion,
+        classification,
+        name,
+        description,
+        images: {
+          self: `/api/files`,
+          entities: images,
+          total: images.length ?? 0,
+        },
+        measurements,
+        date,
+        age: {
+          relative: relativeAge,
+          numeric: numericAge,
+        },
+        composition: {
+          self: `/api/terms`,
+          entities: composition,
+          total: composition.length ?? 0,
+        },
+        origin: {
+          latitude: origin.latitude,
+          longitude: origin.longitude,
+          accuracy: origin.accuracy,
+          name: origin.name,
+          description: origin.description,
+        },
+        pieces,
+        partial,
+        collector,
+        sponsor,
+        storage: {
+          self: `/api/specimens/${slug}/storage`,
+          entities: storage?.map(({ location, dateIn }) => ({ location, dateIn })),
+          total: storage.length ?? 0,
+        },
+        publications: {
+          self: `/api/specimens/${slug}/publications`,
+          entities: publications?.map(({ id, citation, abstract, doi }) => ({ id, citation, abstract, doi })),
+          total: publications?.length ?? 0,
+        },
+        appraisal,
+        creator,
+        editor,
+        score,
+      }),
     })
   },
 }).mixin(Slugified<Specimen>({}))
