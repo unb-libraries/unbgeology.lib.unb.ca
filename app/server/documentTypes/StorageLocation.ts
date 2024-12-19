@@ -1,7 +1,7 @@
 import { EntityFieldTypes } from "layers/mongo/types/entity"
 import { type StorageLocation as TxStorageLocation, Status } from "types/storagelocation"
 import { type Term as TermEntity } from "@unb-libraries/nuxt-layer-entity"
-import { type Term as ITerm } from "~/layers/mongo/server/documentTypes/Term"
+import { type Term as ITerm, renderTerm } from "~/layers/mongo/server/documentTypes/Term"
 
 export type StorageLocation = Omit<TxStorageLocation, keyof TermEntity> & ITerm & {
   parent?: StorageLocation
@@ -16,6 +16,15 @@ export default defineDocumentModel(`StorageLocation`, defineDocumentSchema<Stora
   public: {
     type: EntityFieldTypes.Boolean,
     default: false,
+  },
+}, {
+  alterSchema(schema) {
+    schema.set(`toJSON`, {
+      transform: (doc, ret) => ({
+        ...renderTerm(doc),
+        public: ret.public,
+      }),
+    })
   },
 }).mixin(Hierarchical<StorageLocation>({ sort: `label` }))
   .mixin(State)
