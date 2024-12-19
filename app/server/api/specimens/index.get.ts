@@ -1,27 +1,79 @@
-export default defineEventHandler(async (event) => {
-  const { page, pageSize, search } = getQueryOptions(event)
+import type { Specimen as ISpecimen } from "~/types/specimen"
 
+export default defineEventHandler(async (event) => {
+  const { page, pageSize, select, search } = getSpecimenQueryParams(event)
+  
   const resources = getAuthorizedResources(event, r => /^specimen(:\w)*$/.test(r))
-  const fields = getAuthorizedFields(event, ...resources)
+  const authFields = getAuthorizedFields(event, ...resources)
+  const fields = select?.filter(field => !authFields.length || authFields.includes(field))
   if (!resources.length) {
     return create403()
   }
 
-  const query = search ? Specimen.Base.search(search) : Specimen.Base.find()
-  query.where(`authTags`).in(resources)
-  await useEventQuery(event, query)
+  const query = Specimen.Base.mongoose.model
+    .find()
+    .where(`authTags`).in(resources)
+  
+  if (search)  {
+    query.where({ $text: { $search: search } })
+    query.projection({ score: { $meta: `textScore` } })
+    fields.push(`score`)
+  }
 
-  const { documents: specimens, total } = await query
-    .select([`_slug`, `$slug`])
-    .paginate(page, pageSize)
+  // Populate and filter by classification
+  if (fields.some(f => f.startsWith(`classification`))) {
+    query.populate({ path: `classification`, populate: { path: `ancestors` } })
+  }
 
-  return renderDocumentList(specimens, {
-    model: Specimen.Base,
-    canonical: {
-      fields,
-      // @ts-ignore
-      self: specimen => `/api/specimens/${specimen._slug}`,
-    },
-    total,
-  })
+
+  // Populate and filter by images
+  if (fields.some(f => f.startsWith(`images`))) {
+    query.populate(`images`)
+  }
+
+  if (fields.some(f => f.startsWith(`collection`))) {
+    query.populate(`kollektion`)
+  }
+
+  if (fields.some(f => f.startsWith(`age`))) {
+    query.populate(`relativeAge`)
+  }
+
+  if (fields.some(f => f.startsWith(`composition`))) {
+    query.populate(`composition`)
+  }
+
+  if (fields.some(f => f.startsWith(`collector`))) {
+    query.populate(`collector`)
+  }
+  
+  if (fields.some(f => f.startsWith(`sponsor`))) {
+    query.populate(`sponsor`)
+  }
+
+  if (fields.some(f => f.startsWith(`storage`))) {
+    query.populate(`storage.location`)
+  }
+
+  if (fields.some(f => f.startsWith(`creator`))) {
+    query.populate(`creator`)
+  }
+
+  if (fields.some(f => f.startsWith(`editor`))) {
+    query.populate(`editor`)
+  }
+
+  const total = await query.clone().countDocuments()
+  const specimens = await query
+    .limit(pageSize)
+    .skip((page - 1) * pageSize)
+
+  return {
+    self: `/api/specimens`,
+    entities: specimens.map(specimen => Object.fromEntries(Object
+      .entries(specimen.toJSON<ISpecimen>())
+      .filter(([key]) => key === `self` || !fields.length || fields.includes(key as keyof ISpecimen))
+    ),),
+    ...usePaginator({ total }),
+  }
 })
