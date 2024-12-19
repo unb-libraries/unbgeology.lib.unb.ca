@@ -1,4 +1,4 @@
-import { type Term as ITerm } from "~/layers/mongo/server/documentTypes/Term"
+import { type Term as ITerm, renderTerm } from "~/layers/mongo/server/documentTypes/Term"
 import { Hierarchical } from "~/layers/mongo/server/utils/mixins"
 import { EntityFieldTypes } from "~/layers/mongo/types/entity"
 import type { DocumentSchema } from "~/layers/mongo/types/schema"
@@ -33,7 +33,22 @@ const MxAuthorize = <T extends IClassification>(type: string) => Authorize<Class
 })
 
 const defineClassificationSchema = <T extends IClassification = IClassification>(type: string, definition: DocumentSchema<Classification<T>>[`paths`]) =>
-  defineDocumentSchema<Classification<T>>(definition)
+  defineDocumentSchema<Classification<T>>(definition, {
+    alterSchema(schema) {
+      const toJSON = schema.get(`toJSON`)
+      schema.set(`toJSON`, {
+        transform: (doc, ret, options) => {
+          return {
+            ...renderTerm(doc),
+            ...(toJSON?.transform?.(doc, ret, options) ?? {}),
+            rank: doc.rank && useEnum(Rank).labelOf(doc.rank).toLowerCase(),
+            composition: doc.composition,
+            type: `classification/${doc.type.split(`.`).at(-1).slice(1).toLowerCase()}`,
+          }
+        },
+      })
+    },
+  })
     .mixin(Hierarchical<ITerm & IClassification>({ sort: `label` }))
     .mixin(State)
     .mixin(MxAuthorize<T>(type))
