@@ -46,6 +46,15 @@ export default defineDocumentModel<User>(`User`, defineDocumentSchema<User>({
     schema.index({ active: 1, username: 1 })
     schema.index({ "active": 1, "profile.firstName": 1, "profile.lastName": 1 })
     schema.index({ "username": `text`, "profile.firstName": `text`, "profile.lastName": `text` }, { name: `full_text_search` })
+    schema.set(`toJSON`, {
+      transform: (doc, { username, active, profile, roles }) => ({
+        ...renderDocumentBase(doc),
+        username,
+        active,
+        profile,
+        roles,
+      }),
+    })
   },
 }).mixin(Authorize<User>({
   paths: (user) => {
