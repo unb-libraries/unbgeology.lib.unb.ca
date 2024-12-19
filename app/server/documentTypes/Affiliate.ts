@@ -46,6 +46,7 @@ export default {
       type: EntityFieldTypes.Mixed,
       enum: Pronouns,
       required: true,
+      transform: (pronouns: Pronouns) => useEnum(Pronouns).labelOf(pronouns).toLowerCase(),
     },
     title: {
       type: EntityFieldTypes.Mixed,
@@ -103,6 +104,26 @@ export default {
       required: false,
       default: true,
     },
+  }, {
+    alterSchema(schema) {
+      schema.set(`toJSON`, {
+        transform: (doc, { firstName, lastName, pronouns, title, occupation, position, image, bio, email, phone, web, active }) => ({
+          ...renderTerm(doc),
+          firstName,
+          lastName,
+          pronouns,
+          title,
+          occupation,
+          position,
+          image,
+          bio,
+          email,
+          phone,
+          web,
+          active,
+        }),
+      })
+    },
   }).mixin(MxStateful)
     .mixin(MxAuthorize<Person>(`person`))(), Term),
 
@@ -158,6 +179,28 @@ export default {
     web: [{
       type: EntityFieldTypes.String,
     }],
+  }, {
+    alterSchema(schema) {
+      schema.set(`toJSON`, {
+        transform: (doc, { address, contact, web }) => ({
+          ...renderTerm(doc),
+          address: address && {
+            line1: address.line1,
+            line2: address.line2,
+            city: address.city,
+            state: address.state,
+            postalCode: address.postalCode,
+            country: address.country,
+          },
+          contact: contact && {
+            name: contact.name,
+            email: contact.email,
+            phone: contact.phone,
+          },
+          web,
+        }),
+      })
+    },
   }).mixin(MxStateful)
     .mixin(MxAuthorize<Organization>(`organization`))(), Term),
 }
