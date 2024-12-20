@@ -249,7 +249,6 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
       },
       message: `Invalid date. Expected format YYYY, YYYY-MM, or YYYY-MM-DD`,
     },
-    transform: (date: Specimen[`date`]) => date && new Date(date).toLocaleDateString(),
   },
   relativeAge: [{
     type: EntityFieldTypes.ObjectId,
@@ -401,7 +400,7 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
     required: true,
     enum: Status,
     default: Status.DRAFT,
-    transform: (status: Specimen[`status`]) => status && useEnum(Status).labelOf(status),
+    transform: (status: Specimen[`status`]) => status && useEnum(Status).labelOf(status).toLowerCase(),
   },
   creator: {
     type: EntityFieldTypes.ObjectId,
@@ -481,9 +480,10 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
     })
 
     schema.set(`toJSON`, {
-      transform: (doc, { slug, objectIDs, legal, lenderID, lenderURL, kollektion, classification, name, description, images, measurements, date, relativeAge, numericAge, composition, origin, pieces, partial, collector, sponsor, storage, publications, appraisal, creator, editor, score }: Specimen) => ({
+      transform: (doc, { slug, objectIDs, legal, lenderID, lenderURL, kollektion, classification, name, description, images, measurements, date, relativeAge, numericAge, composition, origin, pieces, partial, collector, sponsor, storage, publications, appraisal, creator, editor, status, score }: Specimen) => ({
         ...renderDocumentBase(doc),
         self: `/api/specimens/${slug}`,
+        id: slug,
         objectIDs,
         legal,
         lenderID,
@@ -499,10 +499,12 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
         },
         measurements,
         date,
-        age: {
-          relative: relativeAge,
-          numeric: numericAge,
-        },
+        age: relativeAge?.length || numericAge?.length
+          ? {
+            relative: relativeAge?.length ? relativeAge : undefined,
+            numeric: numericAge?.length ? numericAge : undefined,
+          }
+          : undefined,
         composition: {
           self: `/api/terms`,
           entities: composition,
@@ -532,6 +534,8 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
         appraisal,
         creator,
         editor,
+        status,
+        type: doc.type?.split(`.`)[1].toLowerCase(),
         score,
       }),
     })

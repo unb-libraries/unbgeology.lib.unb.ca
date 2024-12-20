@@ -106,13 +106,13 @@
       header-cell-class="group"
       row-class="table-row"
       :entities="specimens"
-      :columns="columnsOptions.filter(([,, selected]) => selected).map(([id, label]) => [id, label])"
+      :columns="columnsOptions.filter(([, , selected]) => selected).map(([id, label]) => [id, label])"
       :multi-select="true"
       selected-row-class="active"
       :loading="loading"
       loading-overlay-class="bg-accent-dark/40"
     >
-      <template #images="{ entity: { images }}">
+      <template #images="{ entity: { images } }">
         <img
           v-if="images?.total > 0"
           :src="`${images?.entities[0].uri}?w=40&h=40`"
@@ -145,7 +145,7 @@
         </ol>
         <span v-else />
       </template>
-      <template #partial="{ entity: { partial }}">
+      <template #partial="{ entity: { partial } }">
         <template v-if="partial">
           Partial
         </template>
@@ -166,7 +166,7 @@
           {{ (specimen as Mineral).classification?.composition }}
         </template>
       </template>
-      <template #age="{ entity: { age }}">
+      <template #age="{ entity: { age } }">
         <template v-if="age?.relative">
           {{ age?.relative?.map(unit => unit.label).join(` to `) }}
           <template v-if="age.numeric">
@@ -177,28 +177,28 @@
           {{ age.numeric?.map(n => n / 1e6).join(` - `) }} mya
         </template>
       </template>
-      <template #origin="{ entity: { origin }}">
+      <template #origin="{ entity: { origin } }">
         {{ origin?.name }}
       </template>
-      <template #collector="{ entity: { collector }}">
+      <template #collector="{ entity: { collector } }">
         {{ collector?.label }}
       </template>
-      <template #sponsor="{ entity: { sponsor }}">
+      <template #sponsor="{ entity: { sponsor } }">
         {{ sponsor?.label }}
       </template>
-      <template #appraisal="{ entity: { appraisal }}">
+      <template #appraisal="{ entity: { appraisal } }">
         <template v-if="appraisal">
           $CAD {{ `${appraisal}`.split(``).reverse().join(``).match(/\d{1,3}/g)!.join(',').split(``).reverse().join(``) }}
         </template>
       </template>
-      <template #legal="{ entity: { legal }}">
+      <template #legal="{ entity: { legal } }">
         {{ sentenceCased(useEnum(Legal).labelOf(legal)) }}
       </template>
-      <template #storage="{ entity: { storage }}">
+      <template #storage="{ entity: { storage } }">
         <!-- TODO: Indicate if item is on loan and not stored on site -->
-        {{ storage?.at(-1)?.location?.label }}
+        {{ storage?.entities.at(-1)?.location?.label }}
       </template>
-      <template #creator="{ entity: { creator }}">
+      <template #creator="{ entity: { creator } }">
         <template v-if="creator?.profile?.firstName && creator.profile?.lastName">
           {{ creator?.profile?.firstName }} {{ creator?.profile?.lastName }}
         </template>
@@ -206,7 +206,7 @@
           {{ creator?.username }}
         </template>
       </template>
-      <template #editor="{ entity: { editor }}">
+      <template #editor="{ entity: { editor } }">
         <template v-if="editor?.profile?.firstName && editor.profile?.lastName">
           {{ editor?.profile?.firstName }} {{ editor?.profile?.lastName }}
         </template>
@@ -214,8 +214,8 @@
           {{ editor?.username }}
         </template>
       </template>
-      <template #status="{ entity: { status }}">
-        {{ sentenceCased(useEnum(Status).labelOf(status)) }}
+      <template #status="{ entity: { status } }">
+        {{ status }}
       </template>
     </EntityTable>
 
@@ -262,9 +262,9 @@ const columns = ref<[keyof Specimen, string][]>([
   [`pieces`, `Pieces`],
   [`measurements`, `Dimensions`],
   [`partial`, `Condition`],
-  // @ts-ignore
-  [`portion`, `Portion`],
-  // @ts-ignore
+  // // @ts-ignore
+  // [`portion`, `Portion`],
+  // // @ts-ignore
   [`composition`, `Composition`],
   [`age`, `Age`],
   [`origin`, `Origin`],
