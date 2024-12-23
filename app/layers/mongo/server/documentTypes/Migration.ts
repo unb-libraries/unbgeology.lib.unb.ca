@@ -7,6 +7,25 @@ export interface Migration extends Omit<MigrationEntity, keyof Entity | `source`
   dependencies: Migration[]
 }
 
+export function renderMigration(doc: Migration) {
+  const { name, entityType, dependencies, total, imported, skipped, errored, status } = doc
+  return {
+    ...renderDocumentBase(doc),
+    name,
+    entityType,
+    dependencies: {
+      self: `/api/migrations`,
+      entities: dependencies,
+      total: dependencies?.length,
+    },
+    total,
+    imported,
+    skipped,
+    errored,
+    status,
+  }
+}
+
 export default defineDocumentModel(`Migration`, defineDocumentSchema<Migration>({
   name: {
     type: EntityFieldTypes.String,
@@ -49,23 +68,6 @@ export default defineDocumentModel(`Migration`, defineDocumentSchema<Migration>(
   alterSchema(schema) {
     schema.post(`deleteOne`, { document: true, query: false }, async function () {
       await MigrationItem.mongoose.model.deleteMany({ migration: this._id })
-    })
-    schema.set(`toJSON`, {
-      transform: (doc, { name, entityType, dependencies, total, imported, skipped, errored, status }) => ({
-        ...renderDocumentBase(doc),
-        name,
-        entityType,
-        dependencies: {
-          self: `/api/migrations`,
-          entities: dependencies,
-          total: dependencies?.length,
-        },
-        total,
-        imported,
-        skipped,
-        errored,
-        status,
-      }),
     })
   },
 }).mixin(Authorize<Migration>({

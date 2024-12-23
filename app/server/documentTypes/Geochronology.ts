@@ -2,6 +2,7 @@ import { EntityFieldTypes } from "layers/mongo/types/entity"
 import { type Unit, Status, Division } from "types/geochronology"
 import { type Term as TermEntity } from "@unb-libraries/nuxt-layer-entity"
 import { type Term as ITerm, renderTerm } from "~/layers/mongo/server/documentTypes/Term"
+import { renderHierarchical } from "~/layers/mongo/server/utils/mixins/Hierarchical"
 
 export type GeochronologicUnit = Omit<Unit, keyof TermEntity> & ITerm
 
@@ -10,12 +11,23 @@ const State = Stateful({
   default: Status.DRAFT,
 })
 
+export function renderUnit(unit: GeochronologicUnit) {
+  return {
+    ...renderTerm(unit),
+    ...renderHierarchical(unit, renderUnit),
+    division: String(useEnum(Division).labelOf(unit.division)).toLowerCase(),
+    start: unit.start,
+    gssp: unit.gssp,
+    uncertainty: unit.uncertainty,
+    color: unit.color,
+  }
+}
+
 export default defineDocumentModel(`GeochronologicUnit`, defineDocumentSchema<GeochronologicUnit>({
   division: {
     type: EntityFieldTypes.Number,
     enum: Division,
     required: true,
-    transform: (value: Division) => String(useEnum(Division).labelOf(value)).toLowerCase(),
   },
   start: {
     type: EntityFieldTypes.Number,
@@ -33,19 +45,6 @@ export default defineDocumentModel(`GeochronologicUnit`, defineDocumentSchema<Ge
   color: {
     type: EntityFieldTypes.String,
     required: false,
-  },
-}, {
-  alterSchema(schema) {
-    schema.set(`toJSON`, {
-      transform: (doc, { division, start, gssp, uncertainty, color }) => ({
-        ...renderTerm(doc),
-        division,
-        start,
-        gssp,
-        uncertainty,
-        color,
-      }),
-    })
   },
 }).mixin(Hierarchical<GeochronologicUnit>({ sort: `label` }))
   .mixin(State)

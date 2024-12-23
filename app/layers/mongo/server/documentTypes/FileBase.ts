@@ -22,15 +22,14 @@ export const Mimetyped = defineDocumentSchema<Pick<FileEntity, `mimetype`>, Mime
   },
 }))
 
-export function renderFile(doc: File, ret: File) {
-  const { filename, filesize, mimetype } = ret
+export function renderFile(doc: File) {
   return {
     ...renderDocumentBase(doc),
     self: `/api/files/${doc._id}`,
-    uri: encode(`/upload/${filename}`),
-    filename,
-    filesize,
-    mimetype,
+    uri: encode(`/upload/${doc.filename}`),
+    filename: doc.filename,
+    filesize: doc.filesize,
+    mimetype: doc.mimetype,
     type: `other`,
   }
 }
@@ -60,9 +59,6 @@ export default defineDocumentModel<File>(`File`, defineDocumentSchema<File>({
   alterSchema: (schema) => {
     schema.index({ filename: 1, uploadName: 1 })
     schema.index({ filename: `text`, uploadName: `text` }, { name: `full_text_search` })
-    schema.set(`toJSON`, {
-      transform: renderFile,
-    })
   },
 }).mixin(Mimetyped({}))
   .mixin(Stateful<typeof FileState>({

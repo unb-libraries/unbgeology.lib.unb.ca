@@ -1,19 +1,23 @@
 import { EntityFieldTypes } from "layers/mongo/types/entity"
 import { Immeasurabibility, Legal, MeasurementCount, Status } from "types/specimen"
+import { renderClassification } from "./Classification"
+import { renderUnit } from "./Geochronology"
 import type { Entity, Stateful as IStateful } from "@unb-libraries/nuxt-layer-entity"
 import type { Specimen as SpecimenEntity } from "types/specimen"
 import type { Fossil as FossilCD, Mineral as MineralCD, Rock as RockCD } from "./Classification"
 import type { Portion } from "./Portion"
-import type { Person, Organization } from "./Affiliate"
+import { type Person, type Organization, renderAffiliate } from "./Affiliate"
 import type { GeochronologicUnit } from "./Geochronology"
-import type { StorageLocation as IStorageLocation } from "./StorageLocation"
+import { renderStorage, type StorageLocation as IStorageLocation } from "./StorageLocation"
 import type { Collection as ICollection } from "./Collection"
 import type { Composition as IComposition } from "./Composition"
 import type { DocumentBase as IDocumentBase } from "~/layers/mongo/types/schema"
 import ImageFile, { type Image } from "~/layers/mongo/server/documentTypes/Image"
-import type { User as IUser } from "~/layers/mongo/server/documentTypes/User"
+import { renderUser, type User as IUser } from "~/layers/mongo/server/documentTypes/User"
 import type { Authorize as IAuthorize } from "~/layers/mongo/server/utils/mixins/Authorize"
 import type { IPIKable as IIPIKable } from "~/layers/mongo/server/utils/mixins/IPIKable"
+import { renderTerm } from "~/layers/mongo/server/documentTypes/Term"
+import { renderFile } from "~/layers/mongo/server/documentTypes/FileBase"
 
 export interface Specimen extends Omit<SpecimenEntity, keyof Entity | `type` | `classification` | `collection` | `images` | `age` | `composition` | `measurements` | `collector` | `sponsor` | `storage` | `creator` | `editor`>, IStateful<typeof Status>, IIPIKable, IAuthorize, IDocumentBase {
   type: `Specimen.Fossil` | `Specimen.Mineral` | `Specimen.Rock`
@@ -79,6 +83,75 @@ export const validationPatterns = {
   partialDate: /^\d{4}(-\d{2}(-\d{2})?)?$/,
 }
 
+export function renderSpecimen(doc: Specimen) {
+  return {
+    ...renderDocumentBase(doc),
+    self: `/api/specimens/${doc.slug}`,
+    id: doc.slug,
+    objectIDs: doc.objectIDs?.map(({ id, type }) => ({ id, type: type?.toLowerCase() })),
+    legal: doc.legal && useEnum(Legal).labelOf(doc.legal).toLowerCase(),
+    lenderID: doc.lenderID,
+    lenderURL: doc.lenderURL,
+    collection: doc.kollektion && renderTerm(doc.kollektion),
+    classification: doc.classification && renderClassification(doc.classification),
+    name: doc.name,
+    description: doc.description,
+    images: {
+      self: `/api/files`,
+      entities: doc.images?.map(renderFile) ?? [],
+      total: doc.images?.length ?? 0,
+    },
+    measurements: doc.measurements && {
+      count: doc.measurements?.count && useEnum(MeasurementCount).labelOf(parseInt(doc.measurements.count)).toLowerCase(),
+      dimensions: doc.measurements?.dimensions,
+      reason: doc.measurements?.reason && useEnum(Immeasurabibility).labelOf(parseInt(doc.measurements.reason)).toLowerCase(),
+    },
+    date: doc.date,
+    age: doc.relativeAge?.length || doc.numericAge?.length
+      ? {
+        relative: doc.relativeAge?.length ? doc.relativeAge.map(renderUnit) : undefined,
+        numeric: doc.numericAge?.length ? doc.numericAge : undefined,
+      }
+      : undefined,
+    // FIX: Strange "map is not a function" error
+    // composition: doc.composition && {
+    //   self: `/api/terms`,
+    //   entities: doc.composition?.map(renderTerm) ?? [],
+    //   total: doc.composition?.length ?? 0,
+    // },
+    origin: doc.origin && {
+      latitude: doc.origin.latitude,
+      longitude: doc.origin.longitude,
+      accuracy: doc.origin.accuracy,
+      name: doc.origin.name,
+      description: doc.origin.description,
+    },
+    pieces: doc.pieces,
+    partial: doc.partial,
+    collector: doc.collector && renderAffiliate(doc.collector),
+    sponsor: doc.sponsor && renderAffiliate(doc.sponsor),
+    storage: {
+      self: `/api/specimens/${doc.slug}/storage`,
+      entities: doc.storage?.map(s => ({
+        location: s.location && renderStorage(s.location),
+        dateIn: s.dateIn,
+      })),
+      total: doc.storage?.length ?? 0,
+    },
+    publications: doc.publications && {
+      self: `/api/specimens/${doc.slug}/publications`,
+      entities: doc.publications?.map(({ id, citation, abstract, doi }) => ({ id, citation, abstract, doi })),
+      total: doc.publications?.length ?? 0,
+    },
+    appraisal: doc.appraisal,
+    creator: doc.creator && renderUser(doc.creator),
+    editor: doc.editor && renderUser(doc.editor),
+    status: doc.status && useEnum(Status).labelOf(doc.status).toLowerCase(),
+    type: doc.type?.toLowerCase().split(`.`)[1],
+    score: doc.score,
+  }
+}
+
 const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>({
   pk: {
     type: EntityFieldTypes.String,
@@ -107,7 +180,6 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
         required: false,
       },
     }],
-    transform: (objectIDs: Specimen[`objectIDs`]) => objectIDs?.map(({ id, type }) => ({ id, type: type?.toLowerCase() })),
   },
   mimsyID: {
     type: EntityFieldTypes.String,
@@ -118,7 +190,6 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
     enum: Legal,
     required: true,
     default: Legal.PERMANENT,
-    transform: (legal: Specimen[`legal`]) => legal && useEnum(Legal).labelOf(legal).toLowerCase(),
   },
   lenderID: {
     type: EntityFieldTypes.String,
@@ -218,11 +289,6 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
         message: `Must provide a reason for immeasurable items.`,
       },
     ],
-    transform: (measurements: Specimen[`measurements`]) => ({
-      count: measurements?.count && useEnum(MeasurementCount).labelOf(parseInt(measurements.count)).toLowerCase(),
-      dimensions: measurements?.dimensions,
-      reason: measurements?.reason && useEnum(Immeasurabibility).labelOf(parseInt(measurements.reason)).toLowerCase(),
-    }),
   },
   longestEdge: {
     type: EntityFieldTypes.Number,
@@ -400,7 +466,6 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
     required: true,
     enum: Status,
     default: Status.DRAFT,
-    transform: (status: Specimen[`status`]) => status && useEnum(Status).labelOf(status).toLowerCase(),
   },
   creator: {
     type: EntityFieldTypes.ObjectId,
@@ -477,67 +542,6 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
       `name`,
     ].map(field => [field, `text`])), {
       name: `full_text_search`,
-    })
-
-    schema.set(`toJSON`, {
-      transform: (doc, { slug, objectIDs, legal, lenderID, lenderURL, kollektion, classification, name, description, images, measurements, date, relativeAge, numericAge, composition, origin, pieces, partial, collector, sponsor, storage, publications, appraisal, creator, editor, status, score }: Specimen) => ({
-        ...renderDocumentBase(doc),
-        self: `/api/specimens/${slug}`,
-        id: slug,
-        objectIDs,
-        legal,
-        lenderID,
-        lenderURL,
-        collection: kollektion,
-        classification,
-        name,
-        description,
-        images: {
-          self: `/api/files`,
-          entities: images,
-          total: images.length ?? 0,
-        },
-        measurements,
-        date,
-        age: relativeAge?.length || numericAge?.length
-          ? {
-            relative: relativeAge?.length ? relativeAge : undefined,
-            numeric: numericAge?.length ? numericAge : undefined,
-          }
-          : undefined,
-        composition: {
-          self: `/api/terms`,
-          entities: composition,
-          total: composition.length ?? 0,
-        },
-        origin: {
-          latitude: origin.latitude,
-          longitude: origin.longitude,
-          accuracy: origin.accuracy,
-          name: origin.name,
-          description: origin.description,
-        },
-        pieces,
-        partial,
-        collector,
-        sponsor,
-        storage: {
-          self: `/api/specimens/${slug}/storage`,
-          entities: storage?.map(({ location, dateIn }) => ({ location, dateIn })),
-          total: storage.length ?? 0,
-        },
-        publications: {
-          self: `/api/specimens/${slug}/publications`,
-          entities: publications?.map(({ id, citation, abstract, doi }) => ({ id, citation, abstract, doi })),
-          total: publications?.length ?? 0,
-        },
-        appraisal,
-        creator,
-        editor,
-        status,
-        type: doc.type?.split(`.`)[1].toLowerCase(),
-        score,
-      }),
     })
   },
 }).mixin(Slugified<Specimen>({}))

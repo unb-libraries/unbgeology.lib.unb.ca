@@ -4,6 +4,14 @@ import FileBase, { type File, Mimetyped, renderFile } from "./FileBase"
 
 export interface Image extends Omit<ImageEntity, keyof Entity>, File {}
 
+export function renderImageFile(image: Image) {
+  return {
+    ...renderFile(image),
+    alt: image.alt,
+    title: image.title,
+  }
+}
+
 export default defineDocumentModel<File, Image>(`Image`, defineDocumentSchema<Image>({
   alt: {
     type: EntityFieldTypes.String,
@@ -13,17 +21,6 @@ export default defineDocumentModel<File, Image>(`Image`, defineDocumentSchema<Im
     type: EntityFieldTypes.String,
     required: false,
   },
-}, {
-  alterSchema(schema) {
-    schema.set(`toJSON`, {
-      transform: (doc, ret) => ({
-        ...renderFile(doc, ret),
-        alt: ret.alt,
-        title: ret.title,
-        type: `image`,
-      }),
-    })
-  }
 }).mixin(Mimetyped({
   accept: [
     `image/jpeg`,

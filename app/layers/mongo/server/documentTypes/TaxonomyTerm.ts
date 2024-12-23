@@ -1,3 +1,4 @@
+import { renderHierarchical } from "../utils/mixins/Hierarchical"
 import { type ObjectId } from "mongoose"
 import { Hierarchical, type Hierarchical as IMxHierarchical } from "../utils/mixins"
 import TermBase, { type Term as TermDocument, renderTerm } from "./Term"
@@ -6,22 +7,14 @@ export interface TaxonomyTerm extends Omit<IMxHierarchical, `parent`>, TermDocum
   parent?: ObjectId
 }
 
-const Schema = defineDocumentSchema<TaxonomyTerm>({
-}, {
-  alterSchema(schema) {
-    schema.set(`toJSON`, {
-      transform(doc, ret) {
+export function renderTaxonomyTerm(doc: TaxonomyTerm) {
+  return {
+    ...renderTerm(doc),
+    ...renderHierarchical(doc, renderTaxonomyTerm),
+  }
+}
 
-        return {
-          ...renderTerm(doc),
-          parents: {
-            self: `/api/terms/${doc._id}/parents`,
-            ...ret.ancestors,
-          },
-        }
-      },
-    })
-  },
+const Schema = defineDocumentSchema<TaxonomyTerm>({
 }).mixin(Hierarchical<TaxonomyTerm>({ sort: `label` }))
 
 export default defineDocumentModel<TermDocument, TaxonomyTerm>(`TaxonomyTerm`, Schema(), TermBase)

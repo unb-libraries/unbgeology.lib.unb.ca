@@ -4,16 +4,14 @@ import FileBase, { type File, Mimetyped, renderFile } from "./FileBase"
 export interface Document extends Omit<DocumentEntity, keyof Entity>, File {
 }
 
+export function renderDocumentFile(doc: Document) {
+  return {
+    ...renderFile(doc),
+    type: `document`,
+  }
+}
+
 export default defineDocumentModel<File, Document>(`Document`, defineDocumentSchema<Document>({
-}, {
-  alterSchema(schema) {
-    schema.set(`toJSON`, {
-      transform: (doc, ret) => ({
-        ...renderFile(doc, ret),
-        type: `document`,
-      }),
-    })
-  },
 }).mixin(Mimetyped({
   accept: [
     `application/pdf`,

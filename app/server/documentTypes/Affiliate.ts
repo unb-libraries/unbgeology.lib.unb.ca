@@ -1,7 +1,7 @@
 import { type Entity, type Stateful } from "@unb-libraries/nuxt-layer-entity"
 import { type Organization as OrganizationEntity, type Person as PersonEntity, Status, Pronouns, Title } from "types/affiliate"
 import { EntityFieldTypes } from "~/layers/mongo/types/entity"
-import { type Term } from "~/layers/mongo/server/documentTypes/Term"
+import { renderTerm, type Term } from "~/layers/mongo/server/documentTypes/Term"
 import ImageFile, { type Image } from "~/layers/mongo/server/documentTypes/Image"
 
 type Affiliate<T> = Omit<T, keyof Entity> & Term & Stateful<typeof Status>
@@ -31,6 +31,50 @@ function optionalOnImport(this: Affiliate<any>) {
   return this.status as Status > Status.MIGRATED
 }
 
+function renderPerson(person: Person) {
+  return {
+    ...renderTerm(person),
+    firstName: person.firstName,
+    lastName: person.lastName,
+    pronouns: useEnum(Pronouns).labelOf(person.pronouns).toLowerCase(),
+    title: person.title && useEnum(Title).labelOf(person.title).toLowerCase(),
+    occupation: person.occupation,
+    position: person.position,
+    image: person.image && renderFile(person.image),
+    bio: person.bio,
+    email: person.email,
+    phone: person.phone,
+    web: person.web,
+    active: person.active,
+    type: `affiliate/person`,
+  }
+}
+
+function renderOrganization(organization: Organization) {
+  return {
+    ...renderTerm(organization),
+    address: organization.address && {
+      line1: organization.address.line1,
+      line2: organization.address.line2,
+      city: organization.address.city,
+      state: organization.address.state,
+      postalCode: organization.address.postalCode,
+      country: organization.address.country,
+    },
+    contact: organization.contact && {
+      name: organization.contact.name,
+      email: organization.contact.email,
+      phone: organization.contact.phone,
+    },
+    web: organization.web,
+    type: `affiliate/organization`,
+  }
+}
+
+export function renderAffiliate(doc: Affiliate<any>) {
+  return doc.type === `Term.Person` ? renderPerson(doc) : renderOrganization(doc)
+}
+
 export default {
   Person: defineDocumentModel(`Person`, defineDocumentSchema<Person>({
     // REFACTOR: Require occupation,position,email,phone
@@ -46,7 +90,6 @@ export default {
       type: EntityFieldTypes.Mixed,
       enum: Pronouns,
       required: true,
-      transform: (pronouns: Pronouns) => useEnum(Pronouns).labelOf(pronouns).toLowerCase(),
     },
     title: {
       type: EntityFieldTypes.Mixed,
@@ -104,26 +147,6 @@ export default {
       required: false,
       default: true,
     },
-  }, {
-    alterSchema(schema) {
-      schema.set(`toJSON`, {
-        transform: (doc, { firstName, lastName, pronouns, title, occupation, position, image, bio, email, phone, web, active }) => ({
-          ...renderTerm(doc),
-          firstName,
-          lastName,
-          pronouns,
-          title,
-          occupation,
-          position,
-          image,
-          bio,
-          email,
-          phone,
-          web,
-          active,
-        }),
-      })
-    },
   }).mixin(MxStateful)
     .mixin(MxAuthorize<Person>(`person`))(), Term),
 
@@ -179,28 +202,6 @@ export default {
     web: [{
       type: EntityFieldTypes.String,
     }],
-  }, {
-    alterSchema(schema) {
-      schema.set(`toJSON`, {
-        transform: (doc, { address, contact, web }) => ({
-          ...renderTerm(doc),
-          address: address && {
-            line1: address.line1,
-            line2: address.line2,
-            city: address.city,
-            state: address.state,
-            postalCode: address.postalCode,
-            country: address.country,
-          },
-          contact: contact && {
-            name: contact.name,
-            email: contact.email,
-            phone: contact.phone,
-          },
-          web,
-        }),
-      })
-    },
   }).mixin(MxStateful)
     .mixin(MxAuthorize<Organization>(`organization`))(), Term),
 }

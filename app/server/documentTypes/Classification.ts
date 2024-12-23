@@ -1,5 +1,6 @@
 import { type Term as ITerm, renderTerm } from "~/layers/mongo/server/documentTypes/Term"
 import { Hierarchical } from "~/layers/mongo/server/utils/mixins"
+import { renderHierarchical } from "~/layers/mongo/server/utils/mixins/Hierarchical"
 import { EntityFieldTypes } from "~/layers/mongo/types/entity"
 import type { DocumentSchema } from "~/layers/mongo/types/schema"
 import {
@@ -18,6 +19,16 @@ const State = Stateful({
   default: Status.DRAFT,
 })
 
+export function renderClassification(doc: Classification) {
+  return {
+    ...renderTerm(doc),
+    ...renderHierarchical(doc, renderClassification),
+    rank: doc.rank && useEnum(Rank).labelOf(doc.rank).toLowerCase(),
+    composition: doc.type === `Term.CMineral` ? doc.composition : undefined,
+    type: `classification/${doc.type?.split(`.`).at(-1).slice(1).toLowerCase()}`,
+  }
+}
+
 const MxAuthorize = <T extends IClassification>(type: string) => Authorize<Classification<T>>({
   paths: (classification: Classification<T>) => {
     const status = useEnum(Status).labelOf(classification.status).toLowerCase()
@@ -33,22 +44,7 @@ const MxAuthorize = <T extends IClassification>(type: string) => Authorize<Class
 })
 
 const defineClassificationSchema = <T extends IClassification = IClassification>(type: string, definition: DocumentSchema<Classification<T>>[`paths`]) =>
-  defineDocumentSchema<Classification<T>>(definition, {
-    alterSchema(schema) {
-      const toJSON = schema.get(`toJSON`)
-      schema.set(`toJSON`, {
-        transform: (doc, ret, options) => {
-          return {
-            ...renderTerm(doc),
-            ...(toJSON?.transform?.(doc, ret, options) ?? {}),
-            rank: doc.rank && useEnum(Rank).labelOf(doc.rank).toLowerCase(),
-            composition: doc.composition,
-            type: `classification/${doc.type.split(`.`).at(-1).slice(1).toLowerCase()}`,
-          }
-        },
-      })
-    },
-  })
+  defineDocumentSchema<Classification<T>>(definition)
     .mixin(Hierarchical<ITerm & IClassification>({ sort: `label` }))
     .mixin(State)
     .mixin(MxAuthorize<T>(type))
