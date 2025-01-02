@@ -92,6 +92,7 @@
                   :label="column[1]"
                   :name="`column-${column[0]}`"
                   class="rounded-lg p-1"
+                  @update:model-value="select = columnsOptions.filter(([, , selected]) => selected).map(([id]) => id)"
                 />
               </li>
             </ul>
@@ -280,17 +281,17 @@ const columns = ref<[keyof Specimen, string][]>([
   [`status`, `Status`],
 ])
 
-const { list, entities: specimens, query, remove, removeMany, pending: loading } = await fetchEntityList<Specimen>(`Specimen`, {
-  sort: routeQuery.sort || `-id`,
-  page: routeQuery.page,
-})
-
-const { filter, search, page, pageSize, sort } = query
-
 const filterMenuVisible = ref(false)
 
 const columnMenuVisible = ref(false)
 const columnsOptions = ref<[string, string, boolean][]>(columns.value.map(([id, label], index) => [id, label, index > 0 && index < 5]))
+
+const { list, entities: specimens, query, remove, removeMany, pending: loading } = await fetchEntityList<Specimen>(`Specimen`, {
+  sort: routeQuery.sort || `-id`,
+  page: routeQuery.page,
+  select: columnsOptions.value.filter(([, , selected]) => selected).map(([id]) => id),
+})
+const { filter, search, page, select, pageSize, sort } = query
 
 const sortMenuVisible = ref(false)
 const sortableColumIDs = [`id`, `name`, `classification`, `collection`, `pieces`, `legal`, `creator`, `editor`, `created`, `updated`]
