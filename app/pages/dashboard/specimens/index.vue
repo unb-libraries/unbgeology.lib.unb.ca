@@ -222,7 +222,7 @@
 
     <template #sidebar>
       <EntityAdminSidebar v-if="selection.length" :entities="selection">
-        <SpecimenDetails v-if="selection.length === 1" :specimen="selection[0]" />
+        <SpecimenDetails v-if="selection.length === 1" :id="selection[0].id" />
         <template #actions>
           <div class="space-y-2">
             <button v-if="hasPermission(/^delete:specimen/)" class="button button-lg button-outline-red-dark hover:button-red-dark w-full" @click.stop.prevent="onClickDelete">

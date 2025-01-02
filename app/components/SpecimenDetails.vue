@@ -34,9 +34,12 @@
 
 <script lang="ts" setup>
 import { type Specimen, Status } from '~/types/specimen'
-defineProps<{
-  specimen: Specimen
+const props = defineProps<{
+  id: string
 }>()
+
+const { fetchByPK } = useEntityType(`Specimen`)
+const { entity: specimen } = await fetchByPK(props.id, { select: [`id`, `name`, `type`, `classification`, `created`, `updated`, `status`] })
 
 const getStatusValue = (status: Parameters<ReturnType<typeof useEnum<typeof Status>>[`valueOf`]>[0]) => useEnum(Status).valueOf(status)
 const getStatusLabel = (status: Parameters<ReturnType<typeof useEnum<typeof Status>>[`labelOf`]>[0]) => useEnum(Status).labelOf(status)
