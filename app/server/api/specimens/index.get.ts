@@ -1,4 +1,5 @@
 import type { Specimen as ISpecimen } from "~/types/specimen"
+import { renderSpecimen } from "~/server/documentTypes/Specimen"
 
 export default defineEventHandler(async (event) => {
   const { page, pageSize, select, search } = getSpecimenQueryParams(event)
@@ -36,7 +37,7 @@ export default defineEventHandler(async (event) => {
   }
 
   if (fields.some(f => f.startsWith(`age`))) {
-    query.populate(`relativeAge`)
+    query.populate({ path: `relativeAge`, populate: { path: `ancestors` } })
   }
 
   if (fields.some(f => f.startsWith(`composition`))) {
@@ -52,7 +53,7 @@ export default defineEventHandler(async (event) => {
   }
 
   if (fields.some(f => f.startsWith(`storage`))) {
-    query.populate(`storage.location`)
+    query.populate({ path: `storage.location`, populate: { path: `ancestors` } })
   }
 
   if (fields.some(f => f.startsWith(`creator`))) {
@@ -71,7 +72,7 @@ export default defineEventHandler(async (event) => {
   return {
     self: `/api/specimens`,
     entities: specimens.map(specimen => Object.fromEntries(Object
-      .entries(specimen.toJSON<ISpecimen>())
+      .entries(specimen.toJSON<ISpecimen>({ transform: renderSpecimen }))
       .filter(([key]) => key === `self` || !fields.length || fields.includes(key as keyof ISpecimen))
     ),),
     ...usePaginator({ total }),
