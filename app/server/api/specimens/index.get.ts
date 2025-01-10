@@ -1,7 +1,8 @@
+import { objectHash, sha256base64 } from "ohash"
 import type { Specimen as ISpecimen } from "~/types/specimen"
 import { renderSpecimen } from "~/server/documentTypes/Specimen"
 
-export default defineEventHandler(async (event) => {
+export default defineCachedEventHandler(async (event) => {
   const { page, pageSize, select, search } = getSpecimenQueryParams(event)
   
   const resources = getAuthorizedResources(event, r => /^specimen(:\w)*$/.test(r))
@@ -13,7 +14,7 @@ export default defineEventHandler(async (event) => {
 
   const query = Specimen.Base.mongoose.model
     .find()
-    .where(`authTags`).in(resources)
+    // .where(`authTags`).in(resources)
   
   if (search)  {
     query.where({ $text: { $search: search } })
@@ -77,4 +78,15 @@ export default defineEventHandler(async (event) => {
     ),),
     ...usePaginator({ total }),
   }
+}, {
+  name: `specimens`,
+  maxAge: 60 * 60 * 6, // 6 hours
+  getKey(event) {
+    const { page, pageSize, select, search } = getSpecimenQueryParams(event)
+    const permissions = getCurrentUserPermissions(event)
+    const resources = getAuthorizedResources(event, r => /^specimen(:\w)*$/.test(r))
+    const authFields = getAuthorizedFields(event, ...resources)
+    const fields = select?.filter(field => !authFields.length || authFields.includes(field))
+    return sha256base64(objectHash({ p: page, ps: pageSize, s: search, f: fields, pm: permissions }))
+  },
 })
