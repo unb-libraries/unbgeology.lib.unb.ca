@@ -5,6 +5,7 @@ import { getSpecimenRequestCacheId } from "~/server/utils/cache"
 const cacheOptions: Parameters<typeof defineCachedEventHandler>[1] = {
   name: `specimens`,
   maxAge: 60 * 60 * 6, // 6 hours
+  varies: [`Cookie`],
   getKey: getSpecimenRequestCacheId,
 }
 
