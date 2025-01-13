@@ -20,7 +20,7 @@ export default defineCachedEventHandler(async (event) => {
 
   const query = Specimen.Base.mongoose.model
     .find()
-    // .where(`authTags`).in(resources)
+    .where(`authTags`).in(resources)
   
   if (search)  {
     query.where({ $text: { $search: search } })
