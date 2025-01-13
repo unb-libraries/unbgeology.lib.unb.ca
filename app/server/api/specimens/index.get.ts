@@ -1,6 +1,12 @@
-import { objectHash, sha256base64 } from "ohash"
 import type { Specimen as ISpecimen } from "~/types/specimen"
 import { renderSpecimen } from "~/server/documentTypes/Specimen"
+import { getSpecimenRequestCacheId } from "~/server/utils/cache"
+
+const cacheOptions: Parameters<typeof defineCachedEventHandler>[1] = {
+  name: `specimens`,
+  maxAge: 60 * 60 * 6, // 6 hours
+  getKey: getSpecimenRequestCacheId,
+}
 
 export default defineCachedEventHandler(async (event) => {
   const { page, pageSize, select, search } = getSpecimenQueryParams(event)
@@ -78,15 +84,4 @@ export default defineCachedEventHandler(async (event) => {
     ),),
     ...usePaginator({ total }),
   }
-}, {
-  name: `specimens`,
-  maxAge: 60 * 60 * 6, // 6 hours
-  getKey(event) {
-    const { page, pageSize, select, search } = getSpecimenQueryParams(event)
-    const permissions = getCurrentUserPermissions(event)
-    const resources = getAuthorizedResources(event, r => /^specimen(:\w)*$/.test(r))
-    const authFields = getAuthorizedFields(event, ...resources)
-    const fields = select?.filter(field => !authFields.length || authFields.includes(field))
-    return sha256base64(objectHash({ p: page, ps: pageSize, s: search, f: fields, pm: permissions }))
-  },
-})
+}, cacheOptions)
