@@ -8,6 +8,8 @@ const {
   NUXT_PUBLIC_SAML_CALLBACK_URL,
   NUXT_PUBLIC_SAML_ISSUER,
   NUXT_PUBLIC_SAML_CERT,
+  NUXT_NITRO_STORAGE_CACHE_HOST,
+  NUXT_NITRO_STORAGE_CACHE_PORT,
 } = process.env
 
 export default defineNuxtConfig({
@@ -46,6 +48,11 @@ export default defineNuxtConfig({
       },
     },
     storage: {
+      cache: {
+        driver: `redis`,
+        host: NUXT_NITRO_STORAGE_CACHE_HOST,
+        port: NUXT_NITRO_STORAGE_CACHE_PORT,
+      },
       db: {
         driver: `fs`,
         base: `${APP_ROOT}/../.data/db`,
