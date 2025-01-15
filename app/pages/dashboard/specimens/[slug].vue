@@ -24,7 +24,7 @@
 
     <template #sidebar>
       <EntityAdminSidebar :entities="[specimen!]">
-        <SpecimenDetails :specimen="specimen!" />
+        <SpecimenDetails :id="specimen!.id" />
         <template #actions>
           <div class="space-y-2">
             <button v-if="hasPermission(/^delete:specimen:/)" class="button button-lg button-outline-red-dark hover:button-red-dark w-full" @click.stop.prevent="onClickDelete">
