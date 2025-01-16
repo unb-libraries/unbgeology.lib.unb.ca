@@ -52,6 +52,7 @@ export default defineNuxtConfig({
         driver: `redis`,
         host: NUXT_NITRO_STORAGE_CACHE_HOST,
         port: NUXT_NITRO_STORAGE_CACHE_PORT,
+        base: `unbgeology-lib-unb-ca`,
       },
       db: {
         driver: `fs`,
