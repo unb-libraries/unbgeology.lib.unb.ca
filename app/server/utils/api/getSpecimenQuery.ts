@@ -83,7 +83,7 @@ export function getSpecimenQueryParams(event: H3Event) {
     search,
     select: (Array.isArray(select) ? select : select ? [select] : props)
       .filter(field => props.includes(`${field}`)),
-    sort: (Array.isArray(sort) ? sort : sort ? [sort] : [])
+    sort: (Array.isArray(sort) ? sort : sort ? [sort] : [`-id`])
       .filter(field => props.includes(field.replace(/^-/, ``)))
       .map(field => field.startsWith(`-`) ? [field.slice(1), -1] : [field, 1]) as [keyof Specimen, 1 | -1][],
     where: Object.entries(where)
