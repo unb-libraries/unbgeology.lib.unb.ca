@@ -10,7 +10,7 @@ const cacheOptions: Parameters<typeof defineCachedEventHandler>[1] = {
 }
 
 export default defineCachedEventHandler(async (event) => {
-  const { page, pageSize, select, search } = getSpecimenQueryParams(event)
+  const { page, pageSize, select, search, sort } = getSpecimenQueryParams(event)
   
   const resources = getAuthorizedResources(event, r => /^specimen(:\w)*$/.test(r))
   const authFields = getAuthorizedFields(event, ...resources)
@@ -74,6 +74,10 @@ export default defineCachedEventHandler(async (event) => {
 
   const total = await query.clone().countDocuments()
   const specimens = await query
+    .sort(sort
+      .map(([field, dir]) => field === `id` ? [`slug`, dir] : [field, dir])
+      .map(([field, dir]) => `${dir === -1 ? `-` : ``}${field}`)
+      .join(` `))
     .limit(pageSize)
     .skip((page - 1) * pageSize)
 
