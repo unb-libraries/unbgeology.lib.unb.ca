@@ -2,6 +2,7 @@ import { createDefu } from "defu"
 import type { Entity } from "@unb-libraries/nuxt-layer-entity"
 import type { H3Event } from "h3"
 import type { Specimen } from "~/types/specimen"
+import type { Filter as EntityFilter } from "@unb-libraries/nuxt-layer-entity"
 
 type Indexed<T> = { [K in keyof T]: T[K] }
 
@@ -34,6 +35,7 @@ type Filter<T extends Record<PropertyKey, unknown>> = {
 type FilterParam = `${`=` | `!` | `>` | `>=` | `<` | `<=` | `%`}${string}`
 
 type EntityQuery<T extends Entity> = {
+  filter?: string[]
   page?: number
   pageSize?: number
   select?: keyof T | (keyof T)[]
@@ -56,7 +58,7 @@ const defu = createDefu((obj, key, value) => {
 })
 
 export function getSpecimenQueryParams(event: H3Event) {
-  const { page, pageSize, select, search, sort, ...where } = getQuery<EntityQuery<Specimen>>(event)
+  const { filter, page, pageSize, select, search, sort, ...where } = getQuery<EntityQuery<Specimen>>(event)
   const props = [`self`, `id`, `objectIDs`, `legal`, `lenderID`, `lenderURL`, `collection`, `classification`, `classification.label`, `name`, `description`, `images`, `images.count`, `measurements`, `date`, `age`, `age.relative`, `age.numeric`, `composition`, `origin`, `origin.longitude`, `origin.latitude`, `pieces`, `partial`, `collector`, `sponsor`, `storage`, `storage.count`, `publications`, `publications.count`, `appraisal`, `status`, `creator`, `editor`, `created`, `updated`, `type`]
   
   const opMap = { "=": `eq`, "!": `ne`, ">=": `gte`, ">": `gt`, "<=": `lte`, "<": `lt`, "%": `rx` }
@@ -90,5 +92,6 @@ export function getSpecimenQueryParams(event: H3Event) {
       .filter(([key]) => props.includes(key))
       .map(parse)
       .reduce((merged, single) => defu(merged, single), {}),
+    filter: (Array.isArray(filter) ? filter : filter ? [filter] : []).map(f => f.split(`:`)) as EntityFilter[],
   }
 }
