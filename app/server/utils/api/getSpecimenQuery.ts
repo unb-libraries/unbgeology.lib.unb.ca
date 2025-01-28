@@ -57,7 +57,7 @@ const defu = createDefu((obj, key, value) => {
 
 export function getSpecimenQueryParams(event: H3Event) {
   const { page, pageSize, select, search, sort, ...where } = getQuery<EntityQuery<Specimen>>(event)
-  const props = [`self`, `id`, `objectIDs`, `legal`, `lenderID`, `lenderURL`, `collection`, `classification`, `name`, `description`, `images`, `images.count`, `measurements`, `date`, `age`, `age.relative`, `age.numeric`, `composition`, `origin`, `origin.longitude`, `origin.latitude`, `pieces`, `partial`, `collector`, `sponsor`, `storage`, `storage.count`, `publications`, `publications.count`, `appraisal`, `status`, `creator`, `editor`, `created`, `updated`, `type`]
+  const props = [`self`, `id`, `objectIDs`, `legal`, `lenderID`, `lenderURL`, `collection`, `classification`, `classification.label`, `name`, `description`, `images`, `images.count`, `measurements`, `date`, `age`, `age.relative`, `age.numeric`, `composition`, `origin`, `origin.longitude`, `origin.latitude`, `pieces`, `partial`, `collector`, `sponsor`, `storage`, `storage.count`, `publications`, `publications.count`, `appraisal`, `status`, `creator`, `editor`, `created`, `updated`, `type`]
   
   const opMap = { "=": `eq`, "!": `ne`, ">=": `gte`, ">": `gt`, "<=": `lte`, "<": `lt`, "%": `rx` }
   const pattern = new RegExp(`^(${Object.keys(opMap).join(`|`)})?(.*)$`)
@@ -78,12 +78,12 @@ export function getSpecimenQueryParams(event: H3Event) {
   }
 
   return {
-    page: page || 1,
-    pageSize: pageSize || 25,
+    page: Number(page || 1),
+    pageSize: Number(pageSize || 25),
     search,
     select: (Array.isArray(select) ? select : select ? [select] : props)
       .filter(field => props.includes(`${field}`)),
-    sort: (Array.isArray(sort) ? sort : sort ? [sort] : [`-id`])
+    sort: (Array.isArray(sort) ? sort : sort ? [sort] : [])
       .filter(field => props.includes(field.replace(/^-/, ``)))
       .map(field => field.startsWith(`-`) ? [field.slice(1), -1] : [field, 1]) as [keyof Specimen, 1 | -1][],
     where: Object.entries(where)

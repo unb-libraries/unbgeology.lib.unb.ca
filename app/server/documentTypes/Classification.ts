@@ -25,7 +25,7 @@ export function renderClassification(doc: Classification) {
     ...renderHierarchical(doc, renderClassification),
     rank: doc.rank && useEnum(Rank).labelOf(doc.rank).toLowerCase(),
     composition: doc.type === `Term.CMineral` ? doc.composition : undefined,
-    type: `classification/${doc.type?.split(`.`).at(-1).slice(1).toLowerCase()}`,
+    type: doc.type && `classification/${doc.type.split(`.`).at(-1).slice(1).toLowerCase()}`,
   }
 }
 
