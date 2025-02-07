@@ -1,7 +1,41 @@
 <template>
   <div class="space-y-4">
+    <span v-if="list?.total">Displaying {{ specimens.length }} of {{ list?.total }} specimens</span>
+    <div class="form-field w-full">
+      <label class="sr-only" for="search">Search</label>
+      <input v-model="search" placeholder="Search" name="search" class="placeholder:text-primary dark:placeholder:text-primary-20 rounded-md form-input form-input-text grow p-2 placeholder:italic">
+    </div>
     <div class="flex gap-2">
-      <div class="w-1/5 bg-primary-60 p-4">
+      <div class="w-1/5 space-y-2">
+        <div class="bg-primary-60 py-2 px-4 space-y-2 divide-y divide-primary-40 transition-all duration-300">
+          <div class="inline-flex items-center justify-between w-full">
+            <button @click.prevent="categoriesCollapsed = !categoriesCollapsed" class="inline-flex items-center justify-between w-full cursor-pointer">
+              <span class="block text-xl">Category</span>
+              <IconAngleDown v-if="categoriesCollapsed" class="size-8 fill-none stroke-white" />
+              <IconAngleUp v-else class="size-8 fill-none stroke-white" />
+            </button>
+          </div>
+          <div v-show="!categoriesCollapsed" class="flex flex-col py-2">
+            <div class="inline-flex items-center space-x-1">
+              <input type="checkbox" id="filter-category[fossil]" name="category[fossil]" class="size-5 rounded-md input input-checkbox" value="fossil" :checked="categories.includes('fossil')" @change="categories = categories.includes('fossil') ? categories.filter(cat => cat !== 'fossil') : [...categories, 'fossil']">
+              <label for="filter-category[fossil]" class="text-lg mr-4 cursor-pointer">
+                Fossil
+              </label>
+            </div>
+            <div class="inline-flex items-center space-x-1">
+              <input type="checkbox" id="filter-category[mineral]" name="category[mineral]" class="size-5 rounded-md input input-checkbox" value="mineral" :checked="categories.includes('mineral')" @change="categories = categories.includes('mineral') ? categories.filter(cat => cat !== 'mineral') : [...categories, 'mineral']">
+              <label for="filter-category[mineral]" class="text-lg mr-4 cursor-pointer">
+                Mineral
+              </label>
+            </div>
+            <div class="inline-flex items-center space-x-1">
+              <input type="checkbox" id="filter-category[rock]" name="category[rock]" class="size-5 rounded-md input input-checkbox" value="rock" :checked="categories.includes('rock')" @change="categories = categories.includes('rock') ? categories.filter(cat => cat !== 'rock') : [...categories, 'rock']">
+              <label for="filter-category[rock]" class="text-lg mr-4 cursor-pointer">
+                Rock
+              </label>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="w-4/5">
         <ul class="space-y-2">
@@ -34,14 +68,12 @@
         </ul>
       </div>
     </div>
-    <div class="flex justify-between">
-      <span v-if="list?.total">Displaying {{ specimens.length }} of {{ list?.total }} specimens</span>
-      <TwPageIndex :page="page" :total="Math.ceil((list?.total ?? 0) / pageSize)" :size="10" @change="(index) => { page = index }" />
-    </div>
+    <TwPageIndex :page="page" :total="Math.ceil((list?.total ?? 0) / pageSize)" :size="10" @change="(index) => { page = index }" class="flex justify-end" />
   </div>
 </template>
 
 <script setup lang="ts">
+import { FilterOperator, type Filter } from '@unb-libraries/nuxt-layer-entity'
 import type { Specimen } from '~/types/specimen'
 
 definePageMeta({
@@ -49,6 +81,17 @@ definePageMeta({
   name: 'Search',
 })
 
-const { entities: specimens, list, query: { page, pageSize } } = await fetchEntityList<Specimen>("Specimen")
+const { entities: specimens, list, query: { page, pageSize, search, filter } } = await fetchEntityList<Specimen>("Specimen")
 
+// Filter
+const categoriesCollapsed = ref(false)
+const categories = computed({
+  get: () => (filter.value
+    ?.filter(([field, op]) => field === 'type' && op === FilterOperator.EQUALS) ?? [])
+    .map(([, , value]) => Array.isArray(value) ? value : [value]).flat(),
+  set: (category: string[]) => filter.value = [
+    ...filter.value.filter(([field]) => field !== 'type'),
+    ...category.map(category => ['type', FilterOperator.EQUALS, category] as Filter)
+  ]
+})
 </script>
