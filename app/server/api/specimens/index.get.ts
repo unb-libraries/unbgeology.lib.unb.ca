@@ -95,10 +95,14 @@ export default defineCachedEventHandler(async (event) => {
   }
 
   // Apply non-joined-collection filters
-  const categoryFilter = filter?.find(([field, op, values]) => field === `type` && Number(op) === FilterOperator.EQUALS && typeof values === `string`)
-  if (categoryFilter) {
-    // console.log(`categoryFilter`, titleCased(categoryFilter[2]!))
-    query.match({ type: `Specimen.${categoryFilter[2]!.charAt(0).toUpperCase() + categoryFilter[2]!.slice(1)}` })
+  const categories = filter
+    ?.filter(([field, op, value]) => field === `type` && Number(op) === FilterOperator.EQUALS && value)
+    .map(([,,c]) => (typeof c === `string` ? [c] : c) as [string])
+    .flat()
+    .map(c => `Specimen.${c[0].toUpperCase() + c.slice(1).toLowerCase()}`) ?? []
+
+  if (categories.length) {
+    query.match({ type: categories.length > 1 ? { $in: categories } : categories[0] })
   }
 
   const [{ documents: specimens, total: [{ total }] }] = await query
