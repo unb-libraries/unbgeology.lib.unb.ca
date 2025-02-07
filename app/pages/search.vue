@@ -7,35 +7,26 @@
     </div>
     <div class="flex gap-2">
       <div class="w-1/5 space-y-2">
-        <div class="bg-primary-60 py-2 px-4 space-y-2 divide-y divide-primary-40 transition-all duration-300">
-          <div class="inline-flex items-center justify-between w-full">
-            <button @click.prevent="categoriesCollapsed = !categoriesCollapsed" class="inline-flex items-center justify-between w-full cursor-pointer">
-              <span class="block text-xl">Category</span>
-              <IconAngleDown v-if="categoriesCollapsed" class="size-8 fill-none stroke-white" />
-              <IconAngleUp v-else class="size-8 fill-none stroke-white" />
-            </button>
+        <Filter title="Category" v-model:collapsed="categoriesCollapsed">
+          <div class="inline-flex items-center space-x-1">
+            <input type="checkbox" id="filter-category[fossil]" name="category[fossil]" class="size-5 rounded-md input input-checkbox" value="fossil" :checked="categories.includes('fossil')" @change="categories = categories.includes('fossil') ? categories.filter(cat => cat !== 'fossil') : [...categories, 'fossil']">
+            <label for="filter-category[fossil]" class="text-lg mr-4 cursor-pointer">
+              Fossil
+            </label>
           </div>
-          <div v-show="!categoriesCollapsed" class="flex flex-col py-2">
-            <div class="inline-flex items-center space-x-1">
-              <input type="checkbox" id="filter-category[fossil]" name="category[fossil]" class="size-5 rounded-md input input-checkbox" value="fossil" :checked="categories.includes('fossil')" @change="categories = categories.includes('fossil') ? categories.filter(cat => cat !== 'fossil') : [...categories, 'fossil']">
-              <label for="filter-category[fossil]" class="text-lg mr-4 cursor-pointer">
-                Fossil
-              </label>
-            </div>
-            <div class="inline-flex items-center space-x-1">
-              <input type="checkbox" id="filter-category[mineral]" name="category[mineral]" class="size-5 rounded-md input input-checkbox" value="mineral" :checked="categories.includes('mineral')" @change="categories = categories.includes('mineral') ? categories.filter(cat => cat !== 'mineral') : [...categories, 'mineral']">
-              <label for="filter-category[mineral]" class="text-lg mr-4 cursor-pointer">
-                Mineral
-              </label>
-            </div>
-            <div class="inline-flex items-center space-x-1">
-              <input type="checkbox" id="filter-category[rock]" name="category[rock]" class="size-5 rounded-md input input-checkbox" value="rock" :checked="categories.includes('rock')" @change="categories = categories.includes('rock') ? categories.filter(cat => cat !== 'rock') : [...categories, 'rock']">
-              <label for="filter-category[rock]" class="text-lg mr-4 cursor-pointer">
-                Rock
-              </label>
-            </div>
+          <div class="inline-flex items-center space-x-1">
+            <input type="checkbox" id="filter-category[mineral]" name="category[mineral]" class="size-5 rounded-md input input-checkbox" value="mineral" :checked="categories.includes('mineral')" @change="categories = categories.includes('mineral') ? categories.filter(cat => cat !== 'mineral') : [...categories, 'mineral']">
+            <label for="filter-category[mineral]" class="text-lg mr-4 cursor-pointer">
+              Mineral
+            </label>
           </div>
-        </div>
+          <div class="inline-flex items-center space-x-1">
+            <input type="checkbox" id="filter-category[rock]" name="category[rock]" class="size-5 rounded-md input input-checkbox" value="rock" :checked="categories.includes('rock')" @change="categories = categories.includes('rock') ? categories.filter(cat => cat !== 'rock') : [...categories, 'rock']">
+            <label for="filter-category[rock]" class="text-lg mr-4 cursor-pointer">
+              Rock
+            </label>
+          </div>
+        </Filter>
       </div>
       <div class="w-4/5">
         <ul class="space-y-2">
