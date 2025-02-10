@@ -12,7 +12,7 @@ import {
   Status,
 } from "~/types/classification"
 
-type Classification<T extends IClassification = IClassification> = ITerm & T
+export type Classification<T extends IClassification = IClassification> = ITerm & T
 
 const State = Stateful({
   values: Status,
