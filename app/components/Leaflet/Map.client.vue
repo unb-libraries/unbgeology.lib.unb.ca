@@ -42,8 +42,6 @@ onUpdated(async () => {
 })
 
 onMapReady((map, { tileLayer: setTileLayer }) => {
-  console.log(`onMapReady`)
-
   map.on(`click`, (e) => {
     const { lat, lng } = e.latlng
     emit(`click`, [lat, lng])
