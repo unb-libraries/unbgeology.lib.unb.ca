@@ -38,45 +38,47 @@
         <FilterClassification v-on:update:model-value="onUpdateClassification" />
       </div>
       <div class="w-4/5 h-full overflow-y-scroll">
-        <ul v-if="viewMode === 'list' && list?.total" class="space-y-2">
-          <li v-for="specimen in specimens" :key="specimen.self" class="bg-primary-60">
-            <div class="flex flex-row">
-              <div class="h-24 aspect-square bg-primary-20 flex justify-center items-center">
-                <img v-if="specimen.images?.total > 0" :src="`${specimen.images?.entities[0].uri}?w=40&h=40`" class="aspect-square object-cover">
-                <IconFossil v-else-if="specimen.type === 'fossil'" class="size-16 stroke-primary-40 fill-none" />
-                <IconRock v-else-if="specimen.type === 'rock'" class="size-16 stroke-primary-40 fill-none" />
-                <IconMineral v-else-if="specimen.type === 'mineral'" class="size-16 stroke-primary-40 fill-none" />
+        <KeepAlive>
+          <ul v-if="viewMode === 'list' && list?.total" class="space-y-2">
+            <li v-for="specimen in specimens" :key="specimen.self" class="bg-primary-60">
+              <div class="flex flex-row">
+                <div class="h-24 aspect-square bg-primary-20 flex justify-center items-center">
+                  <img v-if="specimen.images?.total > 0" :src="`${specimen.images?.entities[0].uri}?w=40&h=40`" class="aspect-square object-cover">
+                  <IconFossil v-else-if="specimen.type === 'fossil'" class="size-16 stroke-primary-40 fill-none" />
+                  <IconRock v-else-if="specimen.type === 'rock'" class="size-16 stroke-primary-40 fill-none" />
+                  <IconMineral v-else-if="specimen.type === 'mineral'" class="size-16 stroke-primary-40 fill-none" />
+                </div>
+                <dl class="flex flex-row gap-x-12 p-4 w-full">
+                  <div class="w-1/2">
+                    <dt class="sr-only">ID</dt>
+                    <dd class="text-sm">{{ specimen.id.toUpperCase() }}</dd>
+                    <dt class="sr-only">Name</dt>
+                    <dd class="text-xl"><a :href="`/specimens/${specimen.id}`" class="hover:underline">{{ specimen.name }}</a></dd>
+                  </div>
+                  <div class="w-1/6">
+                    <dt class="text-sm">Category</dt>
+                    <dd class="text-xl">{{ specimen.type[0].toUpperCase() + specimen.type.slice(1).toLowerCase() }}</dd>
+                  </div>
+                  <div class="w-1/3">
+                    <dt class="text-sm">Classification</dt>
+                    <dd class="text-xl">{{ specimen.classification?.label }}</dd>
+                  </div>
+                </dl>
               </div>
-              <dl class="flex flex-row gap-x-12 p-4 w-full">
-                <div class="w-1/2">
-                  <dt class="sr-only">ID</dt>
-                  <dd class="text-sm">{{ specimen.id.toUpperCase() }}</dd>
-                  <dt class="sr-only">Name</dt>
-                  <dd class="text-xl"><a :href="`/specimens/${specimen.id}`" class="hover:underline">{{ specimen.name }}</a></dd>
-                </div>
-                <div class="w-1/6">
-                  <dt class="text-sm">Category</dt>
-                  <dd class="text-xl">{{ specimen.type[0].toUpperCase() + specimen.type.slice(1).toLowerCase() }}</dd>
-                </div>
-                <div class="w-1/3">
-                  <dt class="text-sm">Classification</dt>
-                  <dd class="text-xl">{{ specimen.classification?.label }}</dd>
-                </div>
-              </dl>
-            </div>
-          </li>
-        </ul>
-        <div v-else-if="viewMode === 'list'" class="flex justify-center items-center h-full bg-primary-60">
-          <span class="text-2xl">No specimens found</span>
-        </div>
-        <LeafletMap v-else :center="[46.65848709787655, -66.35685870803573]" class="h-full">
-          <LeafletMarker v-for="{ self, name, origin: { latitude, longitude } } in markers" :key="self"
-            :center="[latitude, longitude]"
-            :name="name"
-            :accuracy="0"
-            :draggable="false"
-            />
-        </LeafletMap>
+            </li>
+          </ul>
+          <div v-else-if="viewMode === 'list'" class="flex justify-center items-center h-full bg-primary-60">
+            <span class="text-2xl">No specimens found</span>
+          </div>
+          <LeafletMap v-else :center="mapCenter" class="h-full" @drag="onDragMap" @zoom="onZoomMap">
+            <LeafletMarker v-for="{ self, name, origin: { latitude, longitude } } in markers" :key="self"
+              :center="[latitude, longitude]"
+              :name="name"
+              :accuracy="0"
+              :draggable="false"
+              />
+          </LeafletMap>
+        </KeepAlive>
       </div>
     </div>
     <TwPageIndex v-if="viewMode === 'list'" :page="page" :total="Math.ceil((list?.total ?? 0) / pageSize)" :size="10" @change="(index) => { page = index }" class="flex justify-end flex-none w-full" />
@@ -86,6 +88,7 @@
 <script setup lang="ts">
 import { FilterOperator, type Filter } from '@unb-libraries/nuxt-layer-entity'
 import type { Specimen } from '~/types/specimen'
+import type { Coordinate } from '~/types/leaflet'
 
 definePageMeta({
   layout: 'page',
@@ -93,6 +96,7 @@ definePageMeta({
 })
 
 const viewMode = ref<'list' | 'map'>('list')
+const mapCenter = ref<Coordinate>([46.65848709787655, -66.35685870803573]) // Initially center on NB
 const categoriesCollapsed = ref(false)
 
 const { entities: specimens, list, query: { page, pageSize, search, filter } } = await fetchEntityList<Specimen>("Specimen")
@@ -114,5 +118,27 @@ function onUpdateClassification(selection: [string, string][]) {
     ...filter.value.filter(([field]) => field !== 'classification'),
     ...selection.map(([id]) => ['classification', FilterOperator.EQUALS, id] as Filter)
   ]
+}
+
+function onUpdateBounds([northEast, southWest]: [Coordinate, Coordinate]) {
+  filter.value = [
+    ...filter.value.filter(([field]) => field !== 'origin'),
+    ['origin', FilterOperator.GREATER, northEast.join(`;`)] as Filter,
+    ['origin', FilterOperator.LESS, southWest.join(`;`)] as Filter
+  ]
+}
+
+function onUpdateCenter(center: Coordinate) {
+  mapCenter.value = center
+}
+
+function onDragMap(center: Coordinate, bounds: [Coordinate, Coordinate]) {
+  onUpdateCenter(center)
+  onUpdateBounds(bounds)
+}
+
+function onZoomMap(level: number, center: Coordinate, bounds: [Coordinate, Coordinate]) {
+  onUpdateCenter(center)
+  onUpdateBounds(bounds)
 }
 </script>
