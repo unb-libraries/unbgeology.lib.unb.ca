@@ -63,4 +63,10 @@ onUpdated(() => {
     marker.setLatLng(props.center)
   }
 })
+
+onUnmounted(() => {
+  if (marker) {
+    marker.remove()
+  }
+})
 </script>
