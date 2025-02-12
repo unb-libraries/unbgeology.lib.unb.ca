@@ -1,12 +1,13 @@
 import { FilterOperator } from "@unb-libraries/nuxt-layer-entity"
 import type { Specimen as ISpecimen } from "~/types/specimen"
-import { renderSpecimen } from "~/server/documentTypes/Specimen"
+import { renderSpecimen, type Specimen } from "~/server/documentTypes/Specimen"
 import { getSpecimenRequestCacheId } from "~/server/utils/cache"
 
 const cacheOptions: Parameters<typeof defineCachedEventHandler>[1] = {
   name: `specimens`,
   maxAge: 0,
   varies: [`Cookie`],
+  shouldBypassCache: () => true,
   getKey: getSpecimenRequestCacheId,
 }
 
@@ -41,12 +42,13 @@ export default defineCachedEventHandler(async (event) => {
   }
 
   const query = Specimen.Base.mongoose.model
-    .aggregate()
+    .aggregate<{ documents: Specimen[], total: [number] }>()
   
   if (search)  {
     query.match({ $text: { $search: search } })
     query.addFields({ score: { $meta: `textScore` } })
     if (!sort.length) {
+      // @ts-ignore
       sort.push([`score`, -1])
     }
     selectFields.push(`score`)
@@ -125,7 +127,7 @@ export default defineCachedEventHandler(async (event) => {
     query.match({ type: categories.length > 1 ? { $in: categories } : categories[0] })
   }
 
-  const [{ documents: specimens, total: [{ total }] }] = await query
+  const [{ documents: specimens, total: [total = 0] }] = await query
     .match({ authTags: { $in: resources } })
     .sort([...sort, [`id`, -1]]
       .map(([field, dir]) => [(() => {
@@ -158,8 +160,8 @@ export default defineCachedEventHandler(async (event) => {
       })(), dir])
       .map(([field, dir]) => `${dir === -1 ? `-` : ``}${field}`)
       .join(` `))
-    .facet({ documents: [{ $skip: (page - 1) * pageSize }, { $limit: pageSize }], total: [{ $count: `total` }] })
-    .project({ documents: 1, total: 1 })
+    .facet({ documents: [{ $skip: (page - 1) * pageSize }, { $limit: pageSize }], total: [{ $count: `count` }] })
+    .project({ documents: 1, total: { $ifNull: ["$total.count", 0]} })
 
   return {
     self: `/api/specimens`,
