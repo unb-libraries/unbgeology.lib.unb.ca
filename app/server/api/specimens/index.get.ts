@@ -15,7 +15,20 @@ export default defineCachedEventHandler(async (event) => {
   
   const resources = getAuthorizedResources(event, r => /^specimen(:\w)*$/.test(r))
   const authFields = getAuthorizedFields(event, ...resources)
-  const fields = select?.filter(field => !authFields.length || authFields.includes(field))
+  
+  const sortFields = sort
+    ?.map(([field]) => field)
+    .filter((field, i, arr) => arr.indexOf(field) === i)
+    .filter(field => !authFields.length || authFields.includes(field)) ?? []
+  const selectFields = select
+    ?.filter((field, i, arr) => arr.indexOf(field) === i)
+    .filter(field => !authFields.length || authFields.includes(field)) ?? []
+  const filterFields = filter
+    ?.map(([field]) => field)
+    .filter((field, i, arr) => arr.indexOf(field) === i)
+    .filter(([field]) => !authFields.length || authFields.includes(field)) ?? []
+  const fields = [...selectFields, ...sortFields, ...filterFields]
+  
   if (!resources.length) {
     return create403()
   }
@@ -36,9 +49,9 @@ export default defineCachedEventHandler(async (event) => {
     if (!sort.length) {
       sort.push([`score`, -1])
     }
-    fields.push(`score`)
+    selectFields.push(`score`)
   }
-
+  
   // Populate and filter by classification
   if (fields.some(f => f.startsWith(`classification`))) {
     query.lookup({
@@ -107,12 +120,7 @@ export default defineCachedEventHandler(async (event) => {
   }
 
   // Apply non-joined-collection filters
-  const categories = filter
-    ?.filter(([field, op, value]) => field === `type` && Number(op) === FilterOperator.EQUALS && value)
-    .map(([,,c]) => (typeof c === `string` ? [c] : c) as [string])
-    .flat()
-    .map(c => `Specimen.${c[0].toUpperCase() + c.slice(1).toLowerCase()}`) ?? []
-
+  const categories = getFilter('type', FilterOperator.EQUALS).map(c => `Specimen.${c[0].toUpperCase() + c.slice(1).toLowerCase()}`) ?? []
   if (categories.length) {
     query.match({ type: categories.length > 1 ? { $in: categories } : categories[0] })
   }
@@ -160,7 +168,7 @@ export default defineCachedEventHandler(async (event) => {
       .map(specimen => Object
         .fromEntries(Object
           .entries(specimen)
-            .filter(([key]) => key === `self` || !fields.length || fields.includes(key as keyof ISpecimen)))),
+            .filter(([key]) => key === `self` || !selectFields.length || selectFields.includes(key as keyof ISpecimen)))),
     ...usePaginator({ total }),
   }
 }, cacheOptions)
