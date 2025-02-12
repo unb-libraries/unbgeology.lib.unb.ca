@@ -1,12 +1,12 @@
 <template>
-  <div class="space-y-4">
-    <span v-if="list?.total">Displaying {{ specimens.length }} of {{ list?.total }} specimens</span>
-    <div class="form-field w-full">
+  <div class="space-y-2 flex-col flex h-full">
+    <span v-if="list?.total" class="flex-none">Displaying {{ specimens.length }} of {{ list?.total }} specimens</span>
+    <div class="flex-none form-field w-full">
       <label class="sr-only" for="search">Search</label>
       <input v-model="search" placeholder="Search" name="search" class="placeholder:text-primary dark:placeholder:text-primary-20 rounded-md form-input form-input-text grow p-2 placeholder:italic">
     </div>
-    <div class="flex gap-2">
-      <div class="w-1/5 space-y-2">
+    <div class="flex grow gap-2 overflow-y-hidden">
+      <div class="w-1/5 space-y-2 h-full overflow-y-scroll">
         <Filter title="Category" v-model:collapsed="categoriesCollapsed">
           <div class="inline-flex items-center space-x-1">
             <input type="checkbox" id="filter-category[fossil]" name="category[fossil]" class="size-5 rounded-md input input-checkbox" value="fossil" :checked="categories.includes('fossil')" @change="categories = categories.includes('fossil') ? categories.filter(cat => cat !== 'fossil') : [...categories, 'fossil']">
@@ -29,7 +29,7 @@
         </Filter>
         <FilterClassification v-on:update:model-value="onUpdateClassification" />
       </div>
-      <div class="w-4/5">
+      <div class="w-4/5 h-full overflow-y-scroll">
         <ul v-if="list?.total" class="space-y-2">
           <li v-for="specimen in specimens" :key="specimen.self" class="bg-primary-60">
             <div class="flex flex-row">
@@ -63,7 +63,7 @@
         </div>
       </div>
     </div>
-    <TwPageIndex :page="page" :total="Math.ceil((list?.total ?? 0) / pageSize)" :size="10" @change="(index) => { page = index }" class="flex justify-end" />
+    <TwPageIndex :page="page" :total="Math.ceil((list?.total ?? 0) / pageSize)" :size="10" @change="(index) => { page = index }" class="flex justify-end flex-none w-full" />
   </div>
 </template>
 
