@@ -27,6 +27,7 @@
             </label>
           </div>
         </Filter>
+        <FilterClassification v-on:update:model-value="onUpdateClassification" />
       </div>
       <div class="w-4/5">
         <ul class="space-y-2">
@@ -85,4 +86,11 @@ const categories = computed({
     ...category.map(category => ['type', FilterOperator.EQUALS, category] as Filter)
   ]
 })
+
+function onUpdateClassification(selection: [string, string][]) {
+  filter.value = [
+    ...filter.value.filter(([field]) => field !== 'classification'),
+    ...selection.map(([id]) => ['classification', FilterOperator.EQUALS, id] as Filter)
+  ]
+}
 </script>

@@ -22,7 +22,6 @@ import { type EntityJSONList, type EntityJSON } from '@unb-libraries/nuxt-layer-
 import { type Classification } from '~/types/classification'
 
 const selection = defineModel<[string, string][]>({ default: [] })
-defineProps<{}>()
 
 const collapsed = ref(false)
 const results = ref<EntityJSON<Classification>[]>([])
@@ -30,7 +29,8 @@ const options = computed(() => results.value.filter(({ self }) => !selection.val
 const search = ref('')
 
 function onSelect(item: [string, string]) {
-  selection.value = [...selection.value, item]
+  const newSelection = [...selection.value, item]
+  selection.value = newSelection
 }
 
 watch(search, async (search) => {
