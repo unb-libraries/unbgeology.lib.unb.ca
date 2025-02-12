@@ -20,6 +20,13 @@ export default defineCachedEventHandler(async (event) => {
     return create403()
   }
 
+  function getFilter(field: string, operator: FilterOperator) {
+    return filter
+      ?.filter(([f, op, value]) => f === field && Number(op) & operator && value)
+      .map(([,,c]) => Array.isArray(c) ? c : [c])
+      .flat() ?? []
+  }
+
   const query = Specimen.Base.mongoose.model
     .aggregate()
   
@@ -42,6 +49,11 @@ export default defineCachedEventHandler(async (event) => {
     })
     query.unwind({ path: `$classification`, preserveNullAndEmptyArrays: true })
     query.addFields({ noclassification: { $cond: { if: { $ne: [`$classification`, null] }, then: true, else: false } } })
+    
+    const classificationFilter = getFilter('classification', FilterOperator.EQUALS).map(c => c.split(`/`).at(-1)).map(parseObjectID)
+    if (classificationFilter.length) {
+      query.match({ 'classification._id': classificationFilter.length <= 1 ? classificationFilter[0] : { $in: classificationFilter } })
+    }
   }
 
   // Join and filter by images
