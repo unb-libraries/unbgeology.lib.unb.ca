@@ -1,9 +1,17 @@
 <template>
   <div class="space-y-2 flex-col flex h-full">
     <span v-if="list?.total" class="flex-none">Displaying {{ specimens.length }} of {{ list?.total }} specimens</span>
-    <div class="flex-none form-field w-full">
-      <label class="sr-only" for="search">Search</label>
-      <input v-model="search" placeholder="Search" name="search" class="placeholder:text-primary dark:placeholder:text-primary-20 rounded-md form-input form-input-text grow p-2 placeholder:italic">
+    <div class="flex-none w-full flex">
+      <div class="form-field grow">
+        <label class="sr-only" for="search">Search</label>
+        <input v-model="search" placeholder="Search" name="search" class="placeholder:text-primary dark:placeholder:text-primary-20 rounded-md form-input form-input-text grow p-2 placeholder:italic">
+      </div>
+      <button class="justify-center hover:border-accent-mid items-center flex border rounded-md border-primary-60 aspect-square bg-primary flex-none cursor-pointer" @click.prevent.stop="viewMode = 'list'">
+        <IconList class="fill-none stroke-current size-6 stroke-1.5 flex" />
+      </button>
+      <button class="justify-center items-center flex hover:border-accent-mid border rounded-md border-primary-60 aspect-square bg-primary flex-none cursor-pointer" @click.prevent.stop="viewMode = 'map'">
+        <IconMap class="fill-none stroke-current size-6 stroke-1.5 flex" />
+      </button>
     </div>
     <div class="flex grow gap-2 overflow-y-hidden">
       <div class="w-1/5 space-y-2 h-full overflow-y-scroll">
@@ -30,7 +38,7 @@
         <FilterClassification v-on:update:model-value="onUpdateClassification" />
       </div>
       <div class="w-4/5 h-full overflow-y-scroll">
-        <ul v-if="list?.total" class="space-y-2">
+        <ul v-if="viewMode === 'list' && list?.total" class="space-y-2">
           <li v-for="specimen in specimens" :key="specimen.self" class="bg-primary-60">
             <div class="flex flex-row">
               <div class="h-24 aspect-square bg-primary-20 flex justify-center items-center">
@@ -58,12 +66,20 @@
             </div>
           </li>
         </ul>
-        <div v-else class="flex justify-center items-center h-full bg-primary-60">
+        <div v-else-if="viewMode === 'list'" class="flex justify-center items-center h-full bg-primary-60">
           <span class="text-2xl">No specimens found</span>
         </div>
+        <LeafletMap v-else :center="[46.65848709787655, -66.35685870803573]" class="h-full">
+          <LeafletMarker v-for="{ self, name, origin: { latitude, longitude } } in markers" :key="self"
+            :center="[latitude, longitude]"
+            :name="name"
+            :accuracy="0"
+            :draggable="false"
+            />
+        </LeafletMap>
       </div>
     </div>
-    <TwPageIndex :page="page" :total="Math.ceil((list?.total ?? 0) / pageSize)" :size="10" @change="(index) => { page = index }" class="flex justify-end flex-none w-full" />
+    <TwPageIndex v-if="viewMode === 'list'" :page="page" :total="Math.ceil((list?.total ?? 0) / pageSize)" :size="10" @change="(index) => { page = index }" class="flex justify-end flex-none w-full" />
   </div>
 </template>
 
@@ -76,10 +92,13 @@ definePageMeta({
   name: 'Search',
 })
 
+const viewMode = ref<'list' | 'map'>('list')
+const categoriesCollapsed = ref(false)
+
 const { entities: specimens, list, query: { page, pageSize, search, filter } } = await fetchEntityList<Specimen>("Specimen")
+const markers = computed(() => specimens.value.filter(({ origin }) => origin?.latitude && origin?.longitude))
 
 // Filter
-const categoriesCollapsed = ref(false)
 const categories = computed({
   get: () => (filter.value
     ?.filter(([field, op]) => field === 'type' && op === FilterOperator.EQUALS) ?? [])
