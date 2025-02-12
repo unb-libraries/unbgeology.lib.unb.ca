@@ -122,9 +122,22 @@ export default defineCachedEventHandler(async (event) => {
   }
 
   // Apply non-joined-collection filters
+  //
+  // Filter by type
   const categories = getFilter('type', FilterOperator.EQUALS).map(c => `Specimen.${c[0].toUpperCase() + c.slice(1).toLowerCase()}`) ?? []
   if (categories.length) {
     query.match({ type: categories.length > 1 ? { $in: categories } : categories[0] })
+  }
+
+  // Filter by origin (bounds)
+  const getBoundsFilter = (op: FilterOperator) => getFilter('origin', op).map(b => b.split(`;`)).flat().map(Number) as [number, number]
+  const bounds = [getBoundsFilter(FilterOperator.GREATER), getBoundsFilter(FilterOperator.LESS)].filter(b => b.length > 0)
+  if (bounds.length === 2) {
+    const [[neLat, neLong], [swLat, swLong]] = bounds
+    query.match({ 
+      "origin.latitude": { $lt: neLat, $gt: swLat },
+      "origin.longitude": { $lt: neLong, $gt: swLong },
+    })
   }
 
   const [{ documents: specimens, total: [total = 0] }] = await query
