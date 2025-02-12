@@ -30,7 +30,7 @@
         <FilterClassification v-on:update:model-value="onUpdateClassification" />
       </div>
       <div class="w-4/5">
-        <ul class="space-y-2">
+        <ul v-if="list?.total" class="space-y-2">
           <li v-for="specimen in specimens" :key="specimen.self" class="bg-primary-60">
             <div class="flex flex-row">
               <div class="h-24 aspect-square bg-primary-20 flex justify-center items-center">
@@ -44,7 +44,7 @@
                   <dt class="sr-only">ID</dt>
                   <dd class="text-sm">{{ specimen.id.toUpperCase() }}</dd>
                   <dt class="sr-only">Name</dt>
-                  <dd class="text-xl">{{ specimen.name }}</dd>
+                  <dd class="text-xl"><a :href="`/specimens/${specimen.id}`" class="hover:underline">{{ specimen.name }}</a></dd>
                 </div>
                 <div class="w-1/6">
                   <dt class="text-sm">Category</dt>
@@ -58,6 +58,9 @@
             </div>
           </li>
         </ul>
+        <div v-else class="flex justify-center items-center h-full bg-primary-60">
+          <span class="text-2xl">No specimens found</span>
+        </div>
       </div>
     </div>
     <TwPageIndex :page="page" :total="Math.ceil((list?.total ?? 0) / pageSize)" :size="10" @change="(index) => { page = index }" class="flex justify-end" />
