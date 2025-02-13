@@ -36,6 +36,13 @@
           </div>
         </Filter>
         <FilterClassification v-on:update:model-value="onUpdateClassification" />
+        <Filter title="Age" v-model:collapsed="ageCollapsed">
+          <input v-model="age" type="range" min="0" max="250000000" step="1000000" list="legend" />
+          <datalist id="legend" class="flex justify-between w-full">
+            <option value="0" label="Any"></option>
+            <option value="250000000" label="250 Mya"></option>
+          </datalist>
+        </Filter>
       </div>
       <div class="w-4/5 h-full overflow-y-scroll">
         <KeepAlive>
@@ -98,8 +105,9 @@ definePageMeta({
 const viewMode = ref<'list' | 'map'>('list')
 const mapCenter = ref<Coordinate>([46.65848709787655, -66.35685870803573]) // Initially center on NB
 const categoriesCollapsed = ref(false)
+const ageCollapsed = ref(false)
 
-const { entities: specimens, list, query: { page, pageSize, search, filter } } = await fetchEntityList<Specimen>("Specimen")
+const { entities: specimens, list, query: { page, pageSize, search, filter } } = await fetchEntityList<Specimen>("Specimen", { select: ['id', 'name', 'type', 'classification'] })
 const markers = computed(() => specimens.value.filter(({ origin }) => origin?.latitude && origin?.longitude))
 
 // Filter
@@ -112,6 +120,20 @@ const categories = computed({
     ...category.map(category => ['type', FilterOperator.EQUALS, category] as Filter)
   ]
 })
+
+const age = computed({
+  get: () => Math.max(0, ...(filter.value
+    ?.filter(([field, op]) => field === 'age.numeric' && op === FilterOperator.GREATER) ?? [])
+    .map(([, , value]) => Array.isArray(value) ? value : [value]).flat()),
+  set: (age: number) => filter.value = [
+    ...filter.value.filter(([field]) => field !== 'age.numeric'),
+    (age > 0 ? ['age.numeric', FilterOperator.GREATER, `${age}`] : []) as Filter,
+  ].filter(Boolean)
+})
+
+function onSwitchViewMode(mode: 'list' | 'map') {
+  viewMode.value = mode
+}
 
 function onUpdateClassification(selection: [string, string][]) {
   filter.value = [
