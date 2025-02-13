@@ -36,7 +36,7 @@ export default defineCachedEventHandler(async (event) => {
 
   function getFilter(field: string, operator: FilterOperator) {
     return filter
-      ?.filter(([f, op, value]) => f === field && Number(op) & operator && value)
+      ?.filter(([f, op, value]) => f === field && useEnum(FilterOperator).valueOf(op) & operator && value)
       .map(([,,c]) => Array.isArray(c) ? c : [c])
       .flat() ?? []
   }
@@ -85,6 +85,22 @@ export default defineCachedEventHandler(async (event) => {
   // Join and filter by age
   if (fields.some(f => f.startsWith(`age`))) {
     query.lookup({ from: `terms`, localField: `relativeAge`, foreignField: `_id`, as: `relativeAge` })
+    
+    const anyAgeFilter = getFilter('age.numeric', FilterOperator.GREATER | FilterOperator.LESS | FilterOperator.EQUALS)
+    if (anyAgeFilter.length) {
+      query.addFields({ minAge: { $max: [`$relativeAge.start`, `$numericAge`] }, maxAge: { $min: [`$relativeAge.start`, `$numericAge`] } })
+      // query.match({ 'age.relative._id': anyAgeFilter.length <= 1 ? anyAgeFilter[0] : { $in: anyAgeFilter } })
+    }
+    
+    const minAgeFilter = getFilter('age.numeric', FilterOperator.GREATER | FilterOperator.EQUALS).map(Number)
+    if (minAgeFilter.length) {
+      query.match({ minAge: { $gte: Math.max(...minAgeFilter) } })
+    }
+    
+    const maxAgeFilter = getFilter('age.numeric', FilterOperator.LESS | FilterOperator.EQUALS).map(Number)
+    if (maxAgeFilter.length) {
+      query.match({ maxAge: { $lte: Math.min(...maxAgeFilter) } })
+    }
   }
 
   // Join and filter by composition
