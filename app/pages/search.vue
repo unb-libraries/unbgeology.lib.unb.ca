@@ -37,10 +37,10 @@
         </Filter>
         <FilterClassification v-on:update:model-value="onUpdateClassification" />
         <Filter title="Age" v-model:collapsed="ageCollapsed">
-          <input v-model="age" type="range" min="0" max="250000000" step="1000000" list="legend" />
+          <input v-model="age" type="range" min="0" :max="maxAge" step="1000000" list="legend" />
           <datalist id="legend" class="flex justify-between w-full">
             <option value="0" label="Any"></option>
-            <option value="250000000" label="250 Mya"></option>
+            <option :value="maxAge" :label="`${maxAge / 1000000} Mya`"></option>
           </datalist>
         </Filter>
       </div>
@@ -93,9 +93,10 @@
 </template>
 
 <script setup lang="ts">
-import { FilterOperator, type Filter } from '@unb-libraries/nuxt-layer-entity'
+import { FilterOperator, type EntityJSONList, type Filter } from '@unb-libraries/nuxt-layer-entity'
 import type { Specimen } from '~/types/specimen'
 import type { Coordinate } from '~/types/leaflet'
+import type { Unit } from '~/types/geochronology'
 
 definePageMeta({
   layout: 'page',
@@ -106,6 +107,10 @@ const viewMode = ref<'list' | 'map'>('list')
 const mapCenter = ref<Coordinate>([46.65848709787655, -66.35685870803573]) // Initially center on NB
 const categoriesCollapsed = ref(false)
 const ageCollapsed = ref(false)
+const maxAge = await (async () => {
+  const { data } = await useFetch<EntityJSONList<Unit>>('/api/terms/geochronology', { query: { sort: "-start", pageSize: 1 } })
+  return data.value?.entities[0]?.start ?? 0
+})()
 
 const { entities: specimens, list, query: { page, pageSize, search, filter } } = await fetchEntityList<Specimen>("Specimen", { select: ['id', 'name', 'type', 'classification'] })
 const markers = computed(() => specimens.value.filter(({ origin }) => origin?.latitude && origin?.longitude))
