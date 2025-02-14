@@ -43,6 +43,20 @@
             <option :value="maxAge" :label="`${maxAge / 1000000} Mya`"></option>
           </datalist>
         </Filter>
+        <Filter title="Public access" v-model:collapsed="publicAccessCollapsed">
+          <div class="inline-flex items-center space-x-1">
+            <input type="radio" id="filter-access[any]" name="access[any]" class="size-5 input input-radio" value="any" :checked="!publicAccess" @change="publicAccess = false">
+            <label for="filter-access[any]" class="text-lg mr-4 cursor-pointer">
+              Any
+            </label>
+          </div>
+          <div class="inline-flex items-center space-x-1">
+            <input type="radio" id="filter-access[public]" name="access[public]" class="size-5 input input-radio" value="public" :checked="publicAccess" @change="publicAccess = true">
+            <label for="filter-access[public]" class="text-lg mr-4 cursor-pointer">
+              On display
+            </label>
+          </div>
+        </Filter>
       </div>
       <div class="w-4/5 h-full overflow-y-scroll">
         <KeepAlive>
@@ -107,6 +121,7 @@ const viewMode = ref<'list' | 'map'>('list')
 const mapCenter = ref<Coordinate>([46.65848709787655, -66.35685870803573]) // Initially center on NB
 const categoriesCollapsed = ref(false)
 const ageCollapsed = ref(false)
+const publicAccessCollapsed = ref(false)
 const maxAge = await (async () => {
   const { data } = await useFetch<EntityJSONList<Unit>>('/api/terms/geochronology', { query: { sort: "-start", pageSize: 1 } })
   return data.value?.entities[0]?.start ?? 0
@@ -133,6 +148,14 @@ const age = computed({
   set: (age: number) => filter.value = [
     ...filter.value.filter(([field]) => field !== 'age.numeric'),
     (age > 0 ? ['age.numeric', FilterOperator.GREATER, `${age}`] : []) as Filter,
+  ].filter(Boolean)
+})
+
+const publicAccess = computed({
+  get: () => (filter.value?.filter(([field, op]) => field === 'storage.location.public' && op === FilterOperator.EQUALS) ?? []).length > 0,
+  set: (access: boolean) => filter.value = [
+    ...filter.value.filter(([field]) => field !== 'storage.location.public'),
+    (access ? ['storage.location.public', FilterOperator.EQUALS] : []) as Filter,
   ].filter(Boolean)
 })
 
