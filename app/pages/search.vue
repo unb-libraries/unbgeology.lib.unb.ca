@@ -6,10 +6,10 @@
         <label class="sr-only" for="search">Search</label>
         <input v-model="search" placeholder="Search" name="search" class="placeholder:text-primary dark:placeholder:text-primary-20 rounded-md form-input form-input-text grow p-2 placeholder:italic">
       </div>
-      <button class="justify-center hover:border-accent-mid items-center flex border rounded-md border-primary-60 aspect-square bg-primary flex-none cursor-pointer" @click.prevent.stop="viewMode = 'list'">
+      <button class="justify-center hover:border-accent-mid items-center flex border rounded-md border-primary-60 aspect-square bg-primary flex-none cursor-pointer" @click.prevent.stop="onSwitchViewMode('list')">
         <IconList class="fill-none stroke-current size-6 stroke-1.5 flex" />
       </button>
-      <button class="justify-center items-center flex hover:border-accent-mid border rounded-md border-primary-60 aspect-square bg-primary flex-none cursor-pointer" @click.prevent.stop="viewMode = 'map'">
+      <button class="justify-center items-center flex hover:border-accent-mid border rounded-md border-primary-60 aspect-square bg-primary flex-none cursor-pointer" @click.prevent.stop="onSwitchViewMode('map')">
         <IconMap class="fill-none stroke-current size-6 stroke-1.5 flex" />
       </button>
     </div>
@@ -91,7 +91,7 @@
           <div v-else-if="viewMode === 'list'" class="flex justify-center items-center h-full bg-primary-60">
             <span class="text-2xl">No specimens found</span>
           </div>
-          <LeafletMap v-else :center="mapCenter" class="h-full" @drag="onDragMap" @zoom="onZoomMap">
+          <LeafletMap v-else :center="mapCenter" class="h-full" @ready="initMap" @drag="onDragMap" @zoom="onZoomMap">
             <LeafletMarker v-for="{ self, name, origin: { latitude, longitude } } in markers" :key="self"
               :center="[latitude, longitude]"
               :name="name"
@@ -119,6 +119,7 @@ definePageMeta({
 
 const viewMode = ref<'list' | 'map'>('list')
 const mapCenter = ref<Coordinate>([46.65848709787655, -66.35685870803573]) // Initially center on NB
+const mapBounds = ref<[Coordinate, Coordinate]>([[0, 0], [0, 0]])
 const categoriesCollapsed = ref(false)
 const ageCollapsed = ref(false)
 const publicAccessCollapsed = ref(false)
@@ -127,7 +128,7 @@ const maxAge = await (async () => {
   return data.value?.entities[0]?.start ?? 0
 })()
 
-const { entities: specimens, list, query: { page, pageSize, search, filter } } = await fetchEntityList<Specimen>("Specimen", { select: ['id', 'name', 'type', 'classification'] })
+const { entities: specimens, list, query: { page, pageSize, search, select, filter } } = await fetchEntityList<Specimen>("Specimen", { select: ['id', 'name', 'type', 'classification'] })
 const markers = computed(() => specimens.value.filter(({ origin }) => origin?.latitude && origin?.longitude))
 
 // Filter
@@ -161,6 +162,13 @@ const publicAccess = computed({
 
 function onSwitchViewMode(mode: 'list' | 'map') {
   viewMode.value = mode
+  if (mode === 'map') {
+    select.value = [...select.value, 'origin']
+    mapBounds.value = [...mapBounds.value]
+  } else {
+    select.value = select.value.filter(field => field !== 'origin')
+    filter.value = filter.value.filter(([field]) => field !== 'origin')
+  }
 }
 
 function onUpdateClassification(selection: [string, string][]) {
@@ -170,13 +178,23 @@ function onUpdateClassification(selection: [string, string][]) {
   ]
 }
 
+function initMap(map: L.Map) {
+  const bounds = map.getBounds()
+  const [{ lat: neLat, lng: neLong }, { lat: swLat, lng: swLong }] = [bounds.getNorthEast(), bounds.getSouthWest()]
+  onUpdateBounds([[neLat, neLong], [swLat, swLong]])
+}
+
 function onUpdateBounds([northEast, southWest]: [Coordinate, Coordinate]) {
+  mapBounds.value = [northEast, southWest]
+}
+
+watch(mapBounds, ([northEast, southWest]) => {
   filter.value = [
     ...filter.value.filter(([field]) => field !== 'origin'),
     ['origin', FilterOperator.GREATER, northEast.join(`;`)] as Filter,
     ['origin', FilterOperator.LESS, southWest.join(`;`)] as Filter
   ]
-}
+})
 
 function onUpdateCenter(center: Coordinate) {
   mapCenter.value = center
