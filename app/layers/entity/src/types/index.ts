@@ -15,7 +15,7 @@ export interface Entity {
 
 export interface Hierarchical<E extends Entity = Entity> {
   parent?: Hierarchical<E> & E
-  ancestors?: (Hierarchical<E> & E)[]
+  ancestors?: EntityJSONList<Hierarchical<E> & E>
 }
 
 export interface Slugified {

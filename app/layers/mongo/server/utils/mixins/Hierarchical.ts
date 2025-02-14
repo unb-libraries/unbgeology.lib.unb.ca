@@ -9,7 +9,7 @@ export interface Hierarchical<T> {
 
 export function renderHierarchical(doc: Hierarchical, render: <T extends Hierarchical>(doc: T) => T) {
   return {
-    parents: {
+    ancestors: {
       // TODO: add "self"
       entities: doc.ancestors?.map((ancestor) => {
         const rendered = render(ancestor)

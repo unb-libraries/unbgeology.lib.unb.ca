@@ -4,20 +4,20 @@
       <h1 class="text-2xl font-bold">
         {{ specimen?.name }}
       </h1>
-      <span class="-mt-1 block text-sm italic">#{{ specimen?.id }}</span>
+      <span class="-mt-1 block text-sm italic">#{{ specimen!.id.toUpperCase() }}</span>
     </header>
     <div class="flex flex-row space-x-8">
       <div class="flex w-2/3 flex-col space-y-12">
         <section>
-          <nuxt-img
-            v-if="(specimen?.images ?? []).length > 0"
-            :src="`/image/${specimen?.images[0].filename}`"
-            format="webp"
-            fit="cover"
-            width="1024"
-            height="731"
+          <img
+            v-if="(specimen?.images?.total ?? 0) > 0"
+            :src="`${specimen?.images?.entities[0].uri}?w=1024&h=731`"
           />
-          <div v-else class="bg-primary-60 aspect-7/5 w-full" />
+          <div v-else class="bg-primary-60 aspect-7/5 w-full text-primary-40 justify-center items-center flex">
+            <IconFossil v-if="specimen!.type === 'fossil'" class="size-48 fill-none stroke-current stroke-1.5" />
+            <IconMineral v-else-if="specimen!.type === 'mineral'" class="size-48 fill-none stroke-current stroke-1.5" />
+            <IconRock v-else class="size-48 fill-none stroke-current stroke-1.5" />
+          </div>
         </section>
         <section v-if="specimen?.description" class="ml-64 text-justify">
           {{ specimen?.description }}
@@ -26,7 +26,7 @@
           <h2 class="text-primary-40 mb-3 text-lg font-bold uppercase">
             Place of Origin
           </h2>
-          <LeafletMap class="h-96 w-full" :zoom="7" :center="[specimen?.origin?.latitude ?? 0, specimen?.origin?.longitude ?? 0]">
+          <LeafletMap class="min-h-128 w-full" :zoom="7" :center="[specimen?.origin?.latitude ?? 0, specimen?.origin?.longitude ?? 0]">
             <LeafletMarker
               v-if="specimen.origin"
               :name="specimen.name"
@@ -38,33 +38,38 @@
           <h2 class="text-primary-40 mb-3 text-lg font-bold uppercase">
             Publications
           </h2>
-          <PvEntityList class="list-inside list-decimal" :entities="specimen?.publications" :label="p => p.citation" item-class="my-3 first:mt-0 last:mb-0" />
+          <!-- <PvEntityList class="list-inside list-decimal" :entities="specimen!.publications" :label="p => p.citation" item-class="my-3 first:mt-0 last:mb-0" /> -->
         </section>
       </div>
       <div class="w-1/3">
-        <PvEntityDetails :entity="specimen!" :fields="['classifications', `date`, `age`, `composition`, `pieces`, `measurements`, `storage`, [`collector`, `Collector's Name`], [`sponsor`, `Sponsor's Name`]]" item-class="my-6 first:mt-0 last:mb-0" label-class="text-primary-40 uppercase">
-          <template #classifications>
-            {{ classificationLabels }}
+        <PvEntityDetails :entity="specimen!" :fields="[['type', 'Category'], 'classification', `date`, `age`, `composition`, `pieces`, `measurements`, `storage`]" item-class="my-6 first:mt-0 last:mb-0" label-class="text-primary-40 uppercase">
+          <template #type>{{ specimen!.type[0].toUpperCase() + specimen!.type.slice(1).toLowerCase() }}</template>
+          <template #classification>
+            {{ classificationLabels.join(' > ') }}
           </template>
-          <template #age="{ value: age }">
-            {{ age.numeric ? age.numeric : `${age.relative.boundaries.lower} - ${age.relative.boundaries.upper}` }} Ma ({{ age.relative.label }})
+          <template #date>{{ specimen!.date ?? 'Unknown' }}</template>
+          <template #composition>
+            <template v-if="specimen!.type !== 'mineral'">{{ (specimen! as Fossil | Rock).composition?.entities.map(({ label }) => label).join(`, `) }}</template>
+            <!-- FIX: Composition is not included in Mineral classification -->
+            <template v-else-if="(specimen!.classification as Mineral)?.composition">{{ (specimen!.classification as Mineral) }}</template>
+            <template v-else>Unknown</template>
+          </template>
+          <template #age>
+            <template v-if="specimen?.age?.relative">
+              {{ specimen?.age?.relative?.map(({ label, start }, i) => `${label} (${Number(specimen!.age.numeric?.[i] ?? start) / 1000000} Mya)`).join(' - ') }}
+            </template>
+            <template v-else>Unknown</template>
           </template>
           <template #pieces>
-            {{ specimen?.pieces }}{{ specimen?.partial ? ` (P)` : `` }}
+            {{ specimen?.pieces }}{{ specimen?.partial ? ` (Partial)` : `` }}
           </template>
           <template #measurements>
-            <ul v-for="dimensions in specimen?.measurements" :key="dimensions">
-              <li>{{ dimensions.width }}mm x {{ dimensions.length }}mm</li>
+            <ul v-for="dimensions in specimen!.measurements?.dimensions" :key="dimensions.join('x')">
+              <li>{{ dimensions.map(d => `${d}mm`).join(' x ') }}</li>
             </ul>
           </template>
           <template #storage>
             {{ specimen?.storage.at(-1)?.location.public ? `On Display` : `In Archive` }}
-          </template>
-          <template #collector>
-            {{ specimen?.collector?.firstName }} {{ specimen?.collector?.lastName }}
-          </template>
-          <template #sponsor>
-            {{ specimen?.sponsor?.firstName }} {{ specimen?.sponsor?.lastName }}
           </template>
         </PvEntityDetails>
       </div>
@@ -73,18 +78,23 @@
 </template>
 
 <script setup lang="ts">
-import { type Specimen } from 'types/specimen'
+import { type Fossil, type Rock, type Specimen } from 'types/specimen'
+import type { Mineral } from 'types/classification'
 
 definePageMeta({
   layout: `default`,
 })
 
 const { slug } = useRoute().params
+const fields: (keyof Specimen)[] = ['age', 'classification', 'collection', 'composition', 'date', 'description', 'id', 'images', 'legal', 'lenderID', 'lenderURL', 'measurements', 'name', 'origin', 'partial', 'pieces', 'publications', 'status', 'storage', 'type']
 const { fetchByPK } = useEntityType<Specimen>(`Specimen`)
-const { entity: specimen } = await fetchByPK(slug as string)
+const { entity: specimen } = await fetchByPK(slug as string, { select: fields })
 if (!specimen.value) {
   showError({ statusCode: 404 })
 }
 
-const classificationLabels = computed(() => specimen.value?.classifications.map(c => c.label).join(`, `))
+const classificationLabels = computed(() => [
+  specimen.value?.classification?.label,
+  ...(specimen.value?.classification?.ancestors?.entities.map(({ label }) => label) ?? []),
+].reverse())
 </script>
