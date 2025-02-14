@@ -67,7 +67,7 @@
             <li v-for="specimen in specimens" :key="specimen.self" class="bg-primary-60">
               <div class="flex flex-row">
                 <div class="h-20 aspect-square bg-primary-20 flex justify-center items-center">
-                  <img v-if="specimen.images?.total > 0" :src="`${specimen.images?.entities[0].uri}?w=40&h=40`" class="aspect-square object-cover">
+                  <img v-if="specimen.images?.total > 0" :src="`${specimen.images?.entities[0].uri}?w=100&h=100`" class="aspect-square object-cover">
                   <IconFossil v-else-if="specimen.type === 'fossil'" class="size-16 stroke-primary-40 fill-none" />
                   <IconRock v-else-if="specimen.type === 'rock'" class="size-16 stroke-primary-40 fill-none" />
                   <IconMineral v-else-if="specimen.type === 'mineral'" class="size-16 stroke-primary-40 fill-none" />
@@ -132,7 +132,7 @@ const maxAge = await (async () => {
   return data.value?.entities[0]?.start ?? 0
 })()
 
-const { entities: specimens, list, query: { page, pageSize, search, select, filter } } = await fetchEntityList<Specimen>("Specimen", { select: ['id', 'name', 'type', 'classification'] })
+const { entities: specimens, list, query: { page, pageSize, search, select, filter } } = await fetchEntityList<Specimen>("Specimen", { select: ['id', 'name', 'images', 'type', 'classification'] })
 const markers = computed(() => specimens.value.filter(({ origin }) => origin?.latitude && origin?.longitude))
 
 // Filter
