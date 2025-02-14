@@ -122,7 +122,30 @@ export default defineCachedEventHandler(async (event) => {
 
   // Join and filter by storage
   if (fields.some(f => f.startsWith(`storage`))) {
-    query.lookup({ from: `terms`, localField: `storage`, foreignField: `_id`, as: `storage` })
+    query.lookup({ from: `terms`, localField: `storage.location`, foreignField: `_id`, as: `storageLocations` })
+    query.addFields({
+      storage: {
+        $map: {
+          input: "$storage",
+          as: "s",
+          in: {
+            $mergeObjects: ["$$s", {
+              location: {
+                $arrayElemAt: [{
+                  $filter: {
+                    input: "$storageLocations",
+                    as: "loc",
+                    cond: { $eq: ["$$loc._id", "$$s.location"] },
+                  } }, 0],
+              } }]
+          }
+        }
+    } })
+    
+    if (fields.includes(`storage.location.public`)) {
+      query.addFields({ currentStorage: { $arrayElemAt: ["$storage", { $subtract: [{ $size: "$storage" }, 1] }] } })
+      query.match({ "currentStorage.location.public": true })
+    }
   }
 
   // Join and filter by creator

@@ -59,7 +59,7 @@ const defu = createDefu((obj, key, value) => {
 
 export function getSpecimenQueryParams(event: H3Event) {
   const { filter, page, pageSize, select, search, sort, ...where } = getQuery<EntityQuery<Specimen>>(event)
-  const props = [`self`, `id`, `objectIDs`, `legal`, `lenderID`, `lenderURL`, `collection`, `classification`, `classification.label`, `name`, `description`, `images`, `images.count`, `measurements`, `date`, `age`, `age.relative`, `age.numeric`, `composition`, `origin`, `origin.longitude`, `origin.latitude`, `pieces`, `partial`, `collector`, `sponsor`, `storage`, `storage.count`, `publications`, `publications.count`, `appraisal`, `status`, `creator`, `editor`, `created`, `updated`, `type`]
+  const props = [`self`, `id`, `objectIDs`, `legal`, `lenderID`, `lenderURL`, `collection`, `classification`, `classification.label`, `name`, `description`, `images`, `images.count`, `measurements`, `date`, `age`, `age.relative`, `age.numeric`, `composition`, `origin`, `origin.longitude`, `origin.latitude`, `pieces`, `partial`, `collector`, `sponsor`, `storage`, `storage.count`, `storage.location`, `storage.location.public`, `publications`, `publications.count`, `appraisal`, `status`, `creator`, `editor`, `created`, `updated`, `type`]
   
   const opMap = { "=": `eq`, "!": `ne`, ">=": `gte`, ">": `gt`, "<=": `lte`, "<": `lt`, "%": `rx` }
   const pattern = new RegExp(`^(${Object.keys(opMap).join(`|`)})?(.*)$`)
