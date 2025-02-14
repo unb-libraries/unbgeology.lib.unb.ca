@@ -6,6 +6,9 @@
         <label class="sr-only" for="search">Search</label>
         <input v-model="search" placeholder="Search" name="search" class="placeholder:text-primary dark:placeholder:text-primary-20 rounded-md form-input form-input-text grow p-2 placeholder:italic">
       </div>
+      <button class="justify-center items-center flex xl:hidden hover:border-accent-light border rounded-md border-primary-60 aspect-square bg-primary flex-none cursor-pointer" @click.prevent.stop="onToggleFilters">
+        <IconFilter class="fill-none stroke-current size-6 stroke-1.5 flex" />
+      </button>
       <button v-show="viewMode === 'map'" class="justify-center hover:border-accent-light items-center flex border rounded-md border-primary-60 aspect-square bg-primary flex-none cursor-pointer" @click.prevent.stop="onSwitchViewMode('list')">
         <IconList class="fill-none stroke-current size-6 stroke-1.5 flex" />
       </button>
@@ -13,9 +16,9 @@
         <IconMap class="fill-none stroke-current size-6 stroke-1.5 flex" />
       </button>
     </div>
-    <div class="flex grow gap-2 overflow-y-hidden">
-      <div class="w-1/5 space-y-2 h-full overflow-y-scroll">
-        <Filter title="Category" v-model:collapsed="categoriesCollapsed">
+    <div class="flex flex-col xl:flex-row grow gap-2 overflow-y-hidden">
+      <div class="grid grid-cols-2 md:grid-cols-4 xl:flex xl:flex-col w-full xl:w-1/5 gap-2 xl:h-full">
+        <Filter title="Category" v-model:collapsed="categoriesCollapsed" toggler-class="hidden xl:block">
           <div class="inline-flex items-center space-x-1">
             <input type="checkbox" id="filter-category[fossil]" name="category[fossil]" class="size-5 rounded-md input input-checkbox" value="fossil" :checked="categories.includes('fossil')" @change="categories = categories.includes('fossil') ? categories.filter(cat => cat !== 'fossil') : [...categories, 'fossil']">
             <label for="filter-category[fossil]" class="text-lg mr-4 cursor-pointer">
@@ -35,15 +38,15 @@
             </label>
           </div>
         </Filter>
-        <FilterClassification v-on:update:model-value="onUpdateClassification" />
-        <Filter title="Age" v-model:collapsed="ageCollapsed">
+        <FilterClassification v-model:collapsed="classificationCollapsed" v-on:update:model-value="onUpdateClassification" toggler-class="hidden xl:block" />
+        <Filter title="Age" v-model:collapsed="ageCollapsed" toggler-class="hidden xl:block">
           <input v-model="age" type="range" min="0" :max="maxAge" step="1000000" list="legend" />
           <datalist id="legend" class="flex justify-between w-full">
             <option value="0" label="Any"></option>
             <option :value="maxAge" :label="`${maxAge / 1000000} Mya`"></option>
           </datalist>
         </Filter>
-        <Filter title="Public access" v-model:collapsed="publicAccessCollapsed">
+        <Filter title="Public access" v-model:collapsed="publicAccessCollapsed" toggler-class="hidden xl:block">
           <div class="inline-flex items-center space-x-1">
             <input type="radio" id="filter-access[any]" name="access[any]" class="size-5 input input-radio" value="any" :checked="!publicAccess" @change="publicAccess = false">
             <label for="filter-access[any]" class="text-lg mr-4 cursor-pointer">
@@ -58,7 +61,7 @@
           </div>
         </Filter>
       </div>
-      <div class="w-4/5 h-full overflow-y-scroll">
+      <div class="w-full xl:w-4/5 h-full overflow-y-scroll">
         <KeepAlive>
           <ul v-if="viewMode === 'list' && list?.total" class="space-y-2">
             <li v-for="specimen in specimens" :key="specimen.self" class="bg-primary-60">
@@ -121,6 +124,7 @@ const viewMode = ref<'list' | 'map'>('list')
 const mapCenter = ref<Coordinate>([46.65848709787655, -66.35685870803573]) // Initially center on NB
 const mapBounds = ref<[Coordinate, Coordinate]>([[0, 0], [0, 0]])
 const categoriesCollapsed = ref(false)
+const classificationCollapsed = ref(false)
 const ageCollapsed = ref(false)
 const publicAccessCollapsed = ref(false)
 const maxAge = await (async () => {
@@ -159,6 +163,13 @@ const publicAccess = computed({
     (access ? ['storage.location.public', FilterOperator.EQUALS] : []) as Filter,
   ].filter(Boolean)
 })
+
+function onToggleFilters() {
+  categoriesCollapsed.value = !categoriesCollapsed.value
+  classificationCollapsed.value = !classificationCollapsed.value
+  ageCollapsed.value = !ageCollapsed.value
+  publicAccessCollapsed.value = !publicAccessCollapsed.value
+}
 
 function onSwitchViewMode(mode: 'list' | 'map') {
   viewMode.value = mode
