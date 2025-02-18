@@ -1,87 +1,223 @@
 <template>
-  <LeafletMap
-    v-if="markers.length"
-    class="mb-12 h-96 rounded-lg"
-    :center="[markers[0].latitude, markers[0].longitude]"
-  >
-    <LeafletMarker
-      v-for="marker in markers"
-      :key="marker.self"
-      :name="marker.name"
-      :center="[marker.latitude, marker.longitude]"
-      :accuracy="marker.accuracy"
-    />
-  </LeafletMap>
-
-  <PvEntityList :entities="specimens" item-class="my-4 first:mt-0 last:mb-0 border border-primary-60 p-2 rounded-lg">
-    <template #default="{ entity: specimen }">
-      <article class="flex flex-row space-x-2">
-        <div class="size-32 flex-none">
-          <nuxt-img
-            v-if="specimen.images && specimen.images.length > 0"
-            :src="`/image/${specimen.images[0].filename}`"
-            format="webp"
-            fit="cover"
-            width="128"
-            height="128"
-            class="rounded"
-          />
-          <div v-else class="bg-primary-60 aspect-square w-full rounded" />
-        </div>
-        <div class="flex grow flex-col overflow-hidden rounded-md p-1">
-          <h2 class="text-accent-mid hover:text-accent-light text-xl">
-            <a :href="`/specimens/${specimen.id}`">
-              {{ specimen.name }}
-            </a>
-          </h2>
-          <div class="grow">
-            <PvEntityDetails class="mr-12 flex flex-row justify-between" label-class="font-bold text-primary-40" :entity="specimen" :fields="[`classifications`, `measurements`, `age`, `composition`, [`storage`, `Display`]]">
-              <template #classifications="{ value: classifications }">
-                <template v-for="(classification, index) in classifications" :key="classification">
-                  <span>{{ classification.label }}</span>
-                  {{ index < specimen.classifications.length - 1 ? `, ` : `` }}
-                </template>
-              </template>
-              <template #measurements="{ value: measurements }">
-                <ul v-for="dimensions in measurements" :key="dimensions">
-                  <li>{{ dimensions.width }}mm x {{ dimensions.length }}mm</li>
-                </ul>
-              </template>
-              <template #age="{ value: age }">
-                {{ age.numeric ? age.numeric : `${age.relative.boundaries.lower} - ${age.relative.boundaries.upper}` }} Ma ({{ age.relative.label }})
-              </template>
-              <template #storage="{ value: storage }">
-                {{ storage?.at(-1)?.location.public ? `Public` : `In Archive` }}
-              </template>
-            </PvEntityDetails>
+  <div class="space-y-2 flex-col flex h-full">
+    <span v-if="list?.total" class="flex-none">Displaying {{ specimens.length }} of {{ list?.total }} specimens</span>
+    <div class="flex-none space-x-1 w-full flex">
+      <div class="form-field grow">
+        <label class="sr-only" for="search">Search</label>
+        <input v-model="search" placeholder="Search" name="search" class="placeholder:text-primary dark:placeholder:text-primary-20 rounded-md form-input form-input-text grow p-2 placeholder:italic">
+      </div>
+      <button class="justify-center items-center flex xl:hidden hover:border-accent-light border rounded-md border-primary-60 aspect-square bg-primary flex-none cursor-pointer" @click.prevent.stop="onToggleFilters">
+        <IconFilter class="fill-none stroke-current size-6 stroke-1.5 flex" />
+      </button>
+      <button v-show="viewMode === 'map'" class="justify-center hover:border-accent-light items-center flex border rounded-md border-primary-60 aspect-square bg-primary flex-none cursor-pointer" @click.prevent.stop="onSwitchViewMode('list')">
+        <IconList class="fill-none stroke-current size-6 stroke-1.5 flex" />
+      </button>
+      <button v-show="viewMode === 'list'" class="justify-center items-center flex hover:border-accent-light border rounded-md border-primary-60 aspect-square bg-primary flex-none cursor-pointer" @click.prevent.stop="onSwitchViewMode('map')">
+        <IconMap class="fill-none stroke-current size-6 stroke-1.5 flex" />
+      </button>
+    </div>
+    <div class="flex flex-col xl:flex-row grow gap-2 overflow-y-hidden">
+      <div class="grid grid-cols-2 md:grid-cols-4 xl:flex xl:flex-col w-full xl:w-1/5 gap-2 xl:h-full">
+        <Filter title="Category" v-model:collapsed="categoriesCollapsed" toggler-class="hidden xl:block">
+          <div class="inline-flex items-center space-x-1">
+            <input type="checkbox" id="filter-category[fossil]" name="category[fossil]" class="size-5 rounded-md input input-checkbox" value="fossil" :checked="categories.includes('fossil')" @change="categories = categories.includes('fossil') ? categories.filter(cat => cat !== 'fossil') : [...categories, 'fossil']">
+            <label for="filter-category[fossil]" class="text-lg mr-4 cursor-pointer">
+              Fossil
+            </label>
           </div>
-          <div class="flex-none truncate">
-            {{ specimen.description }}
+          <div class="inline-flex items-center space-x-1">
+            <input type="checkbox" id="filter-category[mineral]" name="category[mineral]" class="size-5 rounded-md input input-checkbox" value="mineral" :checked="categories.includes('mineral')" @change="categories = categories.includes('mineral') ? categories.filter(cat => cat !== 'mineral') : [...categories, 'mineral']">
+            <label for="filter-category[mineral]" class="text-lg mr-4 cursor-pointer">
+              Mineral
+            </label>
           </div>
-        </div>
-      </article>
-    </template>
-  </PvEntityList>
+          <div class="inline-flex items-center space-x-1">
+            <input type="checkbox" id="filter-category[rock]" name="category[rock]" class="size-5 rounded-md input input-checkbox" value="rock" :checked="categories.includes('rock')" @change="categories = categories.includes('rock') ? categories.filter(cat => cat !== 'rock') : [...categories, 'rock']">
+            <label for="filter-category[rock]" class="text-lg mr-4 cursor-pointer">
+              Rock
+            </label>
+          </div>
+        </Filter>
+        <FilterClassification v-model:collapsed="classificationCollapsed" v-on:update:model-value="onUpdateClassification" toggler-class="hidden xl:block" />
+        <Filter title="Age" v-model:collapsed="ageCollapsed" toggler-class="hidden xl:block">
+          <input v-model="age" type="range" min="0" :max="maxAge" step="1000000" list="legend" />
+          <datalist id="legend" class="flex justify-between w-full">
+            <option value="0" label="Any"></option>
+            <option :value="maxAge" :label="`${maxAge / 1000000} Mya`"></option>
+          </datalist>
+        </Filter>
+        <Filter title="Public access" v-model:collapsed="publicAccessCollapsed" toggler-class="hidden xl:block">
+          <div class="inline-flex items-center space-x-1">
+            <input type="radio" id="filter-access[any]" name="access[any]" class="size-5 input input-radio" value="any" :checked="!publicAccess" @change="publicAccess = false">
+            <label for="filter-access[any]" class="text-lg mr-4 cursor-pointer">
+              Any
+            </label>
+          </div>
+          <div class="inline-flex items-center space-x-1">
+            <input type="radio" id="filter-access[public]" name="access[public]" class="size-5 input input-radio" value="public" :checked="publicAccess" @change="publicAccess = true">
+            <label for="filter-access[public]" class="text-lg mr-4 cursor-pointer">
+              On display
+            </label>
+          </div>
+        </Filter>
+      </div>
+      <div class="w-full xl:w-4/5 h-full overflow-y-scroll">
+        <KeepAlive>
+          <ul v-if="viewMode === 'list' && list?.total" class="space-y-2">
+            <li v-for="specimen in specimens" :key="specimen.self" class="bg-primary-60">
+              <div class="flex flex-row">
+                <div class="h-20 aspect-square bg-primary-20 flex justify-center items-center">
+                  <img v-if="specimen.images?.total > 0" :src="`${specimen.images?.entities[0].uri}?w=100&h=100`" class="aspect-square object-cover">
+                  <IconFossil v-else-if="specimen.type === 'fossil'" class="size-16 stroke-primary-40 fill-none" />
+                  <IconRock v-else-if="specimen.type === 'rock'" class="size-16 stroke-primary-40 fill-none" />
+                  <IconMineral v-else-if="specimen.type === 'mineral'" class="size-16 stroke-primary-40 fill-none" />
+                </div>
+                <dl class="flex flex-row gap-x-12 p-4 w-full">
+                  <div class="w-1/2">
+                    <dt class="sr-only">ID</dt>
+                    <dd class="text-sm">{{ specimen.id.toUpperCase() }}</dd>
+                    <dt class="sr-only">Name</dt>
+                    <dd class="text-xl"><a :href="`/specimens/${specimen.id}`" class="hover:underline">{{ specimen.name }}</a></dd>
+                  </div>
+                  <div class="w-1/6">
+                    <dt class="text-sm">Category</dt>
+                    <dd class="text-xl">{{ specimen.type[0].toUpperCase() + specimen.type.slice(1).toLowerCase() }}</dd>
+                  </div>
+                  <div class="w-1/3">
+                    <dt class="text-sm">Classification</dt>
+                    <dd class="text-xl">{{ specimen.classification?.label }}</dd>
+                  </div>
+                </dl>
+              </div>
+            </li>
+          </ul>
+          <div v-else-if="viewMode === 'list'" class="flex justify-center items-center h-full bg-primary-60">
+            <span class="text-2xl">No specimens found</span>
+          </div>
+          <LeafletMap v-else :center="mapCenter" class="h-full" @ready="initMap" @drag="onDragMap" @zoom="onZoomMap">
+            <LeafletMarker v-for="{ self, name, origin: { latitude, longitude } } in markers" :key="self"
+              :center="[latitude, longitude]"
+              :name="name"
+              :accuracy="0"
+              :draggable="false"
+              />
+          </LeafletMap>
+        </KeepAlive>
+      </div>
+    </div>
+    <TwPageIndex v-if="viewMode === 'list'" :page="page" :total="Math.ceil((list?.total ?? 0) / pageSize)" :size="10" @change="(index) => { page = index }" class="flex justify-end flex-none w-full" />
+  </div>
 </template>
 
 <script setup lang="ts">
-import type { Specimen } from "types/specimen"
+import { FilterOperator, type EntityJSONList, type Filter } from '@unb-libraries/nuxt-layer-entity'
+import type { Specimen } from '~/types/specimen'
+import type { Coordinate } from '~/types/leaflet'
+import type { Unit } from '~/types/geochronology'
 
 definePageMeta({
-  layout: `page`,
+  layout: 'page',
+  name: 'Search',
 })
 
-const { list } = await fetchEntityList<Specimen>(`Specimen`)
-const specimens = computed(() => list.value?.entities ?? [])
+const viewMode = ref<'list' | 'map'>('list')
+const mapCenter = ref<Coordinate>([46.65848709787655, -66.35685870803573]) // Initially center on NB
+const mapBounds = ref<[Coordinate, Coordinate]>([[0, 0], [0, 0]])
+const categoriesCollapsed = ref(false)
+const classificationCollapsed = ref(false)
+const ageCollapsed = ref(false)
+const publicAccessCollapsed = ref(false)
+const maxAge = await (async () => {
+  const { data } = await useFetch<EntityJSONList<Unit>>('/api/terms/geochronology', { query: { sort: "-start", pageSize: 1 } })
+  return data.value?.entities[0]?.start ?? 0
+})()
 
-const markers = computed(() => (specimens.value ?? [])
-  .filter(specimen => specimen.origin !== undefined)
-  .map(specimen => ({
-    self: specimen.self,
-    name: specimen.name,
-    latitude: specimen.origin!.latitude,
-    longitude: specimen.origin!.longitude,
-    accuracy: specimen.origin!.accuracy,
-  })))
+const { entities: specimens, list, query: { page, pageSize, search, select, filter } } = await fetchEntityList<Specimen>("Specimen", { select: ['id', 'name', 'images', 'type', 'classification'] })
+const markers = computed(() => specimens.value.filter(({ origin }) => origin?.latitude && origin?.longitude))
 
+// Filter
+const categories = computed({
+  get: () => (filter.value
+    ?.filter(([field, op]) => field === 'type' && op === FilterOperator.EQUALS) ?? [])
+    .map(([, , value]) => Array.isArray(value) ? value : [value]).flat(),
+  set: (category: string[]) => filter.value = [
+    ...filter.value.filter(([field]) => field !== 'type'),
+    ...category.map(category => ['type', FilterOperator.EQUALS, category] as Filter)
+  ]
+})
+
+const age = computed({
+  get: () => Math.max(0, ...(filter.value
+    ?.filter(([field, op]) => field === 'age.numeric' && op === FilterOperator.GREATER) ?? [])
+    .map(([, , value]) => Array.isArray(value) ? value : [value]).flat()),
+  set: (age: number) => filter.value = [
+    ...filter.value.filter(([field]) => field !== 'age.numeric'),
+    (age > 0 ? ['age.numeric', FilterOperator.GREATER, `${age}`] : []) as Filter,
+  ].filter(Boolean)
+})
+
+const publicAccess = computed({
+  get: () => (filter.value?.filter(([field, op]) => field === 'storage.location.public' && op === FilterOperator.EQUALS) ?? []).length > 0,
+  set: (access: boolean) => filter.value = [
+    ...filter.value.filter(([field]) => field !== 'storage.location.public'),
+    (access ? ['storage.location.public', FilterOperator.EQUALS] : []) as Filter,
+  ].filter(Boolean)
+})
+
+function onToggleFilters() {
+  categoriesCollapsed.value = !categoriesCollapsed.value
+  classificationCollapsed.value = !classificationCollapsed.value
+  ageCollapsed.value = !ageCollapsed.value
+  publicAccessCollapsed.value = !publicAccessCollapsed.value
+}
+
+function onSwitchViewMode(mode: 'list' | 'map') {
+  viewMode.value = mode
+  if (mode === 'map') {
+    select.value = [...select.value, 'origin']
+    mapBounds.value = [...mapBounds.value]
+  } else {
+    select.value = select.value.filter(field => field !== 'origin')
+    filter.value = filter.value.filter(([field]) => field !== 'origin')
+  }
+}
+
+function onUpdateClassification(selection: [string, string][]) {
+  filter.value = [
+    ...filter.value.filter(([field]) => field !== 'classification'),
+    ...selection.map(([id]) => ['classification', FilterOperator.EQUALS, id] as Filter)
+  ]
+}
+
+function initMap(map: L.Map) {
+  const bounds = map.getBounds()
+  const [{ lat: neLat, lng: neLong }, { lat: swLat, lng: swLong }] = [bounds.getNorthEast(), bounds.getSouthWest()]
+  onUpdateBounds([[neLat, neLong], [swLat, swLong]])
+}
+
+function onUpdateBounds([northEast, southWest]: [Coordinate, Coordinate]) {
+  mapBounds.value = [northEast, southWest]
+}
+
+watch(mapBounds, ([northEast, southWest]) => {
+  filter.value = [
+    ...filter.value.filter(([field]) => field !== 'origin'),
+    ['origin', FilterOperator.GREATER, northEast.join(`;`)] as Filter,
+    ['origin', FilterOperator.LESS, southWest.join(`;`)] as Filter
+  ]
+})
+
+function onUpdateCenter(center: Coordinate) {
+  mapCenter.value = center
+}
+
+function onDragMap(center: Coordinate, bounds: [Coordinate, Coordinate]) {
+  onUpdateCenter(center)
+  onUpdateBounds(bounds)
+}
+
+function onZoomMap(level: number, center: Coordinate, bounds: [Coordinate, Coordinate]) {
+  onUpdateCenter(center)
+  onUpdateBounds(bounds)
+}
 </script>
