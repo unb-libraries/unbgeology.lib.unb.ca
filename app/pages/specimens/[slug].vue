@@ -9,6 +9,12 @@
     <div class="flex flex-row space-x-8">
       <div class="flex w-2/3 flex-col space-y-12">
         <section>
+          <div v-if="(specimen?.images?.total ?? 0) > 0" class="space-y-1">
+            <img :src="`${activeImage?.[1]}?w=1024&h=731`" />
+            <div class="w-full h-24 inline-flex gap-x-1 overflow-x-scroll">
+              <img v-for="{ self, uri } in specimen?.images?.entities" :key="self" :src="`${uri}?w=100&h=100`" :class="['cursor-pointer hover:opacity-50 size-24', { 'opacity-50': self === activeImage?.[0] }]" @click="activeImage = [self, uri]" />
+            </div>
+          </div>
           <div v-else class="bg-primary-20 dark:bg-primary-60 aspect-7/5 w-full text-base dark:text-primary-40 justify-center items-center flex">
             <IconFossil v-if="specimen!.type === 'fossil'" class="size-48 fill-none stroke-current stroke-1.5" />
             <IconMineral v-else-if="specimen!.type === 'mineral'" class="size-48 fill-none stroke-current stroke-1.5" />
@@ -45,14 +51,14 @@
           </template>
           <template #date>{{ specimen!.date ?? 'Unknown' }}</template>
           <template #composition>
-            <template v-if="specimen!.type !== 'mineral'">{{ (specimen! as Fossil | Rock).composition?.entities.map(({ label }) => label).join(`, `) }}</template>
+            <template v-if="specimen!.type !== 'mineral'">{{(specimen! as Fossil | Rock).composition?.entities.map(({ label }) => label).join(`, `)}}</template>
             <!-- FIX: Composition is not included in Mineral classification -->
             <template v-else-if="(specimen!.classification as Mineral)?.composition">{{ (specimen!.classification as Mineral) }}</template>
             <template v-else>Unknown</template>
           </template>
           <template #age>
             <template v-if="specimen?.age?.relative">
-              {{ specimen?.age?.relative?.map(({ label, start }, i) => `${label} (${Number(specimen!.age.numeric?.[i] ?? start) / 1000000} Mya)`).join(' - ') }}
+              {{specimen?.age?.relative?.map(({ label, start }, i) => `${label} (${Number(specimen!.age.numeric?.[i] ?? start) / 1000000} Mya)`).join(' - ')}}
             </template>
             <template v-else>Unknown</template>
           </template>
@@ -61,7 +67,7 @@
           </template>
           <template #measurements>
             <ul v-for="dimensions in specimen!.measurements?.dimensions" :key="dimensions.join('x')">
-              <li>{{ dimensions.map(d => `${d}mm`).join(' x ') }}</li>
+              <li>{{dimensions.map(d => `${d}mm`).join(' x ')}}</li>
             </ul>
           </template>
           <template #storage>
@@ -93,4 +99,6 @@ const classificationLabels = computed(() => [
   specimen.value?.classification?.label,
   ...(specimen.value?.classification?.ancestors?.entities.map(({ label }) => label) ?? []),
 ].reverse())
+
+const activeImage = ref(specimen?.value?.images?.entities?.length ? [specimen!.value?.images?.entities[0].self, specimen!.value?.images?.entities[0].uri] : undefined)
 </script>
