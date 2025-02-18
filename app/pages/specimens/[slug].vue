@@ -40,7 +40,9 @@
           <h2 class="text-primary-40 mb-3 text-lg font-bold uppercase">
             Publications
           </h2>
-          <!-- <PvEntityList class="list-inside list-decimal" :entities="specimen!.publications" :label="p => p.citation" item-class="my-3 first:mt-0 last:mb-0" /> -->
+          <PvEntityList class="list-inside list-decimal" :entities="publications" item-class="my-3 first:mt-0 last:mb-0" v-slot="{ entity: publication }">
+            <a :href="publication.doi" class="hover:underline">{{ publication.citation }}</a>
+          </PvEntityList>
         </section>
       </div>
       <div class="w-1/3">
@@ -80,7 +82,7 @@
 </template>
 
 <script setup lang="ts">
-import { type Fossil, type Rock, type Specimen } from 'types/specimen'
+import { type Fossil, type Publication, type Rock, type Specimen } from 'types/specimen'
 import type { Mineral } from 'types/classification'
 
 definePageMeta({
@@ -101,4 +103,5 @@ const classificationLabels = computed(() => [
 ].reverse())
 
 const activeImage = ref(specimen?.value?.images?.entities?.length ? [specimen!.value?.images?.entities[0].self, specimen!.value?.images?.entities[0].uri] : undefined)
+const publications = computed(() => specimen.value?.publications ?? [])
 </script>
