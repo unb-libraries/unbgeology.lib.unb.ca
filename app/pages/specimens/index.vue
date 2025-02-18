@@ -4,15 +4,15 @@
     <div class="flex-none space-x-1 w-full flex">
       <div class="form-field grow">
         <label class="sr-only" for="search">Search</label>
-        <input v-model="search" placeholder="Search" name="search" class="placeholder:text-primary dark:placeholder:text-primary-20 rounded-md form-input form-input-text grow p-2 placeholder:italic">
+        <input v-model="search" placeholder="Search" name="search" class="placeholder:text-primary dark:placeholder:text-primary-20 rounded-md input input-text grow p-2 placeholder:italic">
       </div>
-      <button class="justify-center items-center flex xl:hidden hover:border-accent-light border rounded-md border-primary-60 aspect-square bg-primary flex-none cursor-pointer" @click.prevent.stop="onToggleFilters">
+      <button class="bg-base justify-center items-center flex xl:hidden hover:border-accent-light border rounded-md border-primary-60 aspect-square dark:bg-primary flex-none cursor-pointer" @click.prevent.stop="onToggleFilters">
         <IconFilter class="fill-none stroke-current size-6 stroke-1.5 flex" />
       </button>
-      <button v-show="viewMode === 'map'" class="justify-center hover:border-accent-light items-center flex border rounded-md border-primary-60 aspect-square bg-primary flex-none cursor-pointer" @click.prevent.stop="onSwitchViewMode('list')">
+      <button v-show="viewMode === 'map'" class="bg-base justify-center hover:border-accent-light items-center flex border rounded-md border-primary-60 aspect-square dark:bg-primary flex-none cursor-pointer" @click.prevent.stop="onSwitchViewMode('list')">
         <IconList class="fill-none stroke-current size-6 stroke-1.5 flex" />
       </button>
-      <button v-show="viewMode === 'list'" class="justify-center items-center flex hover:border-accent-light border rounded-md border-primary-60 aspect-square bg-primary flex-none cursor-pointer" @click.prevent.stop="onSwitchViewMode('map')">
+      <button v-show="viewMode === 'list'" class="bg-base justify-center items-center flex hover:border-accent-light border rounded-md border-primary-60 aspect-square dark:bg-primary flex-none cursor-pointer" @click.prevent.stop="onSwitchViewMode('map')">
         <IconMap class="fill-none stroke-current size-6 stroke-1.5 flex" />
       </button>
     </div>
@@ -64,13 +64,13 @@
       <div class="w-full xl:w-4/5 h-full overflow-y-scroll">
         <KeepAlive>
           <ul v-if="viewMode === 'list' && list?.total" class="space-y-2">
-            <li v-for="specimen in specimens" :key="specimen.self" class="bg-primary-60">
+            <li v-for="specimen in specimens" :key="specimen.self" class="bg-primary-20 dark:bg-primary-60">
               <div class="flex flex-row">
-                <div class="h-20 aspect-square bg-primary-20 flex justify-center items-center">
+                <div class="h-20 aspect-square bg-primary-40 dark:bg-primary-20 flex justify-center items-center">
                   <img v-if="specimen.images?.total > 0" :src="`${specimen.images?.entities[0].uri}?w=100&h=100`" class="aspect-square object-cover">
-                  <IconFossil v-else-if="specimen.type === 'fossil'" class="size-16 stroke-primary-40 fill-none" />
-                  <IconRock v-else-if="specimen.type === 'rock'" class="size-16 stroke-primary-40 fill-none" />
-                  <IconMineral v-else-if="specimen.type === 'mineral'" class="size-16 stroke-primary-40 fill-none" />
+                  <IconFossil v-else-if="specimen.type === 'fossil'" class="size-16 stroke-base dark:stroke-primary-40 fill-none" />
+                  <IconRock v-else-if="specimen.type === 'rock'" class="size-16 stroke-base dark:stroke-primary-40 fill-none" />
+                  <IconMineral v-else-if="specimen.type === 'mineral'" class="size-16 stroke-base dark:stroke-primary-40 fill-none" />
                 </div>
                 <dl class="flex flex-row gap-x-12 p-4 w-full">
                   <div class="w-1/2">

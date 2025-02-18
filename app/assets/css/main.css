@@ -44,7 +44,7 @@
   }
   .input {
     @apply flex flex-row items-center space-x-2
-    bg-base dark:bg-primary input-border has-[:disabled]:bg-primary-80
+    bg-white dark:bg-primary input-border has-[:disabled]:bg-primary-80
       has-[:focus]:ring-2 has-[:disabled:focus]:ring-0 has-[:focus]:ring-accent-light has-[:focus]:hover:border-transparent
   }
   .input-ref, .textarea-ref {
@@ -64,7 +64,7 @@
   }
   
   .input-checkbox, .input-radio {
-    @apply bg-base dark:bg-primary dark:border-primary-60/75 hover:border-accent-light checked:text-accent-mid h-6 w-6 cursor-pointer rounded-md border focus:ring-0 focus:ring-offset-0
+    @apply bg-white dark:bg-primary dark:border-primary-60/75 hover:border-accent-light checked:text-accent-mid h-6 w-6 cursor-pointer rounded-md border focus:ring-0 focus:ring-offset-0
   }
   .input-radio {
     @apply rounded-full

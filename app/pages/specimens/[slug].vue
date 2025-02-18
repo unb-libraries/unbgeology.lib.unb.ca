@@ -9,11 +9,7 @@
     <div class="flex flex-row space-x-8">
       <div class="flex w-2/3 flex-col space-y-12">
         <section>
-          <img
-            v-if="(specimen?.images?.total ?? 0) > 0"
-            :src="`${specimen?.images?.entities[0].uri}?w=1024&h=731`"
-          />
-          <div v-else class="bg-primary-60 aspect-7/5 w-full text-primary-40 justify-center items-center flex">
+          <div v-else class="bg-primary-20 dark:bg-primary-60 aspect-7/5 w-full text-base dark:text-primary-40 justify-center items-center flex">
             <IconFossil v-if="specimen!.type === 'fossil'" class="size-48 fill-none stroke-current stroke-1.5" />
             <IconMineral v-else-if="specimen!.type === 'mineral'" class="size-48 fill-none stroke-current stroke-1.5" />
             <IconRock v-else class="size-48 fill-none stroke-current stroke-1.5" />

@@ -2,7 +2,7 @@
   <Filter title="Classification" v-model:collapsed="collapsed" :toggler-class="togglerClass">
     <div class="group relative" tabindex="0">
       <input v-model="search" placeholder="Search" name="search-classifications" :class="['input w-full input-text-md placeholder:text-primary dark:placeholder:text-primary-20 placeholder:italic', { 'group-focus-within:rounded-b-none': options.length }]">
-      <ul v-if="options.length" class="invisible group-focus-within:visible absolute bg-primary w-full border-x border-b rounded-b-md border-primary-80 max-h-48 overflow-y-scroll">
+      <ul v-if="options.length" class="invisible group-focus-within:visible absolute bg-base dark:bg-primary w-full border-x border-b rounded-b-md border-primary-80 max-h-48 overflow-y-scroll">
         <li v-for="{ self, label } in options" :key="self" tabindex="0" class="px-3 py-1 hover:bg-accent-mid hover:text-white cursor-pointer" @keypress.enter.space="onSelect([self, label])" @click="onSelect([self, label])">
           {{ label }}
         </li>
