@@ -105,7 +105,7 @@ const data = reactive({
   name: props.specimen.name,
   description: props.specimen.description ?? ``,
   images: props.specimen.images?.entities ?? [],
-  publications: props.specimen.publications,
+  publications: props.specimen.publications?.entities ?? [],
   appraisal: props.specimen.appraisal,
   externalID: ``,
 })

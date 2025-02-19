@@ -56,7 +56,7 @@ function generateID() {
   return `${generator.next().value}`
 }
 
-const history = reactive<[string, string | undefined, string | undefined][]>(props.specimen.storage?.map(({ location: { self }, dateIn }) => [generateID(), self, dateIn.substring(0, 10)]) ?? [[generateID(), undefined, undefined]])
+const history = reactive<[string, string | undefined, string | undefined][]>(props.specimen.storage?.entities.map(({ location: { self }, dateIn }) => [generateID(), self, dateIn.substring(0, 10)]) ?? [[generateID(), undefined, undefined]])
 const emptyItems = computed(() => history.filter(([, location, date]) => !location && !date).length)
 
 watch(history, () => {

@@ -134,7 +134,7 @@ export function renderSpecimen(doc: Specimen) {
       self: `/api/specimens/${doc.slug}/storage`,
       entities: doc.storage?.map(s => ({
         location: s.location && renderStorage(s.location),
-        dateIn: s.dateIn,
+        dateIn: new Date(s.dateIn).toISOString(),
       })),
       total: doc.storage?.length ?? 0,
     },
