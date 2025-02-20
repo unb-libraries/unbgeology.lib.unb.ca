@@ -30,7 +30,11 @@
           <!-- Classification -->
           <div class="grid grid-cols-2 lg:grid-cols-1 gap-x-4">
             <dt class="text-end lg:text-start text-primary-40 uppercase font-bold">Classification</dt>
-            <dd>{{ specimen!.classification?.label ?? "Unknown" }}</dd>
+            <dd>
+              <ul v-for="label in classificationLabels" :key="label">
+                <li>{{ label }}</li>
+              </ul>
+            </dd>
           </div>
           <!-- Date -->
           <div class="grid grid-cols-2 lg:grid-cols-1 gap-x-4">
