@@ -70,12 +70,15 @@ export default defineEventHandler(async (event) => {
     query.populate(`editor`)
   }
 
-  const specimen = await query
-  return specimen
-    ? Object.fromEntries(
-        Object.entries(renderSpecimen(specimen))
-          .filter(([key]) => key === `self`
-            || !fields.length
-            || fields.includes(key as keyof ISpecimen)))
-    : create404()
+  const specimen = await query.exec()
+  if (specimen) {
+    const rendered = renderSpecimen(specimen)
+    if (specimen.type === 'Specimen.Mineral') {
+      const children = await Term.mongoose.model.find().where({ ancestors: specimen?.classification._id })
+      rendered.classification.children = children.map(renderClassification)
+    }
+    return Object.fromEntries(
+      Object.entries(rendered).filter(([key]) => key === `self` || !fields.length || fields.includes(key as keyof ISpecimen)))
+  }
+  return create404()
 })
