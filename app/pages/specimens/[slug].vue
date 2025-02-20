@@ -41,10 +41,9 @@
           <div class="grid grid-cols-2 lg:grid-cols-1 gap-x-4">
             <dt class="text-end lg:text-start text-primary-40 uppercase font-bold">Composition</dt>
             <dd>
-              <template v-if="specimen!.type !== 'mineral'">{{(specimen! as Fossil | Rock).composition?.entities.map(({ label }) => label).join(`, `)}}</template>
-              <!-- FIX: Composition is not included in Mineral classification -->
-              <template v-else-if="(specimen!.classification as Mineral)?.composition">{{ (specimen!.classification as Mineral).composition }}</template>
-              <template v-else>Unknown</template>
+              <ul v-for="label in compositionLabels" :key="label">
+                <li>{{ label }}</li>
+              </ul>
             </dd>
           </div>
           <!-- Age -->
@@ -112,7 +111,6 @@
 
 <script setup lang="ts">
 import { type Fossil, type Rock, type Specimen } from 'types/specimen'
-import type { Mineral } from 'types/classification'
 
 definePageMeta({
   layout: `default`,
@@ -130,6 +128,17 @@ const classificationLabels = computed(() => [
   specimen.value?.classification?.label,
   ...(specimen.value?.classification?.ancestors?.entities.map(({ label }) => label) ?? []),
 ].reverse())
+
+const compositionLabels = computed(() => {
+  if (specimen.value?.type === 'mineral' && specimen.value?.classification?.composition) {
+    return [specimen.value.classification.composition]
+  } else if (specimen.value?.type === 'mineral' && specimen.value?.classification?.children) {
+    return specimen.value.classification.children?.map(({ composition }) => composition)
+  } else if ((specimen.value as Fossil | Rock).composition) {
+    return (specimen.value as Fossil | Rock).composition?.entities.map(({ label }) => label)
+  }
+  return ["Unknown"]
+})
 
 const activeImage = ref(specimen?.value?.images?.entities?.length ? [specimen!.value?.images?.entities[0].self, specimen!.value?.images?.entities[0].uri] : undefined)
 const publications = computed(() => specimen.value?.publications?.entities ?? [])
