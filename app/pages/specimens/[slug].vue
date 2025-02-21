@@ -69,9 +69,21 @@
           <div class="grid grid-cols-2 lg:grid-cols-1 gap-x-4">
             <dt class="text-end lg:text-start text-primary-40 uppercase font-bold">Measurements</dt>
             <dd>
-              <ul v-for="dimensions in specimen!.measurements?.dimensions" :key="dimensions.join('x')">
-                <li>{{dimensions.map(d => `${d}mm`).join(' x ')}}</li>
+              <ul v-if="useEnum(MeasurementCount).valueOf(specimen!.measurements?.count) !== MeasurementCount.INDIVIDUAL">
+                <li v-for="(dimensions, index) in specimen!.measurements?.dimensions" :key="dimensions.join('x')">
+                  {{dimensions.map(d => `${d}mm`).join(' x ')}}
+                </li>
               </ul>
+              <dl v-else-if="useEnum(MeasurementCount).valueOf(specimen!.measurements?.count) !== MeasurementCount.AGGREGATE">
+                <div v-for="[label, dimensions] in specimen!.measurements!.dimensions!.slice(0, 3).map<[string, [number, number, number]]>((d, index) => [['Largest', 'Smallest', 'Average'][index], d])" :key="dimensions.join('x')" class="inline-flex space-x-2">
+                  <dt>{{ label }}:</dt>
+                  <dd>{{dimensions.map(d => `${d}mm`).join(' x ')}}</dd>
+                </div>
+              </dl>
+              <template v-else-if="useEnum(MeasurementCount).valueOf(specimen!.measurements?.count) !== MeasurementCount.CONTAINER">
+                Container: {{ specimen!.measurements!.dimensions![0] }}mm
+              </template>
+              <template v-else>Unmeasureable <template v-if="specimen!.measurements?.reason">({{ specimen!.measurements!.reason }})</template></template>
             </dd>
           </div>
           <!-- Storage -->
@@ -114,7 +126,7 @@
 </template>
 
 <script setup lang="ts">
-import { type Fossil, type Rock, type Specimen } from 'types/specimen'
+import { MeasurementCount, type Fossil, type Rock, type Specimen } from 'types/specimen'
 
 definePageMeta({
   layout: `default`,
