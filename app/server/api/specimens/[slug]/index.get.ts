@@ -73,7 +73,7 @@ export default defineEventHandler(async (event) => {
   const specimen = await query.exec()
   if (specimen) {
     const rendered = renderSpecimen(specimen)
-    if (specimen.type === 'Specimen.Mineral') {
+    if (specimen.type === 'Specimen.Mineral' && specimen.classification) {
       const children = await Term.mongoose.model.find().where({ ancestors: specimen?.classification._id })
       rendered.classification.children = children.map(renderClassification)
     }
