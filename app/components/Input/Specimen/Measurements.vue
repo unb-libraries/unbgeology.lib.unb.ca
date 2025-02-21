@@ -1,7 +1,7 @@
 <template>
   <div>
     <TwInputRadioGroup v-if="countOptions.length > 1" v-model="count" :options="countOptions" class="flex flex-row space-x-6 py-4" />
-    <InputSpecimenDimensions v-if="count & ~MeasurementCount.IMMEASURABLE" v-model="dimensions" :disabled="disabled" :placeholder="placeholder" />
+    <InputSpecimenDimensions v-if="count !== MeasurementCount.IMMEASURABLE" v-model="dimensions" :disabled="disabled" :placeholder="placeholder" />
     <PvInputDropdown v-else v-model="immeasurableReason" :options="immeasurabilityOptions" class="input-select-lg" />
   </div>
 </template>
@@ -24,14 +24,7 @@ const emits = defineEmits<{
 }>()
 
 const count = computed<MeasurementCount>({
-  get: () => {
-    const count = props.modelValue?.count === MeasurementCount.AGGREGATE && props.pieces >= 3
-      ? MeasurementCount.AGGREGATE
-      : props.modelValue?.count === MeasurementCount.CONTAINER && props.pieces >= 2
-        ? MeasurementCount.CONTAINER
-        : MeasurementCount.INDIVIDUAL
-    return useEnum(MeasurementCount).valueOf(count)
-  },
+  get: () => countOptions.value.map(([key]) => key).find(key => key === useEnum(MeasurementCount).valueOf(props.modelValue?.count)) || countOptions.value[0][0],
   set: (value: MeasurementCount) => emits(`update:modelValue`, {
     count: value,
     dimensions: value === MeasurementCount.IMMEASURABLE ? undefined : dimensions.value.map(([l, w, h]) => [l * 10, w * 10, h * 10]),
@@ -40,14 +33,25 @@ const count = computed<MeasurementCount>({
 })
 
 const countOptions = computed(() => useEnum(MeasurementCount).toTuples()
-  .filter(([key]) => key === MeasurementCount.INDIVIDUAL || (key === MeasurementCount.AGGREGATE && props.pieces >= 3) || (key === MeasurementCount.CONTAINER && props.pieces >= 2))
+  .filter(([key]) => props.pieces >= 3 || key !== MeasurementCount.AGGREGATE)
   .map<[MeasurementCount, string]>(([key, label]) => [key, key === MeasurementCount.AGGREGATE
     ? `Smallest / Largest / Average`
     : titleCased(label)]))
 
-const immeasurabilityOptions = useEnum(Immeasurabibility).toTuples().map<[Immeasurabibility, string]>(([key, label]) => [key, titleCased(label)])
+const immeasurabilityOptions = useEnum(Immeasurabibility).toTuples().map<[Immeasurabibility, string]>(([key, label]) => [key, (() => {
+  switch (key) {
+    case Immeasurabibility.SIZE:
+      return `Too small`
+    case Immeasurabibility.NUMBER:
+      return `Too many`
+    case Immeasurabibility.CONDITION:
+      return `Too fragile`
+    default:
+      return titleCased(label)
+  }
+})()])
 const immeasurableReason = computed<Immeasurabibility | undefined>({
-  get: () => props.modelValue?.reason ? Number(useEnum(Immeasurabibility).valueOf(props.modelValue?.reason)) : undefined,
+  get: () => props.modelValue?.reason ? useEnum(Immeasurabibility).valueOf(props.modelValue?.reason) : undefined,
   set: (value: Immeasurabibility | undefined) => emits(`update:modelValue`, {
     count: MeasurementCount.IMMEASURABLE,
     dimensions: [],
@@ -66,7 +70,7 @@ const dimensions = computed<Dimensions[]>({
 
 const disabled = computed(() => (count.value === MeasurementCount.INDIVIDUAL && dimensions.value.length >= props.pieces) ||
   (count.value === MeasurementCount.AGGREGATE && dimensions.value.length >= 3) ||
-    (count.value === MeasurementCount.CONTAINER && dimensions.value.length >= 1))
+  (count.value === MeasurementCount.CONTAINER && dimensions.value.length >= 1))
 
 const placeholder = computed(() => {
   const msg = (piece: string) => `Enter the ${piece} piece's dimensions (LxWxH), e.g. 2.3x4.5x12.1`

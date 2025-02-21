@@ -39,9 +39,9 @@ export enum MeasurementCount {
 
 export enum Immeasurabibility {
   OTHER = 1,
-  TOO_SMALL = 2,
-  TOO_MANY = 4,
-  TOO_FRAGILE = 8,
+  SIZE = 2,
+  NUMBER = 4,
+  CONDITION = 8,
 }
 
 export interface Place {
