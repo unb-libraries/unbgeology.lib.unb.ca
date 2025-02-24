@@ -33,6 +33,9 @@
             </a>
           </nav>
           <nav class="flex flex-col md:flex md:flex-row md:justify-end md:space-x-6" :class="collapsed ? 'hidden' : ''">
+            <a href="/browse">
+              Browse
+            </a>
             <a href="/specimens">
               Search
             </a>
