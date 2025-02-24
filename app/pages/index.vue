@@ -1,31 +1,35 @@
 <template>
-  <section class="">
-    <div class="grid grid-cols-2 gap-1 md:grid-cols-4">
-      <div class="placeholder" />
-      <div class="placeholder" />
-      <div class="placeholder" />
-      <div class="placeholder" />
-      <div class="placeholder" />
-      <div class="placeholder" />
-      <div class="placeholder" />
-      <div class="placeholder" />
+  <div class="relative size-full">
+    <div class="grid h-full grid-cols-2 gap-1 md:grid-cols-4 lg:grid-cols-6 overflow-y-hidden">
+      <div class="aspect-square bg-primary-60/20" />
+      <div class="aspect-square bg-primary-60/20" />
+      <div class="aspect-square bg-primary-60/20" />
+      <div class="aspect-square bg-primary-60/20" />
+      <div class="aspect-square bg-primary-60/20" />
+      <div class="aspect-square bg-primary-60/20" />
+      <div class="aspect-square bg-primary-60/20" />
+      <div class="aspect-square bg-primary-60/20" />
+      <div class="aspect-square bg-primary-60/20" />
+      <div class="aspect-square bg-primary-60/20" />
+      <div class="aspect-square bg-primary-60/20" />
+      <div class="aspect-square bg-primary-60/20" />
+      <div class="aspect-square bg-primary-60/20" />
+      <div class="aspect-square bg-primary-60/20" />
+      <div class="aspect-square bg-primary-60/20" />
+      <div class="aspect-square bg-primary-60/20" />
+      <div class="aspect-square bg-primary-60/20" />
+      <div class="aspect-square bg-primary-60/20" />
     </div>
-  </section>
-  <section class="container mx-auto">
-    <h1 class="my-8 text-center text-4xl">
-      UNB Earth Sciences Collection
-    </h1>
-    <p>
-      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Odio euismod lacinia at quis risus sed. Aliquet nibh praesent tristique magna sit amet purus. Elementum integer enim neque volutpat ac tincidunt vitae semper quis. Sit amet consectetur adipiscing elit duis tristique. Netus et malesuada fames ac turpis egestas. Ornare aenean euismod elementum nisi. Et malesuada fames ac turpis egestas maecenas pharetra convallis. Elementum integer enim neque volutpat ac tincidunt vitae. Blandit turpis cursus in hac habitasse platea dictumst. Ultricies leo integer malesuada nunc vel risus commodo. Gravida neque convallis a cras semper.
-    </p>
-    <p>
-      Massa ultricies mi quis hendrerit dolor magna eget est. Enim sed faucibus turpis in. Amet mattis vulputate enim nulla aliquet. Facilisi cras fermentum odio eu feugiat pretium. At ultrices mi tempus imperdiet nulla malesuada pellentesque elit. Senectus et netus et malesuada fames ac turpis egestas. Enim sit amet venenatis urna. Dictum at tempor commodo ullamcorper a lacus vestibulum. Porta nibh venenatis cras sed felis eget velit aliquet. Ornare aenean euismod elementum nisi quis. Nibh sed pulvinar proin gravida. Id velit ut tortor pretium. At consectetur lorem donec massa. Sit amet dictum sit amet justo donec enim diam. Sit amet nisl suscipit adipiscing bibendum est ultricies integer. Sed augue lacus viverra vitae congue eu. A scelerisque purus semper eget duis at tellus. Neque convallis a cras semper. Odio aenean sed adipiscing diam donec.
-    </p>
-  </section>
+    <div class="absolute z-100 flex-col space-y-8 bg-primary/60 p-8 rounded-xl size-1/2 top-1/4 left-1/4 flex justify-center items-center text-base">
+      <h1 class="text-4xl">UNB Earth Science Collections</h1>
+      <form class="flex flex-row w-full justify-center space-x-4 space-y-0" @submit.prevent.stop="navigateTo('/specimens')">
+        <input type="text" class="w-3/4 rounded-md input input-text-md">
+        <button type="submit" class="button-lg button-accent-mid">Search</button>
+    </form>
+    </div>
+  </div>
 </template>
 
-<style scoped>
-.placeholder {
-  @apply aspect-auto h-40 md:h-80 bg-primary-20 dark:bg-primary hover:bg-primary-40 dark:hover:bg-primary-60
-}
-</style>
+<script setup lang="ts">
+
+</script>
