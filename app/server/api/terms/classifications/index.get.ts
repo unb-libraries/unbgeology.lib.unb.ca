@@ -67,21 +67,15 @@ export default defineEventHandler(async (event) => {
   if (depth.length) {
     query
       .addFields({ ancestorCount: { $size: '$ancestors' } })
-      .match({ ancestorCount: depth[-1] })
+      .match({ ancestorCount: depth.at(-1) })
   }
 
-  query
+  const [{ documents: terms, total: [total = 0] }] = await query
     .sort([...sort, ['label', 1]]
       .map(([field, dir]) => [field === `id` ? `_id` : field, dir])
       .reduce((sort, [field, order]) => ({ ...sort, [field]: order }), {}))
-    .facet({
-      documents: [
-        { $skip: (Number(page) - 1) * Number(pageSize) },
-        { $limit: Number(pageSize) }],
-      total: [{ $count: `total` }] })
-    .project({ documents: 1, total: 1 })
-
-  const [{ documents: terms, total: [{ total }] }] = await query
+    .facet({ documents: [{ $skip: (page - 1) * pageSize }, { $limit: pageSize }], total: [{ $count: `count` }] })
+    .project({ documents: 1, total: { $ifNull: ["$total.count", 0]} })
 
   return {
     self: `/api/terms/classifications`,
