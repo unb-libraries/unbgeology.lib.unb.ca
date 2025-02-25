@@ -75,7 +75,13 @@
                 <dl class="flex flex-row gap-x-12 p-4 w-full">
                   <div class="w-1/2">
                     <dt class="sr-only">ID</dt>
-                    <dd class="text-sm">{{ specimen.id.toUpperCase() }}</dd>
+                    <dd class="text-sm space-x-2">
+                      <span>{{ specimen.id.toUpperCase() }}</span>
+                      <span v-if="useEnum(Status).valueOf(specimen.status) !== Status.PUBLISHED" :class="['text-xs rounded-md px-2 py-1', {
+                        'bg-yellow text-primary': useEnum(Status).valueOf(specimen.status) === Status.MIGRATED,
+                        'bg-red-light': useEnum(Status).valueOf(specimen.status) === Status.DRAFT,
+                        'bg-blue': useEnum(Status).valueOf(specimen.status) === Status.REVIEW,
+                      }]">{{ useEnum(Status).labelOf(specimen.status).toUpperCase() }}</span></dd>
                     <dt class="sr-only">Name</dt>
                     <dd class="text-xl"><a :href="`/specimens/${specimen.id}`" class="hover:underline">{{ specimen.name }}</a></dd>
                   </div>
@@ -111,7 +117,7 @@
 
 <script setup lang="ts">
 import { FilterOperator, type EntityJSONList, type Filter } from '@unb-libraries/nuxt-layer-entity'
-import type { Specimen } from '~/types/specimen'
+import { Status, type Specimen } from '~/types/specimen'
 import type { Coordinate } from '~/types/leaflet'
 import type { Unit } from '~/types/geochronology'
 
@@ -132,7 +138,7 @@ const maxAge = await (async () => {
   return data.value?.entities[0]?.start ?? 0
 })()
 
-const { entities: specimens, list, query: { page, pageSize, search, select, filter } } = await fetchEntityList<Specimen>("Specimen", { select: ['id', 'name', 'images', 'type', 'classification'] })
+const { entities: specimens, list, query: { page, pageSize, search, select, filter } } = await fetchEntityList<Specimen>("Specimen", { select: ['id', 'name', 'images', 'type', 'classification', 'status'] })
 const markers = computed(() => specimens.value.filter(({ origin }) => origin?.latitude && origin?.longitude))
 
 // Filter

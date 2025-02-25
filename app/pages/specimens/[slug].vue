@@ -1,9 +1,16 @@
 <template>
   <article class="container mx-auto flex flex-col space-y-6 pb-24 pt-12">
     <header class="ml-32">
-      <h1 class="text-2xl font-bold">
-        {{ specimen?.name }}
-      </h1>
+      <div class="inline-flex items-center space-x-4">
+        <h1 class="text-2xl font-bold">
+          {{ specimen?.name }}
+        </h1>
+        <span v-if="status !== Status.PUBLISHED" :class="['rounded-md text-xs px-2 py-1', {
+          'bg-yellow text-primary': status === Status.MIGRATED,
+          'bg-red-light': status === Status.DRAFT,
+          'bg-blue': status === Status.REVIEW,
+        }]">{{ useEnum(Status).labelOf(specimen!.status).toUpperCase() }}</span>
+      </div>
       <span class="-mt-1 block text-sm italic">#{{ specimen!.id.toUpperCase() }}</span>
     </header>
     <div class="flex w-full flex-col space-y-8 items-end">
@@ -134,7 +141,7 @@
 </template>
 
 <script setup lang="ts">
-import { Immeasurabibility, MeasurementCount, type Fossil, type Rock, type Specimen } from 'types/specimen'
+import { Immeasurabibility, MeasurementCount, Status, type Fossil, type Rock, type Specimen } from 'types/specimen'
 
 definePageMeta({
   layout: `default`,
@@ -166,4 +173,5 @@ const compositionLabels = computed(() => {
 
 const activeImage = ref(specimen?.value?.images?.entities?.length ? [specimen!.value?.images?.entities[0].self, specimen!.value?.images?.entities[0].uri] : undefined)
 const publications = computed(() => specimen.value?.publications?.entities ?? [])
+const status = computed(() => useEnum(Status).valueOf(specimen.value!.status))
 </script>
