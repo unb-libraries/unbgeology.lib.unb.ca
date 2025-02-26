@@ -1,6 +1,7 @@
 import { Enum, ObjectID } from "~/layers/mongo/server/utils/api/filter"
 import { Rank, Status } from "~/types/classification"
 import String from "~/layers/mongo/server/utils/api/filter/string"
+import Image from "~/layers/mongo/server/documentTypes/Image"
 
 export default defineMongooseEventQueryHandler(Classification.Fossil, defineEventQuery({
   parent: {
@@ -38,6 +39,42 @@ export default defineMongooseEventQueryHandler(Classification.Fossil, defineEven
         filter: false,
       },
     },
+  },
+  description: {
+    default: true,
+    sort: false,
+    filter: false,
+  },
+  image: {
+    default: true,
+    join: Image,
+    sort: false,
+    filter: false,
+    definition: {
+      definition: {
+        alt: {
+          default: true,
+          sort: false,
+          filter: false,
+        },
+        title: {
+          default: true,
+          filter: String,
+        },
+        filename: {
+          default: true,
+          select: `images.filename`,
+          sort: false,
+          filter: false,
+        },
+        status: {
+          default: true,
+          select: `images.status`,
+          sort: false,
+          filter: false,
+        },
+      },
+    }
   },
   rank: {
     default: false,

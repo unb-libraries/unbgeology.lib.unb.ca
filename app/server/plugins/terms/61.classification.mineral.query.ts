@@ -1,5 +1,6 @@
 import { String, Enum, ObjectID } from "~/layers/mongo/server/utils/api/filter"
 import { Status } from "~/types/classification"
+import Image from "~/layers/mongo/server/documentTypes/Image"
 
 export default defineMongooseEventQueryHandler(Classification.Mineral, defineEventQuery({
   parent: {
@@ -37,6 +38,42 @@ export default defineMongooseEventQueryHandler(Classification.Mineral, defineEve
       },
     },
   },
+  description: {
+      default: true,
+      sort: false,
+      filter: false,
+    },
+    image: {
+      default: true,
+      join: Image,
+      sort: false,
+      filter: false,
+      definition: {
+        definition: {
+          alt: {
+            default: true,
+            sort: false,
+            filter: false,
+          },
+          title: {
+            default: true,
+            filter: String,
+          },
+          filename: {
+            default: true,
+            select: `images.filename`,
+            sort: false,
+            filter: false,
+          },
+          status: {
+            default: true,
+            select: `images.status`,
+            sort: false,
+            filter: false,
+          },
+        },
+      }
+    },
   composition: {
     default: false,
     filter: String,

@@ -1,4 +1,5 @@
 import { type Term as ITerm, renderTerm } from "~/layers/mongo/server/documentTypes/Term"
+import type { Image } from "~/layers/mongo/server/documentTypes/Image"
 import { Hierarchical } from "~/layers/mongo/server/utils/mixins"
 import { renderHierarchical } from "~/layers/mongo/server/utils/mixins/Hierarchical"
 import { EntityFieldTypes } from "~/layers/mongo/types/entity"
@@ -12,7 +13,9 @@ import {
   Status,
 } from "~/types/classification"
 
-export type Classification<T extends IClassification = IClassification> = ITerm & T
+export type Classification<T extends IClassification = IClassification> = ITerm & Omit<T, "image"> & {
+  image: Image
+}
 
 const State = Stateful({
   values: Status,
@@ -23,6 +26,8 @@ export function renderClassification(doc: Classification) {
   return {
     ...renderTerm(doc),
     ...renderHierarchical(doc, renderClassification),
+    description: doc.description,
+    image: doc.image && renderImageFile(doc.image),
     rank: doc.rank && useEnum(Rank).labelOf(doc.rank).toLowerCase(),
     composition: doc.type === `Term.CMineral` ? doc.composition : undefined,
     type: doc.type && `classification/${doc.type.split(`.`).at(-1).slice(1).toLowerCase()}`,
@@ -44,7 +49,18 @@ const MxAuthorize = <T extends IClassification>(type: string) => Authorize<Class
 })
 
 const defineClassificationSchema = <T extends IClassification = IClassification>(type: string, definition: DocumentSchema<Classification<T>>[`paths`]) =>
-  defineDocumentSchema<Classification<T>>(definition)
+  defineDocumentSchema<Classification<T>>({
+      description: {
+        type: EntityFieldTypes.String,
+        required: false,
+      },
+      image: {
+        type: EntityFieldTypes.ObjectId,
+        ref: `File.Image`,
+        required: false,
+      },
+      ...definition,
+    })
     .mixin(Hierarchical<ITerm & IClassification>({ sort: `label` }))
     .mixin(State)
     .mixin(MxAuthorize<T>(type))

@@ -1,4 +1,5 @@
 import type { Term, Hierarchical, Stateful } from "@unb-libraries/nuxt-layer-entity"
+import type { Image } from "@unb-libraries/nuxt-layer-entity"
 
 export enum Status {
   MIGRATED = 1,
@@ -16,8 +17,11 @@ export enum Rank {
   ORDERS = 64,
 }
 
-export type Classification<T extends object = {}> = Term & Hierarchical<Classification<T>> & Stateful<typeof Status> & T
-export type ClassificationFormData<T extends object = {}> = Pick<Classification<T>, `label` | `parent` | `type`> & Pick<Partial<Classification>, `status`>
+export type Classification<T extends object = {}> = {
+  description?: string
+  image: Image
+} & Term & Hierarchical<Classification<T>> & Stateful<typeof Status> & T
+export type ClassificationFormData<T extends object = {}> = Pick<Classification<T>, `label` | `parent` | `description` | `type`> & Pick<Partial<Classification>, `status`>
 
 export type Fossil = Classification<{ rank: Rank }>
 export type FossilFormData = ClassificationFormData & Pick<Fossil, `rank`>
