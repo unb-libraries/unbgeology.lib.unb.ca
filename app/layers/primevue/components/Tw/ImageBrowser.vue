@@ -43,6 +43,7 @@ const props = defineProps<{
   maxFiles?: number
   maxFileSize?: number
   maxTotalFileSize?: number
+  single?: boolean
 }>()
 
 const emits = defineEmits<{
@@ -70,7 +71,10 @@ function isSelected(image: Image) {
 }
 
 function onSelect(image: Image) {
-  if (!selection[image.self]) {
+  if (!props.single && !selection[image.self]) {
+    selection[image.self] = image
+  } else if (props.single && !selection[image.self]) {
+    Object.keys(selection).forEach(key => delete selection[key])
     selection[image.self] = image
   } else {
     delete selection[image.self]
@@ -115,7 +119,7 @@ function onClickThumbnail(image: Image) {
                 onSelect(image)
                 unstackContent()
               }, [`stop`, `prevent`])}>
-                { selected ? `Unselect` : `Select` }
+              {selected ? `Unselect` : `Select`}
             </button>
           </div>,
       }}

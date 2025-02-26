@@ -41,6 +41,7 @@ const props = defineProps<{
   maxFileSize?: number
   maxTotalFileSize?: number
   maxFiles?: number
+  single?: boolean
 }>()
 
 const parentAttrs = inject<Partial<{ id: string, name: string }>>(`attrs`)
@@ -59,6 +60,7 @@ const onClickBrowse = () => {
       maxFileSize={props.maxFileSize}
       maxTotalFileSize={props.maxTotalFileSize}
       maxFiles={props.maxFiles}
+      single={props.single}
       class={`sm:min-w-[480px] md:min-w-[560px] lg:min-w-[720px] xl:min-w-[960px] 2xl:min-w-[1080px]`}
       onSelect={onSelect}
       onCancel={unstackContent}
