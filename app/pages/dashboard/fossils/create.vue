@@ -20,8 +20,8 @@ definePageMeta({
 const { create } = useEntityType<Classification, FossilFormData>(`Term`)
 const returnUrl = `/dashboard/fossils`
 
-async function onSave({ label, parent, type, rank }: FossilFormData) {
-  await create({ label, parent, type, rank })
+async function onSave({ label, parent, type, description, image, rank }: FossilFormData) {
+  await create({ label, parent, type, description, image, rank })
   navigateTo(returnUrl)
 }
 

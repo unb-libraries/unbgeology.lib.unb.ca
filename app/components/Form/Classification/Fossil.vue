@@ -6,6 +6,19 @@
     <TwFormField label="Parent">
       <PvInputDropdown v-model="parent" :options="parents" option-field="self" label-field="label" class="input-select-lg" />
     </TwFormField>
+    <TwFormField label="Description">
+      <TwInputTextArea v-model="description" class="input form-input-textarea" />
+    </TwFormField>
+    <TwFormField label="Image">
+      <TwInputImage
+        v-model="images"
+        :max-files="maxFiles"
+        :max-file-size="maxFileSize"
+        :max-total-file-size="maxTotalFileSize"
+        :single="true"
+        class="w-full"
+      />
+    </TwFormField>
     <TwFormField label="Rank">
       <PvInputDropdown v-model="rank" :options="ranks" class="input-select-lg" />
     </TwFormField>
@@ -25,8 +38,12 @@ const emits = defineEmits<{
   cancel: []
 }>()
 
+const { maxFiles, maxFileSize, maxTotalFileSize } = useRuntimeConfig().public
+
 const label = ref(props.classification?.label ?? ``)
 const parent = ref(props.classification?.parent?.self ?? ``)
+const description = ref(props.classification?.description)
+const images = ref(props.classification?.image ? [props.classification?.image] : [])
 const rank = ref(props.classification?.rank ?? ``)
 
 const type = `classification/fossil`
@@ -46,6 +63,8 @@ function onSave() {
   emits(`save`, {
     label: label.value || (props.classification?.label ? null : undefined),
     parent: parent.value || (props.classification?.parent ? null : undefined),
+    description: description.value || (props.classification?.description ? null : undefined),
+    image: images.value?.[0].self || (props.classification?.image?.self ? null : undefined),
     rank: rank.value || (props.classification?.rank ? null : undefined),
     type: `classification/fossil`,
   })

@@ -20,8 +20,8 @@ definePageMeta({
 const { create } = useEntityType<Classification, MineralFormData>(`Term`)
 const returnUrl = `/dashboard/minerals`
 
-async function onSave({ label, parent, type, composition }: MineralFormData) {
-  await create({ label, parent, type, composition })
+async function onSave({ label, parent, type, description, image, composition }: MineralFormData) {
+  await create({ label, parent, type, description, image, composition })
   navigateTo(returnUrl)
 }
 

@@ -20,15 +20,15 @@ definePageMeta({
 })
 
 const { fetchBy } = useEntityType<Classification, FossilFormData>(`Term`)
-const { entity: classification, update } = await fetchBy({ slug: slug as string, type: `classification/fossil` }, { select: [`label`, `parent`, `rank`] })
+const { entity: classification, update } = await fetchBy({ slug: slug as string, type: `classification/fossil` }, { select: [`label`, `parent`, `description`, `image`, `rank`] })
 if (!classification.value) {
   showError(`Fossil not found.`)
 }
 
 const returnUrl = `/dashboard/fossils`
 
-async function onSave({ label, parent, type, rank }: Classification) {
-  await update({ label, parent, type, rank })
+async function onSave({ label, parent, type, description, image, rank }: Classification) {
+  await update({ label, parent, type, description, image, rank })
   navigateTo(returnUrl)
 }
 

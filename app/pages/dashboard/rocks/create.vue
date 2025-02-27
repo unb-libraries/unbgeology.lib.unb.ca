@@ -20,8 +20,8 @@ definePageMeta({
 const { create } = useEntityType<Classification, RockFormData>(`Term`)
 const returnUrl = `/dashboard/rocks`
 
-async function onSave({ label, parent, type }: RockFormData) {
-  await create({ label, parent, type })
+async function onSave({ label, parent, description, image, type }: RockFormData) {
+  await create({ label, parent, description, image, type })
   navigateTo(returnUrl)
 }
 

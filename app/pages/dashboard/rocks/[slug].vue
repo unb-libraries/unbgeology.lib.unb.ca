@@ -20,15 +20,17 @@ definePageMeta({
 })
 
 const { fetchBy } = useEntityType<Classification, RockFormData>(`Term`)
-const { entity: classification, update } = await fetchBy({ slug: slug as string, type: `classification/rock` }, { select: [`label`, `parent`] })
+const { entity: classification, update } = await fetchBy({ slug: slug as string, type: `classification/rock` }, { select: [`label`, `parent`, `description`, `image`] })
 if (!classification.value) {
   showError(`Rock not found.`)
 }
 
+// console.log("classification", classification.value)
+
 const returnUrl = `/dashboard/rocks`
 
-async function onSave({ label, parent, type }: Classification) {
-  await update({ label, parent, type })
+async function onSave({ label, parent, description, image, type }: Classification) {
+  await update({ label, parent, type, description, image })
   navigateTo(returnUrl)
 }
 

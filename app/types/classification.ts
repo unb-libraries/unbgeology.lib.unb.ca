@@ -21,7 +21,7 @@ export type Classification<T extends object = {}> = {
   description?: string
   image: Image
 } & Term & Hierarchical<Classification<T>> & Stateful<typeof Status> & T
-export type ClassificationFormData<T extends object = {}> = Pick<Classification<T>, `label` | `parent` | `description` | `type`> & Pick<Partial<Classification>, `status`>
+export type ClassificationFormData<T extends object = {}> = Pick<Classification<T>, `label` | `parent` | `description` | `image` | `type`> & Pick<Partial<Classification>, `status`>
 
 export type Fossil = Classification<{ rank: Rank }>
 export type FossilFormData = ClassificationFormData & Pick<Fossil, `rank`>
