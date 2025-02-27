@@ -49,30 +49,33 @@ export default defineMongooseEventQueryHandler(Classification.Mineral, defineEve
       sort: false,
       filter: false,
       definition: {
-        definition: {
-          alt: {
-            default: true,
-            sort: false,
-            filter: false,
-          },
-          title: {
-            default: true,
-            filter: String,
-          },
-          filename: {
-            default: true,
-            select: `images.filename`,
-            sort: false,
-            filter: false,
-          },
-          status: {
-            default: true,
-            select: `images.status`,
-            sort: false,
-            filter: false,
-          },
+        id: {
+          default: true,
+          sort: false,
+          filter: false,
         },
-      }
+        alt: {
+          default: true,
+          sort: false,
+          filter: false,
+        },
+        title: {
+          default: true,
+          filter: String,
+        },
+        filename: {
+          default: true,
+          select: `images.filename`,
+          sort: false,
+          filter: false,
+        },
+        status: {
+          default: true,
+          select: `images.status`,
+          sort: false,
+          filter: false,
+        },
+      },
     },
   composition: {
     default: false,

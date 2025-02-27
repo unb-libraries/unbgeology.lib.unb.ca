@@ -50,6 +50,7 @@ const MxAuthorize = <T extends IClassification>(type: string) => Authorize<Class
 
 const defineClassificationSchema = <T extends IClassification = IClassification>(type: string, definition: DocumentSchema<Classification<T>>[`paths`]) =>
   defineDocumentSchema<Classification<T>>({
+      ...definition,
       description: {
         type: EntityFieldTypes.String,
         required: false,
@@ -59,7 +60,6 @@ const defineClassificationSchema = <T extends IClassification = IClassification>
         ref: `File.Image`,
         required: false,
       },
-      ...definition,
     })
     .mixin(Hierarchical<ITerm & IClassification>({ sort: `label` }))
     .mixin(State)
