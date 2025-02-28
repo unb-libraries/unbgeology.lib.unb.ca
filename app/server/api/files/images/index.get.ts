@@ -27,11 +27,12 @@ export default defineEventHandler(async (event) => {
   const fields = [...selectFields, ...filterFields].filter((f, i, arr) => arr.indexOf(f) === i)
   if (fields.find(f => f.startsWith(`specimens`))) {
     query.lookup({ from: 'specimens', localField: '_id', foreignField: 'images', as: 'specimens' })
-    query.unwind(`$specimens`)
+    query.unwind({ path: `$specimens`, preserveNullAndEmptyArrays: true })
     query.lookup({ from: 'terms', localField: 'specimens.classification', foreignField: '_id', as: 'specimens.classification' })
-    query.unwind(`$specimens.classification`)
+    query.unwind({ path: `$specimens.classification`, preserveNullAndEmptyArrays: true })
+    
     query.group({ _id: '$_id', merged: { $mergeObjects: '$$ROOT' }, specimens: { $push: '$specimens' } })
-    query.addFields({ 'merged.specimens': `$specimens` })
+    query.addFields({ 'merged.specimens': { $filter: { input: '$specimens', as: 'specimen', cond: { $ne: ['$$specimen', {}] } } } })
     query.replaceRoot('$merged')
   }
 
@@ -42,16 +43,16 @@ export default defineEventHandler(async (event) => {
 
   const specimenMinFilter = getFilter(`specimens.total`, FilterOperator.LESS)(filter)
   if (specimenMinFilter.length) {
-    query.addFields({ specimenCount: { $size: { $ifNull: [`$specimens`, []] } } })
-    query.match({ specimenCount: { $lte: Number(specimenMinFilter[0]) } })
+    query.addFields({ specimenCount: { $size: `$specimens` } })
+    query.match({ specimenCount: Math.min(...specimenMinFilter.map(Number)) })
   }
   
   const specimenMaxFilter = getFilter(`specimens.total`, FilterOperator.GREATER)(filter)
   if (specimenMaxFilter.length) {
     query.addFields({ specimenCount: { $size: { $ifNull: [`$specimens`, []] } } })
-    query.match({ specimenCount: { $gte: Number(specimenMaxFilter[0]) } })
+    query.match({ specimenCount: { $gte: Number(Math.max(...specimenMaxFilter)) } })
   }
-  
+
   const [{ documents: images, total: [total = 0] }] = await query
     .sort([...sort, ['uploadName', 1]]
       .map(([field, dir]) => [field === `id` ? `_id` : field === `filename` ? `uploadName` : field, dir])
