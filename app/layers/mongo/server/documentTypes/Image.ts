@@ -1,4 +1,4 @@
-import { EntityFieldTypes } from "../../types/entity"
+import { EntityFieldTypes } from '../../types/entity'
 import { type Entity, type Image as ImageEntity, FileState } from "@unb-libraries/nuxt-layer-entity"
 import FileBase, { type File, Mimetyped, renderFile } from "./FileBase"
 
@@ -9,6 +9,7 @@ export function renderImageFile(image: Image) {
     ...renderFile(image),
     alt: image.alt,
     title: image.title,
+    type: `image`,
   }
 }
 
