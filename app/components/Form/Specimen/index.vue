@@ -65,6 +65,7 @@
         :max-files="maxFiles"
         :max-file-size="maxFileSize"
         :max-total-file-size="maxTotalFileSize"
+        :filter="[[`Unassigned`, [`specimens.total`, FilterOperator.LESS, '0']]]"
         class="w-full"
       />
     </TwFormField>
@@ -82,6 +83,7 @@
 </template>
 
 <script setup lang="tsx">
+import { FilterOperator } from '@unb-libraries/nuxt-layer-entity';
 import { type Specimen, Legal } from 'types/specimen'
 
 const props = defineProps<{
