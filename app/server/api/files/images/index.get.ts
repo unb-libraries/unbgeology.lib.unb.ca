@@ -78,7 +78,7 @@ export default defineEventHandler(async (event) => {
       .map(image => Object
         .fromEntries(Object
           .entries(image)
-            .filter(([key]) => !selectFields.length || selectFields.includes(key))) as EImage),
+            .filter(([key]) => key === 'self' || !selectFields.length || selectFields.includes(key))) as EImage),
     ...usePaginator({ total }),
   } as EntityJSONList<EImage & { specimens: EntityJSONList<Specimen> }>
 })
