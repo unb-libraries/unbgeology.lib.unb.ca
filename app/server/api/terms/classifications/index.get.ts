@@ -2,7 +2,7 @@ import { type EntityJSONList, FilterOperator } from "@unb-libraries/nuxt-layer-e
 import type { Classification } from "~/server/documentTypes/Classification"
 import { getEntityQueryParams, getFilter } from "~/server/utils/api/query"
 
-const queryFields = [`self`, `label`, `rank`, `composition`, `parents`, `parents.id`, `parents.label`, `depth`, `status`, `created`, `updated`, `type`]
+const queryFields = [`self`, `label`, `rank`, `description`, `image`, `composition`, `parents`, `parents.id`, `parents.label`, `depth`, `status`, `created`, `updated`, `type`]
 
 export default defineEventHandler(async (event) => {
   const { page, pageSize, search, select, sort, filter } = getEntityQueryParams(event, queryFields)
@@ -44,6 +44,16 @@ export default defineEventHandler(async (event) => {
       as: 'ancestors'
     })
   }
+  
+  if (fields.filter(f => f.startsWith(`image`)).length) {
+    query.lookup({
+      from: 'files',
+      localField: 'image',
+      foreignField: '_id',
+      as: 'image'
+    })
+    query.unwind({ path: "$image", preserveNullAndEmptyArrays: true })
+  }
 
   const label = getFilter(`label`, FilterOperator.EQUALS | FilterOperator.MATCH)(filter)
   if (label.length) {
@@ -71,9 +81,9 @@ export default defineEventHandler(async (event) => {
   }
 
   const [{ documents: terms, total: [total = 0] }] = await query
-    .sort([...sort, ['label', 1]]
-      .map(([field, dir]) => [field === `id` ? `_id` : field, dir])
-      .reduce((sort, [field, order]) => ({ ...sort, [field]: order }), {}))
+  .sort([...sort, ['label', 1]]
+    .map(([field, dir]) => [field === `id` ? `_id` : field, dir])
+    .reduce((sort, [field, order]) => ({ ...sort, [field]: order }), {}))
     .facet({ documents: [{ $skip: (page - 1) * pageSize }, { $limit: pageSize }], total: [{ $count: `count` }] })
     .project({ documents: 1, total: { $ifNull: ["$total.count", 0]} })
 
@@ -81,7 +91,10 @@ export default defineEventHandler(async (event) => {
     self: `/api/terms/classifications`,
     entities: terms
       .map(renderClassification)
-      .map(term => ({ ...term, parents: { self: `${term.self}/parents`, ...term.parents } }))
+      .map(term => ({
+        ...term,
+        image: term.image && renderImageFile(term.image),
+        parents: { self: `${term.self}/parents`, ...term.parents } }))
       .map(term => Object
         .fromEntries(Object
           .entries(term)
