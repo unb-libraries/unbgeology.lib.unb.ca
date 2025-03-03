@@ -30,7 +30,7 @@
 </template>
 
 <script setup lang="tsx">
-import { type Image } from '@unb-libraries/nuxt-layer-entity'
+import { FilterOperator, type Filter, type Image } from '@unb-libraries/nuxt-layer-entity'
 import { TwImageBrowser, TwLightbox, IconCancel } from '#components'
 
 const images = defineModel<Image[]>({ default: [] })
@@ -42,6 +42,7 @@ const props = defineProps<{
   maxTotalFileSize?: number
   maxFiles?: number
   single?: boolean
+  filter?: [string, Filter][]
 }>()
 
 const parentAttrs = inject<Partial<{ id: string, name: string }>>(`attrs`)
@@ -61,6 +62,7 @@ const onClickBrowse = () => {
       maxTotalFileSize={props.maxTotalFileSize}
       maxFiles={props.maxFiles}
       single={props.single}
+      filter={props.filter}
       class={`sm:min-w-[480px] md:min-w-[560px] lg:min-w-[720px] xl:min-w-[960px] 2xl:min-w-[1080px]`}
       onSelect={onSelect}
       onCancel={unstackContent}

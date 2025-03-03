@@ -2,17 +2,14 @@
   <form class="flex h-full flex-col" @submit.prevent="onSubmit">
     <div class="flex justify-between">
       <div class="border-primary-60/20 bg-primary-60/20 inline-flex w-fit rounded-md border">
-        <div :class="[`rounded-l-md px-4 py-1 text-center`, { 'bg-accent-mid rounded-r-md': tab === `all`, 'hover:cursor-pointer': tab !== `all` }]" @click.prevent.stop="tab = `all`">
-          All
-        </div>
-        <div :class="[`rounded-r-md px-4 py-1 text-center`, { 'bg-accent-mid rounded-l-md': tab === `selected`, 'hover:cursor-pointer': tab !== `selected` }]" @click.prevent.stop="tab = `selected`">
-          Selected ({{ Object.values(selection).length }})
+        <div v-for="tab in tabs" :class="[`rounded-l-md px-4 py-1 text-center`, { 'bg-accent-mid rounded-r-md': tab === activeTab, 'hover:cursor-pointer': tab !== activeTab }]" @click.prevent.stop="onChangeTab(tab)">
+          {{ tab }}<template v-if="tab === 'Selected'"> ({{ Object.values(selection).length }})</template>
         </div>
       </div>
-      <TwPageIndex :page="page" :size="5" :total="pages" @change="newPage => page = newPage" />
+      <TwPageIndex :page="page" :size="5" :total="Math.ceil((displayedImageList?.total ?? 0) / pageSize)" @change="newPage => page = newPage" />
     </div>
-    <div class="border-primary-60/20 h-64 w-full grow overflow-y-scroll border p-2">
-      <TwImageGallery v-if="displayedImages.length" :images="displayedImages" thumbnail-wrapper-class="group" @click-thumbnail="image => !isSelected(image) && onSelect(image)">
+    <div class="relative border-primary-60/20 h-64 w-full grow overflow-y-scroll border p-2">
+      <TwImageGallery v-if="displayedImageList.entities?.length" :images="displayedImageList.entities" thumbnail-wrapper-class="group" @click-thumbnail="image => !isSelected(image) && onSelect(image)">
         <template #overlay="{ image }">
           <button class="hidden group-hover:block" @click.prevent.stop="onClickThumbnail(image)">
             <IconMaximize class="bg-primary stroke-1.5 absolute bottom-2 right-2 size-8 rounded-md stroke-current p-1 opacity-50 hover:opacity-100" />
@@ -23,6 +20,9 @@
           </div>
         </template>
       </TwImageGallery>
+      <div v-show="pending" class="absolute bg-primary/70 top-0 left-0 size-full justify-center items-center flex">
+        <IconSpinner class="size-12 animate-spin fill-none stroke-current stroke-2" />
+      </div>
     </div>
     <TwFileUpload @upload="files => onUpload(files as Image[])" @error="onUploadError" />
     <div class="flex flex-none flex-row space-x-2">
@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="tsx">
-import { type Image, FilterOperator } from '@unb-libraries/nuxt-layer-entity'
+import { type EntityJSONList, type Filter, type Image } from '@unb-libraries/nuxt-layer-entity'
 import { IconMaximize, IconCheck, IconCancel, TwLightbox } from '#components'
 
 const props = defineProps<{
@@ -44,6 +44,7 @@ const props = defineProps<{
   maxFileSize?: number
   maxTotalFileSize?: number
   single?: boolean
+  filter?: [string, Filter[]][]
 }>()
 
 const emits = defineEmits<{
@@ -54,17 +55,35 @@ const emits = defineEmits<{
 const { createToast } = useToasts()
 const { stackContent, unstackContent } = useModal()
 
-const { list, entities: images, query: { page, pageSize } } = await fetchEntityList<Image>(`File`, {
-  filter: [[`type`, FilterOperator.EQUALS, `image`]],
-  sort: [`-created`],
-  select: [`uri`],
-  pageSize: 100,
+const page = ref(1)
+const pageSize = 100
+
+const tabs = computed(() => [`All`, 'Selected', ...(props.filter?.map(([tab]) => tab) ?? [])])
+const activeTab = ref<string>('All')
+
+const selection = reactive<Record<string, Image>>(Object.fromEntries(props.selection?.map(image => [image.self, image]) ?? []))
+const filter = computed(() => props.filter?.find(([tab]) => tab === activeTab.value)?.[1]?.join(':'))
+const { data: imageList, pending } = await useFetch<EntityJSONList<Image>>(`/api/files/images`, { query: { filter, select: 'uri', sort: '-created', page, pageSize } })
+const displayedImageList = computed<EntityJSONList<Image>>(() => {
+  if (activeTab.value !== 'Selected') {
+    return imageList.value ?? { self: '/api/files/images', entities: [], page: 1, pageSize, total: 0, nav: {} }
+  } else {
+    const images = Object.values(selection)
+    return {
+      self: '/api/files/images',
+      entities: images.slice((page.value - 1) * pageSize, page.value * pageSize),
+      page: page.value,
+      pageSize,
+      total: images.length,
+      nav: {},
+    }
+  }
 })
 
-const tab = ref<`selected` | `all`>(`all`)
-const pages = computed(() => Math.ceil((list.value?.total ?? 0) / pageSize.value))
-const selection = reactive<Record<string, Image>>(Object.fromEntries(props.selection?.map(image => [image.self, image]) ?? []))
-const displayedImages = computed(() => tab.value === `all` ? images.value : Object.values(selection))
+function onChangeTab(tab: string) {
+  activeTab.value = tab
+  page.value = 1
+}
 
 function isSelected(image: Image) {
   return selection[image.self] !== undefined
