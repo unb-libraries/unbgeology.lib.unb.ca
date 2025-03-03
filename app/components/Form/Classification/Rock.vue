@@ -16,6 +16,10 @@
         :max-file-size="maxFileSize"
         :max-total-file-size="maxTotalFileSize"
         :single="true"
+        :filter="[
+          classification && [classification?.label, [`specimens.classification`, FilterOperator.EQUALS, classification?.self]],
+          ['Unassigned', [`specimens.total`, FilterOperator.LESS, '0']],
+        ].filter(Boolean)"
         class="w-full"
       />
     </TwFormField>
