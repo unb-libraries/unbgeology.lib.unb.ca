@@ -3,8 +3,12 @@
     <div class="p-4">
       <div class="container mx-auto flex flex-col justify-between text-lg md:flex-row">
         <div class="flex flex-row justify-between">
-          <a class="self-center" href="/" @click="collapsed = true">
-            <span>UNB Earth Sciences Collections</span>
+          <a class="flex h-12" href="/" @click="collapsed = true">
+            <IconUNB class="h-full dark:fill-white stroke-none pr-2 border-r-2 border-white" />
+            <div class="text-[1.5rem] leading-6 pl-2 h-full items-between text-white">
+              Earth Sciences<br>
+              Collections
+            </div>
           </a>
           <div class="cursor-pointer md:hidden" @click="collapsed = !collapsed">
             <svg
