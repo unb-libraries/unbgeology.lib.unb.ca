@@ -55,6 +55,11 @@ export default defineEventHandler(async (event) => {
     query.unwind({ path: "$image", preserveNullAndEmptyArrays: true })
   }
 
+  const idFilter = getFilter(`self`, FilterOperator.EQUALS)(filter).map(self => parseObjectID(self.split(`/`).at(-1)))
+  if (idFilter.length) {
+    query.match({ _id: idFilter.length <= 1 ? idFilter[0] : { $in: idFilter } })
+  }
+
   const label = getFilter(`label`, FilterOperator.EQUALS | FilterOperator.MATCH)(filter)
   if (label.length) {
     const match = getFilter(`label`, FilterOperator.MATCH)(filter)
