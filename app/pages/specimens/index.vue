@@ -9,10 +9,10 @@
       <button class="bg-base justify-center items-center flex xl:hidden hover:border-accent-light border rounded-md border-primary-60 aspect-square dark:bg-primary flex-none cursor-pointer" @click.prevent.stop="onToggleFilters">
         <IconFilter class="fill-none stroke-current size-6 stroke-1.5 flex" />
       </button>
-      <button v-show="viewMode === 'map'" class="bg-base justify-center hover:border-accent-light items-center flex border rounded-md border-primary-60 aspect-square dark:bg-primary flex-none cursor-pointer" @click.prevent.stop="onSwitchViewMode('list')">
+      <button v-show="mode === 'map'" class="bg-base justify-center hover:border-accent-light items-center flex border rounded-md border-primary-60 aspect-square dark:bg-primary flex-none cursor-pointer" @click.prevent.stop="onSwitchViewMode('list')">
         <IconList class="fill-none stroke-current size-6 stroke-1.5 flex" />
       </button>
-      <button v-show="viewMode === 'list'" class="bg-base justify-center items-center flex hover:border-accent-light border rounded-md border-primary-60 aspect-square dark:bg-primary flex-none cursor-pointer" @click.prevent.stop="onSwitchViewMode('map')">
+      <button v-show="mode === 'list'" class="bg-base justify-center items-center flex hover:border-accent-light border rounded-md border-primary-60 aspect-square dark:bg-primary flex-none cursor-pointer" @click.prevent.stop="onSwitchViewMode('map')">
         <IconMap class="fill-none stroke-current size-6 stroke-1.5 flex" />
       </button>
     </div>
@@ -63,7 +63,7 @@
       </div>
       <div class="w-full xl:w-4/5 h-full overflow-y-scroll">
         <KeepAlive>
-          <ul v-if="viewMode === 'list' && list?.total" class="space-y-2">
+          <ul v-if="mode === 'list' && list?.total" class="space-y-2">
             <li v-for="specimen in specimens" :key="specimen.self" class="bg-primary-20 dark:bg-primary-60">
               <div class="flex flex-row">
                 <div class="h-20 aspect-square bg-primary-40 dark:bg-primary-20 flex justify-center items-center">
@@ -97,7 +97,7 @@
               </div>
             </li>
           </ul>
-          <div v-else-if="viewMode === 'list'" class="flex justify-center items-center h-full bg-primary-60">
+          <div v-else-if="mode === 'list'" class="flex justify-center items-center h-full bg-primary-60">
             <span class="text-2xl">No specimens found</span>
           </div>
           <LeafletMap v-else :center="mapCenter" class="h-full" @ready="initMap" @drag="onDragMap" @zoom="onZoomMap">
@@ -111,7 +111,7 @@
         </KeepAlive>
       </div>
     </div>
-    <TwPageIndex v-if="viewMode === 'list'" :page="page" :total="Math.ceil((list?.total ?? 0) / pageSize)" :size="10" @change="(index) => { page = index }" class="flex justify-end flex-none w-full" />
+    <TwPageIndex v-if="mode === 'list'" :page="page" :total="Math.ceil((list?.total ?? 0) / pageSize)" :size="10" @change="(index) => { page = index }" class="flex justify-end flex-none w-full" />
   </div>
 </template>
 
@@ -126,7 +126,8 @@ definePageMeta({
   name: 'Search',
 })
 
-const viewMode = ref<'list' | 'map'>('list')
+const { query: q } = useRoute()
+const mode = ref<'list' | 'map'>(['list', 'map'].find(mode => mode === (Array.isArray(q.mode) ? q.mode.at(-1) : q.mode)) as 'list' | 'map' ?? 'list')
 const mapCenter = ref<Coordinate>([46.65848709787655, -66.35685870803573]) // Initially center on NB
 const mapBounds = ref<[Coordinate, Coordinate]>([[0, 0], [0, 0]])
 const categoriesCollapsed = ref(false)
@@ -138,14 +139,27 @@ const maxAge = await (async () => {
   return data.value?.entities[0]?.start ?? 0
 })()
 
-const { entities: specimens, list, query: { page, pageSize, search, select, filter } } = await fetchEntityList<Specimen>("Specimen", { select: ['id', 'name', 'images', 'type', 'classification', 'status'] })
+const { entities: specimens, list, query: { page, pageSize, search, select, filter } } = await fetchEntityList<Specimen>("Specimen", {
+  select: ['id', 'name', 'images', 'type', 'classification', 'status'],
+  page: (Array.isArray(q.page) ? Number(q.page.at(-1)) : q.page) ?? 1,
+  filter: (Array.isArray(q.filter) ? q.filter : [q.filter].filter(Boolean)).map(filter => filter?.split(':')),
+})
 const markers = computed(() => specimens.value.filter(({ origin }) => origin?.latitude && origin?.longitude))
+
+const updateQuery = () => useRouter().replace({ query: { mode: mode.value, search: search.value, page: page.value, filter: filter.value.filter(Boolean).map(f => f.join(':')) } })
+watch(page, updateQuery)
+watch(mode, updateQuery)
+watch(search, updateQuery)
+watch(filter, updateQuery)
 
 // Filter
 const categories = computed({
-  get: () => (filter.value
-    ?.filter(([field, op]) => field === 'type' && op === FilterOperator.EQUALS) ?? [])
-    .map(([, , value]) => Array.isArray(value) ? value : [value]).flat(),
+  get: () => {
+    return filter.value
+      ?.filter(([field, op]) => field === 'type' && Number(useEnum(FilterOperator).valueOf(op)) === FilterOperator.EQUALS)
+      ?.map(([, , value]) => Array.isArray(value) ? value : [value])
+      ?.flat() ?? []
+  },
   set: (category: string[]) => filter.value = [
     ...filter.value.filter(([field]) => field !== 'type'),
     ...category.map(category => ['type', FilterOperator.EQUALS, category] as Filter)
@@ -177,9 +191,9 @@ function onToggleFilters() {
   publicAccessCollapsed.value = !publicAccessCollapsed.value
 }
 
-function onSwitchViewMode(mode: 'list' | 'map') {
-  viewMode.value = mode
-  if (mode === 'map') {
+function onSwitchViewMode(newMode: 'list' | 'map') {
+  mode.value = newMode
+  if (newMode === 'map') {
     select.value = [...select.value, 'origin']
     mapBounds.value = [...mapBounds.value]
   } else {
