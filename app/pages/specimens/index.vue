@@ -83,7 +83,7 @@
                         'bg-blue': useEnum(Status).valueOf(specimen.status) === Status.REVIEW,
                       }]">{{ useEnum(Status).labelOf(specimen.status).toUpperCase() }}</span></dd>
                     <dt class="sr-only">Name</dt>
-                    <dd class="text-xl"><a :href="`/specimens/${specimen.id}`" class="hover:underline">{{ specimen.name }}</a></dd>
+                    <dd class="text-xl"><a :href="`/specimens/${specimen.id}`" class="hover:underline">{{ specimen.name ?? 'Unknown' }}</a></dd>
                   </div>
                   <div class="w-1/6">
                     <dt class="text-sm">Category</dt>

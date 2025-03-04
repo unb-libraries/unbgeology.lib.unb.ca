@@ -3,7 +3,7 @@
     <header class="ml-32">
       <div class="inline-flex items-center space-x-4">
         <h1 class="text-2xl font-bold">
-          {{ specimen?.name }}
+          {{ specimen?.name ?? 'Unknown' }}
         </h1>
         <span v-if="status !== Status.PUBLISHED" :class="['rounded-md text-xs px-2 py-1', {
           'bg-yellow text-primary': status === Status.MIGRATED,
@@ -37,11 +37,12 @@
           <!-- Classification -->
           <div class="grid grid-cols-2 lg:grid-cols-1 gap-x-4">
             <dt class="text-end lg:text-start text-primary-40 uppercase font-bold">Classification</dt>
-            <dd>
+            <dd v-if="classificationLabels.length">
               <ul v-for="label in classificationLabels" :key="label">
                 <li>{{ label }}</li>
               </ul>
             </dd>
+            <dd v-else>Not specified</dd>
           </div>
           <!-- Date -->
           <div class="grid grid-cols-2 lg:grid-cols-1 gap-x-4">
@@ -51,11 +52,12 @@
           <!-- Composition -->
           <div class="grid grid-cols-2 lg:grid-cols-1 gap-x-4">
             <dt class="text-end lg:text-start text-primary-40 uppercase font-bold">Composition</dt>
-            <dd>
+            <dd v-if="compositionLabels.length">
               <ul v-for="label in compositionLabels" :key="label">
                 <li>{{ label }}</li>
               </ul>
             </dd>
+            <dd v-else>Not specified</dd>
           </div>
           <!-- Age -->
           <div class="grid grid-cols-2 lg:grid-cols-1 gap-x-4">
@@ -70,7 +72,8 @@
           <!-- Pieces -->
           <div class="grid grid-cols-2 lg:grid-cols-1 gap-x-4">
             <dt class="text-end lg:text-start text-primary-40 uppercase font-bold">Pieces</dt>
-            <dd>{{ specimen?.pieces }}{{ specimen?.partial ? ` (Partial)` : `` }}</dd>
+            <dd v-if="specimen?.pieces">{{ specimen?.pieces }}{{ specimen?.partial ? ` (Partial)` : `` }}</dd>
+            <dd v-else>Not specified</dd>
           </div>
           <!-- Measurements -->
           <div class="grid grid-cols-2 lg:grid-cols-1 gap-x-4">
@@ -90,21 +93,23 @@
               <template v-else-if="specimen!.measurements?.count && useEnum(MeasurementCount).valueOf(specimen!.measurements.count) === MeasurementCount.CONTAINER">
                 Container: {{ specimen!.measurements!.dimensions![0] }}mm
               </template>
-              <template v-else-if="specimen!.measurements.reason && useEnum(Immeasurabibility).valueOf(specimen!.measurements.reason) === Immeasurabibility.CONDITION">
+              <template v-else-if="specimen!.measurements?.reason && useEnum(Immeasurabibility).valueOf(specimen!.measurements.reason) === Immeasurabibility.CONDITION">
                 Too fragile to measure
               </template>
-              <template v-else-if="specimen!.measurements.reason && useEnum(Immeasurabibility).valueOf(specimen!.measurements.reason) === Immeasurabibility.NUMBER">
+              <template v-else-if="specimen!.measurements?.reason && useEnum(Immeasurabibility).valueOf(specimen!.measurements.reason) === Immeasurabibility.NUMBER">
                 Too many to measure
               </template>
-              <template v-else-if="specimen!.measurements.reason && useEnum(Immeasurabibility).valueOf(specimen!.measurements.reason) === Immeasurabibility.SIZE">
+              <template v-else-if="specimen!.measurements?.reason && useEnum(Immeasurabibility).valueOf(specimen!.measurements.reason) === Immeasurabibility.SIZE">
                 Too small to measure
               </template>
+              <template v-else>Not specified</template>
             </dd>
           </div>
           <!-- Storage -->
           <div class="grid grid-cols-2 lg:grid-cols-1 gap-x-4">
             <dt class="text-end lg:text-start text-primary-40 uppercase font-bold">Storage</dt>
-            <dd>{{ specimen?.storage?.entities.at(-1)?.location.public ? `On Display` : `In Archive` }}</dd>
+            <dd v-if="specimen?.storage?.entities.at(-1)">{{ specimen?.storage?.entities.at(-1)?.location.public ? `On Display` : `In Archive` }}</dd>
+            <dd v-else>Not specified</dd>
           </div>
         </dl>
       </section>
@@ -158,7 +163,7 @@ if (!specimen.value) {
 const classificationLabels = computed(() => [
   specimen.value?.classification?.label,
   ...(specimen.value?.classification?.ancestors?.entities.map(({ label }) => label) ?? []),
-].reverse())
+].filter(Boolean).reverse())
 
 const compositionLabels = computed(() => {
   if (specimen.value?.type === 'mineral' && specimen.value?.classification?.composition) {
@@ -168,7 +173,7 @@ const compositionLabels = computed(() => {
   } else if ((specimen.value as Fossil | Rock).composition) {
     return (specimen.value as Fossil | Rock).composition?.entities.map(({ label }) => label)
   }
-  return ["Unknown"]
+  return []
 })
 
 const activeImage = ref(specimen?.value?.images?.entities?.length ? [specimen!.value?.images?.entities[0].self, specimen!.value?.images?.entities[0].uri] : undefined)
