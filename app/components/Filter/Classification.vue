@@ -18,7 +18,7 @@
 </template>
 
 <script lang="ts" setup>
-import { type EntityJSONList, type EntityJSON } from '@unb-libraries/nuxt-layer-entity'
+import { type EntityJSONList, type EntityJSON, FilterOperator } from '@unb-libraries/nuxt-layer-entity'
 import { type Classification } from '~/types/classification'
 
 const selection = defineModel<[string, string][]>({ default: [] })
@@ -26,6 +26,19 @@ const collapsed = defineModel<boolean>('collapsed', { default: false })
 const props = defineProps<{
   togglerClass?: string
 }>()
+
+const { query: q } = useRoute()
+const initialSelection = (Array.isArray(q.filter) ? q.filter : [q.filter].filter(Boolean))
+  .map(f => f!.split(':'))
+  .filter(([field, op]) => field === 'classification' && Number(useEnum(FilterOperator).valueOf(op)) === FilterOperator.EQUALS)
+  .map(([, , value]) => value)
+
+if (initialSelection.length) {
+  const { data: list } = await useFetch<EntityJSONList<Classification>>(`/api/terms/classifications`, {
+    query: { filter: initialSelection.map(self => `self:equals:${self}`) }
+  })
+  selection.value = list?.value?.entities?.map(({ self, label }) => [self, label]) ?? []
+}
 
 const results = ref<EntityJSON<Classification>[]>([])
 const options = computed(() => results.value.filter(({ self }) => !selection.value.some(([s]) => s === self)))
