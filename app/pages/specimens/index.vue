@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-2 flex-col flex h-full">
-    <span v-if="list?.total" class="flex-none">Displaying {{ specimens.length }} of {{ list?.total }} specimens</span>
+    <span v-if="list?.total" class="flex-none">Displaying {{ (page - 1) * pageSize + 1 }} - {{ (page - 1) * pageSize + specimens.length }} of {{ list?.total }} specimens</span>
     <div class="flex-none space-x-1 w-full flex">
       <div class="form-field grow">
         <label class="sr-only" for="search">Search</label>

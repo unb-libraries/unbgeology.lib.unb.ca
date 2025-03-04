@@ -1,14 +1,14 @@
 <template>
   <div v-if="pages.length > 1">
-    <a v-if="!pages.includes(1)" class="hover:dark:bg-primary-60/20 cursor-pointer rounded-md px-3 py-1.5" @click.stop.prevent="$emit(`change`, 1)">First</a>
+    <a v-if="!pages.includes(1)" class="hover:underline cursor-pointer rounded-md px-3 py-1.5" @click.stop.prevent="$emit(`change`, 1)">First</a>
     <a
       v-for="index in pages"
       :key="index"
       class="mx-2 rounded-md px-3 py-1.5"
-      :class="{ 'hover:dark:bg-primary-60/20 cursor-pointer': index !== page, 'dark:bg-primary-80/75': index === page }"
+      :class="{ 'hover:bg-primary-20 hover:dark:bg-primary-60 cursor-pointer': index !== page, 'bg-primary-20 dark:bg-primary-60': index === page }"
       @click.stop.prevent="$emit(`change`, index)"
     >{{ index }}</a>
-    <a v-if="!pages.includes(total)" class="hover:dark:bg-primary-60/20 cursor-pointer rounded-md px-3 py-1.5" @click.stop.prevent="$emit(`change`, total)">Last</a>
+    <a v-if="!pages.includes(total)" class="hover:underline cursor-pointer rounded-md px-3 py-1.5" @click.stop.prevent="$emit(`change`, total)">Last</a>
   </div>
 </template>
 
