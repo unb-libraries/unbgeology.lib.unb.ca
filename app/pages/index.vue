@@ -22,14 +22,10 @@
     </div>
     <div class="absolute z-100 flex-col space-y-8 bg-primary/60 p-8 rounded-xl size-1/2 top-1/4 left-1/4 flex justify-center items-center text-base">
       <h1 class="text-4xl">UNB Earth Science Collections</h1>
-      <form class="flex flex-row w-full justify-center space-x-4 space-y-0" @submit.prevent.stop="navigateTo('/specimens')">
-        <input type="text" class="w-3/4 rounded-md input input-text-md">
+      <form action="/specimens" method="GET" class="flex flex-row w-full justify-center space-x-4 space-y-0">
+        <input type="text" name="search" class="w-3/4 rounded-md input input-text-md" placeholder="Search for specimens" />
         <button type="submit" class="button-lg button-accent-mid">Search</button>
     </form>
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-
-</script>

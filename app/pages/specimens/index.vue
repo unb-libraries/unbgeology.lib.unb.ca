@@ -140,13 +140,22 @@ const maxAge = await (async () => {
 })()
 
 const { entities: specimens, list, query: { page, pageSize, search, select, filter } } = await fetchEntityList<Specimen>("Specimen", {
+  search: (Array.isArray(q.search) ? q.search.at(-1) : q.search) ?? '',
   select: ['id', 'name', 'images', 'type', 'classification', 'status'],
   page: (Array.isArray(q.page) ? Number(q.page.at(-1)) : q.page) ?? 1,
   filter: (Array.isArray(q.filter) ? q.filter : [q.filter].filter(Boolean)).map(filter => filter?.split(':')),
 })
 const markers = computed(() => specimens.value.filter(({ origin }) => origin?.latitude && origin?.longitude))
 
-const updateQuery = () => useRouter().replace({ query: { mode: mode.value, search: search.value, page: page.value, filter: filter.value.filter(Boolean).map(f => f.join(':')) } })
+const updateQuery = () => useRouter().replace({
+  query: {
+    mode: mode.value,
+    search: search.value,
+    page: page.value,
+    filter: filter.value.filter(Boolean).map(f => f.join(':'))
+  }
+})
+
 watch(page, updateQuery)
 watch(mode, updateQuery)
 watch(search, updateQuery)
