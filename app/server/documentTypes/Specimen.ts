@@ -1,7 +1,7 @@
-import { EntityFieldTypes } from "layers/mongo/types/entity"
-import { Immeasurabibility, Legal, MeasurementCount, Status } from "types/specimen"
-import { renderClassification } from "./Classification"
-import { renderUnit } from "./Geochronology"
+import { EntityFieldTypes } from 'layers/mongo/types/entity'
+import { Immeasurabibility, Legal, MeasurementCount, Status } from 'types/specimen'
+import { renderClassification } from './Classification'
+import { renderUnit } from './Geochronology'
 import type { Entity, Stateful as IStateful } from "@unb-libraries/nuxt-layer-entity"
 import type { Specimen as SpecimenEntity } from "types/specimen"
 import type { Fossil as FossilCD, Mineral as MineralCD, Rock as RockCD } from "./Classification"
@@ -113,12 +113,11 @@ export function renderSpecimen(doc: Specimen) {
         numeric: doc.numericAge?.length ? doc.numericAge : undefined,
       }
       : undefined,
-    // FIX: Strange "map is not a function" error
-    // composition: doc.composition && {
-    //   self: `/api/terms`,
-    //   entities: doc.composition?.map(renderTerm) ?? [],
-    //   total: doc.composition?.length ?? 0,
-    // },
+    composition: (doc.type !== 'Specimen.Mineral' && Array.isArray(doc.composition) && {
+      self: `/api/terms`,
+      entities: doc.composition.map(renderTerm) ?? [],
+      total: doc.composition.length ?? 0,
+    }) || undefined,
     origin: doc.origin && {
       latitude: doc.origin.latitude,
       longitude: doc.origin.longitude,
