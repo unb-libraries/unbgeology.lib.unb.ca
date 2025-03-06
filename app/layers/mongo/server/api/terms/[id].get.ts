@@ -1,7 +1,7 @@
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
 
-  const resources = getAuthorizedResources(event, r => /^term(:\w)*$/.test(r))
+  const resources = getAuthorizedResources(event, r => /^term(:[a-z]+)*$/.test(r))
   const fields = getAuthorizedFields(event, ...resources)
 
   const query = Term.findByID(id).select(`authTags`)

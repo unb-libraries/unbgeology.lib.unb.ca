@@ -1,12 +1,12 @@
-import { MigrationItemStatus } from "@unb-libraries/nuxt-layer-entity"
-import { Int32 } from "mongodb"
+import { MigrationItemStatus } from '@unb-libraries/nuxt-layer-entity'
+import { Int32 } from 'mongodb'
 
 const { INITIAL, IMPORTED, ERRORED } = MigrationItemStatus
 
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
 
-  const resources = getAuthorizedResources(event, r => /^migration(:\w)*$/.test(r), { action: `update` })
+  const resources = getAuthorizedResources(event, r => /^migration(:[a-z]+)*$/.test(r), { action: `update` })
   const migration = await Migration.mongoose.model.findById(id).select(`authTags`)
   if (!migration) {
     return create404()

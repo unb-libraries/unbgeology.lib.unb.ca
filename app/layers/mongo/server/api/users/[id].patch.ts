@@ -1,7 +1,7 @@
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
 
-  const resources = getAuthorizedResources(event, r => /^user(:\w)*$/.test(r))
+  const resources = getAuthorizedResources(event, r => /^user(:[a-z]+)*$/.test(r))
   const fields = getAuthorizedFields(event, ...resources)
   if (!resources.length) {
     return create403()

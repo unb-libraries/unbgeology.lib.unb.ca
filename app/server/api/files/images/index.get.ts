@@ -10,7 +10,7 @@ const queryFields = [`self`, `filename`, `uri`, `specimens`, `status`, `created`
 export default defineEventHandler(async (event) => {
   const { page, pageSize, select, sort, filter } = getEntityQueryParams(event, queryFields)
 
-  const resources = getAuthorizedResources(event, r => /^files(:images(:\w)*)$/.test(r))
+  const resources = getAuthorizedResources(event, r => /^file(:image)?(:[a-z]+)*$/.test(r))
   const authFields = getAuthorizedFields(event, ...resources)
   
   const selectFields = select

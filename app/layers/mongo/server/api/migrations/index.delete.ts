@@ -1,9 +1,9 @@
-import { MigrationStatus } from "@unb-libraries/nuxt-layer-entity"
+import { MigrationStatus } from '@unb-libraries/nuxt-layer-entity'
 
 export default defineEventHandler(async (event) => {
   const { page, pageSize } = getQueryOptions(event)
 
-  const resources = getAuthorizedResources(event, r => /^migration(:\w)*$/.test(r))
+  const resources = getAuthorizedResources(event, r => /^migration(:[a-z]+)*$/.test(r))
   if (!resources.length) {
     return create403()
   }

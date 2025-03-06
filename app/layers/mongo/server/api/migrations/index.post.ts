@@ -2,7 +2,7 @@ import { type Migration as MigrationEntity } from "@unb-libraries/nuxt-layer-ent
 import { type Migration as MigrationDoc } from "../../documentTypes/Migration"
 
 export default defineEventHandler(async (event) => {
-  const resources = getAuthorizedResources(event, r => /^migration(:\w)*$/.test(r))
+  const resources = getAuthorizedResources(event, r => /^migration(:[a-z]+)*$/.test(r))
   const fields = getAuthorizedFields(event, ...resources)
   if (!resources.length) {
     return create403()

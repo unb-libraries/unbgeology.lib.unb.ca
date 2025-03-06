@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
   const { slug } = getRouterParams(event)
   const { select } = getSpecimenQueryParams(event)
   
-  const resources = getAuthorizedResources(event, r => /^specimen(:\w)*$/.test(r))
+  const resources = getAuthorizedResources(event, r => /^specimen(:[a-z]+)*$/.test(r))
   const authFields = getAuthorizedFields(event, ...resources)
   
   const fields = select

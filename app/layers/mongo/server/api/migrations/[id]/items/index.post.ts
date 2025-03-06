@@ -3,7 +3,7 @@ import { type MigrationItem } from "../../../../../server/documentTypes/Migratio
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
 
-  const migrationResources = getAuthorizedResources(event, r => /^migration(:\w)*$/.test(r), { action: `update` })
+  const migrationResources = getAuthorizedResources(event, r => /^migration(:[a-z]+)*$/.test(r), { action: `update` })
   const migration = await Migration.findByID(id).select(`authTags`)
   if (!migration) {
     return create404()
@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
     return create403()
   }
 
-  const resources = getAuthorizedResources(event, r => /^migrationitem(:\w)*$/.test(r))
+  const resources = getAuthorizedResources(event, r => /^migrationitem(:[a-z]+)*$/.test(r))
   const fields = getAuthorizedFields(event, ...resources)
   if (!migrationResources.length || !resources.length) {
     return create403()

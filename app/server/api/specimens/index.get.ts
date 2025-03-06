@@ -1,4 +1,4 @@
-import { FilterOperator } from "@unb-libraries/nuxt-layer-entity"
+import { FilterOperator } from '@unb-libraries/nuxt-layer-entity'
 import type { Specimen as ISpecimen } from "~/types/specimen"
 import { renderSpecimen, type Specimen } from "~/server/documentTypes/Specimen"
 import { getSpecimenRequestCacheId } from "~/server/utils/cache"
@@ -14,7 +14,7 @@ const cacheOptions: Parameters<typeof defineCachedEventHandler>[1] = {
 export default defineCachedEventHandler(async (event) => {
   const { filter, page, pageSize, select, search, sort } = getSpecimenQueryParams(event)
   
-  const resources = getAuthorizedResources(event, r => /^specimen(:\w)*$/.test(r))
+  const resources = getAuthorizedResources(event, r => /^specimen(:[a-z]+)*$/.test(r))
   const authFields = getAuthorizedFields(event, ...resources)
   
   const sortFields = sort

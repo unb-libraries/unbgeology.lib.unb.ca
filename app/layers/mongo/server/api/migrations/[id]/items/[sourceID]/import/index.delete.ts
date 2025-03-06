@@ -4,7 +4,7 @@ import { MigrationItemStatus, type Entity, type EntityJSON } from "@unb-librarie
 export default defineEventHandler(async (event) => {
   const { id, sourceID } = getRouterParams(event)
 
-  const migrationResources = getAuthorizedResources(event, r => /^migration(:\w)*$/.test(r))
+  const migrationResources = getAuthorizedResources(event, r => /^migration(:[a-z]+)*$/.test(r))
   const migration = await Migration.findByID(id).select(`authTags`)
   if (!migration) {
     return create404()
@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
     return create403()
   }
 
-  const resources = getAuthorizedResources(event, r => /^migrationitem(:\w)*$/.test(r))
+  const resources = getAuthorizedResources(event, r => /^migrationitem(:[a-z]+)*$/.test(r))
   if (!resources.length) {
     return create403()
   }

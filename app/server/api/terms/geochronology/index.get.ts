@@ -8,7 +8,7 @@ const queryFields = [`self`, `label`, `division`, `start`, `gssp`, `uncertainty`
 export default defineEventHandler(async (event) => {
   const { page, pageSize, search, select, sort, filter } = getEntityQueryParams(event, queryFields)
 
-  const resources = getAuthorizedResources(event, r => /^terms(:geochronology(:\w)*)$/.test(r))
+  const resources = getAuthorizedResources(event, r => /^terms(:geochronology)?(:[a-z]+)*$/.test(r))
   const authFields = getAuthorizedFields(event, ...resources)
   
   const sortFields = sort

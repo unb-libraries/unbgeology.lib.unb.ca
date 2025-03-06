@@ -1,6 +1,6 @@
 export default defineEventHandler(async (event) => {
   const { page, pageSize } = getQueryOptions(event)
-  const resources = getAuthorizedResources(event, r => /^term(:\w)*$/.test(r))
+  const resources = getAuthorizedResources(event, r => /^term(:[a-z]+)*$/.test(r))
 
   if (resources.length < 1) {
     return create403()

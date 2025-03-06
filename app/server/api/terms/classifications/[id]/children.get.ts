@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
   const { page, pageSize, select } = getEntityQueryParams(event, queryFields)
   const { id } = getRouterParams(event)
 
-  const resources = getAuthorizedResources(event, r => /^term(:\w)*$/.test(r))
+  const resources = getAuthorizedResources(event, r => /^term(:classification)?(:[a-z]+)*$/.test(r))
   const authFields = getAuthorizedFields(event, ...resources)
 
   const fields = select

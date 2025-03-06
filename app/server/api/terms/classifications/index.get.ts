@@ -7,7 +7,7 @@ const queryFields = [`self`, `label`, `rank`, `description`, `image`, `compositi
 export default defineEventHandler(async (event) => {
   const { page, pageSize, search, select, sort, filter } = getEntityQueryParams(event, queryFields)
 
-  const resources = getAuthorizedResources(event, r => /^terms(:classifications(:\w)*)$/.test(r))
+  const resources = getAuthorizedResources(event, r => /^term(:classification)?(:[a-z]+)*$/.test(r))
   const authFields = getAuthorizedFields(event, ...resources)
   
   const sortFields = sort
@@ -21,6 +21,10 @@ export default defineEventHandler(async (event) => {
     ?.map(([field]) => field)
     .filter((field, i, arr) => arr.indexOf(field) === i)
     .filter(([field]) => !authFields.length || authFields.includes(field)) ?? []
+
+  if (!resources.length) {
+    return create403()
+  }
 
   const query = Term.mongoose.model
     .aggregate<{ documents: Classification[], total: [{ total: number }] }>()

@@ -1,11 +1,11 @@
-import { objectHash, sha256base64 } from "ohash"
+import { objectHash, sha256base64 } from 'ohash'
 import type { H3Event } from "h3"
 
 export function getSpecimenRequestCacheId(event: H3Event) {
   const { page, pageSize, select, search, sort, where, filter } = getSpecimenQueryParams(event)
     
   const permissions = getCurrentUserPermissions(event)
-  const resources = getAuthorizedResources(event, r => /^specimen(:\w)*$/.test(r))
+  const resources = getAuthorizedResources(event, r => /^specimen(:[a-z]+)*$/.test(r))
   const authFields = getAuthorizedFields(event, ...resources)
   
   return sha256base64(objectHash({
