@@ -14,7 +14,7 @@ jobs:
       image-name: ghcr.io/unb-libraries/unbgeology.lib.unb.ca
       k8s-deployment-name: 'unbgeology-lib-unb-ca'
       push-branches: '["dev", "prod"]'
-      postman-test-url: "http://local-unbgeology.lib.unb.ca:3118/api"
+      test: 'unit,e2e'
     secrets:
       KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_DATA }}
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -22,7 +22,3 @@ jobs:
       DOCKER_CLOUD_ACCESS_TOKEN: ${{ secrets.DOCKER_CLOUD_ACCESS_TOKEN }}
       GH_CONTAINER_REGISTRY_USER: ${{ secrets.GH_CONTAINER_REGISTRY_USER }}
       GH_CONTAINER_REGISTRY_TOKEN: ${{ secrets.GH_CONTAINER_REGISTRY_TOKEN }}
-      POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
-      POSTMAN_TEST_GENERATION_COLLECTION_ID: ${{ secrets.POSTMAN_TEST_GENERATION_COLLECTION_ID }}
-      POSTMAN_TEST_GENERATION_ENVIRONMENT_ID: ${{ secrets.POSTMAN_TEST_GENERATION_ENVIRONMENT_ID }}
-      POSTMAN_WORKSPACE_ID: ${{ secrets.POSTMAN_WORKSPACE_ID }}
