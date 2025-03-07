@@ -68,7 +68,7 @@ function onSave() {
     label: label.value || (props.classification?.label ? null : undefined),
     parent: parent.value || (props.classification?.parent ? null : undefined),
     description: description.value || (props.classification?.description ? null : undefined),
-    image: images.value?.[0].self || (props.classification?.image?.self ? null : undefined),
+    image: images.value?.[0]?.self || (props.classification?.image?.self ? null : undefined),
     rank: rank.value || (props.classification?.rank ? null : undefined),
     type: `classification/fossil`,
   })

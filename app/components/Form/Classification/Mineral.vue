@@ -59,7 +59,7 @@ function onSave() {
     label: label.value || (props.classification?.label ? null : undefined),
     parent: parent.value || (props.classification?.parent?.self ? null : undefined),
     description: description.value || (props.classification?.description ? null : undefined),
-    image: images.value?.[0].self || (props.classification?.image?.self ? null : undefined),
+    image: images.value?.[0]?.self || (props.classification?.image?.self ? null : undefined),
     composition: composition.value || (props.classification?.composition ? null : undefined),
     type,
   })
