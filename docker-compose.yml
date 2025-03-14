@@ -1,14 +1,16 @@
 services:
   unbgeology-mongodb-lib-unb-ca:
-    image: mongo:4
-    container_name: unbgeology-mongodb-lib-unb-ca
-    restart: unless-stopped
-    expose:
-      - 27017
-    volumes:
-      - ./.data/db:/data/db
+    image: ghcr.io/unb-libraries/unbgeology.mongodb.lib.unb.ca:8.x
     env_file:
       - ./env/mongo.env
+    restart: unless-stopped
+    container_name: unbgeology-mongodb-lib-unb-ca
+    platform: linux/arm64/v8
+    ports:
+      - 27017:27017
+    volumes:
+      - unbgeology_mongodb_data:/data/db
+      - unbgeology_mongodb_config:/data/configdb
     networks:
       - unbgeology.lib.unb.ca
   
@@ -43,6 +45,10 @@ services:
     ports:
       - 6118:8080
       - 61180:8443
+
+volumes:
+  unbgeology_mongodb_data:
+  unbgeology_mongodb_config:
 
 networks:
   unbgeology.lib.unb.ca:

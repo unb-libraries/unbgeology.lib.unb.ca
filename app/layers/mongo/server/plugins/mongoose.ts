@@ -1,5 +1,5 @@
-import { consola } from "consola"
-import mongoose from "mongoose"
+import { consola } from 'consola'
+import mongoose from 'mongoose'
 
 export default defineNitroPlugin(async (nitro) => {
   const uri = getMongooseConnectURI()
