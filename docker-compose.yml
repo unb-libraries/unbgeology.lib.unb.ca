@@ -1,11 +1,10 @@
 services:
   unbgeology-mongodb-lib-unb-ca:
-    image: ghcr.io/unb-libraries/unbgeology.mongodb.lib.unb.ca:8.x
+    image: mongodb/mongodb-atlas-local
     env_file:
       - ./env/mongo.env
     restart: unless-stopped
     container_name: unbgeology-mongodb-lib-unb-ca
-    platform: linux/arm64/v8
     ports:
       - 27017:27017
     volumes:
