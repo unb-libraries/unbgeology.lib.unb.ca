@@ -6,12 +6,15 @@ export default defineNitroPlugin(async (nitro) => {
       mappings: {
         dynamic: true,
         fields: {
-          name: {
-            type: 'autocomplete',
-          },
-          description: {
-            type: 'autocomplete',
-          }
+          name: [
+            { type: 'string' },
+            { type: 'token' },
+            { type: 'autocomplete', tokenization: 'nGram' },
+          ],
+          description: [
+            { type: 'string' },
+            { type: 'autocomplete', tokenization: 'nGram' },
+          ]
         }
       }
     }

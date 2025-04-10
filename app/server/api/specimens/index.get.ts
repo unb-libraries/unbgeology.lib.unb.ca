@@ -45,8 +45,19 @@ export default defineCachedEventHandler(async (event) => {
     .aggregate<{ documents: Specimen[], total: [number] }>()
   
   if (search)  {
-    query.match({ $text: { $search: search } })
-    query.addFields({ score: { $meta: `textScore` } })
+    query.search({
+      index: 'autocomplete',
+      compound: {
+        should: [
+          { equals: { value: search, path: 'name', score: { boost: { value: 3 } } } },
+          { text: { query: search, path: 'name', score: { boost: { value: 2 }} } },
+          { autocomplete: { query: search, path: 'name' } },
+          { phrase: { query: search, path: 'description' } },
+        ]
+      }
+    })
+    
+    query.addFields({ score: { $meta: `searchScore` } })
     if (!sort.length) {
       // @ts-ignore
       sort.push([`score`, -1])
