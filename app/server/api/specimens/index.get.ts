@@ -49,8 +49,10 @@ export default defineCachedEventHandler(async (event) => {
       index: 'autocomplete',
       compound: {
         should: [
+          { equals: { value: search, path: 'slug', score: { boost: { value: 3 } } } },
           { equals: { value: search, path: 'name', score: { boost: { value: 3 } } } },
           { text: { query: search, path: 'name', score: { boost: { value: 2 }} } },
+          { autocomplete: { query: search, path: 'slug' } },
           { autocomplete: { query: search, path: 'name' } },
           { phrase: { query: search, path: 'description' } },
         ]

@@ -6,6 +6,10 @@ export default defineNitroPlugin(async (nitro) => {
       mappings: {
         dynamic: true,
         fields: {
+          slug: [
+            { type: 'token' },
+            { type: 'autocomplete' },
+          ],
           name: [
             { type: 'string' },
             { type: 'token' },
