@@ -10,6 +10,23 @@ export default defineNitroPlugin(async (nitro) => {
             { type: 'token' },
             { type: 'autocomplete' },
           ],
+          type: [
+            { type: 'string' },
+          ],
+          classification: [
+            { type: 'objectId' },
+          ],
+          origin: {
+            type: 'document',
+            fields: {
+              latitude: {
+                type: 'number',
+              },
+              longitude: {
+                type: 'number',
+              },
+            },
+          },
           name: [
             { type: 'string' },
             { type: 'token' },
@@ -18,7 +35,7 @@ export default defineNitroPlugin(async (nitro) => {
           description: [
             { type: 'string' },
             { type: 'autocomplete', tokenization: 'nGram' },
-          ]
+          ],
         }
       }
     }
