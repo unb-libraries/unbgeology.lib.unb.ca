@@ -140,9 +140,28 @@ export default defineCachedEventHandler(async (event) => {
     query.lookup({ from: `terms`, localField: `sponsor`, foreignField: `_id`, as: `sponsor` })
     query.unwind({ path: `$sponsor`, preserveNullAndEmptyArrays: true })
   }
-  if (fields.some(f => f.startsWith(`storage`))) {
-    query.lookup({ from: `terms`, localField: `storage`, foreignField: `_id`, as: `storage` })
-  }
+  // TODO: Make this conditional, introduce facet query parameter
+  // if (fields.some(f => f.startsWith(`storage`))) {
+    query.lookup({ from: `terms`, localField: `storage.location`, foreignField: `_id`, as: `storageLocations` })
+    query.addFields({
+      storage: {
+        $map: {
+          input: "$storage",
+          as: "s",
+          in: {
+            $mergeObjects: ["$$s", {
+              location: {
+                $arrayElemAt: [{
+                  $filter: {
+                    input: "$storageLocations",
+                    as: "loc",
+                    cond: { $eq: ["$$loc._id", "$$s.location"] },
+                  } }, 0],
+              } }]
+          }
+        }
+    } })
+  // }
   if (fields.some(f => f.startsWith(`creator`))) {
     query.unwind({ path: `$creator`, preserveNullAndEmptyArrays: true })
     query.lookup({ from: `terms`, localField: `creator`, foreignField: `_id`, as: `creator` })
@@ -211,14 +230,20 @@ export default defineCachedEventHandler(async (event) => {
         { $project: { _id: { _id: 1, label: 1, division: 1 }, count: 1 } },
         { $sort: { count: -1, '_id.label': 1 } },
       ],
+      // TODO: Account for storage ancestors "public" property
+      onDisplayFacet: [
+        { $addFields: { currentStorage: { $arrayElemAt: ["$storage", { $subtract: [{ $size: "$storage" }, 1] }] } } },
+        { $match: { 'currentStorage.location.public': true } },
+        { $sortByCount: `$currentStorage.location.public` },
+      ],
     })
-    .addFields({ facets: { age: `$ageFacet`, category: `$categoryFacet`, classification: `$classificationFacet` } })
+    .addFields({ facets: { age: `$ageFacet`, category: `$categoryFacet`, classification: `$classificationFacet`, onDisplay: `$onDisplayFacet` } })
     .project({ specimens: 1, count: 1, facets: 1 })
   
   return {
     self: `/api/specimens`,
     facets: {
-      ...Object.fromEntries(Object.entries(facets).map(([fid, facet]) => [fid, facet.map(({ _id: value, count }) => ({ value, count }))])),
+      ...Object.fromEntries(Object.entries(facets).filter(([,facet]) => facet.length > 0).map(([fid, facet]) => [fid, facet.map(({ _id: value, count }) => ({ value, count }))])),
       age: facets.age.map(({ _id: unit, count }) => ({ _id: renderUnit(unit as GeochronologicUnit), count })),
     },
     entities: specimens
