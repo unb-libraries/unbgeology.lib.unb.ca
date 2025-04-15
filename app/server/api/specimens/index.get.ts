@@ -3,11 +3,6 @@ import type { Specimen as ISpecimen } from "~/types/specimen"
 import { renderSpecimen, type Specimen } from "~/server/documentTypes/Specimen"
 import { getSpecimenRequestCacheId } from "~/server/utils/cache"
 
-type Facet = {
-  _id: string
-  count: number
-}[]
-
 const cacheOptions: Parameters<typeof defineCachedEventHandler>[1] = {
   name: `specimens`,
   maxAge: 0,
@@ -57,7 +52,7 @@ export default defineCachedEventHandler(async (event) => {
     search,
   }
 
-  const query = Specimen.Base.mongoose.model.aggregate<{ specimens: Specimen[], count: [{ total: number }], categoryFacet: Facet, classificationFacet: Facet }>()
+  const query = Specimen.Base.mongoose.model.aggregate<{ specimens: Specimen[], count: [{ total: number }], facets: Record<string, { _id: unknown, count: number }[]> }>()
   if (Object.values(queryFilter).filter(f => (f ?? []).length > 0).length) {
     query.search({
       index: 'autocomplete',
@@ -177,7 +172,7 @@ export default defineCachedEventHandler(async (event) => {
     })
   }
   
-  const [{ specimens, count: [{ total }], categoryFacet, classificationFacet }] = await query
+  const [{ specimens, count: [{ total }], facets }] = await query
     .facet({
       specimens: [
         {
@@ -197,20 +192,22 @@ export default defineCachedEventHandler(async (event) => {
         { $limit: pageSize },
       ],
       count: [{ $count: `total` }],
-      categoryFacet: [{ $sortByCount: `$type` }],
+      categoryFacet: [
+        { $sortByCount: `$type` },
+        { $addFields: { _id: { $substr: ['$_id', 'Specimen.'.length, 50] } } },
+      ],
       classificationFacet: [
         { $sortByCount: `$classification` },
-        { $addFields: { _id: '$_id.label' } },
-        { $sort: { count: -1, _id: 1 } },
+        { $project: { _id: { _id: 1, label: 1, type: 1 }, count: 1 } },
+        { $sort: { count: -1, '_id.label': 1 } },
       ],
     })
+    .addFields({ facets: { age: `$ageFacet`, category: `$categoryFacet`, classification: `$classificationFacet` } })
+    .project({ specimens: 1, count: 1, facets: 1 })
   
   return {
     self: `/api/specimens`,
-    facets: {
-      category: categoryFacet.map(({ _id: label, count }) => ({ label: label.substring(`Specimen.`.length), count })),
-      classification: classificationFacet.map(({ _id: label, count }) => ({ label, count })),
-    },
+    facets: Object.fromEntries(Object.entries(facets).map(([fid, facet]) => [fid, facet.map(({ _id: value, count }) => ({ value, count }))])),
     entities: specimens
       .map(renderSpecimen)
       .map(specimen => Object
