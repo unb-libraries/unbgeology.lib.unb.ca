@@ -197,8 +197,9 @@ export default defineCachedEventHandler(async (event) => {
         { $addFields: { _id: { $substr: ['$_id', 'Specimen.'.length, 50] } } },
       ],
       classificationFacet: [
+        { $match: { classification: { $exists: 1 } } },
         { $sortByCount: `$classification` },
-        { $project: { _id: { _id: 1, label: 1, type: 1 }, count: 1 } },
+        { $project: { _id: { _id: 1, label: 1, type: { $substr: ['$_id.type', 'Term.C'.length, 50] } }, count: 1 } },
         { $sort: { count: -1, '_id.label': 1 } },
       ],
     })
