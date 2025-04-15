@@ -3,6 +3,11 @@ import type { Specimen as ISpecimen } from "~/types/specimen"
 import { renderSpecimen, type Specimen } from "~/server/documentTypes/Specimen"
 import { getSpecimenRequestCacheId } from "~/server/utils/cache"
 
+type Facet = {
+  _id: string
+  count: number
+}[]
+
 const cacheOptions: Parameters<typeof defineCachedEventHandler>[1] = {
   name: `specimens`,
   maxAge: 0,
@@ -51,8 +56,8 @@ export default defineCachedEventHandler(async (event) => {
     origin: [getBoundsFilter(FilterOperator.GREATER), getBoundsFilter(FilterOperator.LESS)].filter(b => (b ?? []).length > 0) as [number, number][],
     search,
   }
-  
-  const query = Specimen.Base.mongoose.model.aggregate<{ documents: Specimen[], total: [number] }>()
+
+  const query = Specimen.Base.mongoose.model.aggregate<{ specimens: Specimen[], count: [{ total: number }], categoryFacet: Facet, classificationFacet: Facet }>()
   if (Object.values(queryFilter).filter(f => (f ?? []).length > 0).length) {
     query.search({
       index: 'autocomplete',
@@ -172,24 +177,40 @@ export default defineCachedEventHandler(async (event) => {
     })
   }
   
-  const [{ documents: specimens, total: [total = 0] }] = await query
-    .sort(Object.fromEntries(([...sort, [`id`, -1]])
-      .map(([field, dir]) => [(() => {
-        switch (field) {
-          case `id`: return `slug`
-          case `classification`: return `classification.label`
-          case `collection`: return `kollektion.label`
-          case `creator`: return `creator.profile.sortKey`
-          case `editor`: return `editor.profile.sortKey`
-          default: return field
-        }
-      })(), dir])) as Record<keyof ISpecimen, -1 | 1>
-    )
-    .facet({ documents: [{ $skip: (page - 1) * pageSize }, { $limit: pageSize }], total: [{ $count: `count` }] })
-    .project({ documents: 1, total: { $ifNull: ["$total.count", 0]} })
+  const [{ specimens, count: [{ total }], categoryFacet, classificationFacet }] = await query
+    .facet({
+      specimens: [
+        {
+          $sort: Object.fromEntries(([...sort, [`id`, -1]])
+            .map(([field, dir]) => [(() => {
+              switch (field) {
+                case `id`: return `slug`
+                case `classification`: return `classification.label`
+                case `collection`: return `kollektion.label`
+                case `creator`: return `creator.profile.sortKey`
+                case `editor`: return `editor.profile.sortKey`
+                default: return field
+              }
+            })(), dir])) as Record<keyof ISpecimen, -1 | 1>,
+        },
+        { $skip: (page - 1) * pageSize },
+        { $limit: pageSize },
+      ],
+      count: [{ $count: `total` }],
+      categoryFacet: [{ $sortByCount: `$type` }],
+      classificationFacet: [
+        { $sortByCount: `$classification` },
+        { $addFields: { _id: '$_id.label' } },
+        { $sort: { count: -1, _id: 1 } },
+      ],
+    })
   
   return {
     self: `/api/specimens`,
+    facets: {
+      category: categoryFacet.map(({ _id: label, count }) => ({ label: label.substring(`Specimen.`.length), count })),
+      classification: classificationFacet.map(({ _id: label, count }) => ({ label, count })),
+    },
     entities: specimens
       .map(renderSpecimen)
       .map(specimen => Object
