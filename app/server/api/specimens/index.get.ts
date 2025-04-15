@@ -2,6 +2,7 @@ import { FilterOperator } from '@unb-libraries/nuxt-layer-entity'
 import type { Specimen as ISpecimen } from "~/types/specimen"
 import { renderSpecimen, type Specimen } from "~/server/documentTypes/Specimen"
 import { getSpecimenRequestCacheId } from "~/server/utils/cache"
+import type { GeochronologicUnit } from '~/server/documentTypes/Geochronology'
 
 const cacheOptions: Parameters<typeof defineCachedEventHandler>[1] = {
   name: `specimens`,
@@ -124,9 +125,10 @@ export default defineCachedEventHandler(async (event) => {
     query.lookup({ from: `terms`, localField: `kollektion`, foreignField: `_id`, as: `kollektion` })
     query.unwind({ path: `$kollektion`, preserveNullAndEmptyArrays: true })
   }
-  if (fields.some(f => f.startsWith(`age`))) {
-    query.lookup({ from: `terms`, localField: `age`, foreignField: `_id`, as: `age` })
-  }
+  // TODO: Make this conditional, introduce facet query parameter
+  // if (fields.some(f => f.startsWith(`age`))) {
+    query.lookup({ from: `terms`, localField: `relativeAge`, foreignField: `_id`, as: `relativeAge` })
+  // }
   if (fields.some(f => f.startsWith(`composition`))) {
     query.lookup({ from: `terms`, localField: `composition`, foreignField: `_id`, as: `composition` })
   }
@@ -202,13 +204,23 @@ export default defineCachedEventHandler(async (event) => {
         { $project: { _id: { _id: 1, label: 1, type: { $substr: ['$_id.type', 'Term.C'.length, 50] } }, count: 1 } },
         { $sort: { count: -1, '_id.label': 1 } },
       ],
+      ageFacet: [
+        { $unwind: { path: `$relativeAge` } },
+        { $match: { relativeAge: { $exists: 1 } } },
+        { $sortByCount: `$relativeAge` },
+        { $project: { _id: { _id: 1, label: 1, division: 1 }, count: 1 } },
+        { $sort: { count: -1, '_id.label': 1 } },
+      ],
     })
     .addFields({ facets: { age: `$ageFacet`, category: `$categoryFacet`, classification: `$classificationFacet` } })
     .project({ specimens: 1, count: 1, facets: 1 })
   
   return {
     self: `/api/specimens`,
-    facets: Object.fromEntries(Object.entries(facets).map(([fid, facet]) => [fid, facet.map(({ _id: value, count }) => ({ value, count }))])),
+    facets: {
+      ...Object.fromEntries(Object.entries(facets).map(([fid, facet]) => [fid, facet.map(({ _id: value, count }) => ({ value, count }))])),
+      age: facets.age.map(({ _id: unit, count }) => ({ _id: renderUnit(unit as GeochronologicUnit), count })),
+    },
     entities: specimens
       .map(renderSpecimen)
       .map(specimen => Object
