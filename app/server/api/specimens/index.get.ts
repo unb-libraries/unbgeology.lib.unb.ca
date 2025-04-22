@@ -3,6 +3,7 @@ import type { Specimen as ISpecimen } from "~/types/specimen"
 import { renderSpecimen, type Specimen } from "~/server/documentTypes/Specimen"
 import { getSpecimenRequestCacheId } from "~/server/utils/cache"
 import type { GeochronologicUnit } from '~/server/documentTypes/Geochronology'
+import type { Classification } from '~/server/documentTypes/Classification'
 
 const cacheOptions: Parameters<typeof defineCachedEventHandler>[1] = {
   name: `specimens`,
@@ -221,6 +222,7 @@ export default defineCachedEventHandler(async (event) => {
               }
             })(), dir])) as Record<keyof ISpecimen, -1 | 1>,
         },
+        // TODO: Disable skip/limit if origin filter active
         { $skip: (page - 1) * pageSize },
         { $limit: pageSize },
       ],
@@ -232,7 +234,7 @@ export default defineCachedEventHandler(async (event) => {
       classificationFacet: [
         { $match: { classification: { $exists: 1 } } },
         { $sortByCount: `$classification` },
-        { $project: { _id: { _id: 1, label: 1, type: { $substr: ['$_id.type', 'Term.C'.length, 50] } }, count: 1 } },
+        { $project: { _id: { _id: 1, label: 1, type: 1 }, count: 1 } },
         { $sort: { count: -1, '_id.label': 1 } },
       ],
       ageFacet: [
@@ -250,12 +252,15 @@ export default defineCachedEventHandler(async (event) => {
     })
     .addFields({ facets: { age: `$ageFacet`, category: `$categoryFacet`, classification: `$classificationFacet`, onDisplay: `$onDisplayFacet` } })
     .project({ specimens: 1, count: 1, facets: 1 })
-  
+
   return {
     self: `/api/specimens`,
     facets: {
       ...Object.fromEntries(Object.entries(facets).filter(([,facet]) => facet.length > 0).map(([fid, facet]) => [fid, facet.map(({ _id: value, count }) => ({ value, count }))])),
-      age: facets.age.map(({ _id: unit, count }) => ({ _id: renderUnit(unit as GeochronologicUnit), count })),
+      classification: facets.classification.map(({ _id: classification, count }) => ({
+        value: renderClassification(classification as Classification),
+        count })),
+      age: facets.age.map(({ _id: unit, count }) => ({ value: renderUnit(unit as GeochronologicUnit), count })),
     },
     entities: specimens
       .map(renderSpecimen)
