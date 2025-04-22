@@ -122,6 +122,8 @@ export default defineCachedEventHandler(async (event) => {
     }
   }
 
+  query.match({ authTags: { $in: resources } })
+
   if (fields.some(f => f.startsWith(`classification`))) {
     query.lookup({ from: `terms`, localField: `classification`, foreignField: `_id`, as: `classification` })
     query.unwind({ path: `$classification`, preserveNullAndEmptyArrays: true })
