@@ -16,6 +16,9 @@ export default defineNitroPlugin(async (nitro) => {
           classification: [
             { type: 'objectId' },
           ],
+          ageRelative: [
+            { type: 'objectId' },
+          ],
           origin: {
             type: 'document',
             fields: {

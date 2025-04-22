@@ -49,6 +49,7 @@ export default defineCachedEventHandler(async (event) => {
   const queryFilter = {
     type: getFilter('type', FilterOperator.EQUALS)?.map(c => `Specimen.${c[0].toUpperCase() + c.slice(1).toLowerCase()}`),
     classification: getFilter('classification', FilterOperator.EQUALS)?.map(c => c.split(`/`).at(-1)).map(parseObjectID),
+    age: getFilter('age.relative', FilterOperator.EQUALS)?.map(c => c.split(`/`).at(-1)).map(parseObjectID),
     origin: [getBoundsFilter(FilterOperator.GREATER), getBoundsFilter(FilterOperator.LESS)].filter(b => (b ?? []).length > 0) as [number, number][],
     search,
   }
@@ -77,6 +78,12 @@ export default defineCachedEventHandler(async (event) => {
             in: {
               path: 'classification',
               value: queryFilter.classification,
+            },
+          },
+          queryFilter.age.length && {
+            in: {
+              path: 'relativeAge',
+              value: queryFilter.age,
             },
           },
           // TODO: Convert this to a geo filter (geoWithin); requires origin to contain a "GeoJSON" point
