@@ -6,7 +6,7 @@
         <label class="sr-only" for="search">Search</label>
         <input v-model="search" placeholder="Search" name="search" class="placeholder:text-primary dark:placeholder:text-primary-20 rounded-md input input-text grow p-2 placeholder:italic">
       </div>
-      <button class="bg-base justify-center items-center flex xl:hidden hover:border-accent-light border rounded-md border-primary-60 aspect-square dark:bg-primary flex-none cursor-pointer" @click.prevent.stop="onToggleFilters">
+      <button class="bg-base justify-center items-center flex xl:hidden hover:border-accent-light border rounded-md border-primary-60 aspect-square dark:bg-primary flex-none cursor-pointer" @click.prevent.stop="sidebarCollapsed = !sidebarCollapsed">
         <IconFilter class="fill-none stroke-current size-6 stroke-1.5 flex" />
       </button>
       <button v-show="mode === 'map'" class="bg-base justify-center hover:border-accent-light items-center flex border rounded-md border-primary-60 aspect-square dark:bg-primary flex-none cursor-pointer" @click.prevent.stop="onSwitchViewMode('list')">
@@ -17,49 +17,13 @@
       </button>
     </div>
     <div class="flex flex-col xl:flex-row grow gap-2 overflow-y-hidden">
-      <div class="grid grid-cols-2 md:grid-cols-4 xl:flex xl:flex-col w-full xl:w-1/5 gap-2 xl:h-full">
-        <Filter title="Category" v-model:collapsed="categoriesCollapsed" toggler-class="hidden xl:block">
-          <div class="inline-flex items-center space-x-1">
-            <input type="checkbox" id="filter-category[fossil]" name="category[fossil]" class="size-5 rounded-md input input-checkbox" value="fossil" :checked="categories.includes('fossil')" @change="categories = categories.includes('fossil') ? categories.filter(cat => cat !== 'fossil') : [...categories, 'fossil']">
-            <label for="filter-category[fossil]" class="text-lg mr-4 cursor-pointer">
-              Fossil
-            </label>
-          </div>
-          <div class="inline-flex items-center space-x-1">
-            <input type="checkbox" id="filter-category[mineral]" name="category[mineral]" class="size-5 rounded-md input input-checkbox" value="mineral" :checked="categories.includes('mineral')" @change="categories = categories.includes('mineral') ? categories.filter(cat => cat !== 'mineral') : [...categories, 'mineral']">
-            <label for="filter-category[mineral]" class="text-lg mr-4 cursor-pointer">
-              Mineral
-            </label>
-          </div>
-          <div class="inline-flex items-center space-x-1">
-            <input type="checkbox" id="filter-category[rock]" name="category[rock]" class="size-5 rounded-md input input-checkbox" value="rock" :checked="categories.includes('rock')" @change="categories = categories.includes('rock') ? categories.filter(cat => cat !== 'rock') : [...categories, 'rock']">
-            <label for="filter-category[rock]" class="text-lg mr-4 cursor-pointer">
-              Rock
-            </label>
-          </div>
-        </Filter>
-        <FilterClassification v-model:collapsed="classificationCollapsed" v-on:update:model-value="onUpdateClassification" toggler-class="hidden xl:block" />
-        <Filter title="Age" v-model:collapsed="ageCollapsed" toggler-class="hidden xl:block">
-          <input v-model="age" type="range" min="0" :max="maxAge" step="1000000" list="legend" />
-          <datalist id="legend" class="flex justify-between w-full">
-            <option value="0" label="Any"></option>
-            <option :value="maxAge" :label="`${maxAge / 1000000} Mya`"></option>
-          </datalist>
-        </Filter>
-        <Filter title="Public access" v-model:collapsed="publicAccessCollapsed" toggler-class="hidden xl:block">
-          <div class="inline-flex items-center space-x-1">
-            <input type="radio" id="filter-access[any]" name="access[any]" class="size-5 input input-radio" value="any" :checked="!publicAccess" @change="publicAccess = false">
-            <label for="filter-access[any]" class="text-lg mr-4 cursor-pointer">
-              Any
-            </label>
-          </div>
-          <div class="inline-flex items-center space-x-1">
-            <input type="radio" id="filter-access[public]" name="access[public]" class="size-5 input input-radio" value="public" :checked="publicAccess" @change="publicAccess = true">
-            <label for="filter-access[public]" class="text-lg mr-4 cursor-pointer">
-              On display
-            </label>
-          </div>
-        </Filter>
+      <div :class="['xl:w-1/5 xl:h-full xl:relative', { 'fixed top-0 left-0 size-full bg-primary-80/80': !sidebarCollapsed }]" @click.prevent.stop="sidebarCollapsed = true">
+        <div :class="['absolute gap-2  xl:relative xl:flex xl:flex-col bottom-0 max-h-4/5 xl:h-full left-0 w-full overflow-y-scroll', { hidden: sidebarCollapsed }]">
+          <Facet v-if="facets.category" v-model="categories" :options="facets.category" title="Categories" class="flex-none" />
+          <Facet v-if="facets.classification" v-model="classifications" :options="facets.classification" value-field="self" label-field="label" title="Classification" class="grow" />
+          <Facet v-if="facets.age" v-model="units" :options="facets.age" value-field="self" label-field="label" title="Age" class="grow" />
+          <Facet v-if="facets.onDisplay" v-model="onDisplay" :options="facets.onDisplay.map(({ count }) => ({ value: 'Yes', count }))" value-field="self" label-field="label" title="On display" class="flex-none" />
+        </div>
       </div>
       <div class="w-full xl:w-4/5 h-full overflow-y-scroll">
         <KeepAlive>
@@ -116,10 +80,9 @@
 </template>
 
 <script setup lang="ts">
-import { FilterOperator, type EntityJSONList, type Filter } from '@unb-libraries/nuxt-layer-entity'
+import { FilterOperator, type Filter } from '@unb-libraries/nuxt-layer-entity'
 import { Status, type Specimen } from '~/types/specimen'
 import type { Coordinate } from '~/types/leaflet'
-import type { Unit } from '~/types/geochronology'
 
 definePageMeta({
   layout: 'page',
@@ -130,14 +93,6 @@ const { query: q } = useRoute()
 const mode = ref<'list' | 'map'>(['list', 'map'].find(mode => mode === (Array.isArray(q.mode) ? q.mode.at(-1) : q.mode)) as 'list' | 'map' ?? 'list')
 const mapCenter = ref<Coordinate>([46.65848709787655, -66.35685870803573]) // Initially center on NB
 const mapBounds = ref<[Coordinate, Coordinate]>([[0, 0], [0, 0]])
-const categoriesCollapsed = ref(false)
-const classificationCollapsed = ref(false)
-const ageCollapsed = ref(false)
-const publicAccessCollapsed = ref(false)
-const maxAge = await (async () => {
-  const { data } = await useFetch<EntityJSONList<Unit>>('/api/terms/geochronology', { query: { sort: "-start", pageSize: 1 } })
-  return data.value?.entities[0]?.start ?? 0
-})()
 
 const { entities: specimens, list, query: { page, pageSize, search, select, filter } } = await fetchEntityList<Specimen>("Specimen", {
   search: (Array.isArray(q.search) ? q.search.at(-1) : q.search) ?? '',
@@ -145,7 +100,10 @@ const { entities: specimens, list, query: { page, pageSize, search, select, filt
   page: (Array.isArray(q.page) ? Number(q.page.at(-1)) : q.page) ?? 1,
   filter: (Array.isArray(q.filter) ? q.filter : [q.filter].filter(Boolean)).map(filter => filter?.split(':')),
 })
+
+const facets = computed(() => list.value?.facets as Record<string, { value: unknown, count: number }[]> ?? {})
 const markers = computed(() => specimens.value.filter(({ origin }) => origin?.latitude && origin?.longitude))
+const sidebarCollapsed = ref(true)
 
 const updateQuery = () => useRouter().replace({
   query: {
@@ -161,44 +119,23 @@ watch(mode, updateQuery)
 watch(search, updateQuery)
 watch(filter, updateQuery)
 
-// Filter
-const categories = computed({
-  get: () => {
-    return filter.value
-      ?.filter(([field, op]) => field === 'type' && Number(useEnum(FilterOperator).valueOf(op)) === FilterOperator.EQUALS)
-      ?.map(([, , value]) => Array.isArray(value) ? value : [value])
-      ?.flat() ?? []
-  },
-  set: (category: string[]) => filter.value = [
-    ...filter.value.filter(([field]) => field !== 'type'),
-    ...category.map(category => ['type', FilterOperator.EQUALS, category] as Filter)
+const categories = ref<string[]>([])
+const classifications = ref<string[]>([])
+const units = ref<string[]>([])
+const onDisplay = ref<string[]>([])
+
+function updateFilter() {
+  filter.value = [
+    ...categories.value.map(category => ['category', FilterOperator.EQUALS, category] as Filter),
+    ...classifications.value.map(classification => ['classification', FilterOperator.EQUALS, classification] as Filter),
+    ...units.value.map(unit => ['age.relative', FilterOperator.EQUALS, unit] as Filter),
+    ...onDisplay.value.map(() => ['storage.location.public', FilterOperator.EQUALS] as Filter),
   ]
-})
-
-const age = computed({
-  get: () => Math.max(0, ...(filter.value
-    ?.filter(([field, op]) => field === 'age.numeric' && op === FilterOperator.GREATER) ?? [])
-    .map(([, , value]) => Array.isArray(value) ? value : [value]).flat()),
-  set: (age: number) => filter.value = [
-    ...filter.value.filter(([field]) => field !== 'age.numeric'),
-    (age > 0 ? ['age.numeric', FilterOperator.GREATER, `${age}`] : []) as Filter,
-  ].filter(Boolean)
-})
-
-const publicAccess = computed({
-  get: () => (filter.value?.filter(([field, op]) => field === 'storage.location.public' && op === FilterOperator.EQUALS) ?? []).length > 0,
-  set: (access: boolean) => filter.value = [
-    ...filter.value.filter(([field]) => field !== 'storage.location.public'),
-    (access ? ['storage.location.public', FilterOperator.EQUALS] : []) as Filter,
-  ].filter(Boolean)
-})
-
-function onToggleFilters() {
-  categoriesCollapsed.value = !categoriesCollapsed.value
-  classificationCollapsed.value = !classificationCollapsed.value
-  ageCollapsed.value = !ageCollapsed.value
-  publicAccessCollapsed.value = !publicAccessCollapsed.value
 }
+
+watch(categories, updateFilter)
+watch(classifications, updateFilter)
+watch(units, updateFilter)
 
 function onSwitchViewMode(newMode: 'list' | 'map') {
   mode.value = newMode
@@ -209,13 +146,6 @@ function onSwitchViewMode(newMode: 'list' | 'map') {
     select.value = select.value.filter(field => field !== 'origin')
     filter.value = filter.value.filter(([field]) => field !== 'origin')
   }
-}
-
-function onUpdateClassification(selection: [string, string][]) {
-  filter.value = [
-    ...filter.value.filter(([field]) => field !== 'classification'),
-    ...selection.map(([id]) => ['classification', FilterOperator.EQUALS, id] as Filter)
-  ]
 }
 
 function initMap(map: L.Map) {
