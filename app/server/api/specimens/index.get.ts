@@ -168,6 +168,11 @@ export default defineCachedEventHandler(async (event) => {
           }
         }
     } })
+
+    query.addFields({ currentStorage: { $arrayElemAt: ["$storage", { $subtract: [{ $size: "$storage" }, 1] }] } })
+    if (fields.some(f => f.startsWith(`storage.location.public`))) {
+      query.match({ 'currentStorage.location.public': true })
+    }
   // }
   if (fields.some(f => f.startsWith(`creator`))) {
     query.unwind({ path: `$creator`, preserveNullAndEmptyArrays: true })
@@ -239,7 +244,6 @@ export default defineCachedEventHandler(async (event) => {
       ],
       // TODO: Account for storage ancestors "public" property
       onDisplayFacet: [
-        { $addFields: { currentStorage: { $arrayElemAt: ["$storage", { $subtract: [{ $size: "$storage" }, 1] }] } } },
         { $match: { 'currentStorage.location.public': true } },
         { $sortByCount: `$currentStorage.location.public` },
       ],

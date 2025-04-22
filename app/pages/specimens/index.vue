@@ -136,6 +136,7 @@ function updateFilter() {
 watch(categories, updateFilter)
 watch(classifications, updateFilter)
 watch(units, updateFilter)
+watch(onDisplay, updateFilter)
 
 function onSwitchViewMode(newMode: 'list' | 'map') {
   mode.value = newMode
