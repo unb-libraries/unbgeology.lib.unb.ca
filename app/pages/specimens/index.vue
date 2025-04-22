@@ -126,7 +126,7 @@ const onDisplay = ref<string[]>([])
 
 function updateFilter() {
   filter.value = [
-    ...categories.value.map(category => ['category', FilterOperator.EQUALS, category] as Filter),
+    ...categories.value.map(category => ['type', FilterOperator.EQUALS, category] as Filter),
     ...classifications.value.map(classification => ['classification', FilterOperator.EQUALS, classification] as Filter),
     ...units.value.map(unit => ['age.relative', FilterOperator.EQUALS, unit] as Filter),
     ...onDisplay.value.map(() => ['storage.location.public', FilterOperator.EQUALS] as Filter),

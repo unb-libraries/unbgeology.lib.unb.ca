@@ -47,7 +47,7 @@ export default defineCachedEventHandler(async (event) => {
   }
   
   const queryFilter = {
-    category: getFilter('type', FilterOperator.EQUALS)?.map(c => `Specimen.${c[0].toUpperCase() + c.slice(1).toLowerCase()}`),
+    type: getFilter('type', FilterOperator.EQUALS)?.map(c => `Specimen.${c[0].toUpperCase() + c.slice(1).toLowerCase()}`),
     classification: getFilter('classification', FilterOperator.EQUALS)?.map(c => c.split(`/`).at(-1)).map(parseObjectID),
     origin: [getBoundsFilter(FilterOperator.GREATER), getBoundsFilter(FilterOperator.LESS)].filter(b => (b ?? []).length > 0) as [number, number][],
     search,
@@ -67,10 +67,10 @@ export default defineCachedEventHandler(async (event) => {
           { phrase: { query: queryFilter.search, path: 'description' } },
         ]) || [],
         filter: [
-          queryFilter.category.length && {
+          queryFilter.type.length && {
             queryString: {
               defaultPath: 'type',
-              query: queryFilter.category.join(` OR `),
+              query: queryFilter.type.join(` OR `),
             },
           },
           queryFilter.classification.length && {
