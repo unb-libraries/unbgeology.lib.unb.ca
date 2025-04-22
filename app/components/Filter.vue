@@ -1,7 +1,7 @@
 <template>
-  <div class="bg-primary-20 dark:bg-primary-60 py-2 px-4 space-y-2 divide-y divide-primary-40 overflow-y-hidden flex flex-col">
+  <div :class="['bg-primary-20 dark:bg-primary-60 py-2 px-4 space-y-2 divide-y divide-primary-40 overflow-y-hidden flex flex-col', { 'flex-none': collapsed }]">
     <div class="inline-flex items-center justify-between w-full flex-none">
-      <button @click.prevent="collapsed = !collapsed" class="inline-flex items-center justify-between w-full cursor-pointer">
+      <button @click.prevent.stop="collapsed = !collapsed" class="inline-flex items-center justify-between w-full cursor-pointer">
         <slot name="title" :title="title">
           <span class="block text-xl">{{ title }}</span>
         </slot>
