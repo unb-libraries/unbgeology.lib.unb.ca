@@ -17,7 +17,7 @@
       </button>
     </div>
     <div class="flex flex-col xl:flex-row grow gap-x-2 overflow-y-hidden">
-      <div :class="['xl:w-1/5 xl:h-full xl:relative', { 'fixed top-0 left-0 size-full bg-primary-80/80': !sidebarCollapsed }]" @click.prevent.stop="sidebarCollapsed = true">
+      <div :class="['xl:w-1/5 xl:h-full xl:relative', { 'fixed top-0 left-0 size-full bg-primary-80/80': !sidebarCollapsed }]" @click.stop.self="sidebarCollapsed = true">
         <div :class="['absolute gap-2 xl:relative xl:flex xl:flex-col bottom-0 max-h-4/5 xl:max-h-full xl:h-full left-0 w-full overflow-y-scroll', { hidden: sidebarCollapsed }]">
           <Facet v-if="facets.category" v-model="categories" :options="facets.category" title="Categories" class="flex-none" />
           <Facet v-if="facets.classification" v-model="classifications" :options="facets.classification" value-field="self" label-field="label" title="Classification" class="grow" />
