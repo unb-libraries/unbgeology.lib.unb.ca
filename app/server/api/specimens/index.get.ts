@@ -128,10 +128,11 @@ export default defineCachedEventHandler(async (event) => {
 
   query.match({ authTags: { $in: resources } })
 
-  if (fields.some(f => f.startsWith(`classification`))) {
+  // TODO: Make this conditional, introduce facet query parameter
+  // if (fields.some(f => f.startsWith(`classification`))) {
     query.lookup({ from: `terms`, localField: `classification`, foreignField: `_id`, as: `classification` })
     query.unwind({ path: `$classification`, preserveNullAndEmptyArrays: true })
-  }
+  // }
   if (fields.some(f => f.startsWith(`images`))) {
     query.lookup({ from: `files`, localField: `images`, foreignField: `_id`, as: `images` })
   }
@@ -228,10 +229,10 @@ export default defineCachedEventHandler(async (event) => {
               }
             })(), dir])) as Record<keyof ISpecimen, -1 | 1>,
         },
-        // TODO: Disable skip/limit if origin filter active
-        { $skip: (page - 1) * pageSize },
-        { $limit: pageSize },
-      ],
+        // REFACTOR: Find a better solution for this (maybe front in end)
+        !queryFilter.origin.length && { $skip: (page - 1) * pageSize },
+        !queryFilter.origin.length && { $limit: pageSize },
+      ].filter(Boolean),
       count: [{ $count: `total` }],
       categoryFacet: [
         { $sortByCount: `$type` },

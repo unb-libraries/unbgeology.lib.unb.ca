@@ -96,8 +96,11 @@ const mapBounds = ref<[Coordinate, Coordinate]>([[0, 0], [0, 0]])
 
 const { entities: specimens, list, query: { page, pageSize, search, select, filter } } = await fetchEntityList<Specimen>("Specimen", {
   search: (Array.isArray(q.search) ? q.search.at(-1) : q.search) ?? '',
-  select: ['id', 'name', 'images', 'type', 'classification', 'status'],
+  select: q.mode === 'map'
+    ? ['id', 'name', 'origin']
+    : ['id', 'name', 'images', 'type', 'classification', 'status'],
   page: (Array.isArray(q.page) ? Number(q.page.at(-1)) : q.page) ?? 1,
+  pageSize: q.mode === 'map' ? 500 : 25,
   filter: (Array.isArray(q.filter) ? q.filter : [q.filter].filter(Boolean)).map(filter => filter?.split(':')),
 })
 
@@ -116,6 +119,15 @@ const updateQuery = () => useRouter().replace({
 
 watch(page, updateQuery)
 watch(mode, updateQuery)
+watch(mode, mode => {
+  if (mode === 'map') {
+    select.value = ['id', 'name', 'origin']
+    pageSize.value = 500
+  } else {
+    select.value = ['id', 'name', 'images', 'type', 'classification', 'status']
+    pageSize.value = 25
+  }
+})
 watch(search, updateQuery)
 watch(filter, updateQuery)
 
