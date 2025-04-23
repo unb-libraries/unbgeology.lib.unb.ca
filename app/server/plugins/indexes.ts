@@ -22,6 +22,10 @@ export default defineNitroPlugin(async (nitro) => {
           origin: {
             type: 'document',
             fields: {
+              name: [
+                { type: 'token' },
+                { type: 'autocomplete' },
+              ],
               latitude: {
                 type: 'number',
               },

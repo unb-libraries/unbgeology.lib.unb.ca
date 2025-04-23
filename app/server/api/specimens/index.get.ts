@@ -66,6 +66,8 @@ export default defineCachedEventHandler(async (event) => {
           { text: { query: queryFilter.search, path: 'name', score: { boost: { value: 2 }} } },
           { autocomplete: { query: queryFilter.search, path: 'slug' } },
           { autocomplete: { query: queryFilter.search, path: 'name' } },
+          { text: { query: queryFilter.search, path: 'origin.name' } },
+          { autocomplete: { query: queryFilter.search, path: 'origin.name' } },
           { phrase: { query: queryFilter.search, path: 'description' } },
         ]) || [],
         filter: [
