@@ -125,13 +125,14 @@
         <h2 class="text-primary-40 mb-3 text-lg font-bold text-center lg:text-start uppercase">
           Place of Origin
         </h2>
-        <LeafletMap class="min-h-128 w-full" :zoom="7" :center="[specimen?.origin?.latitude ?? 0, specimen?.origin?.longitude ?? 0]">
+        <LeafletMap v-if="specimen?.origin?.latitude && specimen?.origin?.longitude" class="min-h-128 w-full" :zoom="7" :center="[specimen.origin.latitude, specimen.origin.longitude]">
           <LeafletMarker
             v-if="specimen.origin"
             :name="specimen.name"
             :center="[specimen?.origin.latitude, specimen?.origin.longitude]"
           />
         </LeafletMap>
+        <div v-else-if="specimen?.origin?.name">{{ specimen.origin.name }}</div>
       </section>
       <section v-if="publications.length" class="w-full lg:w-3/4">
         <h2 class="text-center lg:text-start mx-auto lg:mx-0 text-primary-40 mb-3 text-lg font-bold uppercase">
