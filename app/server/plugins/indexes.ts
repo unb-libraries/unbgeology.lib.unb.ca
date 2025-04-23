@@ -26,6 +26,10 @@ export default defineNitroPlugin(async (nitro) => {
                 { type: 'token' },
                 { type: 'autocomplete' },
               ],
+              description: [
+                { type: 'token' },
+                { type: 'autocomplete' },
+              ],
               latitude: {
                 type: 'number',
               },
