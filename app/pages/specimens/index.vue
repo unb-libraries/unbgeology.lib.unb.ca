@@ -19,10 +19,10 @@
     <div class="flex flex-col xl:flex-row grow gap-x-2 overflow-y-hidden">
       <div v-show="Object.keys(list?.facets ?? {}).length" :class="['xl:w-1/5 xl:h-full xl:relative', { 'fixed top-0 left-0 size-full bg-primary-80/80': !sidebarCollapsed }]" @click.stop.self="sidebarCollapsed = true">
         <div :class="['absolute gap-2 xl:relative xl:flex xl:flex-col bottom-0 max-h-4/5 xl:max-h-full xl:h-full left-0 w-full overflow-y-scroll', { hidden: sidebarCollapsed }]">
-          <Facet v-if="facets.category" v-model="categories" :options="facets.category" title="Categories" class="flex-none" />
+          <Facet v-if="facets.category" v-model="categories" :options="facets.category" value-field="id" label-field="label" title="Categories" class="flex-none" />
           <Facet v-if="facets.classification" v-model="classifications" :options="facets.classification" value-field="self" label-field="label" title="Classification" class="shrink" />
           <Facet v-if="facets.age" v-model="units" :options="facets.age" value-field="self" label-field="label" title="Age" class="shrink" />
-          <Facet v-if="facets.onDisplay" v-model="onDisplay" :options="facets.onDisplay.map(({ count }) => ({ value: 'Yes', count }))" value-field="self" label-field="label" title="On display" class="flex-none" />
+          <Facet v-if="facets.onDisplay" v-model="onDisplay" :options="facets.onDisplay.map(({ value, count }) => ({ value: { value, label: value === true ? 'Yes' : 'No' }, count }))" value-field="value" label-field="label" title="On display" class="flex-none" />
         </div>
       </div>
       <div class="grow h-full overflow-y-scroll">
@@ -119,10 +119,10 @@ watch(mode, updateQuery)
 watch(search, updateQuery)
 watch(filter, updateQuery)
 
-const categories = ref<string[]>([])
-const classifications = ref<string[]>([])
-const units = ref<string[]>([])
-const onDisplay = ref<string[]>([])
+const categories = ref<string[]>(filter.value?.filter(([field]) => field === 'type').map(([, , value]) => value as string) ?? [])
+const classifications = ref<string[]>(filter.value?.filter(([field]) => field === 'classification').map(([, , value]) => value as string) ?? [])
+const units = ref<string[]>(filter.value?.filter(([field]) => field === 'age.relative').map(([, , value]) => value as string) ?? [])
+const onDisplay = ref<boolean[]>(filter.value?.filter(([field]) => field === 'storage.location.public').map(([, , value]) => true) ?? [])
 
 function updateFilter() {
   filter.value = [

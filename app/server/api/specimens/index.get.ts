@@ -258,11 +258,21 @@ export default defineCachedEventHandler(async (event) => {
   return {
     self: `/api/specimens`,
     facets: {
-      ...Object.fromEntries(Object.entries(facets).filter(([,facet]) => facet.length > 0).map(([fid, facet]) => [fid, facet.map(({ _id: value, count }) => ({ value, count }))])),
+      category: facets.category.map(({ _id: type, count }) => ({
+        value: {
+          id: `${type}`.toLowerCase(),
+          label: type,
+        },
+        count,
+      })),
       classification: facets.classification.map(({ _id: classification, count }) => ({
         value: renderClassification(classification as Classification),
         count })),
       age: facets.age.map(({ _id: unit, count }) => ({ value: renderUnit(unit as GeochronologicUnit), count })),
+      onDisplay: facets.onDisplay.map(({ _id: onDisplay, count }) => ({
+        value: onDisplay ? true : false,
+        count,
+      })),
     },
     entities: specimens
       .map(renderSpecimen)
