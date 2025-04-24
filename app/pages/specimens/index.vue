@@ -64,7 +64,7 @@
           <div v-else-if="mode === 'list'" class="flex justify-center items-center h-full bg-primary-60">
             <span class="text-2xl">No specimens found</span>
           </div>
-          <LeafletMap v-else :center="mapCenter" class="h-full" @ready="initMap" @drag="onDragMap" @zoom="onZoomMap">
+          <LeafletMap v-else :center="mapCenter" class="h-full" @drag="onDragMap" @zoom="onZoomMap">
             <LeafletMarker v-for="{ self, name, origin: { latitude, longitude } } in markers" :key="self"
               :center="[latitude, longitude]"
               :name="name"
@@ -92,7 +92,6 @@ definePageMeta({
 const { query: q } = useRoute()
 const mode = ref<'list' | 'map'>(['list', 'map'].find(mode => mode === (Array.isArray(q.mode) ? q.mode.at(-1) : q.mode)) as 'list' | 'map' ?? 'list')
 const mapCenter = ref<Coordinate>([46.65848709787655, -66.35685870803573]) // Initially center on NB
-const mapBounds = ref<[Coordinate, Coordinate]>([[0, 0], [0, 0]])
 
 const { entities: specimens, list, query: { page, pageSize, search, select, filter } } = await fetchEntityList<Specimen>("Specimen", {
   search: (Array.isArray(q.search) ? q.search.at(-1) : q.search) ?? '',
@@ -119,15 +118,6 @@ const updateQuery = () => useRouter().replace({
 
 watch(page, updateQuery)
 watch(mode, updateQuery)
-watch(mode, mode => {
-  if (mode === 'map') {
-    select.value = ['id', 'name', 'origin']
-    pageSize.value = 500
-  } else {
-    select.value = ['id', 'name', 'images', 'type', 'classification', 'status']
-    pageSize.value = 25
-  }
-})
 watch(search, updateQuery)
 watch(filter, updateQuery)
 
@@ -153,31 +143,13 @@ watch(onDisplay, updateFilter)
 function onSwitchViewMode(newMode: 'list' | 'map') {
   mode.value = newMode
   if (newMode === 'map') {
-    select.value = [...select.value, 'origin']
-    mapBounds.value = [...mapBounds.value]
+    select.value = ['id', 'name', 'origin']
+    filter.value = [...filter.value, ['origin', FilterOperator.GREATER, '90.1;180.1'], ['origin', FilterOperator.LESS, '-90.1;-180.1']]
   } else {
-    select.value = select.value.filter(field => field !== 'origin')
+    select.value = ['id', 'name', 'images', 'type', 'classification', 'status']
     filter.value = filter.value.filter(([field]) => field !== 'origin')
   }
 }
-
-function initMap(map: L.Map) {
-  const bounds = map.getBounds()
-  const [{ lat: neLat, lng: neLong }, { lat: swLat, lng: swLong }] = [bounds.getNorthEast(), bounds.getSouthWest()]
-  onUpdateBounds([[neLat, neLong], [swLat, swLong]])
-}
-
-function onUpdateBounds([northEast, southWest]: [Coordinate, Coordinate]) {
-  mapBounds.value = [northEast, southWest]
-}
-
-watch(mapBounds, ([northEast, southWest]) => {
-  filter.value = [
-    ...filter.value.filter(([field]) => field !== 'origin'),
-    ['origin', FilterOperator.GREATER, northEast.join(`;`)] as Filter,
-    ['origin', FilterOperator.LESS, southWest.join(`;`)] as Filter
-  ]
-})
 
 function onUpdateCenter(center: Coordinate) {
   mapCenter.value = center
@@ -185,11 +157,9 @@ function onUpdateCenter(center: Coordinate) {
 
 function onDragMap(center: Coordinate, bounds: [Coordinate, Coordinate]) {
   onUpdateCenter(center)
-  onUpdateBounds(bounds)
 }
 
 function onZoomMap(level: number, center: Coordinate, bounds: [Coordinate, Coordinate]) {
   onUpdateCenter(center)
-  onUpdateBounds(bounds)
 }
 </script>
