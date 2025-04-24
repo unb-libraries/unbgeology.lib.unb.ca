@@ -17,6 +17,7 @@
 </template>
 
 <script setup lang="ts">
+// REFACTOR: Replace this with component from @vue-leaflet/vue-leaflet
 import type { Map } from "leaflet"
 import type { MapInjection } from "~/types/leaflet"
 import { type Location } from '~/types/nominatim'

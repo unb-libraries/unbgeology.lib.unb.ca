@@ -5,6 +5,7 @@
 <!-- esline-enable -->
 
 <script setup lang="ts">
+// REFACTOR: Replace this with component from @vue-leaflet/vue-leaflet
 import type { Marker } from "leaflet"
 import type { Coordinate, MapInjection } from '~/types/leaflet'
 

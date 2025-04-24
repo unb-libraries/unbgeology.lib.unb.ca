@@ -5,6 +5,7 @@
 </template>
 
 <script setup lang="ts">
+// REFACTOR: Replace this with component from @vue-leaflet/vue-leaflet
 import { Map } from "leaflet"
 import type { Coordinate, Callback } from "~/types/leaflet"
 
