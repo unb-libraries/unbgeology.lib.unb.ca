@@ -19,6 +19,7 @@
 <script setup lang="ts">
 // REFACTOR: Replace this with component from @vue-leaflet/vue-leaflet
 import type { Map } from "leaflet"
+import { Control, DomUtil } from "leaflet"
 import type { MapInjection } from "~/types/leaflet"
 import { type Location } from '~/types/nominatim'
 
@@ -28,6 +29,11 @@ const options = ref<Record<string, Location>>({})
 const pending = ref(false)
 
 defineProps<{}>()
+
+const getMap = inject<MapInjection>(`map`)
+if (!getMap) {
+  throw new Error(`Search component must be used inside a Map component`)
+}
 
 let timer: NodeJS.Timeout
 const { resolveName } = useNominatim()
@@ -51,8 +57,8 @@ watch(placeID, (id) => {
   location.value = options.value[id]
 })
 
-const onMapReady = inject(`onMapReady`) as MapInjection
-onMapReady((map, { Control, DomUtil }) => {
+onMounted(async () => {
+  const map = await getMap()
   const Search = Control.extend({
     onAdd(map: Map) {
       return DomUtil.get(`leaflet-name-search`)
@@ -61,7 +67,6 @@ onMapReady((map, { Control, DomUtil }) => {
 
     },
   })
-
   new Search({ position: `bottomleft` })
     .addTo(map)
 })

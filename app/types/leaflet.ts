@@ -1,8 +1,8 @@
-import type { Map } from "leaflet"
+import type { Map, Layer, LayerGroup } from "leaflet"
 
-type Leaflet = typeof import("leaflet") // eslint-disable-line
-type Coordinate = [number, number]
-type Callback = (map: Map, leaflet: Leaflet) => void
-type MapInjection = (callback: Callback) => void
-
-export { Leaflet, Coordinate, Callback, MapInjection }
+export type Leaflet = typeof import("leaflet") // eslint-disable-line
+export type Coordinate = [number, number]
+export type Callback = (map: Map | LayerGroup, leaflet: Leaflet) => void | Promise<void>
+export type MapInjection = () => Promise<Map>
+export type LayerAddInjection = (layer: Layer) => void
+export type LayerRemoveInjection = (layer: Layer) => void

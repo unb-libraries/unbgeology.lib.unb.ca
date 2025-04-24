@@ -1,13 +1,7 @@
-<!-- eslint-disable -->
-<template>
-  <!-- Marker rendering by Leaflet. -->
-</template>
-<!-- esline-enable -->
-
 <script setup lang="ts">
 // REFACTOR: Replace this with component from @vue-leaflet/vue-leaflet
-import type { Marker } from "leaflet"
-import type { Coordinate, MapInjection } from '~/types/leaflet'
+import { Marker, Circle, Icon } from "leaflet"
+import type { Coordinate, LayerAddInjection, LayerRemoveInjection } from '~/types/leaflet'
 
 const props = withDefaults(defineProps<{
   center: Coordinate
@@ -24,13 +18,19 @@ const emit = defineEmits<{
   dragged: [coord: Coordinate],
 }>()
 
-let marker: Marker
+const add = inject<LayerAddInjection>(`add`)
+const remove = inject<LayerRemoveInjection>(`remove`)
+if (!add || !remove) {
+  throw new Error(`Marker component must be used inside a Map component`)
+}
 
-const onMapReady = inject(`onMapReady`) as MapInjection
-onMapReady((map, { marker: createMarker, circle: createCircle, Icon }) => {
+let marker: Marker
+let circle: Circle
+
+onMounted(() => {
   Icon.Default.imagePath = `/leaflet/img/`
 
-  marker = createMarker(props.center, {
+  marker = new Marker(props.center, {
     draggable: props.draggable,
     autoPan: true,
   })
@@ -46,17 +46,18 @@ onMapReady((map, { marker: createMarker, circle: createCircle, Icon }) => {
     marker.bindPopup(props.name)
   }
 
-  marker.addTo(map)
-
   if (props.accuracy) {
-    createCircle([props.center[0], props.center[1]], {
+    circle = new Circle([props.center[0], props.center[1]], {
       color: `red`,
       opacity: 0.3,
       fillColor: `red`,
       fillOpacity: 0.3,
       radius: props.accuracy,
-    }).addTo(map)
+    })
+    add(circle)
   }
+
+  add(marker)
 })
 
 onUpdated(() => {
@@ -67,7 +68,10 @@ onUpdated(() => {
 
 onUnmounted(() => {
   if (marker) {
-    marker.remove()
+    remove(marker)
+  }
+  if (circle) {
+    remove(circle)
   }
 })
 </script>

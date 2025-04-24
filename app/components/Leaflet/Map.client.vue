@@ -6,8 +6,9 @@
 
 <script setup lang="ts">
 // REFACTOR: Replace this with component from @vue-leaflet/vue-leaflet
-import { Map } from "leaflet"
-import type { Coordinate, Callback } from "~/types/leaflet"
+import { Map, tileLayer as setTileLayer } from "leaflet"
+import type { Layer } from "leaflet"
+import type { Coordinate } from "~/types/leaflet"
 
 const props = defineProps<{
   center: Coordinate,
@@ -21,28 +22,25 @@ const emit = defineEmits<{
   zoom: [level: number, Coordinate, bounds: [Coordinate, Coordinate]]
 }>()
 
-const callbacks: Callback[] = []
-const onMapReady = function (callback: Callback) {
-  callbacks.push(callback)
+let map: Map
+const callbacks: ((map: Map) => void)[] = []
+
+async function getMap() {
+  return new Promise<Map>((resolve) => {
+    if (map) {
+      resolve(map)
+    } else {
+      callbacks.push(resolve)
+    }
+  })
 }
 
-let map: Map
-provide(`onMapReady`, onMapReady)
+provide(`map`, getMap)
+provide(`add`, async (layer: Layer) => { (await getMap()).addLayer(layer) })
+provide(`remove`, async (layer: Layer) => { (await getMap()).removeLayer(layer) })
 
-onUpdated(async () => {
-  const L = await import(`leaflet`)
-  const [centerLat, centerLong] = props.center
-
-  map = map || L.map(`map`)
-  map.setView([centerLat, centerLong], map.getZoom() ?? props.zoom ?? 6)
-
-  while (callbacks.length > 0) {
-    const callback = callbacks.pop()!
-    callback(map, L)
-  }
-})
-
-onMapReady((map, { tileLayer: setTileLayer }) => {
+function initMap() {
+  map = new Map(`map`)
   map.on(`click`, (e) => {
     const { lat, lng } = e.latlng
     emit(`click`, [lat, lng])
@@ -72,6 +70,15 @@ onMapReady((map, { tileLayer: setTileLayer }) => {
     attribution: `&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>`,
   }).addTo(map)
 
+  while (callbacks.pop()?.(map)) { }
   emit(`ready`, map)
+}
+
+onUpdated(async () => {
+  if (!map) {
+    initMap()
+  }
+  const [centerLat, centerLong] = props.center
+  map.setView([centerLat, centerLong], map.getZoom() ?? props.zoom ?? 6)
 })
 </script>
