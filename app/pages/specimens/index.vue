@@ -64,7 +64,7 @@
           <div v-else-if="mode === 'list'" class="flex justify-center items-center h-full bg-primary-60">
             <span class="text-2xl">No specimens found</span>
           </div>
-          <LeafletMap v-else :center="mapCenter" class="h-full" @drag="onDragMap" @zoom="onZoomMap">
+          <LeafletMap v-else :center="mapCenter" :zoom="7" :max-zoom="18" class="h-full" @drag="onDragMap" @zoom="onZoomMap">
             <LeafletMarkerCluster>
               <LeafletMarker v-for="{ self, name, origin: { latitude, longitude } } in markers" :key="self"
                 :center="[latitude, longitude]"

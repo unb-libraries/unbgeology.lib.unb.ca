@@ -10,10 +10,16 @@ import { Map, tileLayer as setTileLayer } from "leaflet"
 import type { Layer } from "leaflet"
 import type { Coordinate } from "~/types/leaflet"
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   center: Coordinate,
   zoom?: number
-}>()
+  maxZoom?: number
+  minZoom?: number
+}>(), {
+  zoom: 8,
+  maxZoom: 24,
+  minZoom: 3,
+})
 
 const emit = defineEmits<{
   ready: [map: Map]
@@ -40,7 +46,11 @@ provide(`add`, async (layer: Layer) => { (await getMap()).addLayer(layer) })
 provide(`remove`, async (layer: Layer) => { (await getMap()).removeLayer(layer) })
 
 function initMap() {
-  map = new Map(`map`)
+  map = new Map(`map`, {
+    maxZoom: props.maxZoom,
+    minZoom: props.minZoom,
+  })
+
   map.on(`click`, (e) => {
     const { lat, lng } = e.latlng
     emit(`click`, [lat, lng])
