@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync } from "fs"
+import { existsSync, mkdirSync } from 'fs'
 
 export default defineNuxtConfig({
   buildDir: `/app/html/.build/.nuxt`,
@@ -6,6 +6,8 @@ export default defineNuxtConfig({
     `~/assets/css/main.css`,
     // REFACTOR: only load this on pages with maps
     `~/node_modules/leaflet/dist/leaflet.css`,
+    `~/node_modules/leaflet.markercluster/dist/MarkerCluster.css`,
+    `~/node_modules/leaflet.markercluster/dist/MarkerCluster.Default.css`,
   ],
   hooks: {
     'nitro:config': (nitroConfig) => {
