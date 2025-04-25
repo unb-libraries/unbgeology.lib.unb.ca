@@ -65,12 +65,14 @@
             <span class="text-2xl">No specimens found</span>
           </div>
           <LeafletMap v-else :center="mapCenter" class="h-full" @drag="onDragMap" @zoom="onZoomMap">
-            <LeafletMarker v-for="{ self, name, origin: { latitude, longitude } } in markers" :key="self"
-              :center="[latitude, longitude]"
-              :name="name"
-              :accuracy="0"
-              :draggable="false"
-              />
+            <LeafletMarkerCluster>
+              <LeafletMarker v-for="{ self, name, origin: { latitude, longitude } } in markers" :key="self"
+                :center="[latitude, longitude]"
+                :name="name"
+                :accuracy="0"
+                :draggable="false"
+                />
+            </LeafletMarkerCluster>
           </LeafletMap>
         </KeepAlive>
       </div>
