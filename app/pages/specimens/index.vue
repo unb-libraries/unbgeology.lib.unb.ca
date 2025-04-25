@@ -130,6 +130,7 @@ const onDisplay = ref<boolean[]>(filter.value?.filter(([field]) => field === 'st
 
 function updateFilter() {
   filter.value = [
+    ...filter.value.filter(([field]) => !['type', 'classification', 'age.relative', 'storage.location.public'].includes(field)),
     ...categories.value.map(category => ['type', FilterOperator.EQUALS, category] as Filter),
     ...classifications.value.map(classification => ['classification', FilterOperator.EQUALS, classification] as Filter),
     ...units.value.map(unit => ['age.relative', FilterOperator.EQUALS, unit] as Filter),
