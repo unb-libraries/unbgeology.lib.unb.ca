@@ -1,7 +1,12 @@
+<template>
+  <slot v-if="false" />
+</template>
+
 <script setup lang="ts">
 // REFACTOR: Replace this with component from @vue-leaflet/vue-leaflet
 import { Marker, Circle, Icon } from "leaflet"
 import type { Coordinate, LayerAddInjection, LayerRemoveInjection } from '~/types/leaflet'
+import { renderToString } from '@vue/server-renderer'
 
 const props = withDefaults(defineProps<{
   center: Coordinate
@@ -42,9 +47,7 @@ onMounted(() => {
     })
   }
 
-  if (props.name) {
-    marker.bindPopup(props.name)
-  }
+  marker.bindPopup('')
 
   if (props.accuracy) {
     circle = new Circle([props.center[0], props.center[1]], {
@@ -60,9 +63,12 @@ onMounted(() => {
   add(marker)
 })
 
-onUpdated(() => {
+onUpdated(async () => {
   if (marker) {
     marker.setLatLng(props.center)
+    const popupContent = await Promise.all(getCurrentInstance()?.slots.default?.()
+      .map(vnode => renderToString(vnode)) ?? [])
+    marker.setPopupContent(popupContent.join(``))
   }
 })
 
