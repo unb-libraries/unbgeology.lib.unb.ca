@@ -56,11 +56,11 @@ export default defineCachedEventHandler(async (event) => {
   }
 
   const query = Specimen.Base.mongoose.model.aggregate<{ specimens: Specimen[], count: [{ total: number }], facets: Record<string, { _id: unknown, count: number }[]> }>()
-  if (Object.values(queryFilter).filter(f => (f ?? []).length > 0).length) {
+  if (queryFilter.search) {
     query.search({
       index: 'autocomplete',
       compound: {
-        should: (queryFilter.search && [
+        should: [
           { equals: { value: queryFilter.search, path: 'slug', score: { boost: { value: 3 } } } },
           { equals: { value: queryFilter.search, path: 'name', score: { boost: { value: 3 } } } },
           { text: { query: queryFilter.search, path: 'name', score: { boost: { value: 2 }} } },
@@ -71,50 +71,7 @@ export default defineCachedEventHandler(async (event) => {
           { text: { query: queryFilter.search, path: 'origin.description' } },
           { autocomplete: { query: queryFilter.search, path: 'origin.description' } },
           { phrase: { query: queryFilter.search, path: 'description' } },
-        ]) || [],
-        filter: [
-          queryFilter.type.length && {
-            queryString: {
-              defaultPath: 'type',
-              query: queryFilter.type.join(` OR `),
-            },
-          },
-          queryFilter.classification.length && {
-            in: {
-              path: 'classification',
-              value: queryFilter.classification,
-            },
-          },
-          queryFilter.age.length && {
-            in: {
-              path: 'relativeAge',
-              value: queryFilter.age,
-            },
-          },
-          // TODO: Convert this to a geo filter (geoWithin); requires origin to contain a "GeoJSON" point
-          queryFilter.origin.length === 2 && {
-            compound: {
-              filter: [
-                {
-                  range: {
-                    path: 'origin.latitude',
-                    lte: queryFilter.origin[0][0],
-                    gte: queryFilter.origin[1][0],
-                  },
-                },
-                {
-                  range: {
-                    path: 'origin.longitude',
-                    lte: queryFilter.origin[0][1],
-                    gte: queryFilter.origin[1][1],
-                  },
-                }
-              ]
-            }
-          },
-          // TODO: Filter by age
-          // TODO: Filter by storage location (public/private)
-        ].filter(Boolean),
+        ],
       },
     })
     
@@ -128,10 +85,18 @@ export default defineCachedEventHandler(async (event) => {
 
   query.match({ authTags: { $in: resources } })
 
+  if (queryFilter.type.length) {
+    query.match({ type: { $in: queryFilter.type } })
+  }
+
   // TODO: Make this conditional, introduce facet query parameter
   // if (fields.some(f => f.startsWith(`classification`))) {
     query.lookup({ from: `terms`, localField: `classification`, foreignField: `_id`, as: `classification` })
     query.unwind({ path: `$classification`, preserveNullAndEmptyArrays: true })
+
+    if (queryFilter.classification.length) {
+      query.match({ 'classification._id': { $in: queryFilter.classification } })
+    }
   // }
   if (fields.some(f => f.startsWith(`images`))) {
     query.lookup({ from: `files`, localField: `images`, foreignField: `_id`, as: `images` })
@@ -143,6 +108,9 @@ export default defineCachedEventHandler(async (event) => {
   // TODO: Make this conditional, introduce facet query parameter
   // if (fields.some(f => f.startsWith(`age`))) {
     query.lookup({ from: `terms`, localField: `relativeAge`, foreignField: `_id`, as: `relativeAge` })
+    if (queryFilter.age.length) {
+      query.match({ 'relativeAge._id': { $in: queryFilter.age } })
+    }
   // }
   if (fields.some(f => f.startsWith(`composition`))) {
     query.lookup({ from: `terms`, localField: `composition`, foreignField: `_id`, as: `composition` })
@@ -155,6 +123,21 @@ export default defineCachedEventHandler(async (event) => {
     query.lookup({ from: `terms`, localField: `sponsor`, foreignField: `_id`, as: `sponsor` })
     query.unwind({ path: `$sponsor`, preserveNullAndEmptyArrays: true })
   }
+
+  // TODO: Convert this to a geo filter (geoWithin); requires origin to contain a "GeoJSON" point
+  if (queryFilter.origin.length == 2) {
+    query.match({
+      'origin.latitude': {
+        $lte: queryFilter.origin[0][0],
+        $gte: queryFilter.origin[1][0],
+      },
+      'origin.longitude': {
+        $lte: queryFilter.origin[0][1],
+        $gte: queryFilter.origin[1][1],
+      },
+    })
+  }
+
   // TODO: Make this conditional, introduce facet query parameter
   // if (fields.some(f => f.startsWith(`storage`))) {
     query.lookup({ from: `terms`, localField: `storage.location`, foreignField: `_id`, as: `storageLocations` })
