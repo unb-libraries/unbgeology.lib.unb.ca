@@ -29,7 +29,7 @@ async function getCluster() {
 }
 
 provide(`cluster`, getCluster)
-provide(`add`, async (layer: Layer) => { console.log('add layer'); (await getCluster()).addLayer(layer) })
+provide(`add`, async (layer: Layer) => { (await getCluster()).addLayer(layer) })
 provide(`remove`, async (layer: Layer) => { (await getCluster()).removeLayer(layer) })
 
 function initCluster() {
