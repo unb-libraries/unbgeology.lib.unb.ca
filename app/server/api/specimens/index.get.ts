@@ -55,7 +55,7 @@ export default defineCachedEventHandler(async (event) => {
     search,
   }
 
-  const query = Specimen.Base.mongoose.model.aggregate<{ specimens: Specimen[], count: [{ total: number }], facets: Record<string, { _id: unknown, count: number }[]> }>()
+  const query = Specimen.Base.mongoose.model.aggregate<{ specimens: Specimen[], total: number, facets: Record<string, { _id: unknown, count: number }[]> }>()
   if (queryFilter.search) {
     query.search({
       index: 'autocomplete',
@@ -196,7 +196,7 @@ export default defineCachedEventHandler(async (event) => {
     })
   }
   
-  const [{ specimens, count: [{ total }], facets }] = await query
+  const [{ specimens, total, facets }] = await query
     .facet({
       specimens: [
         {
@@ -241,7 +241,7 @@ export default defineCachedEventHandler(async (event) => {
       ],
     })
     .addFields({ facets: { age: `$ageFacet`, category: `$categoryFacet`, classification: `$classificationFacet`, onDisplay: `$onDisplayFacet` } })
-    .project({ specimens: 1, count: 1, facets: 1 })
+    .project({ specimens: 1, total: { $ifNull: [{ $arrayElemAt: ['$count.total', 0] }, 0] }, facets: 1 })
 
   return {
     self: `/api/specimens`,
