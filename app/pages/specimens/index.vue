@@ -1,31 +1,33 @@
 <template>
-  <div class="space-y-2 flex-col flex h-full">
-    <span v-if="list?.total" class="flex-none">Displaying {{ (page - 1) * pageSize + 1 }} - {{ (page - 1) * pageSize + specimens.length }} of {{ list?.total }} specimens</span>
-    <div class="flex-none space-x-1 w-full flex">
-      <div class="form-field grow">
-        <label class="sr-only" for="search">Search</label>
-        <input v-model="search" placeholder="Search" name="search" class="placeholder:text-primary dark:placeholder:text-primary-20 rounded-md input input-text grow p-2 placeholder:italic">
+  <div class="flex-col flex h-full">
+    <div class="sticky top-[10rem] space-y-2 z-30 bg-base dark:bg-primary-80">
+      <span v-if="list?.total" class="flex-none">Displaying {{ (page - 1) * pageSize + 1 }} - {{ (page - 1) * pageSize + specimens.length }} of {{ list?.total }} specimens</span>
+      <div class="flex-none space-x-1 w-full flex">
+        <div class="form-field grow">
+          <label class="sr-only" for="search">Search</label>
+          <input v-model="search" placeholder="Search" name="search" class="placeholder:text-primary dark:placeholder:text-primary-20 rounded-md input leading-[1.5rem] grow p-2 placeholder:italic">
+        </div>
+        <button class="bg-base justify-center items-center flex xl:hidden hover:border-accent-light border rounded-md border-primary-60 aspect-square dark:bg-primary flex-none cursor-pointer" @click.prevent.stop="sidebarCollapsed = !sidebarCollapsed">
+          <IconFilter class="fill-none stroke-current size-6 stroke-1.5 flex" />
+        </button>
+        <button v-show="mode === 'map'" class="bg-base justify-center hover:border-accent-light items-center flex border rounded-md border-primary-60 aspect-square dark:bg-primary flex-none cursor-pointer" @click.prevent.stop="onSwitchViewMode('list')">
+          <IconList class="fill-none stroke-current size-6 stroke-1.5 flex" />
+        </button>
+        <button v-show="mode === 'list'" class="bg-base justify-center items-center flex hover:border-accent-light border rounded-md border-primary-60 aspect-square dark:bg-primary flex-none cursor-pointer" @click.prevent.stop="onSwitchViewMode('map')">
+          <IconMap class="fill-none stroke-current size-6 stroke-1.5 flex" />
+        </button>
       </div>
-      <button class="bg-base justify-center items-center flex xl:hidden hover:border-accent-light border rounded-md border-primary-60 aspect-square dark:bg-primary flex-none cursor-pointer" @click.prevent.stop="sidebarCollapsed = !sidebarCollapsed">
-        <IconFilter class="fill-none stroke-current size-6 stroke-1.5 flex" />
-      </button>
-      <button v-show="mode === 'map'" class="bg-base justify-center hover:border-accent-light items-center flex border rounded-md border-primary-60 aspect-square dark:bg-primary flex-none cursor-pointer" @click.prevent.stop="onSwitchViewMode('list')">
-        <IconList class="fill-none stroke-current size-6 stroke-1.5 flex" />
-      </button>
-      <button v-show="mode === 'list'" class="bg-base justify-center items-center flex hover:border-accent-light border rounded-md border-primary-60 aspect-square dark:bg-primary flex-none cursor-pointer" @click.prevent.stop="onSwitchViewMode('map')">
-        <IconMap class="fill-none stroke-current size-6 stroke-1.5 flex" />
-      </button>
     </div>
-    <div class="flex flex-col xl:flex-row grow gap-x-2 overflow-y-hidden">
-      <div v-show="Object.keys(list?.facets ?? {}).length" :class="['xl:w-1/5 xl:h-full xl:relative', { 'fixed top-0 left-0 size-full bg-primary-80/80': !sidebarCollapsed }]" @click.stop.self="sidebarCollapsed = true">
-        <div :class="['absolute gap-2 xl:relative xl:flex xl:flex-col bottom-0 max-h-4/5 xl:max-h-full xl:h-full left-0 w-full overflow-y-scroll', { hidden: sidebarCollapsed }]">
+    <div class="flex flex-col xl:flex-row grow gap-x-2">
+      <div v-show="Object.keys(list?.facets ?? {}).length" :class="['xl:w-1/5 xl:relative', { 'fixed top-0 left-0 size-full bg-primary-80/80': !sidebarCollapsed }]" @click.stop.self="sidebarCollapsed = true">
+        <div :class="['absolute gap-2 xl:flex xl:flex-col bottom-0 xl:sticky xl:top-[calc(14.5rem+2px)] max-h-4/5 left-0 w-full', { hidden: sidebarCollapsed }]">
           <Facet v-if="facets.category" v-model="categories" :options="facets.category" value-field="id" label-field="label" title="Categories" class="flex-none" />
           <Facet v-if="facets.classification" v-model="classifications" :options="facets.classification" value-field="self" label-field="label" title="Classification" class="shrink" />
           <Facet v-if="facets.age" v-model="units" :options="facets.age" value-field="self" label-field="label" title="Age" class="shrink" />
           <Facet v-if="facets.onDisplay" v-model="onDisplay" :options="facets.onDisplay.map(({ value, count }) => ({ value: { value, label: value === true ? 'Yes' : 'No' }, count }))" value-field="value" label-field="label" title="On display" class="flex-none" />
         </div>
       </div>
-      <div class="grow h-full overflow-y-scroll">
+      <div class="grow h-full">
         <KeepAlive>
           <ul v-if="mode === 'list' && list?.total" class="space-y-2">
             <li v-for="specimen in specimens" :key="specimen.self" class="bg-primary-20 dark:bg-primary-60">
