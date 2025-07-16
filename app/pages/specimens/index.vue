@@ -10,14 +10,17 @@
           <label class="sr-only" for="search">Search</label>
           <input v-model="search" placeholder="Search" name="search" class="placeholder:text-primary dark:placeholder:text-primary-20 rounded-md input leading-[1.5rem] grow p-2 placeholder:italic">
         </div>
-        <button class="bg-base justify-center items-center flex xl:hidden hover:border-accent-light border rounded-md border-primary-60 aspect-square dark:bg-primary flex-none cursor-pointer" @click.prevent.stop="sidebarCollapsed = !sidebarCollapsed">
-          <IconFilter class="fill-none stroke-current size-6 stroke-1.5 flex" />
+        <button :class="['inline-flex space-x-1 p-2 justify-center items-center xl:hidden hover:border-accent-light border rounded-md border-primary-60 flex-none cursor-pointer', { 'dark:bg-accent-dark bg-accent-light': !sidebarCollapsed }]" @click.prevent.stop="sidebarCollapsed = !sidebarCollapsed">
+          <IconFilter class="fill-none stroke-current size-6 stroke-1.5" />
+          <span>Filter</span>
         </button>
-        <button v-show="mode === 'map'" class="bg-base justify-center hover:border-accent-light items-center flex border rounded-md border-primary-60 aspect-square dark:bg-primary flex-none cursor-pointer" @click.prevent.stop="onSwitchViewMode('list')">
-          <IconList class="fill-none stroke-current size-6 stroke-1.5 flex" />
+        <button :class="['inline-flex space-x-1 p-2 justify-center hover:border-accent-light items-center border rounded-md border-primary-60 flex-none cursor-pointer', { 'dark:bg-accent-dark bg-accent-light': mode === 'list', 'bg-base dark:bg-primary': mode !== 'list' }]" @click.prevent.stop="onSwitchViewMode('list')">
+          <IconList class="fill-none stroke-current size-6 stroke-1.5" />
+          <span>List</span>
         </button>
-        <button v-show="mode === 'list'" class="bg-base justify-center items-center flex hover:border-accent-light border rounded-md border-primary-60 aspect-square dark:bg-primary flex-none cursor-pointer" @click.prevent.stop="onSwitchViewMode('map')">
-          <IconMap class="fill-none stroke-current size-6 stroke-1.5 flex" />
+        <button :class="['inline-flex space-x-1 p-2 justify-center items-center hover:border-accent-light border rounded-md border-primary-60 flex-none cursor-pointer', { 'dark:bg-accent-dark bg-accent-light': mode === 'map', 'bg-base dark:bg-primary': mode !== 'map' }]" @click.prevent.stop="onSwitchViewMode('map')">
+          <IconMap class="fill-none stroke-current size-6 stroke-1.5" />
+          <span>Map</span>
         </button>
       </div>
     </div>
