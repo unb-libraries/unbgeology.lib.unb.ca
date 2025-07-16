@@ -1,7 +1,9 @@
 <template>
   <div class="flex-col flex h-full">
-    <div class="sticky top-[10rem] space-y-2 z-30 bg-base dark:bg-primary-80">
-      <span v-if="list?.total" class="flex-none">Displaying {{ (page - 1) * pageSize + 1 }} - {{ (page - 1) * pageSize + specimens.length }} of {{ list?.total }} specimens</span>
+    <div class="sticky top-[10rem] pb-2 space-y-2 z-30 bg-base dark:bg-primary-80">
+      <div class="flex justify-between items-center space-x-2">
+        <a v-if="list?.total" class="flex-none py-1">Displaying {{ (page - 1) * pageSize + 1 }} - {{ (page - 1) * pageSize + specimens.length }} of {{ list?.total }} specimens</a>
+      </div>
       <div class="flex-none space-x-1 w-full flex">
         <div class="form-field grow">
           <label class="sr-only" for="search">Search</label>
@@ -20,16 +22,16 @@
     </div>
     <div class="flex flex-col xl:flex-row grow gap-x-2">
       <div v-show="Object.keys(list?.facets ?? {}).length" :class="['xl:w-1/5 xl:relative', { 'fixed top-0 left-0 size-full bg-primary-80/80': !sidebarCollapsed }]" @click.stop.self="sidebarCollapsed = true">
-        <div :class="['absolute gap-2 xl:flex xl:flex-col bottom-0 xl:sticky xl:top-[calc(14.5rem+2px)] max-h-4/5 xl:max-h-[calc(100vh-14.5rem-2px)] overflow-y-scroll left-0 w-full', { hidden: sidebarCollapsed }]">
+        <div :class="['absolute gap-2 xl:flex xl:flex-col bottom-0 xl:sticky xl:top-[calc(15.5rem+2px)] max-h-4/5 xl:max-h-[calc(100vh-15.5rem-2px)] overflow-y-scroll left-0 w-full', { hidden: sidebarCollapsed }]">
           <Facet v-if="facets.category" v-model="categories" :options="facets.category" value-field="id" label-field="label" title="Categories" class="flex-none" />
           <Facet v-if="facets.classification" v-model="classifications" :options="facets.classification" value-field="self" label-field="label" title="Classification" class="shrink" />
           <Facet v-if="facets.age" v-model="units" :options="facets.age" value-field="self" label-field="label" title="Age" class="shrink" />
           <Facet v-if="facets.onDisplay" v-model="onDisplay" :options="facets.onDisplay.map(({ value, count }) => ({ value: { value, label: value === true ? 'Yes' : 'No' }, count }))" value-field="value" label-field="label" title="On display" class="flex-none" />
         </div>
       </div>
-      <div class="grow h-full">
+      <div class="grow h-full relative">
         <KeepAlive>
-          <ul v-if="mode === 'list' && list?.total" class="space-y-2">
+          <ul v-if="mode === 'list' && list?.total" class="space-y-2 overflow-y-scroll h-full">
             <li v-for="specimen in specimens" :key="specimen.self" class="bg-primary-20 dark:bg-primary-60">
               <div class="flex flex-row">
                 <div class="h-20 aspect-square bg-primary-40 dark:bg-primary-20 flex justify-center items-center">
@@ -63,10 +65,10 @@
               </div>
             </li>
           </ul>
-          <div v-else-if="mode === 'list'" class="flex justify-center items-center h-full bg-primary-60">
+          <div v-else-if="mode === 'list'" class="flex justify-center items-center h-[calc(100vh-15.5rem-2px)] bg-primary-60">
             <span class="text-2xl">No specimens found</span>
           </div>
-          <LeafletMap v-else :center="mapCenter" :zoom="7" :max-zoom="18" class="h-full" @drag="onDragMap" @zoom="onZoomMap">
+          <LeafletMap v-else :center="mapCenter" :zoom="7" :max-zoom="18" class="z-0 h-[calc(100vh-15.5rem-2px)]" @drag="onDragMap" @zoom="onZoomMap">
             <LeafletMarkerCluster>
               <LeafletMarker v-for="{ id, self, type, name, classification, images, origin: { name: originName, latitude, longitude } } in markers" :key="self"
                 :center="[latitude, longitude]"
