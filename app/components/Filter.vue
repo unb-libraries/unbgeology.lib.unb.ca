@@ -10,7 +10,7 @@
       </button>
     </div>
     <div v-show="!collapsed" class="py-2">
-      <div class="flex flex-col">
+      <div class="flex flex-col space-y-2">
         <slot />
       </div>
     </div>

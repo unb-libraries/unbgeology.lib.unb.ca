@@ -1,11 +1,14 @@
 <template>
   <Filter :title="title" v-model:collapsed="collapsed">
-    <div v-for="{ value, label, count } in options" class="inline-flex items-center space-x-1">
-      <input type="checkbox" :id="`filter-${title}[${value}]`.toLowerCase()" :name="`${title}[${value}]`.toLowerCase()" class="size-5 rounded-md input input-checkbox" :value="value" :checked="selection.includes(value)" @change="selection = selection.includes(value) ? selection.filter(v => v !== value) : [...selection, value]">
-      <label :for="`filter-${title}[${value}]`.toLowerCase()" class="text-lg mr-4 cursor-pointer">
-        {{ label }} ({{ count }})
-      </label>
+    <div class="flex flex-col">
+      <div v-for="{ value, label, count } in options.slice(0, collapsible && optionsCollapsed ? collapsible : options.length)" class="inline-flex items-center space-x-1">
+        <input type="checkbox" :id="`filter-${title}[${value}]`.toLowerCase()" :name="`${title}[${value}]`.toLowerCase()" class="size-5 rounded-md input input-checkbox" :value="value" :checked="selection.includes(value)" @change="selection = selection.includes(value) ? selection.filter(v => v !== value) : [...selection, value]">
+        <label :for="`filter-${title}[${value}]`.toLowerCase()" class="text-lg mr-4 cursor-pointer">
+          {{ label }} ({{ count }})
+        </label>
+      </div>
     </div>
+    <button v-if="collapsible && options.length > collapsible" class="text-start hover:underline" @click="optionsCollapsed = !optionsCollapsed">{{ optionsCollapsed ? 'Show all' : 'Show less' }}</button>
   </Filter>
 </template>
 
@@ -21,8 +24,10 @@ const props = defineProps<{
   }[]
   valueField?: string
   labelField?: string
+  collapsible?: number
 }>()
 
+const optionsCollapsed = ref(props.collapsible ? true : false)
 const options = computed(() => props.options.map(({ value, count }) => ({
   value: getValue(value),
   label: getLabel(value),
