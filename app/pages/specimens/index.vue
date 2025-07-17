@@ -31,10 +31,10 @@
     <div class="flex flex-col xl:flex-row grow gap-x-2">
       <div v-show="Object.keys(list?.facets ?? {}).length" :class="['xl:w-1/5 xl:relative', { 'fixed top-0 left-0 size-full bg-primary-80/80': !sidebarCollapsed }]" @click.stop.self="sidebarCollapsed = true">
         <div :class="['absolute gap-2 xl:flex xl:flex-col bottom-0 xl:sticky xl:top-[calc(15.5rem+2px)] max-h-4/5 xl:max-h-[calc(100dvh-15.5rem-2px)] overflow-y-scroll left-0 w-full', { hidden: sidebarCollapsed }]">
-          <Facet v-if="facets.category" v-model="categories" :options="facets.category" value-field="id" label-field="label" title="Categories" class="flex-none" />
-          <Facet v-if="facets.classification" v-model="classifications" :options="facets.classification" value-field="self" label-field="label" title="Classification" :collapsible="10" class="shrink" />
-          <Facet v-if="facets.age" v-model="units" :options="facets.age" value-field="self" label-field="label" title="Age" :collapsible="10" class="shrink" />
-          <Facet v-if="facets.onDisplay" v-model="onDisplay" :options="facets.onDisplay.map(({ value, count }) => ({ value: { value, label: value === true ? 'Yes' : 'No' }, count }))" value-field="value" label-field="label" title="On display" class="flex-none" />
+          <Facet v-if="(facets.category ?? []).length" v-model="categories" :options="facets.category" value-field="id" label-field="label" title="Categories" class="flex-none" />
+          <Facet v-if="(facets.classification ?? []).length" v-model="classifications" :options="facets.classification" value-field="self" label-field="label" title="Classification" :collapsible="10" class="shrink" />
+          <Facet v-if="(facets.age ?? []).length" v-model="units" :options="facets.age" value-field="self" label-field="label" title="Age" :collapsible="10" class="shrink" />
+          <Facet v-if="(facets.onDisplay ?? []).length" v-model="onDisplay" :options="facets.onDisplay.map(({ value, count }) => ({ value: { value, label: value === true ? 'Yes' : 'No' }, count }))" value-field="value" label-field="label" title="On display" class="flex-none" />
         </div>
       </div>
       <div class="grow h-full relative">
