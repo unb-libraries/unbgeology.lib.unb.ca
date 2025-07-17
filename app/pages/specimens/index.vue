@@ -3,7 +3,7 @@
     <div class="sticky top-[10rem] pb-2 space-y-2 z-30 bg-base dark:bg-primary-80">
       <div class="flex justify-between items-center space-x-2">
         <a v-if="list?.total" class="flex-none py-1">Displaying {{ (page - 1) * pageSize + 1 }} - {{ (page - 1) * pageSize + specimens.length }} of {{ list?.total }} specimens</a>
-        <TwPageIndex v-if="mode === 'list'" :page="page" :total="Math.ceil((list?.total ?? 0) / pageSize)" :size="10" @change="(index) => { page = index }" class="flex justify-end flex-none" />
+        <TwPageIndex v-if="mode !== 'map'" :page="page" :total="Math.ceil((list?.total ?? 0) / pageSize)" :size="10" @change="(index) => { page = index }" class="flex justify-end flex-none" />
       </div>
       <div class="flex-none space-x-1 w-full flex">
         <div class="form-field grow">
@@ -18,6 +18,10 @@
           <IconList class="fill-none stroke-current size-6 stroke-1.5" />
           <span>List</span>
         </button>
+        <button :class="['inline-flex space-x-1 p-2 justify-center hover:border-accent-light items-center border rounded-md border-primary-60 flex-none cursor-pointer', { 'dark:bg-accent-dark bg-accent-light': mode === 'grid', 'bg-base dark:bg-primary': mode !== 'grid' }]" @click.prevent.stop="onSwitchViewMode('grid')">
+          <IconGrid class="fill-none stroke-current size-6 stroke-1.5" />
+          <span>Grid</span>
+        </button>
         <button :class="['inline-flex space-x-1 p-2 justify-center items-center hover:border-accent-light border rounded-md border-primary-60 flex-none cursor-pointer', { 'dark:bg-accent-dark bg-accent-light': mode === 'map', 'bg-base dark:bg-primary': mode !== 'map' }]" @click.prevent.stop="onSwitchViewMode('map')">
           <IconMap class="fill-none stroke-current size-6 stroke-1.5" />
           <span>Map</span>
@@ -25,8 +29,8 @@
       </div>
     </div>
     <div class="flex flex-col xl:flex-row grow gap-x-2">
-      <div v-show="Object.keys(list?.facets ?? {}).length" :class="['xl:w-1/5 xl:relative', { 'fixed top-0 left-0 size-full bg-primary-80/80': !sidebarCollapsed }]" @click.stop.self="sidebarCollapsed = true">
-        <div :class="['absolute gap-2 xl:flex xl:flex-col bottom-0 xl:sticky xl:top-[calc(15.5rem+2px)] max-h-4/5 xl:max-h-[calc(100vh-15.5rem-2px)] overflow-y-scroll left-0 w-full', { hidden: sidebarCollapsed }]">
+      <div v-show="Object.keys(list?.facets ?? {}).length" :class="['xl:min-w-1/5 xl:relative', { 'fixed top-0 left-0 size-full bg-primary-80/80': !sidebarCollapsed }]" @click.stop.self="sidebarCollapsed = true">
+        <div :class="['absolute gap-2 xl:flex xl:flex-col bottom-0 xl:sticky xl:top-[calc(15.5rem+2px)] max-h-4/5 xl:max-h-[calc(100dvh-15.5rem-2px)] overflow-y-scroll left-0 w-full', { hidden: sidebarCollapsed }]">
           <Facet v-if="facets.category" v-model="categories" :options="facets.category" value-field="id" label-field="label" title="Categories" class="flex-none" />
           <Facet v-if="facets.classification" v-model="classifications" :options="facets.classification" value-field="self" label-field="label" title="Classification" class="shrink" />
           <Facet v-if="facets.age" v-model="units" :options="facets.age" value-field="self" label-field="label" title="Age" class="shrink" />
@@ -69,10 +73,32 @@
               </div>
             </li>
           </ul>
-          <div v-else-if="mode === 'list'" class="flex justify-center items-center h-[calc(100vh-15.5rem-2px)] bg-primary-60">
+          <ul v-else-if="mode === 'grid' && list?.total" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+            <li v-for="specimen in specimens" :key="specimen.self" class="bg-primary-20 dark:bg-primary-60">
+              <a :href="`/specimens/${specimen.id}`" class="relative aspect-square bg-primary-40 dark:bg-primary-20 flex justify-center items-center">
+                <span v-if="useEnum(Status).valueOf(specimen.status) !== Status.PUBLISHED" :class="['absolute top-2 left-2 text-xs rounded-md px-2 py-1', {
+                  'bg-yellow text-primary': useEnum(Status).valueOf(specimen.status) === Status.MIGRATED,
+                  'bg-red-light': useEnum(Status).valueOf(specimen.status) === Status.DRAFT,
+                  'bg-blue': useEnum(Status).valueOf(specimen.status) === Status.REVIEW,
+                }]"
+                >
+                  {{ useEnum(Status).labelOf(specimen.status).toUpperCase() }}
+                </span>
+                <img v-if="specimen.images?.total > 0" :src="`${specimen.images?.entities[0].uri}?w=200&h=200`" class="aspect-square object-cover">
+                <IconFossil v-else-if="specimen.type === 'fossil'" class="absolute size-1/2 left-1/4 top-[8.33%] stroke-base dark:stroke-primary-40 fill-none" />
+                <IconRock v-else-if="specimen.type === 'rock'" class="absolute size-1/2 left-1/4 top-[8.33%] stroke-base dark:stroke-primary-40 fill-none" />
+                <IconMineral v-else-if="specimen.type === 'mineral'" class="absolute size-1/2 left-1/4 top-[8.33%] stroke-base dark:stroke-primary-40 fill-none" />
+                <div class="absolute h-1/3 w-full bottom-0 bg-primary-20 dark:bg-primary-60/80 p-4 sm:px-3 sm:py-2 md:px-3 md:py-1.5 lg:p-4 xl:p-2 flex flex-col">
+                  <a :href="`/specimens/${specimen.id}`" class="leading-[1.25em] text-5xl sm:text-3xl md:text-2xl lg:text-xl xl:text-lg truncate hover:underline">{{ specimen.name ?? 'Unknown' }}</a>
+                  <span class="leading-[1.25em] text-2xl sm:text-lg md:text-md lg:text-sm xl:text-xs">{{ specimen.classification?.label }}</span>
+                </div>
+              </a>
+            </li>
+          </ul>
+          <div v-else-if="mode === 'list'" class="flex justify-center items-center h-[calc(100dvh-15.5rem-2px)] bg-primary-60">
             <span class="text-2xl">No specimens found</span>
           </div>
-          <LeafletMap v-else :center="mapCenter" :zoom="7" :max-zoom="18" class="z-0 h-[calc(100vh-15.5rem-2px)]" @drag="onDragMap" @zoom="onZoomMap">
+          <LeafletMap v-else :center="mapCenter" :zoom="7" :max-zoom="18" class="z-0 h-[calc(100dvh-15.5rem-2px)]" @drag="onDragMap" @zoom="onZoomMap">
             <LeafletMarkerCluster>
               <LeafletMarker v-for="{ id, self, type, name, classification, images, origin: { name: originName, latitude, longitude } } in markers" :key="self"
                 :center="[latitude, longitude]"
@@ -116,7 +142,7 @@ definePageMeta({
 })
 
 const { query: q } = useRoute()
-const mode = ref<'list' | 'map'>(['list', 'map'].find(mode => mode === (Array.isArray(q.mode) ? q.mode.at(-1) : q.mode)) as 'list' | 'map' ?? 'list')
+const mode = ref<'list' | 'grid' | 'map'>(['list', 'grid', 'map'].find(mode => mode === (Array.isArray(q.mode) ? q.mode.at(-1) : q.mode)) as 'list' | 'grid' | 'map' ?? 'list')
 const mapCenter = ref<Coordinate>([46.65848709787655, -66.35685870803573]) // Initially center on NB
 
 const { entities: specimens, list, query: { page, pageSize, search, select, filter } } = await fetchEntityList<Specimen>("Specimen", {
@@ -165,7 +191,7 @@ watch(classifications, updateFilter)
 watch(units, updateFilter)
 watch(onDisplay, updateFilter)
 
-function onSwitchViewMode(newMode: 'list' | 'map') {
+function onSwitchViewMode(newMode: 'list' | 'grid' | 'map') {
   mode.value = newMode
   if (newMode === 'map') {
     filter.value = [...filter.value, ['origin', FilterOperator.GREATER, '90.1;180.1'], ['origin', FilterOperator.LESS, '-90.1;-180.1']]
