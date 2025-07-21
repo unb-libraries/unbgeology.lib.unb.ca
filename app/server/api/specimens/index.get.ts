@@ -95,7 +95,10 @@ export default defineCachedEventHandler(async (event) => {
     query.unwind({ path: `$classification`, preserveNullAndEmptyArrays: true })
 
     if (queryFilter.classification.length) {
-      query.match({ 'classification._id': { $in: queryFilter.classification } })
+      query.match({ $or: [
+        { 'classification._id': { $in: queryFilter.classification } },
+        { 'classification.ancestors': { $in: queryFilter.classification } },
+      ] })
     }
   // }
   if (fields.some(f => f.startsWith(`images`))) {
@@ -223,14 +226,20 @@ export default defineCachedEventHandler(async (event) => {
       ],
       classificationFacet: [
         { $match: { classification: { $exists: 1 } } },
-        { $sortByCount: `$classification` },
+        { $lookup: { from: 'terms', localField: 'classification.ancestors', foreignField: '_id', as: 'classifications' } },
+        { $project: { classifications: { $setUnion: [ ['$classification'], '$classifications'] } } },
+        { $unwind: { path: '$classifications' } },
+        { $sortByCount: `$classifications` },
         { $project: { _id: { _id: 1, label: 1, type: 1 }, count: 1 } },
         { $sort: { count: -1, '_id.label': 1 } },
       ],
       ageFacet: [
         { $unwind: { path: `$relativeAge` } },
         { $match: { relativeAge: { $exists: 1 } } },
-        { $sortByCount: `$relativeAge` },
+        { $lookup: { from: 'terms', localField: 'relativeAge.ancestors', foreignField: '_id', as: 'relativeAges' } },
+        { $project: { relativeAges: { $setUnion: [ ['$relativeAge'], '$relativeAges'] } } },
+        { $unwind: { path: '$relativeAges' } },
+        { $sortByCount: `$relativeAges` },
         { $project: { _id: { _id: 1, label: 1, division: 1 }, count: 1 } },
         { $sort: { count: -1, '_id.label': 1 } },
       ],
