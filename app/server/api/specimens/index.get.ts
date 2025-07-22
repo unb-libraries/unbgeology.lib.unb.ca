@@ -243,14 +243,61 @@ export default defineCachedEventHandler(async (event) => {
         { $project: { _id: { _id: 1, label: 1, division: 1 }, count: 1 } },
         { $sort: { count: -1, '_id.label': 1 } },
       ],
+      // Cenozoic
+      numericAgeFacet66: [
+        { $project: { numericAge: { $ifNull: ['$numericAge', '$relativeAge.start'] } } },
+        { $unwind: { path: '$numericAge' } },
+        { $match: { numericAge: { $lte: 66000000 } } },
+        { $group: { _id: [0, 66000000], count: { $count: {} } } },
+      ],
+      // Mesozoic
+      numericAgeFacet251: [
+        { $project: { numericAge: { $ifNull: ['$numericAge', '$relativeAge.start'] } } },
+        { $unwind: { path: '$numericAge' } },
+        { $match: { numericAge: { $lte: 251902000, $gte: 66000000 } } },
+        { $group: { _id: [66000000, 251902000], count: { $count: {} } } },
+      ],
+      // Paleozoic
+      numericAgeFacet541: [
+        { $project: { numericAge: { $ifNull: ['$numericAge', '$relativeAge.start'] } } },
+        { $unwind: { path: '$numericAge' } },
+        { $match: { numericAge: { $lte: 541000000, $gte: 251902000 } } },
+        { $group: { _id: [251902000, 541000000], count: { $count: {} } } },
+      ],
+      // Proterozoic
+      numericAgeFacet2500: [
+        { $project: { numericAge: { $ifNull: ['$numericAge', '$relativeAge.start'] } } },
+        { $unwind: { path: '$numericAge' } },
+        { $match: { numericAge: { $lte: 2500000000, $gte: 541000000 } } },
+        { $group: { _id: [541000000, 2500000000], count: { $count: {} } } },
+      ],
+      // Archean
+      numericAgeFacet2500x: [
+        { $project: { numericAge: { $ifNull: ['$numericAge', '$relativeAge.start'] } } },
+        { $unwind: { path: '$numericAge' } },
+        { $match: { numericAge: { $gte: 2500000000 } } },
+        { $group: { _id: [2500000000], count: { $count: {} } } },
+      ],
       // TODO: Account for storage ancestors "public" property
       onDisplayFacet: [
         { $match: { 'currentStorage.location.public': true } },
         { $sortByCount: `$currentStorage.location.public` },
       ],
     })
-    .addFields({ facets: { age: `$ageFacet`, category: `$categoryFacet`, classification: `$classificationFacet`, onDisplay: `$onDisplayFacet` } })
-    .project({ specimens: 1, total: { $ifNull: [{ $arrayElemAt: ['$count.total', 0] }, 0] }, facets: 1 })
+    .addFields({
+      facets: {
+        age: `$ageFacet`,
+        numericAge: { $setUnion: ['$numericAgeFacet66', '$numericAgeFacet251', '$numericAgeFacet541', '$numericAgeFacet2500', '$numericAgeFacet2500x'] },
+        category: `$categoryFacet`,
+        classification: `$classificationFacet`,
+        onDisplay: `$onDisplayFacet`,
+      }
+    })
+    .project({
+      specimens: 1,
+      total: { $ifNull: [{ $arrayElemAt: ['$count.total', 0] }, 0] },
+      facets: 1
+    })
 
   return {
     self: `/api/specimens`,
@@ -266,6 +313,7 @@ export default defineCachedEventHandler(async (event) => {
         value: renderClassification(classification as Classification),
         count })),
       age: facets.age.map(({ _id: unit, count }) => ({ value: renderUnit(unit as GeochronologicUnit), count })),
+      numericAge: facets.numericAge.filter(({ count }) => count > 0).map(({ _id: bounds, count }) => ({ value: bounds, count })),
       onDisplay: facets.onDisplay.map(({ _id: onDisplay, count }) => ({
         value: onDisplay ? true : false,
         count,
