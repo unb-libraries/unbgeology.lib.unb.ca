@@ -47,10 +47,20 @@ export default defineCachedEventHandler(async (event) => {
     return getFilter('origin', op)?.map(b => b.split(`;`)).flat().map(Number) as [number, number] | undefined
   }
   
+  function getNumericAgeFilter() {
+    const lowerBoundsFilter = getFilter('age.numeric', FilterOperator.GREATER)?.map(c => Number(c)) ?? []
+    const upperBoundsFilter = getFilter('age.numeric', FilterOperator.LESS | FilterOperator.EQUALS)?.map(c => Number(c)) ?? []
+    return {
+      lower: lowerBoundsFilter.length ? Math.min(...lowerBoundsFilter) : undefined,
+      upper: upperBoundsFilter.length ? Math.max(...upperBoundsFilter) : undefined,
+    }
+  }
+
   const queryFilter = {
     type: getFilter('type', FilterOperator.EQUALS)?.map(c => `Specimen.${c[0].toUpperCase() + c.slice(1).toLowerCase()}`),
     classification: getFilter('classification', FilterOperator.EQUALS)?.map(c => c.split(`/`).at(-1)).map(parseObjectID),
     age: getFilter('age.relative', FilterOperator.EQUALS)?.map(c => c.split(`/`).at(-1)).map(parseObjectID),
+    ageNumeric: getNumericAgeFilter(),
     origin: [getBoundsFilter(FilterOperator.GREATER), getBoundsFilter(FilterOperator.LESS)].filter(b => (b ?? []).length > 0) as [number, number][],
     search,
   }
@@ -113,6 +123,15 @@ export default defineCachedEventHandler(async (event) => {
     query.lookup({ from: `terms`, localField: `relativeAge`, foreignField: `_id`, as: `relativeAge` })
     if (queryFilter.age.length) {
       query.match({ 'relativeAge._id': { $in: queryFilter.age } })
+    }
+    
+    query.addFields({ 'numericAge': { $ifNull: ['$numericAge', '$relativeAge.start'] } })
+    query.addFields({ 'numericMin': { $min: '$numericAge' }, 'numericMax': { $max: '$numericAge' } })
+    if (queryFilter.ageNumeric.lower) {
+      query.match({ numericMax: { $gt: queryFilter.ageNumeric.lower } })
+    }
+    if (queryFilter.ageNumeric.upper) {
+      query.match({ numericMin: { $lte: queryFilter.ageNumeric.upper } })
     }
   // }
   if (fields.some(f => f.startsWith(`composition`))) {
@@ -245,37 +264,27 @@ export default defineCachedEventHandler(async (event) => {
       ],
       // Cenozoic
       numericAgeFacet66: [
-        { $project: { numericAge: { $ifNull: ['$numericAge', '$relativeAge.start'] } } },
-        { $unwind: { path: '$numericAge' } },
-        { $match: { numericAge: { $lte: 66000000 } } },
+        { $match: { numericMin: { $lte: 66000000 } } },
         { $group: { _id: [0, 66000000], count: { $count: {} } } },
       ],
       // Mesozoic
       numericAgeFacet251: [
-        { $project: { numericAge: { $ifNull: ['$numericAge', '$relativeAge.start'] } } },
-        { $unwind: { path: '$numericAge' } },
-        { $match: { numericAge: { $lte: 251902000, $gte: 66000000 } } },
+        { $match: { numericMax: { $gt: 66000000 }, numericMin: { $lte: 251902000 } } },
         { $group: { _id: [66000000, 251902000], count: { $count: {} } } },
       ],
       // Paleozoic
       numericAgeFacet541: [
-        { $project: { numericAge: { $ifNull: ['$numericAge', '$relativeAge.start'] } } },
-        { $unwind: { path: '$numericAge' } },
-        { $match: { numericAge: { $lte: 541000000, $gte: 251902000 } } },
+        { $match: { numericMax: { $gt: 251902000 }, numericMin: { $lte: 541000000 } } },
         { $group: { _id: [251902000, 541000000], count: { $count: {} } } },
       ],
       // Proterozoic
       numericAgeFacet2500: [
-        { $project: { numericAge: { $ifNull: ['$numericAge', '$relativeAge.start'] } } },
-        { $unwind: { path: '$numericAge' } },
-        { $match: { numericAge: { $lte: 2500000000, $gte: 541000000 } } },
+        { $match: { numericMax: { $gt: 541000000 }, numericMin: { $lte: 2500000000 } } },
         { $group: { _id: [541000000, 2500000000], count: { $count: {} } } },
       ],
       // Archean
       numericAgeFacet2500x: [
-        { $project: { numericAge: { $ifNull: ['$numericAge', '$relativeAge.start'] } } },
-        { $unwind: { path: '$numericAge' } },
-        { $match: { numericAge: { $gte: 2500000000 } } },
+        { $match: { numericMax: { $gt: 2500000000 } } },
         { $group: { _id: [2500000000], count: { $count: {} } } },
       ],
       // TODO: Account for storage ancestors "public" property
