@@ -122,7 +122,10 @@ export default defineCachedEventHandler(async (event) => {
   // if (fields.some(f => f.startsWith(`age`))) {
     query.lookup({ from: `terms`, localField: `relativeAge`, foreignField: `_id`, as: `relativeAge` })
     if (queryFilter.age.length) {
-      query.match({ 'relativeAge._id': { $in: queryFilter.age } })
+      query.match({ $or: [
+        { 'relativeAge._id': { $in: queryFilter.age } },
+        { 'relativeAge.ancestors': { $in: queryFilter.age } },
+      ] })
     }
     
     query.addFields({ 'numericAge': { $ifNull: ['$numericAge', '$relativeAge.start'] } })
@@ -253,10 +256,9 @@ export default defineCachedEventHandler(async (event) => {
         { $sort: { count: -1, '_id.label': 1 } },
       ],
       ageFacet: [
-        { $unwind: { path: `$relativeAge` } },
-        { $match: { relativeAge: { $exists: 1 } } },
+        { $match: { relativeAge: { $exists: 1, $ne: null, $not: { $size: 0 } } } },
         { $lookup: { from: 'terms', localField: 'relativeAge.ancestors', foreignField: '_id', as: 'relativeAges' } },
-        { $project: { relativeAges: { $setUnion: [ ['$relativeAge'], '$relativeAges'] } } },
+        { $project: { relativeAges: { $setUnion: [ '$relativeAge', '$relativeAges'] } } },
         { $unwind: { path: '$relativeAges' } },
         { $sortByCount: `$relativeAges` },
         { $project: { _id: { _id: 1, label: 1, division: 1 }, count: 1 } },
