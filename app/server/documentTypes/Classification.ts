@@ -26,11 +26,15 @@ export function renderClassification(doc: Classification) {
   return {
     ...renderTerm(doc),
     ...renderHierarchical(doc, renderClassification),
+    self: `/api/terms/classifications/${doc._id}`,
     description: doc.description,
     image: doc.image && renderImageFile(doc.image),
     rank: doc.rank && useEnum(Rank).labelOf(doc.rank).toLowerCase(),
     composition: doc.type === `Term.CMineral` ? doc.composition : undefined,
     type: doc.type && `classification/${doc.type.split(`.`).at(-1).slice(1).toLowerCase()}`,
+    children: {
+      self: `/api/terms/classifications/${doc._id}/children`,
+    },
   }
 }
 
