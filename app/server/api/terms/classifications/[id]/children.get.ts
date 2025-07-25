@@ -26,7 +26,10 @@ export default defineEventHandler(async (event) => {
   }
 
   const [{ documents: parents, total: [total = 0] }] = await Term.mongoose.model.aggregate<{ documents: Classification[], total: [number] }>()
-    .match({ ancestors: classification._id, authTags: { $in: resources } })
+    .match({
+      type: classification.type,
+      $expr: { $in: [classification._id, { $slice: [{ $ifNull: ['$ancestors', []] }, 0, 1] }] },
+      authTags: { $in: resources } })
     .facet({ documents: [{ $skip: (page - 1) * pageSize }, { $limit: pageSize }], total: [{ $count: `count` }] })
     .project({ documents: 1, total: { $ifNull: ["$total.count", 0]} })
 
