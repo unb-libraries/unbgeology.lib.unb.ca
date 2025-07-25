@@ -10,6 +10,7 @@ export function renderTerm(term: Term) {
     ...renderDocumentBase(term),
     self: `/api/terms/${term._id}`,
     label: term.label,
+    slug: term.slug,
   }
 }
 

@@ -2,7 +2,7 @@ import { type EntityJSONList, FilterOperator } from "@unb-libraries/nuxt-layer-e
 import type { Classification } from "~/server/documentTypes/Classification"
 import { getEntityQueryParams, getFilter } from "~/server/utils/api/query"
 
-const queryFields = [`self`, `label`, `rank`, `description`, `image`, `composition`, `parents`, `parents.id`, `parents.label`, `depth`, `status`, `created`, `updated`, `type`]
+const queryFields = [`self`, `label`, `slug`, `rank`, `description`, `image`, `composition`, `parents`, `parents.id`, `parents.label`, `children`, `children.id`, `children.label`, `depth`, `status`, `created`, `updated`, `type`]
 
 export default defineEventHandler(async (event) => {
   const { page, pageSize, search, select, sort, filter } = getEntityQueryParams(event, queryFields)
@@ -72,6 +72,17 @@ export default defineEventHandler(async (event) => {
     } else {
       const equals = getFilter(`label`, FilterOperator.EQUALS)(filter)
       query.match({ label: equals.length <= 1 ? equals[0] : { $in: equals } })
+    }
+  }
+
+  const slug = getFilter(`slug`, FilterOperator.EQUALS | FilterOperator.MATCH)(filter)
+  if (slug.length) {
+    const match = getFilter(`slug`, FilterOperator.MATCH)(filter)
+    if (match.length) {
+      query.match({ slug: { $regex: match.at(-1) } })
+    } else {
+      const equals = getFilter(`slug`, FilterOperator.EQUALS)(filter)
+      query.match({ slug: equals.length <= 1 ? equals[0] : { $in: equals } })
     }
   }
   
