@@ -1,7 +1,7 @@
 import type { Classification as IClassification } from "~/types/classification"
 import type { Classification } from "~/server/documentTypes/Classification"
 
-const queryFields = [`self`, `label`, `rank`, `composition`, `parents`, `parents.id`, `parents.label`, `depth`, `status`, `created`, `updated`, `type`]
+const queryFields = [`self`, `label`, `slug`, `rank`, `composition`, `parents`, `parents.id`, `parents.label`, `depth`, `status`, `created`, `updated`, `type`]
 
 export default defineEventHandler(async (event) => {
   const { page, pageSize, select } = getEntityQueryParams(event, queryFields)
