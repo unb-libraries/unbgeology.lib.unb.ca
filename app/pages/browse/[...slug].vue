@@ -78,28 +78,31 @@ if (!['fossil', 'mineral', 'rock'].includes(category)) {
 
 const { data: classifications } = await useFetch<EntityJSONList<Classification>>('/api/terms/classifications', {
   query: {
-    filter: [`type:equals:classification/${category}`, `slug:equals:${slug.at(-1)}`],
+    filter: [`type:equals:classification/${category}`, slug.length && `slug:equals:${slug.at(-1)}`].filter(Boolean),
     select: ['label', 'slug', 'description', 'image', 'parents', 'children'],
   }
 })
-if (!classifications.value?.entities.length) {
+
+if (slug.length && !classifications.value?.entities.length) {
   throw createError({ statusCode: 404, statusMessage: 'Not Found' })
 }
 
-const classification = computed(() => classifications.value!.entities[0]!)
-const { data: parentClassifications } = await useFetch<EntityJSONList<Classification>>(classification.value.parents.self)
-if (!(parentClassifications.value?.entities ?? []).every((p, i) => p.slug === slug[i])) {
-  throw createError({ statusCode: 404, statusMessage: 'Not Found' })
-}
-const parentPages = [{ self: category, label: `${category}s`, slug: category }, ...parentClassifications.value?.entities ?? []]
-  .map(({ slug, ...p }, i, arr) => ({ ...p, slug: arr.slice(0, i + 1).map(pc => pc.slug).join('/') }))
-const { data: subClassifications } = await useFetch<EntityJSONList<Classification>>(classification.value.children.self)
-
+const classification = computed(() => slug.length && classifications.value?.entities[0] || ({ self: category, label: category[0].toUpperCase() + category.slice(1), slug: category } as Classification))
+const { data: subClassifications } = await useFetch<EntityJSONList<Classification>>(classification.value?.children?.self ?? '/api/terms/classifications', !slug.length
+  ? { query: { filter: [`type:equals:classification/${category}`, `depth:equals:0`], select: ['label', 'slug', 'description', 'image', 'parents', 'children'] } }
+  : undefined)
 const { data: specimens } = await useFetch<EntityJSONList<Specimen>>('/api/specimens', {
   query: {
-    filter: [`classification:equals:${classification.value.self}`],
+    filter: [slug.length ? `classification:equals:${classification.value?.self}` : `type:equals:${category}`],
     select: ['name', 'images'],
     pageSize: 5,
   }
 })
+
+const { data: parentClassifications } = slug.length && await useFetch<EntityJSONList<Classification>>(slug.length && classification.value?.parents?.self) || ({ data: { entities: [] } })
+if (parentClassifications && !(parentClassifications.value?.entities ?? []).every((p, i) => p.slug === slug[i])) {
+  throw createError({ statusCode: 404, statusMessage: 'Not Found' })
+}
+const parentPages = [{ self: category, label: `${category}s`, slug: category }, ...parentClassifications.value?.entities ?? []]
+  .map(({ slug, ...p }, i, arr) => ({ ...p, slug: arr.slice(0, i + 1).map(pc => pc.slug).join('/') }))
 </script>
