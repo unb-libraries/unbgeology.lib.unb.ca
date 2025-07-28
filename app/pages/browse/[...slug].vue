@@ -31,36 +31,15 @@
           <section v-if="subClassifications?.entities.length">
             <h2 class="text-2xl mb-4">Types of {{ classification.label }}</h2>
             <div class="flex gap-x-2 max-w-full">
-              <div class="group w-full relative">
-                <div ref="selectorsDiv" class="w-full flex gap-x-2 overflow-x-scroll xl:overflow-x-hidden">
-                  <a v-for="subCls in subClassifications.entities"
-                    :key="subCls.self"
-                    :href="[useRoute().path, subCls.slug].join('/')"
-                    ref="selectors"
-                    class="bg-primary-60 px-4 py-2 border-none rounded-md flex-nowrap text-nowrap hover:bg-accent-dark hover"
-                  >
-                    {{ subCls.label }}
-                  </a>
-                </div>
-                <div v-show="scrollPosition > 0" class="absolute hidden xl:flex left-0 top-0 w-fit h-full pr-12 bg-gradient-to-r from-primary-80 to-transparent items-center justify-end">
-                  <button v-show="showNavButtons"
-                    type="button"
-                    class="invisible group-hover:visible"
-                    @click.stop="onScroll(-150)"
-                  >
-                    <IconAngleDown class="fill-none hover:stroke-accent-light stroke-current stroke-1.5 size-8 rotate-90" />
-                  </button>
-                </div>
-                <div v-show="selectorsDiv && scrollPosition < selectorsDiv.scrollWidth" class="absolute hidden xl:flex right-0 top-0 w-fit h-full pl-12 bg-gradient-to-l from-primary-80 to-transparent items-center justify-end">
-                  <button v-show="showNavButtons"
-                    type="button"
-                    class="invisible group-hover:visible"
-                    @click.stop="onScroll(150)"
-                  >
-                    <IconAngleDown class="fill-none hover:stroke-accent-light stroke-current stroke-1.5 size-8 -rotate-90" />
-                  </button>
-                </div>
-              </div>
+              <Carousel>
+                <a v-for="subCls in subClassifications.entities"
+                  :key="subCls.self"
+                  :href="[useRoute().path, subCls.slug].join('/')"
+                  class="bg-primary-60 px-4 py-2 border-none rounded-md flex-nowrap text-nowrap hover:bg-accent-dark hover"
+                >
+                  {{ subCls.label }}
+                </a>
+              </Carousel>
             </div>
           </section>
           
@@ -87,16 +66,6 @@ import type { Classification } from '~/types/classification'
 definePageMeta({
   layout: false,
 })
-
-const selectorsDiv = ref<HTMLDivElement>()
-const selectors = ref<HTMLButtonElement[]>([])
-const scrollPosition = ref<number>(0)
-const showNavButtons = computed(() => selectorsDiv && selectors.value?.length && selectorsDiv.value!.getBoundingClientRect().right < selectors.value.at(-1)!.getBoundingClientRect().right)
-
-function onScroll(left: number) {
-  selectorsDiv.value?.scrollBy({ left, behavior: 'smooth' })
-  scrollPosition.value = selectorsDiv.value?.scrollLeft ?? 0
-}
 
 const { slug: [category, ...slug] } = useRoute().params as { slug: string[] }
 if (!['fossil', 'mineral', 'rock'].includes(category)) {
