@@ -23,7 +23,7 @@
       <div class="flex gap-x-6 w-full">
         <SpecimenImage :category="(category as 'fossil' | 'mineral' | 'rock')" :url="classification.image?.uri" width="770" height="550" class="w-1/2 aspect-7/5" />
         <div class="flex flex-col gap-y-4 w-1/2">
-          <section v-if="classification.description" class="grow">
+          <section class="grow">
             <h2 class="sr-only text-2xl mb-4">Description</h2>
             {{ classification.description }}
           </section>
