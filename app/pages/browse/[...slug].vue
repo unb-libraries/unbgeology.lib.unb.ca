@@ -39,16 +39,21 @@
             </div>
           </section>
           
-          <section>
+          <section v-if="specimens?.entities.length">
             <h2 class="text-2xl mb-4">{{ classification.label }} specimens</h2>
             <div class="grid grid-cols-5 gap-x-2">
-              <SpecimenImage v-for="i in 5" :key="i"
-                :category="(category as 'fossil' | 'mineral' | 'rock')"
-                :url="classification.image?.uri"
-                width="150"
-                height="150"
-                class="aspect-square"
-              />
+              <a v-for="{ self, name, images } in specimens.entities" :key="self"
+                :href="`/specimens/${self.split('/').pop()}`"
+                :title="name"
+              >
+                <SpecimenImage 
+                  :category="(category as 'fossil' | 'mineral' | 'rock')"
+                  :url="images?.entities?.[0]?.uri"
+                  width="150"
+                  height="150"
+                  class="aspect-square"
+                />
+              </a>
             </div>
           </section>
         </div>
@@ -60,6 +65,7 @@
 <script lang="ts" setup>
 import type { EntityJSONList } from '@unb-libraries/nuxt-layer-entity'
 import type { Classification } from '~/types/classification'
+import type { Specimen } from '~/types/specimen'
 
 definePageMeta({
   layout: false,
@@ -88,4 +94,12 @@ if (!(parentClassifications.value?.entities ?? []).every((p, i) => p.slug === sl
 const parentPages = [{ self: category, label: `${category}s`, slug: category }, ...parentClassifications.value?.entities ?? []]
   .map(({ slug, ...p }, i, arr) => ({ ...p, slug: arr.slice(0, i + 1).map(pc => pc.slug).join('/') }))
 const { data: subClassifications } = await useFetch<EntityJSONList<Classification>>(classification.value.children.self)
+
+const { data: specimens } = await useFetch<EntityJSONList<Specimen>>('/api/specimens', {
+  query: {
+    filter: [`classification:equals:${classification.value.self}`],
+    select: ['name', 'images'],
+    pageSize: 5,
+  }
+})
 </script>
