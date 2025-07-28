@@ -35,7 +35,7 @@
                 <a v-for="subCls in subClassifications.entities"
                   :key="subCls.self"
                   :href="[useRoute().path, subCls.slug].join('/')"
-                  class="bg-primary-60 px-4 py-2 border-none rounded-md flex-nowrap text-nowrap hover:bg-accent-dark hover"
+                  class="dark:bg-primary-60 px-4 py-2 border border-primary dark:border-none rounded-md flex-nowrap text-nowrap hover:bg-accent-light dark:hover:bg-accent-dark hover"
                 >
                   {{ subCls.label }}
                 </a>

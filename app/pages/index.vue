@@ -3,7 +3,7 @@
     <section class="h-screen w-full flex justify-center items-center" :style="{ background: `url(${url}) no-repeat center` }">
       <h1 class="sr-only text-4xl">UNB Earth Science Collections</h1>
       <form action="/specimens" method="GET" class="flex flex-row w-2/3 justify-center space-x-4 space-y-0">
-        <input type="text" name="search" class="w-3/4 rounded-md input input-text-xl dark:bg-base" placeholder="Search for specimens" />
+        <input type="text" name="search" class="w-3/4 rounded-md shadow-lg text-primary-80 input input-text-xl dark:bg-base" placeholder="Search for specimens" />
         <button type="submit" class="button-xl button-accent-mid hover:button-accent-light">Search</button>
       </form>
     </section>
