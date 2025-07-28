@@ -159,6 +159,12 @@ module.exports = {
             paddingX: defaults.spacing[3],
             paddingY: defaults.spacing[2],
           },
+          xl: {
+            fontSize: defaults.fontSize.xl,
+            borderRadius: defaults.borderRadius.md,
+            paddingX: defaults.spacing[4],
+            paddingY: defaults.spacing[3],
+          },
         },
         input: {
           sm: {
@@ -178,6 +184,12 @@ module.exports = {
             borderRadius: defaults.borderRadius.lg,
             paddingX: defaults.spacing[3],
             paddingY: defaults.spacing[2],
+          },
+          xl: {
+            fontSize: defaults.fontSize.xl,
+            borderRadius: defaults.borderRadius.md,
+            paddingX: defaults.spacing[4],
+            paddingY: defaults.spacing[3],
           },
         },
         icon: {

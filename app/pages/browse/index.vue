@@ -12,39 +12,8 @@
 </template>
 
 <script lang="ts" setup>
-import type { EntityJSONList } from '@unb-libraries/nuxt-layer-entity'
-import type { Classification } from '~/types/classification'
-
 definePageMeta({
   layout: 'page',
   name: 'Browse',
 })
-
-const category = ref('fossil')
-const classification = ref<Pick<Classification, 'self' | 'label'>[]>([])
-
-const selectorsDiv = ref<HTMLDivElement>()
-const selectors = ref<HTMLButtonElement[]>([])
-const next = computed(() => selectorsDiv.value && selectors.value
-  .sort((a, b) => a.getBoundingClientRect().right - b.getBoundingClientRect().right)
-  .find(s => s.getBoundingClientRect().right > selectorsDiv.value!.getBoundingClientRect().right))
-
-const filter = computed(() => ['depth:equals:0', `type:equals:classification/${category.value}`])
-const { data: classifications, refresh } = await useFetch<EntityJSONList<Classification>>('/api/terms/classifications', { query: { filter } })
-
-async function selectCategory(type: string) {
-  category.value = type
-  classification.value = []
-  await refresh()
-  nextTick(() => {
-    const newClassification = classifications.value?.entities[0]
-    if (newClassification) {
-      setClassification({ self: newClassification.self, label: newClassification.label })
-    }
-  })
-}
-
-function setClassification(self: Pick<Classification, 'self' | 'label'>) {
-  classification.value = [...classification.value.slice(0, -1), self]
-}
 </script>
