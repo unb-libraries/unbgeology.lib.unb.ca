@@ -1,6 +1,6 @@
 <template>
   <div class="group w-full relative">
-    <div ref="container" class="w-full flex gap-x-2 overflow-x-scroll xl:overflow-x-hidden">
+    <div ref="container" class="w-full flex gap-x-2 overflow-x-scroll xl:overflow-x-hidden" :style="{ scrollbarWidth: 'none' }">
       <slot />
     </div>
     <div v-show="container && scrollPosition > 0" class="absolute hidden xl:flex left-0 top-0 w-fit h-full pr-12 bg-gradient-to-r from-primary-80 to-transparent items-center justify-end">
