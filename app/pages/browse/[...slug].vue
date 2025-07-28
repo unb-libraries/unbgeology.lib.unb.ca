@@ -17,11 +17,7 @@
     
     <template #default>
       <div class="flex gap-x-6 w-full">
-        <div class="bg-primary-20 dark:bg-primary-60 aspect-7/5 text-base dark:text-primary-40 justify-center items-center w-1/2 flex">
-          <IconFossil v-if="category === 'fossil'" class="size-48 fill-none stroke-current stroke-1.5" />
-          <IconMineral v-else-if="category === 'mineral'" class="size-48 fill-none stroke-current stroke-1.5" />
-          <IconRock v-else class="size-48 fill-none stroke-current stroke-1.5" />
-        </div>
+        <SpecimenImage :category="(category as 'fossil' | 'mineral' | 'rock')" :url="classification.image?.uri" width="750" height="500" class="w-1/2 aspect-7/5" />
         <div class="flex flex-col gap-y-4 w-1/2">
           <section v-if="classification.description" class="grow">
             <h2 class="sr-only text-2xl mb-4">Description</h2>
@@ -46,11 +42,13 @@
           <section>
             <h2 class="text-2xl mb-4">{{ classification.label }} specimens</h2>
             <div class="grid grid-cols-5 gap-x-2">
-              <div v-for="i in 5" class="bg-primary-20 dark:bg-primary-60 aspect-square text-base dark:text-primary-40 justify-center items-center flex">
-                <IconFossil v-if="category === 'fossil'" class="size-24 fill-none stroke-current stroke-1.5" />
-                <IconMineral v-else-if="category === 'mineral'" class="size-24 fill-none stroke-current stroke-1.5" />
-                <IconRock v-else class="size-24 fill-none stroke-current stroke-1.5" />
-              </div>
+              <SpecimenImage v-for="i in 5" :key="i"
+                :category="(category as 'fossil' | 'mineral' | 'rock')"
+                :url="classification.image?.uri"
+                width="150"
+                height="150"
+                class="aspect-square"
+              />
             </div>
           </section>
         </div>
@@ -75,7 +73,7 @@ if (!['fossil', 'mineral', 'rock'].includes(category)) {
 const { data: classifications } = await useFetch<EntityJSONList<Classification>>('/api/terms/classifications', {
   query: {
     filter: [`type:equals:classification/${category}`, `slug:equals:${slug.at(-1)}`],
-    select: ['label', 'slug', 'description', 'parents', 'children'],
+    select: ['label', 'slug', 'description', 'image', 'parents', 'children'],
   }
 })
 if (!classifications.value?.entities.length) {
