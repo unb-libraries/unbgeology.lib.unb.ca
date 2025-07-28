@@ -6,6 +6,10 @@
     
     <template #breadcrumbs>
       <div class="inline-flex items-center gap-x-2">
+        <a :href="`/`" class="text-sm hover:underline">Home</a>
+        <span class="text-sm">/</span>
+        <a :href="`/browse`" class="text-sm hover:underline">Browse</a>
+        <span class="text-sm">/</span>
         <template v-for="(parent, i) in parentPages" :key="parent.self">
           <a :href="`/browse/${parent.slug}`" class="text-sm hover:underline">
             {{ parent.label[0].toUpperCase() + parent.label.slice(1) }}
