@@ -23,10 +23,9 @@
           <IconRock v-else class="size-48 fill-none stroke-current stroke-1.5" />
         </div>
         <div class="flex flex-col gap-y-4 w-1/2">
-          <section class="grow">
+          <section v-if="classification.description" class="grow">
             <h2 class="sr-only text-2xl mb-4">Description</h2>
-            <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Doloribus, aliquid minus. Quia vero consequatur deserunt eius sed dolore quisquam repellendus magni. Aperiam cumque deleniti perferendis adipisci commodi, aut ipsum repellendus?</p>
-            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Quasi, eveniet neque! Doloremque, aliquam. Illum eligendi ea ipsam, nihil aut quis explicabo sequi ducimus eius. Minima est autem sunt! Consequuntur, autem.</p>
+            {{ classification.description }}
           </section>
   
           <section v-if="subClassifications?.entities.length">
@@ -107,7 +106,7 @@ if (!['fossil', 'mineral', 'rock'].includes(category)) {
 const { data: classifications } = await useFetch<EntityJSONList<Classification>>('/api/terms/classifications', {
   query: {
     filter: [`type:equals:classification/${category}`, `slug:equals:${slug.at(-1)}`],
-    select: ['label', 'slug', 'parents', 'children'],
+    select: ['label', 'slug', 'description', 'parents', 'children'],
   }
 })
 if (!classifications.value?.entities.length) {
