@@ -3,7 +3,7 @@
     <div class="sticky top-[10rem] pb-2 space-y-2 z-30 bg-base dark:bg-primary-80">
       <div class="flex justify-between items-center space-x-2">
         <a v-if="list?.total" class="flex-none py-1">Displaying {{ (page - 1) * pageSize + 1 }} - {{ (page - 1) * pageSize + specimens.length }} of {{ list?.total }} specimens</a>
-        <TwPageIndex v-if="mode !== 'map'" :page="page" :total="Math.ceil((list?.total ?? 0) / pageSize)" :size="10" @change="(index) => { page = index }" class="flex justify-end flex-none" />
+        <TwPageIndex v-if="mode !== 'map'" :page="page" :total="Math.ceil((list?.total ?? 0) / pageSize)" :size="5" @change="(index) => { page = index }" class="flex justify-end flex-none" />
       </div>
       <div class="flex-none space-x-1 w-full flex">
         <div class="form-field grow">
