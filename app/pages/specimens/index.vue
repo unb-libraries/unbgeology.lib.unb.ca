@@ -99,33 +99,39 @@
           <div v-else-if="mode === 'list'" class="flex justify-center items-center h-[calc(100dvh-15.5rem-2px)] bg-primary-60">
             <span class="text-2xl">No specimens found</span>
           </div>
-          <LeafletMap v-else :center="mapCenter" :zoom="7" :max-zoom="18" class="z-0 h-[calc(100dvh-15.5rem-2px)]" @drag="onDragMap" @zoom="onZoomMap">
-            <LeafletMarkerCluster>
-              <LeafletMarker v-for="{ id, self, type, name, classification, images, origin: { name: originName, latitude, longitude } } in markers" :key="self"
-                :center="[latitude, longitude]"
-                :name="name"
-                :accuracy="0"
-                :draggable="false"
-                >
-                <div class="inline-flex gap-2">
-                  <div class="h-20 aspect-square bg-primary-40 dark:bg-primary-20 flex justify-center items-center">
-                    <img v-if="images?.total > 0" :src="`${images?.entities[0].uri}?w=100&h=100`" class="aspect-square object-cover">
-                    <IconFossil v-else-if="type === 'fossil'" class="size-16 stroke-base dark:stroke-primary-40 fill-none" />
-                    <IconRock v-else-if="type === 'rock'" class="size-16 stroke-base dark:stroke-primary-40 fill-none" />
-                    <IconMineral v-else-if="type === 'mineral'" class="size-16 stroke-base dark:stroke-primary-40 fill-none" />
+          <div v-else class="relative z-0 h-[calc(100dvh-15.5rem-2px)]">
+            <LeafletMap :center="mapCenter" :zoom="7" :max-zoom="18" class="h-full" @drag="onDragMap" @zoom="onZoomMap">
+              <LeafletMarkerCluster>
+                <LeafletMarker v-for="{ id, self, type, name, classification, images, origin: { name: originName, latitude, longitude } } in markers" :key="self"
+                  :center="[latitude, longitude]"
+                  :name="name"
+                  :accuracy="0"
+                  :draggable="false"
+                  >
+                  <div class="inline-flex gap-2">
+                    <div class="h-20 aspect-square bg-primary-40 dark:bg-primary-20 flex justify-center items-center">
+                      <img v-if="images?.total > 0" :src="`${images?.entities[0].uri}?w=100&h=100`" class="aspect-square object-cover">
+                      <IconFossil v-else-if="type === 'fossil'" class="size-16 stroke-base dark:stroke-primary-40 fill-none" />
+                      <IconRock v-else-if="type === 'rock'" class="size-16 stroke-base dark:stroke-primary-40 fill-none" />
+                      <IconMineral v-else-if="type === 'mineral'" class="size-16 stroke-base dark:stroke-primary-40 fill-none" />
+                    </div>
+                    <div class="flex flex-col">
+                      <a :href="`/specimens/${id}`" class="hover:underline text-lg">{{ name ?? 'Unknown' }}</a>
+                      <span>{{ type[0].toUpperCase() + type.slice(1).toLowerCase() }}</span>
+                      <span>{{ classification.label }}</span>
+                      <span>{{ originName }}</span>
+  
+                    </div>
+  
                   </div>
-                  <div class="flex flex-col">
-                    <a :href="`/specimens/${id}`" class="hover:underline text-lg">{{ name ?? 'Unknown' }}</a>
-                    <span>{{ type[0].toUpperCase() + type.slice(1).toLowerCase() }}</span>
-                    <span>{{ classification.label }}</span>
-                    <span>{{ originName }}</span>
-
-                  </div>
-
-                </div>
-              </LeafletMarker>
-            </LeafletMarkerCluster>
-          </LeafletMap>
+                </LeafletMarker>
+              </LeafletMarkerCluster>
+            </LeafletMap>
+            <div v-if="pending" class="absolute z-[1000] bg-base dark:bg-primary-60 text-sm px-3 py-1.5 shadow-md shadow-primary/50 rounded-md bottom-6 left-1/2 flex items-center justify-center space-x-1">
+              <IconSpinner class="size-4 fill-none stroke-2 stroke-current animate-spin" />
+              <span>Refreshing...</span>
+            </div>
+          </div>
         </KeepAlive>
       </div>
     </div>
@@ -146,7 +152,7 @@ const { query: q } = useRoute()
 const mode = ref<'list' | 'grid' | 'map'>(['list', 'grid', 'map'].find(mode => mode === (Array.isArray(q.mode) ? q.mode.at(-1) : q.mode)) as 'list' | 'grid' | 'map' ?? 'list')
 const mapCenter = ref<Coordinate>([46.65848709787655, -66.35685870803573]) // Initially center on NB
 
-const { entities: specimens, list, query: { page, pageSize, search, select, filter } } = await fetchEntityList<Specimen>("Specimen", {
+const { entities: specimens, list, pending, query: { page, pageSize, search, select, filter } } = await fetchEntityList<Specimen>("Specimen", {
   search: (Array.isArray(q.search) ? q.search.at(-1) : q.search) ?? '',
   select: ['id', 'name', 'images', 'type', 'classification', 'origin', 'status'],
   page: (Array.isArray(q.page) ? Number(q.page.at(-1)) : Number(q.page ?? 1)),
