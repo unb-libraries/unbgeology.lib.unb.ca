@@ -45,20 +45,30 @@
               <SpecimenImage :category="specimen.type" :url="specimen.images?.entities?.[0]?.uri" width="100" height="100" class="bg-base-57 text-base-77 rounded-sm aspect-square h-20" />
               <div class="flex flex-col grow overflow-x-hidden">
                 <div class="flex justify-between items-center text-xs text-base-27 pb-1 border-b border-base-57 border-dotted">
-                  <span>{{ specimen.id.toUpperCase() }}</span>
+                  <div class="inline-flex gap-x-1 items-center">
+                    <span v-if="useEnum(Status).valueOf(specimen.status) !== Status.PUBLISHED" class="italic text-red">[Unpublished]</span>
+                    <span class="sr-only">ID</span>
+                    <span>{{ specimen.id.toUpperCase() }}</span>
+                  </div>
                   <div class="flex gap-x-4">
-                    <span class="inline-flex gap-x-1 items-center">
+                    <div class="inline-flex gap-x-1 items-center">
                       <SpecimenIcon :category="specimen.type" class="size-4" />
-                      {{ specimen.type[0].toUpperCase() + specimen.type.slice(1).toLowerCase() }} / {{ specimen.classification?.label }}
-                    </span>
-                    <span class="inline-flex gap-x-1 items-center">
+                      <span class="sr-only">Classification</span>
+                      <span>
+                        {{ specimen.type[0].toUpperCase() + specimen.type.slice(1).toLowerCase() }} / {{ specimen.classification?.label }}
+                      </span>
+                    </div>
+                    <div class="inline-flex gap-x-1 items-center">
                       <IconMapPin class="size-4 fill-none stroke-current stroke-2" />
-                      {{ specimen.origin?.name }}
-                    </span>
-                    <span class="inline-flex gap-x-1 items-center">
+                      <span class="sr-only">Origin</span>
+                      <span>{{ specimen.origin?.name }}</span>
+                    </div>
+                    <div v-if="specimen.age?.relative?.length" class="inline-flex gap-x-1 items-center">
                       <IconAsterisk class="size-4 fill-none stroke-current stroke-2" />
-                      {{ specimen.age?.relative?.[0]?.label }}
-                    </span>
+                      <span class="sr-only">Geological age</span>
+                      <span v-if="specimen.age.relative.length === 1">{{ specimen.age.relative[0].label }}</span>
+                      <span v-else>{{specimen.age.relative.map(({ label }) => label).join(' to ')}}</span>
+                    </div>
                   </div>
                 </div>
                 <h2 class="pt-1">
