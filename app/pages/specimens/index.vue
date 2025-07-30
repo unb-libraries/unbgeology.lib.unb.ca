@@ -74,7 +74,9 @@
                 <h2 class="pt-1">
                   <a :href="`/specimens/${specimen.id}`" class="text-xl text-base-7 leading-none hover:underline">{{ specimen.name ?? 'Unknown' }}</a>
                 </h2>
-                <span class="text-base-7 leading-none truncate">{{ specimen.description }}</span>
+                <TruncatedText v-if="specimen.description">
+                  {{ specimen.description }}
+                </TruncatedText>
               </div>
             </li>
           </ul>
