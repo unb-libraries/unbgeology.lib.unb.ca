@@ -38,39 +38,33 @@
           <Facet v-if="(facets.numericAge ?? []).length" v-model="numericAge" :options="facets.numericAge.map(({ value, count }) => ({ value: value[0], label: value.map((b: number) => Math.floor(b / 1000000)), count })).map(({ value, label, count }) => ({ value: { value, label: label[0] === 0 ? `< ${label[1]} Mya` : label.length < 2 ? `> ${label[0]} Mya` : `${label[0]} - ${label[1]} Mya` }, count }))" value-field="value" label-field="label" title="Numeric Age" class="flex-none" />
         </div>
       </div>
-      <div class="grow h-full relative">
+      <div class="w-full xl:w-4/5 h-full relative">
         <KeepAlive>
-          <ul v-if="mode === 'list' && list?.total" class="space-y-2 overflow-y-scroll h-full">
-            <li v-for="specimen in specimens" :key="specimen.self" class="bg-primary-20 dark:bg-primary-60">
-              <div class="flex flex-row">
-                <div class="h-20 aspect-square bg-primary-40 dark:bg-primary-20 flex justify-center items-center">
-                  <img v-if="specimen.images?.total > 0" :src="`${specimen.images?.entities[0].uri}?w=100&h=100`" class="aspect-square object-cover">
-                  <IconFossil v-else-if="specimen.type === 'fossil'" class="size-16 stroke-base dark:stroke-primary-40 fill-none" />
-                  <IconRock v-else-if="specimen.type === 'rock'" class="size-16 stroke-base dark:stroke-primary-40 fill-none" />
-                  <IconMineral v-else-if="specimen.type === 'mineral'" class="size-16 stroke-base dark:stroke-primary-40 fill-none" />
+          <ul v-if="mode === 'list' && list?.total" class="space-y-1 overflow-y-scroll size-full">
+            <li v-for="specimen in specimens" :key="specimen.self" class="bg-base-77 p-2 gap-x-2 border border-base-57 rounded-md dark:bg-primary-60 w-full flex flex-row h-fit">
+              <SpecimenImage :category="specimen.type" :url="specimen.images?.entities?.[0]?.uri" width="100" height="100" class="bg-base-57 text-base-77 rounded-sm aspect-square h-20" />
+              <div class="flex flex-col grow overflow-x-hidden">
+                <div class="flex justify-between items-center text-xs text-base-27 pb-1 border-b border-base-57 border-dotted">
+                  <span>{{ specimen.id.toUpperCase() }}</span>
+                  <div class="flex gap-x-4">
+                    <span class="inline-flex gap-x-1 items-center">
+                      <SpecimenIcon :category="specimen.type" class="size-4" />
+                      {{ specimen.type[0].toUpperCase() + specimen.type.slice(1).toLowerCase() }} / {{ specimen.classification?.label }}
+                    </span>
+                    <span class="inline-flex gap-x-1 items-center">
+                      <IconMapPin class="size-4 fill-none stroke-current stroke-2" />
+                      {{ specimen.origin?.name }}
+                    </span>
+                    <span class="inline-flex gap-x-1 items-center">
+                      <IconAsterisk class="size-4 fill-none stroke-current stroke-2" />
+                      {{ specimen.age?.relative?.[0]?.label }}
+                    </span>
+                  </div>
                 </div>
-                <dl class="flex flex-row gap-x-12 p-4 w-full">
-                  <div class="w-1/2">
-                    <dt class="sr-only">ID</dt>
-                    <dd class="text-sm space-x-2">
-                      <span>{{ specimen.id.toUpperCase() }}</span>
-                      <span v-if="useEnum(Status).valueOf(specimen.status) !== Status.PUBLISHED" :class="['text-xs rounded-md px-2 py-1', {
-                        'bg-yellow text-primary': useEnum(Status).valueOf(specimen.status) === Status.MIGRATED,
-                        'bg-red-light': useEnum(Status).valueOf(specimen.status) === Status.DRAFT,
-                        'bg-blue': useEnum(Status).valueOf(specimen.status) === Status.REVIEW,
-                      }]">{{ useEnum(Status).labelOf(specimen.status).toUpperCase() }}</span></dd>
-                    <dt class="sr-only">Name</dt>
-                    <dd class="text-xl"><a :href="`/specimens/${specimen.id}`" class="hover:underline">{{ specimen.name ?? 'Unknown' }}</a></dd>
-                  </div>
-                  <div class="w-1/6">
-                    <dt class="text-sm">Category</dt>
-                    <dd class="text-xl">{{ specimen.type[0].toUpperCase() + specimen.type.slice(1).toLowerCase() }}</dd>
-                  </div>
-                  <div class="w-1/3">
-                    <dt class="text-sm">Classification</dt>
-                    <dd class="text-xl">{{ specimen.classification?.label }}</dd>
-                  </div>
-                </dl>
+                <h2 class="pt-1">
+                  <a :href="`/specimens/${specimen.id}`" class="text-xl text-base-7 leading-none hover:underline">{{ specimen.name ?? 'Unknown' }}</a>
+                </h2>
+                <span class="text-base-7 leading-none truncate">{{ specimen.description }}</span>
               </div>
             </li>
           </ul>
@@ -154,7 +148,7 @@ const mapCenter = ref<Coordinate>([46.65848709787655, -66.35685870803573]) // In
 
 const { entities: specimens, list, pending, query: { page, pageSize, search, select, filter } } = await fetchEntityList<Specimen>("Specimen", {
   search: (Array.isArray(q.search) ? q.search.at(-1) : q.search) ?? '',
-  select: ['id', 'name', 'images', 'type', 'classification', 'origin', 'status'],
+  select: ['id', 'name', 'description', 'images', 'type', 'classification', 'age', 'origin', 'status'],
   page: (Array.isArray(q.page) ? Number(q.page.at(-1)) : Number(q.page ?? 1)),
   pageSize: q.mode === 'map' ? 500 : 25,
   filter: (Array.isArray(q.filter) ? q.filter : [q.filter].filter(Boolean)).map(filter => filter?.split(':')),
