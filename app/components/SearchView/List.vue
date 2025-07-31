@@ -5,7 +5,6 @@
       <div class="flex flex-col grow overflow-x-hidden">
         <div class="flex justify-between items-center text-xs text-base-27 pb-1 border-b border-base-57 border-dotted">
           <div class="inline-flex gap-x-1 items-center">
-            <span v-if="useEnum(Status).valueOf(specimen.status) !== Status.PUBLISHED" class="italic text-red">[Unpublished]</span>
             <span class="sr-only">ID</span>
             <span>{{ specimen.id.toUpperCase() }}</span>
           </div>
@@ -30,8 +29,9 @@
             </div>
           </div>
         </div>
-        <h2 class="pt-1">
+        <h2 class="pt-1 flex items-center gap-x-1">
           <a :href="`/specimens/${specimen.id}`" class="text-xl text-base-7 leading-none hover:underline">{{ specimen.name ?? 'Unknown' }}</a>
+          <IconLock v-if="useEnum(Status).valueOf(specimen.status) !== Status.PUBLISHED" title="Unpublished" class="fill-none stroke-red stroke-2 size-4" />
         </h2>
         <TruncatedText v-if="specimen.description">
           {{ specimen.description }}

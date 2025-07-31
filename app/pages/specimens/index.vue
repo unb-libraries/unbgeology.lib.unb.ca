@@ -69,7 +69,7 @@ const { entities: specimens, list, pending, query: { page, pageSize, search, sel
   search: (Array.isArray(q.search) ? q.search.at(-1) : q.search) ?? '',
   select: ['id', 'name', 'description', 'images', 'type', 'classification', 'age', 'origin', 'status'],
   page: (Array.isArray(q.page) ? Number(q.page.at(-1)) : Number(q.page ?? 1)),
-  pageSize: q.mode === 'map' ? 500 : 25,
+  pageSize: q.mode === 'map' ? 500 : 20,
   filter: (Array.isArray(q.filter) ? q.filter : [q.filter].filter(Boolean)).map(filter => filter?.split(':')),
 })
 
