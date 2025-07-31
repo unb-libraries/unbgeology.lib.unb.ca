@@ -1,9 +1,9 @@
 <template>
   <Filter :title="title" v-model:collapsed="collapsed">
-    <div class="flex flex-col">
-      <div v-for="{ value, label, count } in options.slice(0, collapsible && optionsCollapsed ? collapsible : options.length)" class="inline-flex items-center space-x-1">
-        <input type="checkbox" :id="`filter-${title}[${value}]`.toLowerCase()" :name="`${title}[${value}]`.toLowerCase()" class="size-5 rounded-md input input-checkbox" :value="value" :checked="selection.includes(value)" @change="selection = selection.includes(value) ? selection.filter(v => v !== value) : [...selection, value]">
-        <label :for="`filter-${title}[${value}]`.toLowerCase()" class="text-lg mr-4 cursor-pointer">
+    <div class="flex flex-col space-y-1.5">
+      <div v-for="{ value, label, count } in options.slice(0, collapsible && optionsCollapsed ? collapsible : options.length)" class="w-full inline-flex items-start space-x-1.5">
+        <input type="checkbox" :id="`filter-${title}[${value}]`.toLowerCase()" :name="`${title}[${value}]`.toLowerCase()" class="size-5 rounded-md input input-checkbox bg-white border border-base-57" :value="value" :checked="selection.includes(value)" @change="selection = selection.includes(value) ? selection.filter(v => v !== value) : [...selection, value]">
+        <label :for="`filter-${title}[${value}]`.toLowerCase()" class="text-lg cursor-pointer overflow-hidden break-words leading-5">
           {{ label }} ({{ count }})
         </label>
       </div>

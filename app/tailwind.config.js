@@ -97,10 +97,17 @@ module.exports = {
           dark: colors.amber[500],
         },
       },
+      fontSize: {
+        xs: '0.75rem',
+      },
       maxWidth: minMaxWH,
       minWidth: minMaxWH,
       maxHeight: minMaxWH,
       minHeight: minMaxWH,
+      spacing: {
+        xs: '1px',
+        sm: '0.5rem',
+      },
       strokeWidth: {
         '1.5': `1.5`
       }
