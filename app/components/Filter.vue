@@ -5,8 +5,8 @@
         <slot name="title" :title="title">
           <span class="block text-xl">{{ title }}</span>
         </slot>
-        <IconAngleDown v-if="collapsed" class="size-8 fill-none stroke-white" :class="togglerClass" />
-        <IconAngleUp v-else class="size-8 fill-none stroke-white" :class="togglerClass" />
+        <IconAngleDown v-if="collapsed" class="size-8 fill-none stroke-current" :class="togglerClass" />
+        <IconAngleUp v-else class="size-8 fill-none stroke-current" :class="togglerClass" />
       </button>
     </div>
     <div v-show="!collapsed" class="py-2">

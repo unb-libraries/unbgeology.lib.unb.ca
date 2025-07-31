@@ -10,21 +10,21 @@
           <label class="sr-only" for="search">Search</label>
           <input v-model="search" placeholder="Search" name="search" class="placeholder:text-primary dark:placeholder:text-primary-20 rounded-md input leading-[1.5rem] grow p-2 placeholder:italic">
         </div>
-        <button :class="['inline-flex space-x-1 p-2 justify-center items-center xl:hidden hover:border-accent-light border rounded-md border-primary-60 flex-none cursor-pointer', { 'dark:bg-accent-dark bg-accent-light': !sidebarCollapsed }]" @click.prevent.stop="sidebarCollapsed = !sidebarCollapsed">
+        <button
+          :data-active="sidebarCollapsed"
+          class="inline-flex space-x-1 p-2 justify-center items-center xl:hidden hover:bg-base-77 data-[active]:hover:bg-base-57 data-[active] border rounded-md border-base-57 flex-none cursor-pointer"
+          @click.prevent.stop="sidebarCollapsed = !sidebarCollapsed"
+        >
           <IconFilter class="fill-none stroke-current size-6 stroke-1.5" />
           <span>Filter</span>
         </button>
-        <button :class="['inline-flex space-x-1 p-2 justify-center hover:border-accent-light items-center border rounded-md border-primary-60 flex-none cursor-pointer', { 'dark:bg-accent-dark bg-accent-light': mode === 'list', 'bg-base dark:bg-primary': mode !== 'list' }]" @click.prevent.stop="onSwitchViewMode('list')">
-          <IconList class="fill-none stroke-current size-6 stroke-1.5" />
-          <span>List</span>
-        </button>
-        <button :class="['inline-flex space-x-1 p-2 justify-center hover:border-accent-light items-center border rounded-md border-primary-60 flex-none cursor-pointer', { 'dark:bg-accent-dark bg-accent-light': mode === 'grid', 'bg-base dark:bg-primary': mode !== 'grid' }]" @click.prevent.stop="onSwitchViewMode('grid')">
-          <IconGrid class="fill-none stroke-current size-6 stroke-1.5" />
-          <span>Grid</span>
-        </button>
-        <button :class="['inline-flex space-x-1 p-2 justify-center items-center hover:border-accent-light border rounded-md border-primary-60 flex-none cursor-pointer', { 'dark:bg-accent-dark bg-accent-light': mode === 'map', 'bg-base dark:bg-primary': mode !== 'map' }]" @click.prevent.stop="onSwitchViewMode('map')">
-          <IconMap class="fill-none stroke-current size-6 stroke-1.5" />
-          <span>Map</span>
+        <button v-for="m in ['list', 'grid', 'map']" :key="m"
+          :data-active="mode === m ? '' : undefined"
+          class="inline-flex space-x-1 p-2 justify-center hover:bg-base-77 data-[active]:bg-base-57 data-[active]:text-base-97 data-[active]:cursor-default items-center border rounded-md border-base-57 flex-none cursor-pointer"
+          @click.prevent.stop="onSwitchViewMode(m)"
+        >
+          <component :is="{ list: IconList, grid: IconGrid, map: IconMap }[m as 'list' | 'grid' | 'map']" class="fill-none stroke-current size-6 stroke-1.5" />
+          <span>{{ m.charAt(0).toUpperCase() + m.slice(1) }}</span>
         </button>
       </div>
     </div>
@@ -53,6 +53,7 @@
 </template>
 
 <script setup lang="ts">
+import { IconList, IconGrid, IconMap } from '#components'
 import { FilterOperator, type Filter } from '@unb-libraries/nuxt-layer-entity'
 import { type Specimen } from '~/types/specimen'
 
