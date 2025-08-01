@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-y-40 mb-40">
-    <section class="h-[calc(100vh-5.5rem)] w-full flex justify-center items-center" :style="{ background: `url(${url}) no-repeat center` }">
+    <section class="h-[calc(100vh-5.5rem)] w-full flex justify-center items-center bg-no-repeat bg-center bg-contain" :style="{ backgroundImage: `url(${url})` }">
       <h1 class="sr-only text-4xl">UNB Earth Science Collections</h1>
       <form action="/specimens" method="GET" class="flex flex-row w-2/3 justify-center space-x-2 space-y-0">
         <input type="text" name="search" class="w-3/4 rounded-md shadow-lg text-primary-80 input input-text-xl dark:bg-base" placeholder="Search for specimens" />
@@ -11,7 +11,7 @@
       <h2 class="text-4xl mb-12">Browse by Category</h2>
       <div class="flex gap-x-12">
         <article v-for="category in ['fossil', 'mineral', 'rock']" class="flex flex-col gap-y-6 w-1/3">
-          <nuxt-img :src="`/${category}s-cover.jpg`" :format="'webp'" :width="525" :height="375" class="w-full aspect-7/5" :alt="`${category.charAt(0).toUpperCase() + category.slice(1)}s cover image`" />
+          <nuxt-img :src="`/${category}s-cover.jpg`" :format="'webp'" :width="525" :height="375" class="w-full aspect-7/5 rounded-md overflow-hidden" :alt="`${category.charAt(0).toUpperCase() + category.slice(1)}s cover image`" />
           <h2 class="text-2xl">{{ category.charAt(0).toUpperCase() + category.slice(1) }}s</h2>
           <div class="flex flex-col space-y-4">
             <div>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quod, sequi. Placeat facere enim culpa, corrupti accusantium dicta quae debitis ab, saepe qui a nihil quod dolores ratione. Doloremque, reiciendis rem?</div>

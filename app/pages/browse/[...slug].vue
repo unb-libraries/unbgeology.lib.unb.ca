@@ -21,7 +21,7 @@
     
     <template #default>
       <div class="flex gap-x-6 w-full">
-        <SpecimenImage :category="(category as 'fossil' | 'mineral' | 'rock')" :url="classification.image?.uri" width="770" height="550" class="w-1/2 aspect-7/5" />
+        <SpecimenImage :category="(category as 'fossil' | 'mineral' | 'rock')" :url="classification.image?.uri" width="770" height="550" class="w-1/2 aspect-7/5 bg-base-77 text-base-57 border border-base-57 rounded-md overflow-hidden" />
         <div class="flex flex-col gap-y-4 w-1/2">
           <section class="grow">
             <h2 class="sr-only text-2xl mb-4">Description</h2>
@@ -35,7 +35,7 @@
                 <a v-for="subCls in subClassifications.entities"
                   :key="subCls.self"
                   :href="[useRoute().path, subCls.slug].join('/')"
-                  class="dark:bg-primary-60 px-4 py-2 border border-primary dark:border-none rounded-md flex-nowrap text-nowrap hover:bg-accent-light dark:hover:bg-accent-dark hover"
+                  class="px-4 py-2 hover:bg-base-77 border border-base-57 rounded-md flex-nowrap text-nowrap"
                 >
                   {{ subCls.label }}
                 </a>
@@ -55,7 +55,7 @@
                   :url="images?.entities?.[0]?.uri"
                   width="150"
                   height="150"
-                  class="aspect-square"
+                  class="aspect-square bg-base-77 text-base-57 border border-base-57 rounded-md overflow-hidden"
                 />
               </a>
             </div>

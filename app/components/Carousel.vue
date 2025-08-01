@@ -9,7 +9,7 @@
         class="invisible group-hover:visible"
         @click.stop="scrollPosition = Math.max(0, scrollPosition - container!.getBoundingClientRect().width / 2)"
       >
-        <IconAngleDown class="fill-none hover:stroke-accent-light stroke-current stroke-1.5 size-8 rotate-90" />
+        <IconAngleDown class="fill-none hover:stroke-base-57 stroke-current stroke-1.5 size-8 rotate-90" />
       </button>
     </div>
     <div v-show="container && scrollPosition < container.scrollWidth - container.getBoundingClientRect().width" class="absolute hidden xl:flex right-0 top-0 w-fit h-full pl-12 bg-gradient-to-l from-base dark:from-primary-80 to-transparent items-center justify-end">
@@ -18,7 +18,7 @@
         class="invisible group-hover:visible"
         @click.stop="scrollPosition = Math.min(container!.scrollWidth - container!.getBoundingClientRect().width, scrollPosition + container!.getBoundingClientRect().width / 2)"
       >
-        <IconAngleDown class="fill-none hover:stroke-accent-light stroke-current stroke-1.5 size-8 -rotate-90" />
+        <IconAngleDown class="fill-none hover:stroke-base-57 stroke-current stroke-1.5 size-8 -rotate-90" />
       </button>
     </div>
   </div>
