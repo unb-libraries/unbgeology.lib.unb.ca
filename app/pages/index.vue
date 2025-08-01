@@ -11,7 +11,7 @@
       <h2 class="text-4xl mb-12">Browse by Category</h2>
       <div class="flex gap-x-12">
         <article v-for="category in ['fossil', 'mineral', 'rock']" class="flex flex-col gap-y-6 w-1/3">
-          <nuxt-img :src="`/${category}s-cover.jpg`" :format="'webp'" :width="525" :height="375" class="w-full aspect-7/5 rounded-md overflow-hidden" :alt="`${category.charAt(0).toUpperCase() + category.slice(1)}s cover image`" />
+          <SpecimenImage :category="(category as 'fossil' | 'mineral' | 'rock')" width="525" height="375" class="w-full text-base-57 aspect-7/5 bg-base-77 border border-base-57 rounded-md overflow-hidden" />
           <h2 class="text-2xl">{{ category.charAt(0).toUpperCase() + category.slice(1) }}s</h2>
           <div class="flex flex-col space-y-4">
             <div>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quod, sequi. Placeat facere enim culpa, corrupti accusantium dicta quae debitis ab, saepe qui a nihil quod dolores ratione. Doloremque, reiciendis rem?</div>
