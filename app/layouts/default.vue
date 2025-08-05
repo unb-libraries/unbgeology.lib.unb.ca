@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col min-h-screen">
-    <page-header class="sticky top-0 bg-white dark:bg-primary z-10 shadow-lg dark:shadow-primary-80" />
+    <page-header class="sticky top-0 bg-white dark:bg-primary z-30 shadow-lg dark:shadow-primary-80" />
     <main class="flex flex-col px-4 grow">
       <slot />
     </main>
