@@ -1,14 +1,23 @@
 <template>
-  <ul class="space-y-1 overflow-y-scroll size-full">
-    <li v-for="specimen in specimens" :key="specimen.self" class="py-2 gap-x-4 w-full flex flex-row h-fit">
-      <SpecimenImage :category="specimen.type" :url="specimen.images?.entities?.[0]?.uri" width="100" height="100" class="aspect-square h-20" />
-      <div class="flex flex-col grow overflow-x-hidden">
-        <div class="flex justify-between text-xs text-base-27 uppercase font-semibold pb-1 border-b border-base-77 border-dotted">
-          <div class="inline-flex gap-x-1 items-center">
+  <ul class="overflow-y-scroll size-full">
+    <!-- Element container -->
+    <li v-for="specimen in specimens" :key="specimen.self" class="group flex w-full h-fit px-4 border border-transparent hover:bg-base-97 hover:border-accent-63">
+      <!-- Inner container-->
+      <div class="inner flex gap-x-4 border-t border-t-base-77 group-first:border-t-transparent group-hover:border-t-transparent w-full py-4">
+        <SpecimenImage :category="specimen.type" :url="specimen.images?.entities?.[0]?.uri" width="100" height="100" class="aspect-square h-24" />
+        <div class="flex flex-col grow text-base-27 overflow-hidden gap-y-1">
+          <div class="inline-flex gap-x-1 items-center text-xs uppercase font-semibold">
             <span class="sr-only">ID</span>
             <span>{{ specimen.id.toUpperCase() }}</span>
           </div>
-          <div class="flex gap-x-4">
+          <h2 class="flex items-center gap-x-1">
+            <a :href="`/specimens/${specimen.id}`" class="text-xl text-base-7 leading-none hover:underline">{{ specimen.name ?? 'Unknown' }}</a>
+            <IconLock v-if="useEnum(Status).valueOf(specimen.status) !== Status.PUBLISHED" title="Unpublished" class="text-red stroke-2 size-4" />
+          </h2>
+          <TruncatedText v-if="specimen.description">
+            {{ specimen.description }}
+          </TruncatedText>
+          <div class="inline-flex grow gap-x-6 text-xs text-base-27 uppercase font-semibold">
             <div class="inline-flex gap-x-1 items-center">
               <SpecimenIcon :category="specimen.type" class="size-4" />
               <span class="sr-only">Classification</span>
@@ -29,13 +38,6 @@
             </div>
           </div>
         </div>
-        <h2 class="pt-1 flex items-center gap-x-1">
-          <a :href="`/specimens/${specimen.id}`" class="text-xl text-base-7 leading-none hover:underline">{{ specimen.name ?? 'Unknown' }}</a>
-          <IconLock v-if="useEnum(Status).valueOf(specimen.status) !== Status.PUBLISHED" title="Unpublished" class="fill-none stroke-red stroke-2 size-4" />
-        </h2>
-        <TruncatedText v-if="specimen.description">
-          {{ specimen.description }}
-        </TruncatedText>
       </div>
     </li>
   </ul>
@@ -48,3 +50,9 @@ defineProps<{
   specimens: Specimen[]
 }>()
 </script>
+
+<style>
+li.group:hover+li .inner {
+  border-top-color: transparent !important;
+}
+</style>
