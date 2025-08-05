@@ -2,13 +2,13 @@
   <Filter :title="title" v-model:collapsed="collapsed">
     <div class="flex flex-col space-y-1.5">
       <div v-for="{ value, label, count } in options.slice(0, collapsible && optionsCollapsed ? collapsible : options.length)" class="w-full inline-flex items-start space-x-1.5">
-        <input type="checkbox" :id="`filter-${title}[${value}]`.toLowerCase()" :name="`${title}[${value}]`.toLowerCase()" class="size-5 rounded-md input input-checkbox bg-white border border-base-57" :value="value" :checked="selection.includes(value)" @change="selection = selection.includes(value) ? selection.filter(v => v !== value) : [...selection, value]">
+        <input type="checkbox" :id="`filter-${title}[${value}]`.toLowerCase()" :name="`${title}[${value}]`.toLowerCase()" class="size-5 rounded-md input input-checkbox bg-white border border-base-77 hover:border-base-27" :value="value" :checked="selection.includes(value)" @change="selection = selection.includes(value) ? selection.filter(v => v !== value) : [...selection, value]">
         <label :for="`filter-${title}[${value}]`.toLowerCase()" class="text-lg cursor-pointer overflow-hidden break-words leading-5">
           {{ label }} ({{ count }})
         </label>
       </div>
     </div>
-    <button v-if="collapsible && options.length > collapsible" class="text-start hover:underline" @click="optionsCollapsed = !optionsCollapsed">{{ optionsCollapsed ? 'Show all' : 'Show less' }}</button>
+    <button v-if="collapsible && options.length > collapsible" class="px-2 py-1 text-center w-full rounded-md border border-base-57 hover:border-base-27 text-sm text-base-57 hover:text-base-27 uppercase font-semibold" @click="optionsCollapsed = !optionsCollapsed">{{ optionsCollapsed ? 'Show all' : 'Show less' }}</button>
   </Filter>
 </template>
 

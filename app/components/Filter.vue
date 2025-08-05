@@ -1,16 +1,14 @@
 <template>
-  <div :class="['bg-base-77 rounded-md border border-base-57 dark:bg-primary-60 py-2 px-4 space-y-2 divide-y divide-primary-40 flex flex-col', { 'flex-none': collapsed }]">
-    <div class="inline-flex items-center justify-between w-full flex-none">
-      <button @click.prevent.stop="collapsed = !collapsed" class="inline-flex items-center justify-between w-full cursor-pointer">
-        <slot name="title" :title="title">
-          <span class="block text-xl">{{ title }}</span>
-        </slot>
-        <IconAngleDown v-if="collapsed" class="size-8 fill-none stroke-current" :class="togglerClass" />
-        <IconAngleUp v-else class="size-8 fill-none stroke-current" :class="togglerClass" />
-      </button>
-    </div>
-    <div v-show="!collapsed" class="py-2">
-      <div class="flex flex-col space-y-2">
+  <div :class="['rounded-md py-2 space-y-2 flex flex-col', { 'flex-none': collapsed }]">
+    <button @click.prevent.stop="collapsed = !collapsed" class="inline-flex text-base-27 items-center justify-between w-full cursor-pointer pb-1 border-b border-base-57 border-dotted">
+      <slot name="title" :title="title">
+        <span class="font-semibold uppercase">{{ title }}</span>
+      </slot>
+      <IconAngleDown v-if="collapsed" class="size-4 fill-none stroke-current stroke-2" :class="togglerClass" />
+      <IconAngleUp v-else class="size-4 fill-none stroke-current stroke-2" :class="togglerClass" />
+    </button>
+    <div v-show="!collapsed" class="py-1">
+      <div class="flex flex-col space-y-4">
         <slot />
       </div>
     </div>

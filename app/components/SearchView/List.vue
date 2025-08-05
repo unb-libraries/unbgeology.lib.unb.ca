@@ -1,9 +1,9 @@
 <template>
   <ul class="space-y-1 overflow-y-scroll size-full">
-    <li v-for="specimen in specimens" :key="specimen.self" class="bg-base-77 p-2 gap-x-2 border border-base-57 rounded-md dark:bg-primary-60 w-full flex flex-row h-fit">
-      <SpecimenImage :category="specimen.type" :url="specimen.images?.entities?.[0]?.uri" width="100" height="100" class="bg-base-57 text-base-77 rounded-sm aspect-square h-20" />
+    <li v-for="specimen in specimens" :key="specimen.self" class="py-2 gap-x-4 w-full flex flex-row h-fit">
+      <SpecimenImage :category="specimen.type" :url="specimen.images?.entities?.[0]?.uri" width="100" height="100" class="aspect-square h-20" />
       <div class="flex flex-col grow overflow-x-hidden">
-        <div class="flex justify-between items-center text-xs text-base-27 pb-1 border-b border-base-57 border-dotted">
+        <div class="flex justify-between text-xs text-base-27 uppercase font-semibold pb-1 border-b border-base-77 border-dotted">
           <div class="inline-flex gap-x-1 items-center">
             <span class="sr-only">ID</span>
             <span>{{ specimen.id.toUpperCase() }}</span>

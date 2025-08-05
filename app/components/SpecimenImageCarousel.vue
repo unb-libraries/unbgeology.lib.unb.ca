@@ -5,8 +5,12 @@
       :url="specimen.images?.entities?.[currentIndex]?.uri"
       width="320"
       height="320"
-      class="aspect-square text-base-77"
-    />
+      class="aspect-square text-base-57"
+    >
+      <template #placeholder>
+        <SpecimenIcon :category="specimen.type" class="size-1/2 fill-none stroke-current stroke-1" />
+      </template>
+    </SpecimenImage>
     <div v-if="specimen.images?.entities?.length"
       class="absolute left-0 top-0 hidden group-hover:flex bg-gradient-to-r from-black/70 to-transparent w-16 h-full items-center justify-start"
     >

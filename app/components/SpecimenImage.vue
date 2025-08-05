@@ -1,13 +1,15 @@
 <template>
-  <div class="justify-center items-center flex" :data-placeholder="!Boolean(url) ? '' : undefined">
+  <div class="justify-center items-center bg-base-77 text-base-57 flex" :data-placeholder="!Boolean(url) ? '' : undefined">
     <img v-if="url" :src="`${url}?w=${width}&h=${height}`" />
-    <IconFossil v-else-if="category === 'fossil'" class="size-2/3 fill-none stroke-current stroke-1.5" />
-    <IconMineral v-else-if="category === 'mineral'" class="size-2/3 fill-none stroke-current stroke-1.5" />
-    <IconRock v-else class="size-2/3 fill-none stroke-current stroke-1.5" />
+    <slot name="placeholder">
+      <SpecimenIcon :category="category" class="size-2/3 fill-none stroke-current stroke-1" />
+    </slot>
   </div>
 </template>
 
 <script lang="ts" setup>
+import SpecimenIcon from './SpecimenIcon.vue';
+
 defineProps<{
   category: 'fossil' | 'mineral' | 'rock'
   url?: string

@@ -8,11 +8,11 @@
       <div class="flex-none space-x-1 w-full flex">
         <div class="form-field grow">
           <label class="sr-only" for="search">Search</label>
-          <input v-model="search" placeholder="Search" name="search" class="placeholder:text-primary dark:placeholder:text-primary-20 rounded-md input leading-[1.5rem] grow p-2 placeholder:italic">
+          <input v-model="search" placeholder="Search" name="search" class="placeholder:text-base-37 rounded-md input border-base-77 hover:border-base-27 leading-6 grow p-2 placeholder:italic">
         </div>
         <button
           :data-active="sidebarCollapsed"
-          class="inline-flex space-x-1 p-2 justify-center items-center xl:hidden hover:bg-base-77 data-[active]:hover:bg-base-57 data-[active] border rounded-md border-base-57 flex-none cursor-pointer"
+          class="inline-flex space-x-1 p-2 justify-center items-center xl:hidden hover:bg-base-77 data-[active]:bg-base-77 border rounded-md border-base-57 flex-none cursor-pointer"
           @click.prevent.stop="sidebarCollapsed = !sidebarCollapsed"
         >
           <IconFilter class="fill-none stroke-current size-6 stroke-1.5" />
@@ -20,7 +20,7 @@
         </button>
         <button v-for="m in ['list', 'grid', 'map']" :key="m"
           :data-active="mode === m ? '' : undefined"
-          class="inline-flex space-x-1 p-2 justify-center hover:bg-base-77 data-[active]:bg-base-57 data-[active]:text-base-97 data-[active]:cursor-default items-center border rounded-md border-base-57 flex-none cursor-pointer"
+          class="inline-flex space-x-1 p-2 justify-center hover:bg-base-77 data-[active]:bg-base-77 data-[active]:cursor-default items-center border border-base-57 rounded-md flex-none cursor-pointer"
           @click.prevent.stop="onSwitchViewMode(m)"
         >
           <component :is="{ list: IconList, grid: IconGrid, map: IconMap }[m as 'list' | 'grid' | 'map']" class="fill-none stroke-current size-6 stroke-1.5" />
@@ -28,7 +28,7 @@
         </button>
       </div>
     </div>
-    <div class="flex flex-col xl:flex-row grow gap-x-2">
+    <div class="flex flex-col xl:flex-row grow gap-x-6">
       <div v-show="Object.keys(list?.facets ?? {}).length" :class="['xl:w-1/5 xl:relative z-40 xl:z-auto', { 'fixed top-0 left-0 size-full bg-primary-80/80': !sidebarCollapsed }]" @click.stop.self="sidebarCollapsed = true">
         <div :class="['absolute gap-2 xl:flex xl:flex-col bottom-0 xl:sticky xl:top-[calc(15.5rem+2px)] max-h-4/5 xl:max-h-[calc(100dvh-15.5rem-2px)] overflow-y-scroll left-0 w-full', { hidden: sidebarCollapsed }]">
           <Facet v-if="(facets.category ?? []).length" v-model="categories" :options="facets.category" value-field="id" label-field="label" title="Categories" class="flex-none" />
