@@ -7,7 +7,7 @@
           <a :href="`/specimens/${specimen.id}`" :title="specimen.name ?? 'Unknown'" class="leading-none text-lg hover:text-accent-22 truncate overflow-hidden border-b border-current">{{ specimen.name ?? 'Unknown' }}</a>
           <IconLock v-if="useEnum(Status).valueOf(specimen.status) !== Status.PUBLISHED" title="Unpublished" class="text-red stroke-2 size-4" />
         </h2>
-        <div class="inline-flex items-center gap-x-1 leading-tight text-base-27 text-2xl sm:text-lg md:text-md lg:text-sm xl:text-xs">
+        <div class="inline-flex items-center gap-x-1 text-base-27 text-2xl sm:text-lg md:text-md lg:text-sm">
           <SpecimenIcon :category="specimen.type" class="size-4" />
           <span class="sr-only">Classification</span>
           <span class="font-semibold uppercase truncate overflow-hidden">{{ specimen.type[0].toUpperCase() + specimen.type.slice(1) }} / {{ specimen.classification?.label ?? 'Unknown' }}</span>
