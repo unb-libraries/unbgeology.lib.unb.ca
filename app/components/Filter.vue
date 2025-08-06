@@ -1,6 +1,6 @@
 <template>
   <div :class="['rounded-md py-2 space-y-2 flex flex-col', { 'flex-none': collapsed }]">
-    <button @click.prevent.stop="collapsed = !collapsed" class="inline-flex text-base-27 items-center justify-between w-full cursor-pointer pb-1 border-b border-base-57 border-dotted">
+    <button @click.prevent.stop="collapsed = !collapsed" class="inline-flex text-base-27 hover:text-accent-22 items-center justify-between w-full cursor-pointer pb-1 border-b border-base-57">
       <slot name="title" :title="title">
         <span class="font-semibold uppercase">{{ title }}</span>
       </slot>
