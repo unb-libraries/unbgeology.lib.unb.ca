@@ -1,6 +1,6 @@
 <template>
-  <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-    <li v-for="specimen in specimens" :key="specimen.self" class="group flex relative bg-base-77 hover:bg-base-97 overflow-hidden justify-center items-center aspect-square border border-transparent hover:border-accent-22">
+  <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 size-full">
+    <li v-for="specimen in specimens" :key="specimen.self" class="group flex relative overflow-hidden justify-center items-center aspect-square border border-transparent hover:border-accent-22">
       <SpecimenImageCarousel :specimen />
       <div class="absolute bottom-0 left-0 flex flex-col w-full p-3 bg-base-77/85 group-hover:bg-base-97 gap-y-1">
         <h2 class="flex items-center gap-x-1">
