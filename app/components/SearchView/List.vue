@@ -5,13 +5,13 @@
       <!-- Inner container-->
       <div class="inner flex gap-x-4 border-t border-t-base-77 group-first:border-t-transparent group-hover:border-t-transparent w-full py-4">
         <SpecimenImage :category="specimen.type" :url="specimen.images?.entities?.[0]?.uri" width="100" height="100" class="aspect-square h-24" />
-        <div class="flex flex-col grow text-base-27 overflow-hidden gap-y-1">
-          <div class="inline-flex gap-x-1 items-center text-xs uppercase font-semibold">
+        <div class="flex flex-col grow overflow-hidden gap-y-1">
+          <div class="inline-flex gap-x-1 items-center text-base-27 text-xs uppercase font-semibold">
             <span class="sr-only">ID</span>
             <span>{{ specimen.id.toUpperCase() }}</span>
           </div>
           <h2 class="flex items-center gap-x-1">
-            <a :href="`/specimens/${specimen.id}`" class="text-xl hover:text-accent-22 leading-none border-b border-base-17 hover:border-accent-22">{{ specimen.name ?? 'Unknown' }}</a>
+            <a :href="`/specimens/${specimen.id}`" class="text-xl text-base-17 hover:text-accent-22 leading-none border-b border-current">{{ specimen.name ?? 'Unknown' }}</a>
             <IconLock v-if="useEnum(Status).valueOf(specimen.status) !== Status.PUBLISHED" title="Unpublished" class="text-red stroke-2 size-4" />
           </h2>
           <TruncatedText v-if="specimen.description">

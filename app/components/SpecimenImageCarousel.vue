@@ -14,14 +14,14 @@
     <div v-if="(specimen.images?.entities ?? []).length > 1"
       class="absolute left-2 top-0 hidden group-hover:flex w-16 h-full items-center justify-start"
     >
-      <button @click="currentIndex = (currentIndex - 1 + specimen.images.entities.length) % specimen.images.entities.length" class="bg-base-17 hover:bg-accent-22 shadow-lg shadow-base-17/60">
+      <button @click="currentIndex = (currentIndex - 1 + specimen.images.entities.length) % specimen.images.entities.length" class="bg-base-17 hover:bg-accent-22 rounded-sm shadow-lg shadow-base-17/60">
         <IconAngleDown class="size-8 stroke-base-97 stroke-2 rotate-90 fill-none" />
       </button>
     </div>
     <div v-if="(specimen.images?.entities ?? []).length > 1"
       class="absolute right-2 top-0 hidden group-hover:flex w-16 h-full items-center justify-end"
     >
-      <button @click="currentIndex = (currentIndex + 1) % specimen.images.entities.length" class="bg-base-17 hover:bg-accent-22 shadow-lg shadow-base-17/60">
+      <button @click="currentIndex = (currentIndex + 1) % specimen.images.entities.length" class="bg-base-17 hover:bg-accent-22 rounded-sm shadow-lg shadow-base-17/60">
         <IconAngleDown class="size-8 stroke-base-97 stroke-2 -rotate-90 fill-none" />
       </button>
     </div>
