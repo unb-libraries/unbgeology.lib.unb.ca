@@ -2,8 +2,8 @@
   <Filter :title="title" v-model:collapsed="collapsed">
     <div class="flex flex-col space-y-1.5">
       <div v-for="{ value, label, count } in options.slice(0, collapsible && optionsCollapsed ? collapsible : options.length)" class="w-full inline-flex items-start space-x-1.5">
-        <input type="checkbox" :id="`filter-${title}[${value}]`.toLowerCase()" :name="`${title}[${value}]`.toLowerCase()" class="size-5 rounded-md input input-checkbox checked:text-base-17 checked:hover:text-accent-22 bg-white border border-base-17 hover:border-accent-22" :value="value" :checked="selection.includes(value)" @change="selection = selection.includes(value) ? selection.filter(v => v !== value) : [...selection, value]">
-        <label :for="`filter-${title}[${value}]`.toLowerCase()" class="text-lg cursor-pointer overflow-hidden break-words leading-5 hover:text-accent-22">
+        <input type="checkbox" :id="`filter-${title}[${value}]`.toLowerCase()" :name="`${title}[${value}]`.toLowerCase()" class="peer size-5 rounded-md input input-checkbox checked:text-base-17 checked:hover:text-accent-22 bg-white border border-base-17 hover:border-accent-22" :value="value" :checked="selection.includes(value)" @change="selection = selection.includes(value) ? selection.filter(v => v !== value) : [...selection, value]">
+        <label :for="`filter-${title}[${value}]`.toLowerCase()" class="text-lg cursor-pointer overflow-hidden break-words leading-5 hover:text-accent-22 peer-hover:text-accent-22">
           {{ label }} ({{ count }})
         </label>
       </div>
