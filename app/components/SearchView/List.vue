@@ -11,7 +11,7 @@
             <span>{{ specimen.id.toUpperCase() }}</span>
           </div>
           <h2 class="flex items-center gap-x-1">
-            <a :href="`/specimens/${specimen.id}`" class="text-xl text-base-7 leading-none hover:underline">{{ specimen.name ?? 'Unknown' }}</a>
+            <a :href="`/specimens/${specimen.id}`" class="text-xl text-base-7 hover:text-accent-63 leading-none hover:underline">{{ specimen.name ?? 'Unknown' }}</a>
             <IconLock v-if="useEnum(Status).valueOf(specimen.status) !== Status.PUBLISHED" title="Unpublished" class="text-red stroke-2 size-4" />
           </h2>
           <TruncatedText v-if="specimen.description">
