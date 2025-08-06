@@ -20,7 +20,7 @@
         </button>
         <button v-for="m in ['list', 'grid', 'map']" :key="m"
           :data-active="mode === m ? '' : undefined"
-          class="inline-flex space-x-1 p-2 justify-center hover:border-accent-22 hover:text-accent-22 data-[active]:bg-base-17 data-[active]:border-base-17 data-[active]:text-base-97 data-[active]:cursor-default items-center border border-base-17 rounded-md flex-none cursor-pointer"
+          class="inline-flex space-x-1 p-2 justify-center hover:border-accent-22 hover:text-accent-22 data-[active]:bg-base-17 data-[active]:border-base-17 uppercase font-semibold data-[active]:text-base-97 data-[active]:cursor-default items-center border border-base-17 rounded-md flex-none cursor-pointer"
           @click.prevent.stop="onSwitchViewMode(m)"
         >
           <component :is="{ list: IconList, grid: IconGrid, map: IconMap }[m as 'list' | 'grid' | 'map']" class="fill-none stroke-current size-6 stroke-1.5" />
