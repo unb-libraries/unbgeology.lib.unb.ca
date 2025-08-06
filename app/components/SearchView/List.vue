@@ -13,6 +13,7 @@
           <h2 class="flex items-center gap-x-1">
             <a :href="`/specimens/${specimen.id}`" class="text-xl text-base-17 hover:text-accent-22 leading-none border-b border-current">{{ specimen.name ?? 'Unknown' }}</a>
             <IconLock v-if="useEnum(Status).valueOf(specimen.status) !== Status.PUBLISHED" title="Unpublished" class="text-red stroke-2 size-4" />
+            <SpecimenEditLink :specimen class="hidden group-hover:inline-flex" />
           </h2>
           <TruncatedText v-if="specimen.description">
             {{ specimen.description }}
