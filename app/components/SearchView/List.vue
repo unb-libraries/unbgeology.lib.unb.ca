@@ -1,7 +1,7 @@
 <template>
   <ul class="overflow-y-scroll size-full">
     <!-- Element container -->
-    <li v-for="specimen in specimens" :key="specimen.self" class="group flex w-full h-fit px-4 border border-transparent hover:bg-base-97 hover:border-accent-63">
+    <li v-for="specimen in specimens" :key="specimen.self" class="group flex w-full h-fit px-4 border border-transparent hover:bg-base-97 hover:border-accent-22">
       <!-- Inner container-->
       <div class="inner flex gap-x-4 border-t border-t-base-77 group-first:border-t-transparent group-hover:border-t-transparent w-full py-4">
         <SpecimenImage :category="specimen.type" :url="specimen.images?.entities?.[0]?.uri" width="100" height="100" class="aspect-square h-24" />
@@ -11,7 +11,7 @@
             <span>{{ specimen.id.toUpperCase() }}</span>
           </div>
           <h2 class="flex items-center gap-x-1">
-            <a :href="`/specimens/${specimen.id}`" class="text-xl text-base-7 hover:text-accent-63 leading-none hover:underline">{{ specimen.name ?? 'Unknown' }}</a>
+            <a :href="`/specimens/${specimen.id}`" class="text-xl hover:text-accent-22 leading-none border-b border-base-17 hover:border-accent-22">{{ specimen.name ?? 'Unknown' }}</a>
             <IconLock v-if="useEnum(Status).valueOf(specimen.status) !== Status.PUBLISHED" title="Unpublished" class="text-red stroke-2 size-4" />
           </h2>
           <TruncatedText v-if="specimen.description">

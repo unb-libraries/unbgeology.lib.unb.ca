@@ -1,6 +1,6 @@
 <template>
   <div class="flex-col flex h-full">
-    <div class="sticky top-[10rem] pb-2 space-y-2 z-30 bg-base dark:bg-primary-80">
+    <div class="sticky top-[10rem] pb-2 space-y-2 z-30 bg-base">
       <div class="flex justify-between items-center space-x-2">
         <a v-if="list?.total" class="flex-none py-1">Displaying {{ (page - 1) * pageSize + 1 }} - {{ (page - 1) * pageSize + specimens.length }} of {{ list?.total }} specimens</a>
         <TwPageIndex v-if="mode !== 'map'" :page="page" :total="Math.ceil((list?.total ?? 0) / pageSize)" :size="5" @change="(index) => { page = index }" class="flex justify-end flex-none" />
@@ -8,7 +8,7 @@
       <div class="flex-none space-x-1 w-full flex">
         <div class="form-field grow">
           <label class="sr-only" for="search">Search</label>
-          <input v-model="search" placeholder="Search" name="search" class="placeholder:text-base-37 hover:placeholder:text-accent-63 rounded-md input border-base-17 hover:border-accent-63 leading-6 grow p-2 placeholder:italic">
+          <input v-model="search" placeholder="Search" name="search" class="placeholder:text-base-37 hover:placeholder:text-accent-22 rounded-md input border-base-17 hover:border-accent-22 leading-6 grow p-2 placeholder:italic">
         </div>
         <button
           :data-active="sidebarCollapsed"
@@ -20,7 +20,7 @@
         </button>
         <button v-for="m in ['list', 'grid', 'map']" :key="m"
           :data-active="mode === m ? '' : undefined"
-          class="inline-flex space-x-1 p-2 justify-center hover:border-accent-63 hover:text-accent-63 data-[active]:bg-base-17 data-[active]:border-base-17 data-[active]:text-base-97 data-[active]:cursor-default items-center border border-base-17 rounded-md flex-none cursor-pointer"
+          class="inline-flex space-x-1 p-2 justify-center hover:border-accent-22 hover:text-accent-22 data-[active]:bg-base-17 data-[active]:border-base-17 data-[active]:text-base-97 data-[active]:cursor-default items-center border border-base-17 rounded-md flex-none cursor-pointer"
           @click.prevent.stop="onSwitchViewMode(m)"
         >
           <component :is="{ list: IconList, grid: IconGrid, map: IconMap }[m as 'list' | 'grid' | 'map']" class="fill-none stroke-current size-6 stroke-1.5" />
