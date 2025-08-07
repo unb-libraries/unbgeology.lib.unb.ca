@@ -5,8 +5,8 @@
       <!-- Inner container-->
       <div class="inner flex gap-x-4 border-t border-t-base-77 group-first:border-t-transparent group-hover:border-t-transparent w-full py-4">
         <SpecimenImage :category="specimen.type" :url="specimen.images?.entities?.[0]?.uri" width="100" height="100" class="aspect-square h-24" />
-        <div class="flex flex-col grow overflow-hidden gap-y-1">
-          <div class="inline-flex gap-x-1 items-center text-base-27 text-xs uppercase font-semibold">
+        <div class="flex flex-col overflow-hidden gap-y-2">
+          <div class="inline-flex gap-x-1 items-center text-base-27 text-xs uppercase font-semibold leading-none">
             <span class="sr-only">ID</span>
             <span>{{ specimen.id.toUpperCase() }}</span>
           </div>
@@ -18,20 +18,20 @@
           <TruncatedText v-if="specimen.description">
             {{ specimen.description }}
           </TruncatedText>
-          <div class="inline-flex grow gap-x-6 text-xs text-base-27 uppercase font-semibold">
-            <div class="inline-flex gap-x-1 items-center">
+          <div class="inline-flex gap-x-6 text-xs text-base-27 uppercase font-semibold leading-none">
+            <div class="inline-flex gap-x-1 leading-none items-center">
               <SpecimenIcon :category="specimen.type" class="size-4" />
               <span class="sr-only">Classification</span>
               <span>
                 {{ specimen.type[0].toUpperCase() + specimen.type.slice(1).toLowerCase() }} / {{ specimen.classification?.label }}
               </span>
             </div>
-            <div class="inline-flex gap-x-1 items-center">
+            <div class="inline-flex gap-x-1 leading-none items-center">
               <IconMapPin class="size-4 fill-none stroke-current stroke-2" />
               <span class="sr-only">Origin</span>
               <span>{{ specimen.origin?.name }}</span>
             </div>
-            <div v-if="specimen.age?.relative?.length" class="inline-flex gap-x-1 items-center">
+            <div v-if="specimen.age?.relative?.length" class="inline-flex gap-x-1 leading-none items-center">
               <IconAsterisk class="size-4 fill-none stroke-current stroke-2" />
               <span class="sr-only">Geological age</span>
               <span v-if="specimen.age.relative.length === 1">{{ specimen.age.relative[0].label }}</span>

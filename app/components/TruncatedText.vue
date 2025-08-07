@@ -1,5 +1,5 @@
 <template>
-  <div :class="['leading-[1.125] w-full items-center space-x-2', { 'inline-flex': collapsed }]">
+  <div :class="['leading-tight w-full items-center space-x-2', { 'inline-flex': collapsed }]">
     <span
       ref="text" :class="{ 'truncate': collapsed }" :data-truncated="truncates || undefined">
       <slot />
