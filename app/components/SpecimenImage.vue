@@ -8,8 +8,6 @@
 </template>
 
 <script lang="ts" setup>
-import SpecimenIcon from './SpecimenIcon.vue';
-
 defineProps<{
   category: 'fossil' | 'mineral' | 'rock'
   url?: string

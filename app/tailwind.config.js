@@ -104,6 +104,7 @@ module.exports = {
       spacing: {
         xs: '1px',
         sm: '0.5rem',
+        current: '1em',
       },
       strokeWidth: {
         '1.5': `1.5`
