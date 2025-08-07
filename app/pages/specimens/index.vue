@@ -8,7 +8,7 @@
       <div class="flex-none space-x-1 w-full flex">
         <div class="form-field grow">
           <label class="sr-only" for="search">Search</label>
-          <input v-model="search" placeholder="Search" name="search" class="placeholder:text-base-37 hover:placeholder:text-accent-22 rounded-md input border-base-17 hover:border-accent-22 leading-6 grow p-2 placeholder:italic">
+          <input v-model="search" placeholder="Search" name="search" class="placeholder:text-base-37 hover:placeholder:text-accent-22 rounded-md input border-base-17 hover:border-accent-22 grow p-2 placeholder:italic">
         </div>
         <button
           :data-active="sidebarCollapsed"
