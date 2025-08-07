@@ -8,11 +8,11 @@
       <div class="flex-none space-x-1 w-full flex">
         <div class="form-field grow">
           <label class="sr-only" for="search">Search</label>
-          <input v-model="search" placeholder="Search" name="search" class="placeholder:text-base-37 hover:placeholder:text-accent-22 rounded-md input border-base-17 hover:border-accent-22 grow p-2 placeholder:italic">
+          <input v-model="search" placeholder="Search" name="search" class="placeholder:text-base-37 hover:placeholder:text-accent-26 rounded-md input border-base-17 hover:border-accent-26 grow p-2 placeholder:italic">
         </div>
         <button
           :data-active="!sidebarCollapsed ? '' : undefined"
-          class="inline-flex xl:hidden space-x-1 p-2 justify-center hover:border-accent-22 hover:text-accent-22 data-[active]:bg-base-17 data-[active]:border-base-17 uppercase font-semibold data-[active]:hover:bg-accent-22 data-[active]:hover:border-accent-22 data-[active]:text-base-97 items-center border border-base-17 rounded-md flex-none cursor-pointer"
+          class="inline-flex xl:hidden space-x-1 p-2 justify-center hover:border-accent-26 hover:text-accent-26 data-[active]:bg-base-17 data-[active]:border-base-17 uppercase font-semibold data-[active]:hover:bg-accent-26 data-[active]:hover:border-accent-26 data-[active]:text-base-97 items-center border border-base-17 rounded-md flex-none cursor-pointer"
           @click.prevent.stop="sidebarCollapsed = !sidebarCollapsed"
         >
           <IconFilter class="fill-none stroke-current size-6 stroke-1.5" />
@@ -20,7 +20,7 @@
         </button>
         <button v-for="m in ['list', 'grid', 'map']" :key="m"
           :data-active="mode === m ? '' : undefined"
-          class="inline-flex space-x-1 p-2 justify-center hover:border-accent-22 hover:text-accent-22 data-[active]:bg-base-17 data-[active]:border-base-17 uppercase font-semibold data-[active]:text-base-97 data-[active]:cursor-default items-center border border-base-17 rounded-md flex-none cursor-pointer"
+          class="inline-flex space-x-1 p-2 justify-center hover:border-accent-26 hover:text-accent-26 data-[active]:bg-base-17 data-[active]:border-base-17 uppercase font-semibold data-[active]:text-base-97 data-[active]:cursor-default items-center border border-base-17 rounded-md flex-none cursor-pointer"
           @click.prevent.stop="onSwitchViewMode(m)"
         >
           <component :is="{ list: IconList, grid: IconGrid, map: IconMap }[m as 'list' | 'grid' | 'map']" class="fill-none stroke-current size-6 stroke-1.5" />

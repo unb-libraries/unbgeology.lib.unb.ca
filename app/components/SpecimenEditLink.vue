@@ -3,7 +3,7 @@
     :href="`/dashboard/specimens/${specimen.id}`"
     :title="`Edit ${specimen.id.toUpperCase()}`"
   >
-    <IconPen class="fill-none stroke-current hover:stroke-accent-22 stroke-2 size-4" />
+    <IconPen class="fill-none stroke-current hover:stroke-accent-26 stroke-2 size-4" />
   </a>
 </template>
 

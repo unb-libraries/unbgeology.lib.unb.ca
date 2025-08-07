@@ -1,10 +1,10 @@
 <template>
   <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 size-full">
-    <li v-for="specimen in specimens" :key="specimen.self" class="group flex relative overflow-hidden justify-center items-center aspect-square border border-transparent hover:border-accent-22">
+    <li v-for="specimen in specimens" :key="specimen.self" class="group flex relative overflow-hidden justify-center items-center aspect-square border border-transparent hover:border-accent-26">
       <SpecimenImageCarousel :specimen />
       <div class="absolute bottom-0 left-0 flex flex-col w-full p-3 bg-base-77/85 group-hover:bg-base-97 gap-y-1">
         <h2 class="flex items-center gap-x-1">
-          <a :href="`/specimens/${specimen.id}`" :title="specimen.name ?? 'Unknown'" class="leading-none text-lg hover:text-accent-22 truncate overflow-hidden border-b border-current">{{ specimen.name ?? 'Unknown' }}</a>
+          <a :href="`/specimens/${specimen.id}`" :title="specimen.name ?? 'Unknown'" class="leading-none text-lg hover:text-accent-26 truncate overflow-hidden border-b border-current">{{ specimen.name ?? 'Unknown' }}</a>
           <IconLock v-if="useEnum(Status).valueOf(specimen.status) !== Status.PUBLISHED" title="Unpublished" class="text-red stroke-2 size-4" />
           <SpecimenEditLink :specimen class="hidden group-hover:inline-flex" />
         </h2>
