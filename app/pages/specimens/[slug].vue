@@ -22,10 +22,10 @@
     </header>
     <div class="flex w-full flex-col space-y-12 items-end">
       <section class="flex w-full justify-start">
-        <div class="flex w-full lg:w-3/4 gap-x-2 aspect-7/5">
-          <SpecimenImage :specimen :url="activeImage?.uri" width="1280" height="915" class="grow aspect-7/5" />
-          <div class="flex flex-col flex-none gap-y-2 w-24 h-full overflow-y-hidden">
-            <button v-for="(image, i) in specimen.images?.entities ?? []"
+        <div class="flex w-full lg:w-3/4 gap-x-2">
+          <SpecimenImage :category="specimen?.type" :url="activeImage?.uri" width="1280" height="915" class="grow h-[48rem]" />
+          <Carousel v-if="specimen.images?.entities.length > 1" :orientation="'vertical'" class="flex flex-col flex-none gap-y-2 w-24 h-[48rem] overflow-y-hidden">
+            <button v-for="(image, i) in specimen.images.entities"
               :key="image.self"
               type="button"
               :data-index="i"
@@ -37,7 +37,7 @@
                 :src="`${image.uri}?w=400&h=400`"
                 class="group-data-[status=active]:opacity-50 group-data-[status=inactive]:hover:opacity-50" />
             </button>
-          </div>
+          </Carousel>
         </div>
         
       </section>
