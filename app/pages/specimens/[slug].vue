@@ -23,15 +23,27 @@
     <div class="flex w-full flex-col space-y-12 items-end">
       <section class="flex w-full justify-start">
         <div class="flex w-full lg:w-3/4 gap-x-2">
-          <SpecimenImage :category="specimen?.type" :url="activeImage?.uri" width="1280" height="915" class="grow h-[48rem]" />
+          <div class="group relative grow h-[48rem]">
+            <SpecimenImage :category="specimen?.type" :url="specimen?.images?.entities[activeImageIndex]?.uri" width="1280" height="915" class="size-full" />
+            <button v-if="(specimen.images?.entities ?? []).length > 1"
+              class="absolute left-4 top-[calc(100%/2-1.5rem)] hidden group-hover:flex bg-base-17 hover:bg-accent-26 rounded-sm shadow-lg shadow-base-17/60"
+              @click="activeImageIndex = (activeImageIndex - 1 + specimen.images.entities.length) % specimen.images.entities.length">
+              <IconAngleDown class="size-12 stroke-base-97 stroke-1.5 rotate-90 fill-none" />
+            </button>
+            <button v-if="(specimen.images?.entities ?? []).length > 1"
+              class="absolute right-4 top-[calc(100%/2-1.5rem)] hidden group-hover:flex bg-base-17 hover:bg-accent-26 rounded-sm shadow-lg shadow-base-17/60"
+              @click="activeImageIndex = (activeImageIndex + 1) % specimen.images.entities.length">
+              <IconAngleDown class="size-12 stroke-base-97 stroke-1.5 -rotate-90 fill-none" />
+            </button>
+          </div>
           <Carousel v-if="specimen.images?.entities.length > 1" :orientation="'vertical'" class="flex flex-col flex-none gap-y-2 w-24 h-[48rem] overflow-y-hidden">
             <button v-for="(image, i) in specimen.images.entities"
               :key="image.self"
               type="button"
               :data-index="i"
-              :data-status="image.self === activeImage?.self ? 'active' : 'inactive'" 
-              class="group w-full aspect-square data-[status=inactive]:cursor-pointer"
-              @click="activeImage = image"
+              :data-status="activeImageIndex === i ? 'active' : 'inactive'" 
+              class="group w-full aspect-square data-[status=inactive]:cursor-pointer border border-transparent data-[status=active]:border-accent-26"
+              @click="activeImageIndex = i"
             >
               <img 
                 :src="`${image.uri}?w=400&h=400`"
@@ -205,7 +217,7 @@ const compositionLabels = computed(() => {
   return []
 })
 
-const activeImage = ref(specimen?.value?.images?.entities?.[0])
+const activeImageIndex = ref(0)
 const publications = computed(() => specimen.value?.publications?.entities ?? [])
 </script>
 
