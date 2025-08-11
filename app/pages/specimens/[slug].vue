@@ -65,32 +65,32 @@
         <h2 class="text-base-27 mb-3 text-lg font-bold text-start uppercase">Specifications</h2>
         <table class="w-full">
           <tr class="border-b border-base-77 last:border-b-0">
-            <td class="py-3 pt-0 text-base-27 font-semibold uppercase">ID</td>
+            <th class="py-3 pt-0 text-start text-base-27 font-semibold uppercase">ID</th>
             <td class="py-3 pt-0">{{ specimen?.id.toUpperCase() }}</td>
           </tr>
           <tr class="border-b border-base-77 last:border-b-0">
-            <td class="flex flex-col justify-start py-3 text-base-27 font-semibold uppercase">Object name</td>
+            <th class="flex flex-col text-start justify-start py-3 text-base-27 font-semibold uppercase">Object name</th>
             <td class="py-3">{{ specimen?.name }}</td>
           </tr>
           <tr class="border-b border-base-77 last:border-b-0">
-            <td class="flex flex-col justify-start py-3 text-base-27 font-semibold uppercase">Legal status</td>
+            <th class="flex flex-col text-start justify-start py-3 text-base-27 font-semibold uppercase">Legal status</th>
             <td class="py-3">{{ useEnum(Legal).valueOf(specimen?.legal) === Legal.PERMANENT ? 'Permanent collection' : 'On loan' }}</td>
           </tr>
           <tr class="border-b border-base-77 last:border-b-0">
-            <td class="flex flex-col justify-start py-3 text-base-27 font-semibold uppercase">Category</td>
+            <th class="flex flex-col text-start justify-start py-3 text-base-27 font-semibold uppercase">Category</th>
             <td class="py-3">{{ specimen?.type[0].toUpperCase() + specimen?.type.slice(1) }}</td></tr>
           <tr class="border-b border-base-77 last:border-b-0">
-            <td class="flex flex-col justify-start py-3 text-base-27 font-semibold uppercase">Classification</td>
+            <th class="flex flex-col text-start justify-start py-3 text-base-27 font-semibold uppercase">Classification</th>
             <td class="py-3">
               {{[...specimen?.classification?.ancestors?.entities?.map(({ label }) => label) ?? [], specimen?.classification?.label].filter(Boolean).join(' &raquo; ')}}
             </td>
           </tr>
           <tr class="border-b border-base-77 last:border-b-0">
-            <td class="flex flex-col justify-start py-3 text-base-27 font-semibold uppercase">Pieces</td>
+            <th class="flex flex-col text-start justify-start py-3 text-base-27 font-semibold uppercase">Pieces</th>
             <td class="py-3">{{ specimen?.pieces }}</td>
           </tr>
           <tr class="border-b border-base-77 last:border-b-0">
-            <td class="flex flex-col justify-start py-3 text-base-27 font-semibold uppercase">Measurements</td>
+            <th class="flex flex-col text-start justify-start py-3 text-base-27 font-semibold uppercase">Measurements</th>
             <td class="py-3">
               <ul v-if="specimen!.measurements?.count && useEnum(MeasurementCount).valueOf(specimen!.measurements.count) === MeasurementCount.INDIVIDUAL">
                 <li v-for="(dimensions) in specimen!.measurements!.dimensions" :key="dimensions.join('x')">
@@ -119,14 +119,14 @@
             </td>
           </tr>
           <tr class="border-b border-base-77 last:border-b-0">
-            <td class="flex flex-col justify-start py-3 text-base-27 font-semibold uppercase">Partial</td>
+            <th class="flex flex-col text-start justify-start py-3 text-base-27 font-semibold uppercase">Partial</th>
             <td class="py-3">{{ specimen?.partial ? 'Yes' : 'No' }}</td></tr>
           <tr v-if="specimen.type === 'fossil' && specimen.portion" class="border-b border-base-77 last:border-b-0">
-            <td class="flex flex-col justify-start py-3 text-base-27 font-semibold uppercase">Portion</td>
+            <th class="flex flex-col text-start justify-start py-3 text-base-27 font-semibold uppercase">Portion</th>
             <td class="py-3">{{ specimen.portion.label }}</td>
           </tr>
           <tr v-if="compositionLabels.length" class="border-b border-base-77 last:border-b-0">
-            <td class="flex flex-col justify-start py-3 text-base-27 font-semibold uppercase">Composition</td>
+            <th class="flex flex-col text-start justify-start py-3 text-base-27 font-semibold uppercase">Composition</th>
             <td class="py-3">
               <ul v-if="specimen?.type === 'mineral'">
                 <li v-for="label in compositionLabels" :key="label">{{ label }}</li>
@@ -135,20 +135,20 @@
             </td>
           </tr>
           <tr v-if="specimen?.age?.relative" class="border-b border-base-77 last:border-b-0">
-            <td class="flex flex-col justify-start py-3 text-base-27 font-semibold uppercase">Age</td>
+            <th class="flex flex-col text-start justify-start py-3 text-base-27 font-semibold uppercase">Age</th>
             <td class="py-3">
               {{specimen?.age?.relative?.map(({ label }) => label).join(' to ')}}
             </td>
           </tr>
           <tr class="border-b border-base-77 last:border-b-0">
-            <td class="flex flex-col justify-start py-3 text-base-27 font-semibold uppercase">Numeric age</td>
+            <th class="flex flex-col text-start justify-start py-3 text-base-27 font-semibold uppercase">Numeric age</th>
             <td class="py-3">
               <template v-if="specimen?.age?.numeric">{{specimen?.age?.numeric?.map(mya => Number(mya) / Math.pow(10, 6)).join(' - ')}}</template>
               <template v-else>{{specimen?.age?.relative?.map(({ start }) => Number(start) / Math.pow(10, 6)).join(' - ')}} Mya</template>
             </td>
           </tr>
           <tr class="border-b border-base-77 last:border-b-0">
-            <td class="py-3 pb-0 text-base-27 font-semibold uppercase">Origin</td>
+            <th class="py-3 pb-0 text-start text-base-27 font-semibold uppercase">Origin</th>
             <td class="py-3 pb-0">{{ specimen?.origin?.name }}</td>
           </tr>
         </table>
