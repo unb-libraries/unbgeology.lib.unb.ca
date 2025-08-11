@@ -17,7 +17,7 @@
       </div>
       <div class="inline-flex text-sm leading-none text-base-27 font-semibold uppercase">
         <span class="pr-4 border-r border-base-27">{{ specimen!.id.toUpperCase() }}</span>
-        <span class="pl-4">{{ classificationLabels.join(' &raquo; ') }}</span>
+        <span class="pl-4">{{classifications.map(({ label }) => label).join(' &raquo; ')}}</span>
       </div>
     </header>
     <div class="flex w-full flex-col space-y-12 items-end">
@@ -82,7 +82,15 @@
           <tr class="border-b border-base-77 last:border-b-0">
             <th class="flex flex-col text-start justify-start py-3 text-base-27 font-semibold uppercase">Classification</th>
             <td class="py-3">
-              {{[...specimen?.classification?.ancestors?.entities?.map(({ label }) => label) ?? [], specimen?.classification?.label].filter(Boolean).join(' &raquo; ')}}
+              <div v-if="specimen.type === 'fossil'" class="flex flex-col w-full">
+                <div v-for="classification in classifications.slice(1)" :key="classification.rank" class="flex">
+                  <div class="w-28">{{ classification.rank[0].toUpperCase() + classification.rank.slice(1) }}:</div>
+                  <div class="grow">{{ classification.label }}</div>
+                </div>
+              </div>
+              <template v-else>
+                {{classifications.slice(1).map(({ label }) => label).join(' &raquo; ')}}
+              </template>
             </td>
           </tr>
           <tr class="border-b border-base-77 last:border-b-0">
@@ -200,10 +208,10 @@ if (!specimen.value) {
   showError({ statusCode: 404 })
 }
 
-const classificationLabels = computed(() => [
-  specimen.value!.classification?.label,
-  ...(specimen.value!.classification?.ancestors?.entities.map(({ label }) => label) ?? []),
-  specimen.value!.type[0].toUpperCase() + specimen.value!.type.slice(1).toLowerCase() + 's',
+const classifications = computed(() => [
+  { rank: specimen.value!.classification?.rank, label: specimen.value!.classification?.label },
+  ...(specimen.value!.classification?.ancestors?.entities.map(({ rank, label }) => ({ rank, label })) ?? []),
+  { label: specimen.value!.type[0].toUpperCase() + specimen.value!.type.slice(1).toLowerCase() + 's' },
 ].filter(Boolean).reverse())
 
 const compositionLabels = computed(() => {

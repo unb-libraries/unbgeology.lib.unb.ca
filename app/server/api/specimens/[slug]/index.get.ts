@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
   
   // Populate and filter by classification
   if (fields.some(f => f.startsWith(`classification`))) {
-    query.populate({ path: `classification`, populate: { path: `ancestors`, select: `label` } })
+    query.populate({ path: `classification`, populate: { path: `ancestors`, select: `label rank` } })
   }
 
   // Join and filter by images
@@ -37,7 +37,7 @@ export default defineEventHandler(async (event) => {
 
   // Join and filter by age
   if (fields.some(f => f.startsWith(`age`))) {
-    query.populate(`relativeAge`)
+    query.populate({ path: `relativeAge`, populate: { path: `ancestors` } })
   }
 
   // Join and filter by composition
