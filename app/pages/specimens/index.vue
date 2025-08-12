@@ -69,7 +69,7 @@ const { entities: specimens, list, pending, query: { page, pageSize, search, fil
   search: (Array.isArray(q.search) ? q.search.at(-1) : q.search) ?? '',
   select: ['id', 'name', 'description', 'images', 'type', 'classification', 'age', 'origin', 'status'],
   page: Math.max(Array.isArray(q.page) ? Number(q.page.at(-1)) : Number(q.page ?? 1), 1),
-  pageSize: 20,
+  pageSize: Math.max(Array.isArray(q.pageSize) ? Number(q.pageSize.at(-1)) : Number(q.pageSize ?? 20), 1),
   filter: (Array.isArray(q.filter) ? q.filter : [q.filter].filter(Boolean)).map(filter => filter?.split(':')),
 })
 
@@ -87,6 +87,11 @@ const updateQuery = () => useRouter().replace({
 })
 
 watch(page, updateQuery)
+watch(page, newPage => {
+  if (newPage > Math.ceil((list.value?.total ?? 0) / pageSize.value)) {
+    page.value = Math.ceil((list.value?.total ?? 0) / pageSize.value)
+  }
+}, { immediate: true })
 watch(mode, updateQuery)
 watch(search, updateQuery)
 watch(filter, updateQuery)
