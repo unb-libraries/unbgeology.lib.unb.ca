@@ -86,10 +86,11 @@ const updateQuery = () => useRouter().replace({
   }
 })
 
-watch(page, updateQuery)
-watch(page, newPage => {
+watch(page, (newPage, prevPage) => {
   if (newPage > Math.ceil((list.value?.total ?? 0) / pageSize.value)) {
-    page.value = Math.ceil((list.value?.total ?? 0) / pageSize.value)
+    page.value = Math.max(Math.ceil((list.value?.total ?? 0) / pageSize.value), 1)
+  } else if (prevPage !== undefined) {
+    updateQuery()
   }
 }, { immediate: true })
 watch(mode, updateQuery)
