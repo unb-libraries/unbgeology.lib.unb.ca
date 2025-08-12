@@ -145,7 +145,12 @@
           <tr v-if="specimen?.age?.relative" class="border-b border-base-77 last:border-b-0">
             <th class="flex flex-col text-start justify-start py-3 text-base-27 font-semibold uppercase">Age</th>
             <td class="py-3">
-              {{specimen?.age?.relative?.map(({ label }) => label).join(' to ')}}
+              <div class="flex flex-col w-full">
+                <div v-for="(age, division) of relativeAges" :key="division" class="flex">
+                  <div class="w-28">{{ division[0].toUpperCase() + division.slice(1) }}:</div>
+                  <div class="grow">{{ age.join(' to ') }}</div>
+                </div>
+              </div>
             </td>
           </tr>
           <tr class="border-b border-base-77 last:border-b-0">
@@ -195,6 +200,7 @@
 
 <script setup lang="ts">
 import { Immeasurabibility, Legal, MeasurementCount, Status, type Fossil, type Rock, type Specimen } from 'types/specimen'
+import { Division } from '~/types/geochronology'
 
 definePageMeta({
   layout: `default`,
@@ -226,6 +232,26 @@ const compositionLabels = computed(() => {
 })
 
 const activeImageIndex = ref(0)
+
+const relativeAges = computed(() => {
+  return Object.fromEntries(Object.entries(specimen.value?.age?.relative?.map(({ label, division, ancestors }) => [
+    ...ancestors?.entities
+      .map(({ label, division }) => ({ label, division })),
+    { label, division },
+  ])
+    .flat()
+    ?.reduce((acc, { label, division }) => {
+      acc[division] ||= []
+      acc[division].push(label)
+      return acc
+    }, {}) ?? {})
+    .map(([division, labels]) => [division, labels.filter((l, i, arr) => arr.indexOf(l) === i)])
+    .sort(([divisionA], [divisionB]) => useEnum(Division).valueOf(divisionA) - useEnum(Division).valueOf(divisionB))
+  )
+})
+
+watch(relativeAges, console.log, { immediate: true })
+
 const publications = computed(() => specimen.value?.publications?.entities ?? [])
 </script>
 
