@@ -65,12 +65,11 @@ definePageMeta({
 const { query: q } = useRoute()
 const mode = ref<'list' | 'grid' | 'map'>(['list', 'grid', 'map'].find(mode => mode === (Array.isArray(q.mode) ? q.mode.at(-1) : q.mode)) as 'list' | 'grid' | 'map' ?? 'list')
 
-
-const { entities: specimens, list, pending, query: { page, pageSize, search, select, filter } } = await fetchEntityList<Specimen>("Specimen", {
+const { entities: specimens, list, pending, query: { page, pageSize, search, filter } } = await fetchEntityList<Specimen>("Specimen", {
   search: (Array.isArray(q.search) ? q.search.at(-1) : q.search) ?? '',
   select: ['id', 'name', 'description', 'images', 'type', 'classification', 'age', 'origin', 'status'],
-  page: (Array.isArray(q.page) ? Number(q.page.at(-1)) : Number(q.page ?? 1)),
-  pageSize: q.mode === 'map' ? 500 : 20,
+  page: Math.max(Array.isArray(q.page) ? Number(q.page.at(-1)) : Number(q.page ?? 1), 1),
+  pageSize: 20,
   filter: (Array.isArray(q.filter) ? q.filter : [q.filter].filter(Boolean)).map(filter => filter?.split(':')),
 })
 
@@ -82,6 +81,7 @@ const updateQuery = () => useRouter().replace({
     mode: mode.value,
     search: search.value,
     page: page.value,
+    pageSize: pageSize.value,
     filter: filter.value.filter(Boolean).map(f => f.join(':'))
   }
 })
