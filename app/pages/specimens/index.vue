@@ -125,10 +125,11 @@ watch(numericAge, updateFilter)
 watch(onDisplay, updateFilter)
 
 function onSwitchViewMode(newMode: 'list' | 'grid' | 'map') {
+  const currentMode = mode.value
   mode.value = newMode
   if (newMode === 'map') {
     filter.value = [...filter.value, ['origin', FilterOperator.GREATER, '90.1;180.1'], ['origin', FilterOperator.LESS, '-90.1;-180.1']]
-  } else {
+  } else if (currentMode === 'map') {
     filter.value = filter.value.filter(([field]) => field !== 'origin')
   }
 }
