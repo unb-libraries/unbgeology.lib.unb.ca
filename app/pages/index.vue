@@ -1,11 +1,24 @@
 <template>
   <div class="flex flex-col gap-y-40 mb-40">
-    <section class="h-[calc(100vh-5.5rem)] w-full flex justify-center items-center bg-no-repeat bg-center bg-contain" :style="{ backgroundImage: `url(${url})` }">
+    <section class="flex flex-col w-full justify-center">
       <h1 class="sr-only text-4xl">UNB Earth Science Collections</h1>
-      <form action="/specimens" method="GET" class="flex flex-row w-2/3 justify-center space-x-2 space-y-0">
-        <input type="text" name="search" class="w-3/4 rounded-md shadow-lg text-primary-80 input input-text-xl dark:bg-base" placeholder="Search for specimens" />
-        <button type="submit" class="button-xl button-accent-mid hover:button-accent-light">Search</button>
-      </form>
+      <div class="relative h-[750px] w-full">
+        <HeroImages />
+        <form action="/specimens" method="GET" class="absolute bottom-1/3 left-1/6 flex flex-row w-2/3 justify-center space-x-2 space-y-0">
+          <input
+            type="text"
+            name="search"
+            class="grow rounded-md shadow-lg text-base-17 placeholder:text-base-37 input text-xl bg-base-97/95 border-base-17 hover:border-accent-26 hover:text-accent-26 hover:placeholder:text-accent-26 focus:border-accent-26 focus:ring-1 focus:ring-accent-26"
+            placeholder="Search for specimens"
+          />
+          <button
+            type="submit"
+            class="flex-none text-xl text-base-97 px-4 py-2 rounded-md bg-base-27 hover:bg-accent-26 focus-visible:bg-accent-26"
+          >
+            Search
+          </button>
+        </form>
+      </div>
     </section>
     <section class="flex flex-col container mx-auto">
       <h2 class="text-4xl mb-12">Browse by Category</h2>
@@ -56,12 +69,6 @@ import type { EntityJSONList } from '@unb-libraries/nuxt-layer-entity'
 import type { Coordinate } from '~/types/leaflet'
 import type { Specimen } from '~/types/specimen'
 
-const url = useImage()('/unb-earth-science-collections-cover.png', {
-  alt: 'UNB Earth Science Collections',
-  height: 800,
-  format: 'webp',
-})
-
 const mapCenter = ref<Coordinate>([46.65848709787655, -66.35685870803573]) // Initially center on NB
 const { data: specimens } = await useFetch<EntityJSONList<Specimen>>('/api/specimens', {
   query: {
@@ -71,7 +78,6 @@ const { data: specimens } = await useFetch<EntityJSONList<Specimen>>('/api/speci
 })
 
 const markers = computed(() => specimens.value?.entities.filter(({ origin }) => origin?.latitude && origin?.longitude))
-console.log(specimens.value?.entities.length)
 
 function onUpdateCenter(center: Coordinate) {
   mapCenter.value = center

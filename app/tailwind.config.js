@@ -105,6 +105,7 @@ module.exports = {
         xs: '1px',
         sm: '0.5rem',
         current: '1em',
+        '1/6': '16.666667%',
       },
       strokeWidth: {
         '1.5': `1.5`
