@@ -22,8 +22,8 @@
     </header>
     <div class="flex w-full flex-col space-y-12 items-end">
       <section class="flex w-full justify-start">
-        <div class="flex w-full lg:w-3/4 gap-x-2">
-          <div class="group relative grow h-[48rem]">
+        <div class="flex w-full lg:w-3/4 gap-x-2 h-[48rem]">
+          <div class="group relative grow size-full">
             <SpecimenImage :category="specimen?.type" :url="specimen?.images?.entities[activeImageIndex]?.uri" width="1280" height="915" class="size-full" />
             <button v-if="(specimen.images?.entities ?? []).length > 1"
               class="absolute left-4 top-[calc(100%/2-1.5rem)] hidden group-hover:flex bg-base-17 hover:bg-accent-26 rounded-sm shadow-lg shadow-base-17/60"
@@ -249,8 +249,6 @@ const relativeAges = computed(() => {
     .sort(([divisionA], [divisionB]) => useEnum(Division).valueOf(divisionA) - useEnum(Division).valueOf(divisionB))
   )
 })
-
-watch(relativeAges, console.log, { immediate: true })
 
 const publications = computed(() => specimen.value?.publications?.entities ?? [])
 </script>
