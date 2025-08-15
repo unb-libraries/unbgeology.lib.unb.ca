@@ -12,9 +12,9 @@
             <SpecimenImage :category="specimen.type" :url="specimen.images?.entities?.[0]?.uri" width="100" height="100" class="aspect-square h-24 flex-none" />
             <div class="flex flex-col gap-y-2 w-full">
               <h2 class="flex items-center gap-x-2">
-                <a :href="`/specimens/${specimen.id}`" :title="specimen.name ?? 'Unknown'" class="text-xl !text-base-27 hover:!text-accent-26 leading-none truncate overflow-hidden border-b border-current">{{ specimen.name ?? 'Unknown' }}</a>
-                <IconLock v-if="useEnum(Status).valueOf(specimen.status) !== Status.PUBLISHED" title="Unpublished" class="flex-none text-red stroke-2 size-4" />
-                <SpecimenEditLink :specimen="specimen" class="flex-none !text-base-27" />
+                <a :href="`/specimens/${specimen.id}`" :title="specimen.name ?? 'Unknown'" class="text-xl !text-base-27 dark:!text-base-67 hover:!text-accent-26 dark:hover:!text-accent-36 leading-none truncate overflow-hidden border-b border-current">{{ specimen.name ?? 'Unknown' }}</a>
+                <IconLock v-if="useEnum(Status).valueOf(specimen.status) !== Status.PUBLISHED" title="Unpublished" class="flex-none text-red dark:text-red-light stroke-2 size-4" />
+                <SpecimenEditLink :specimen="specimen" class="flex-none !text-base-27 dark:!text-base-67" />
               </h2>
               <div class="inline-flex gap-x-1 leading-none items-start text-sm font-semibold uppercase">
                 <SpecimenIcon :category="specimen.type" class="size-4 flex-none" />
@@ -70,15 +70,15 @@ function onZoomMap(level: number, center: Coordinate, bounds: [Coordinate, Coord
 
 <style>
 .leaflet-popup-content {
-  @apply bg-base-87 text-base-17 m-0 !w-fit;
+  @apply bg-base-87 dark:bg-base-2 text-base-17 dark:text-base-87 m-0 !w-fit;
 }
 
 .leaflet-popup-content-wrapper {
-  @apply bg-base-87 rounded-none;
+  @apply bg-base-87 dark:bg-base-2 rounded-none;
 }
 
 .leaflet-popup-tip {
-  @apply bg-base-87;
+  @apply bg-base-87 dark:bg-base-2;
 }
 
 .leaflet-popup-close-button {

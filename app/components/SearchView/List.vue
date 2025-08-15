@@ -1,24 +1,24 @@
 <template>
   <ul class="overflow-y-scroll size-full">
     <!-- Element container -->
-    <li v-for="specimen in specimens" :key="specimen.self" class="group flex w-full h-fit px-4 border border-transparent hover:bg-base-97 hover:border-accent-26">
+    <li v-for="specimen in specimens" :key="specimen.self" class="group flex w-full h-fit px-4 border border-transparent hover:bg-base-97 dark:hover:bg-accent-6 hover:border-accent-26 dark:hover:border-accent-36">
       <!-- Inner container-->
-      <div class="inner flex gap-x-4 border-t border-t-base-77 group-first:border-t-transparent group-hover:border-t-transparent w-full py-4">
+      <div class="inner flex gap-x-4 border-t border-t-base-77 dark:border-t-base-27 group-first:border-t-transparent group-hover:border-t-transparent w-full py-4">
         <SpecimenImage :category="specimen.type" :url="specimen.images?.entities?.[0]?.uri" width="100" height="100" class="aspect-square h-24" />
         <div class="flex flex-col overflow-hidden gap-y-2">
-          <div class="inline-flex gap-x-1 items-center text-base-27 text-xs uppercase font-semibold leading-none">
+          <div class="inline-flex gap-x-1 items-center text-base-27 dark:text-base-67 text-xs uppercase font-semibold leading-none">
             <span class="sr-only">ID</span>
             <span>{{ specimen.id.toUpperCase() }}</span>
           </div>
           <h2 class="flex items-center gap-x-1">
-            <a :href="`/specimens/${specimen.id}`" class="text-xl text-base-17 hover:text-accent-26 leading-none border-b border-current">{{ specimen.name ?? 'Unknown' }}</a>
-            <IconLock v-if="useEnum(Status).valueOf(specimen.status) !== Status.PUBLISHED" title="Unpublished" class="text-red stroke-2 size-4" />
+            <a :href="`/specimens/${specimen.id}`" class="text-xl text-base-17 dark:text-base-87 hover:text-accent-26 dark:hover:text-accent-36 leading-none border-b border-current">{{ specimen.name ?? 'Unknown' }}</a>
+            <IconLock v-if="useEnum(Status).valueOf(specimen.status) !== Status.PUBLISHED" title="Unpublished" class="text-red dark:text-red-light stroke-2 size-4" />
             <SpecimenEditLink :specimen class="hidden group-hover:inline-flex" />
           </h2>
           <TruncatedText v-if="specimen.description">
             {{ specimen.description }}
           </TruncatedText>
-          <div class="inline-flex gap-x-6 text-xs text-base-27 uppercase font-semibold leading-none">
+          <div class="inline-flex gap-x-6 text-xs text-base-27 dark:text-base-67 uppercase font-semibold leading-none">
             <div class="inline-flex gap-x-1 leading-none items-center">
               <SpecimenIcon :category="specimen.type" class="size-4" />
               <span class="sr-only">Classification</span>
