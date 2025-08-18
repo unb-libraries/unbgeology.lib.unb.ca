@@ -7,15 +7,15 @@
         </h1>
         <div class="inline-flex gap-x-2 items-center">
           <span v-if="specimen?.storage?.entities.at(-1)?.location.public"
-            class="px-2 py-1.5 text-sm text-base-97 rounded-md font-semibold uppercase leading-none bg-accent-26"
+            class="px-2 py-1.5 text-sm text-base-97 rounded-md font-semibold uppercase leading-none bg-accent-26 dark:bg-accent-36"
           >
             On Display
           </span>
-          <IconLock v-if="useEnum(Status).valueOf(specimen.status) !== Status.PUBLISHED" class="text-red stroke-2 size-current" />
+          <IconLock v-if="useEnum(Status).valueOf(specimen.status) !== Status.PUBLISHED" class="text-red dark:text-red-light stroke-2 size-current" />
           <SpecimenEditLink :specimen="specimen" />
         </div>
       </div>
-      <div class="inline-flex text-sm leading-none text-base-27 font-semibold uppercase">
+      <div class="inline-flex text-sm leading-none text-base-27 dark:text-base-67 font-semibold uppercase">
         <span class="pr-4 border-r border-base-27">{{ specimen!.id.toUpperCase() }}</span>
         <span class="pl-4">{{classifications.map(({ label }) => label).join(' &raquo; ')}}</span>
       </div>
@@ -26,12 +26,12 @@
           <div class="group relative grow size-full">
             <SpecimenImage :category="specimen?.type" :url="specimen?.images?.entities[activeImageIndex]?.uri" width="1280" height="915" class="size-full" />
             <button v-if="(specimen.images?.entities ?? []).length > 1"
-              class="absolute left-4 top-[calc(100%/2-1.5rem)] hidden group-hover:flex bg-base-17 hover:bg-accent-26 rounded-sm shadow-lg shadow-base-17/60"
+              class="absolute left-4 top-[calc(100%/2-1.5rem)] hidden group-hover:flex bg-base-17 dark:bg-accent-6 hover:bg-accent-26 dark:hover:bg-accent-36 rounded-sm shadow-lg shadow-base-17/60 dark:shadow-base-87/30"
               @click="activeImageIndex = (activeImageIndex - 1 + specimen.images.entities.length) % specimen.images.entities.length">
               <IconAngleDown class="size-12 stroke-base-97 stroke-1.5 rotate-90 fill-none" />
             </button>
             <button v-if="(specimen.images?.entities ?? []).length > 1"
-              class="absolute right-4 top-[calc(100%/2-1.5rem)] hidden group-hover:flex bg-base-17 hover:bg-accent-26 rounded-sm shadow-lg shadow-base-17/60"
+              class="absolute right-4 top-[calc(100%/2-1.5rem)] hidden group-hover:flex bg-base-17 dark:bg-accent-6 hover:bg-accent-26 dark:hover:bg-accent-36 rounded-sm shadow-lg shadow-base-17/60 dark:shadow-base-87/30"
               @click="activeImageIndex = (activeImageIndex + 1) % specimen.images.entities.length">
               <IconAngleDown class="size-12 stroke-base-97 stroke-1.5 -rotate-90 fill-none" />
             </button>
@@ -42,7 +42,7 @@
               type="button"
               :data-index="i"
               :data-status="activeImageIndex === i ? 'active' : 'inactive'" 
-              class="group w-full aspect-square data-[status=inactive]:cursor-pointer border border-transparent data-[status=active]:border-accent-26"
+              class="group w-full aspect-square data-[status=inactive]:cursor-pointer border border-transparent data-[status=active]:border-accent-26 dark:data-[status=active]:border-accent-36"
               @click="activeImageIndex = i"
             >
               <img 
@@ -53,7 +53,7 @@
         </div>
       </section>
       <section v-if="specimen?.description" class="w-1/2 mx-auto">
-        <h2 class="text-base-27 mb-3 text-lg font-bold text-start uppercase">
+        <h2 class="text-base-27 dark:text-base-67 mb-3 text-lg font-bold text-start uppercase">
           Description
         </h2>
         <div>
@@ -62,25 +62,25 @@
       </section>
 
       <section class="w-1/2 mx-auto">
-        <h2 class="text-base-27 mb-3 text-lg font-bold text-start uppercase">Specifications</h2>
+        <h2 class="text-base-27 dark:text-base-67 mb-3 text-lg font-bold text-start uppercase">Specifications</h2>
         <table class="w-full">
-          <tr class="border-b border-base-77 last:border-b-0">
-            <th class="py-3 pt-0 text-start text-base-27 font-semibold uppercase">ID</th>
+          <tr class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+            <th class="py-3 pt-0 text-start text-base-27 dark:text-base-67 font-semibold uppercase">ID</th>
             <td class="py-3 pt-0">{{ specimen?.id.toUpperCase() }}</td>
           </tr>
-          <tr class="border-b border-base-77 last:border-b-0">
-            <th class="flex flex-col text-start justify-start py-3 text-base-27 font-semibold uppercase">Object name</th>
+          <tr class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+            <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Object name</th>
             <td class="py-3">{{ specimen?.name }}</td>
           </tr>
-          <tr class="border-b border-base-77 last:border-b-0">
-            <th class="flex flex-col text-start justify-start py-3 text-base-27 font-semibold uppercase">Legal status</th>
+          <tr class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+            <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Legal status</th>
             <td class="py-3">{{ useEnum(Legal).valueOf(specimen?.legal) === Legal.PERMANENT ? 'Permanent collection' : 'On loan' }}</td>
           </tr>
-          <tr class="border-b border-base-77 last:border-b-0">
-            <th class="flex flex-col text-start justify-start py-3 text-base-27 font-semibold uppercase">Category</th>
+          <tr class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+            <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Category</th>
             <td class="py-3">{{ specimen?.type[0].toUpperCase() + specimen?.type.slice(1) }}</td></tr>
-          <tr class="border-b border-base-77 last:border-b-0">
-            <th class="flex flex-col text-start justify-start py-3 text-base-27 font-semibold uppercase">Classification</th>
+          <tr class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+            <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Classification</th>
             <td class="py-3">
               <div v-if="specimen.type === 'fossil'" class="flex flex-col w-full">
                 <div v-for="classification in classifications.slice(1)" :key="classification.rank" class="flex">
@@ -93,12 +93,12 @@
               </template>
             </td>
           </tr>
-          <tr class="border-b border-base-77 last:border-b-0">
-            <th class="flex flex-col text-start justify-start py-3 text-base-27 font-semibold uppercase">Pieces</th>
+          <tr class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+            <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Pieces</th>
             <td class="py-3">{{ specimen?.pieces }}</td>
           </tr>
-          <tr class="border-b border-base-77 last:border-b-0">
-            <th class="flex flex-col text-start justify-start py-3 text-base-27 font-semibold uppercase">Measurements</th>
+          <tr class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+            <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Measurements</th>
             <td class="py-3">
               <ul v-if="specimen!.measurements?.count && useEnum(MeasurementCount).valueOf(specimen!.measurements.count) === MeasurementCount.INDIVIDUAL">
                 <li v-for="(dimensions) in specimen!.measurements!.dimensions" :key="dimensions.join('x')">
@@ -126,15 +126,15 @@
               <template v-else>Not specified</template>
             </td>
           </tr>
-          <tr class="border-b border-base-77 last:border-b-0">
-            <th class="flex flex-col text-start justify-start py-3 text-base-27 font-semibold uppercase">Partial</th>
+          <tr class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+            <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Partial</th>
             <td class="py-3">{{ specimen?.partial ? 'Yes' : 'No' }}</td></tr>
-          <tr v-if="specimen.type === 'fossil' && specimen.portion" class="border-b border-base-77 last:border-b-0">
-            <th class="flex flex-col text-start justify-start py-3 text-base-27 font-semibold uppercase">Portion</th>
+          <tr v-if="specimen.type === 'fossil' && specimen.portion" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+            <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Portion</th>
             <td class="py-3">{{ specimen.portion.label }}</td>
           </tr>
-          <tr v-if="compositionLabels.length" class="border-b border-base-77 last:border-b-0">
-            <th class="flex flex-col text-start justify-start py-3 text-base-27 font-semibold uppercase">Composition</th>
+          <tr v-if="compositionLabels.length" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+            <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Composition</th>
             <td class="py-3">
               <ul v-if="specimen?.type === 'mineral'">
                 <li v-for="label in compositionLabels" :key="label">{{ label }}</li>
@@ -142,8 +142,8 @@
               <template v-else>{{ compositionLabels.join(', ') }}</template>
             </td>
           </tr>
-          <tr v-if="specimen?.age?.relative" class="border-b border-base-77 last:border-b-0">
-            <th class="flex flex-col text-start justify-start py-3 text-base-27 font-semibold uppercase">Age</th>
+          <tr v-if="specimen?.age?.relative" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+            <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Age</th>
             <td class="py-3">
               <div class="flex flex-col w-full">
                 <div v-for="(age, division) of relativeAges" :key="division" class="flex">
@@ -153,21 +153,21 @@
               </div>
             </td>
           </tr>
-          <tr class="border-b border-base-77 last:border-b-0">
-            <th class="flex flex-col text-start justify-start py-3 text-base-27 font-semibold uppercase">Numeric age</th>
+          <tr class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+            <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Numeric age</th>
             <td class="py-3">
               <template v-if="specimen?.age?.numeric">{{specimen?.age?.numeric?.map(mya => Number(mya) / Math.pow(10, 6)).join(' - ')}}</template>
               <template v-else>{{specimen?.age?.relative?.map(({ start }) => Number(start) / Math.pow(10, 6)).join(' - ')}} Mya</template>
             </td>
           </tr>
-          <tr class="border-b border-base-77 last:border-b-0">
-            <th class="py-3 pb-0 text-start text-base-27 font-semibold uppercase">Origin</th>
+          <tr class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+            <th class="py-3 pb-0 text-start text-base-27 dark:text-base-67 font-semibold uppercase">Origin</th>
             <td class="py-3 pb-0">{{ specimen?.origin?.name }}</td>
           </tr>
         </table>
       </section>
       <section v-if="specimen?.origin?.latitude && specimen?.origin?.longitude" class="w-full lg:w-3/4">
-        <h2 class="text-base-27 mb-3 text-lg font-bold text-start uppercase">
+        <h2 class="text-base-27 dark:text-base-67 mb-3 text-lg font-bold text-start uppercase">
           Map of Origin
         </h2>
         <LeafletMap v-if="specimen?.origin?.latitude && specimen?.origin?.longitude" class="min-h-128 w-full" :zoom="7" :center="[specimen.origin.latitude, specimen.origin.longitude]">
@@ -176,7 +176,7 @@
             :name="specimen?.origin?.name ?? 'Unknown'"
             :center="[specimen?.origin.latitude, specimen?.origin.longitude]"
           >
-            <div class="inline-flex gap-2 w-full p-4 text-nowrap text-base-27 font-semibold uppercase">
+            <div class="inline-flex gap-2 w-full p-4 text-nowrap text-base-27 dark:text-base-67 font-semibold uppercase">
               {{ specimen.origin.name ?? 'Unknown' }}
             </div>
           </LeafletMarker>
@@ -184,11 +184,11 @@
         <div v-else-if="specimen?.origin?.name">{{ specimen?.origin?.name ?? 'Unknown' }}</div>
       </section>
       <section v-if="publications.length" class="w-full lg:w-3/4">
-        <h2 class="text-base-27 mb-3 text-lg font-bold text-start uppercase">
+        <h2 class="text-base-27 dark:text-base-67 mb-3 text-lg font-bold text-start uppercase">
           Publications
         </h2>
         <ul class="list-inside list-decimal">
-          <li v-for="(publication, i) in publications" :key="publication.self" class="py-3 first:pt-0 last:pb-0 border-b border-base-77 last:border-b-0">
+          <li v-for="(publication, i) in publications" :key="publication.self" class="py-3 first:pt-0 last:pb-0 border-b border-base-77 dark:border-base-27 last:border-b-0">
             <a v-if="publication.doi" :href="publication.doi" class="hover:underline">{{ publication.citation }}</a>
             <template v-else>{{ publication.citation }}</template>
           </li>
@@ -255,15 +255,15 @@ const publications = computed(() => specimen.value?.publications?.entities ?? []
 
 <style>
 .leaflet-popup-content {
-  @apply bg-base-87 text-base-17 m-0 !w-fit;
+  @apply bg-base-87 dark:bg-base-2 text-base-17 dark:text-base-87 m-0 !w-fit;
 }
 
 .leaflet-popup-content-wrapper {
-  @apply bg-base-87 rounded-none;
+  @apply bg-base-87 dark:bg-base-2 rounded-none;
 }
 
 .leaflet-popup-tip {
-  @apply bg-base-87;
+  @apply bg-base-87 dark:bg-base-2;
 }
 
 .leaflet-popup-close-button {

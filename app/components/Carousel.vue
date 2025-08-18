@@ -13,7 +13,7 @@
     </div>
     <div v-show="container && scrollPosition > 0"
       :class="[
-        'absolute hidden xl:flex left-0 top-0 from-base to-transparent items-center justify-end',
+        'absolute hidden xl:flex left-0 top-0 from-base dark:from-base-2 to-transparent items-center justify-end',
         {
           'flex-row w-fit h-full pr-12 bg-gradient-to-r': orientation === 'horizontal',
           'flex-col w-full h-fit pb-12 bg-gradient-to-b': orientation === 'vertical',
@@ -27,7 +27,7 @@
       >
         <IconAngleDown
           :class="[
-            'fill-none hover:stroke-accent-26 stroke-current stroke-1.5 size-8',
+            'fill-none hover:stroke-accent-26 dark:hover:stroke-accent-36 stroke-current stroke-1.5 size-8',
             {
               'rotate-90': orientation === 'horizontal',
               'rotate-180': orientation === 'vertical'
@@ -37,7 +37,7 @@
     </div>
     <div v-show="container && scrollPosition < container[orientation === 'horizontal' ? 'scrollWidth' : 'scrollHeight'] - container.getBoundingClientRect()[orientation === 'horizontal' ? 'width' : 'height']"
       :class="[
-        'absolute hidden xl:flex right-0 bottom-0 from-base to-transparent items-center justify-end',
+        'absolute hidden xl:flex right-0 bottom-0 from-base dark:from-base-2 to-transparent items-center justify-end',
         {
           'flex-row w-fit h-full pl-12 bg-gradient-to-l': orientation === 'horizontal',
           'flex-col w-full h-fit pt-12 bg-gradient-to-t': orientation === 'vertical',
@@ -51,7 +51,7 @@
       >
         <IconAngleDown
           :class="[
-            'fill-none hover:stroke-accent-26 stroke-current stroke-1.5 size-8',
+            'fill-none hover:stroke-accent-26 dark:hover:stroke-accent-36 stroke-current stroke-1.5 size-8',
             {
               '-rotate-90': orientation === 'horizontal',
             }
