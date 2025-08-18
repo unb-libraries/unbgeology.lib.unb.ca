@@ -20,47 +20,55 @@
     </template>
     
     <template #default>
-      <div class="flex gap-x-6 w-full">
-        <SpecimenImage :category="(category as 'fossil' | 'mineral' | 'rock')" :url="classification.image?.uri" width="770" height="550" class="w-1/2 aspect-7/5" />
-        <div class="flex flex-col gap-y-4 w-1/2">
-          <section class="grow">
-            <h2 class="sr-only text-2xl mb-4">Description</h2>
-            {{ classification.description }}
-          </section>
+      <div class="flex flex-col gap-y-12">
+        <section class="flex flex-col gap-y-2 w-full overflow-hidden">
+          <div class="h-[48rem]">
+            <SpecimenImage
+              :category="(category as 'fossil' | 'mineral' | 'rock')"
+              :url="specimens?.entities.filter(({ images }) => images?.total)[activeImageIndex]?.images?.entities[0]?.uri"
+              class="size-full"
+            />
+          </div>
+          <div v-if="specimens?.entities.filter(({ images }) => images?.entities.length ?? 0 > 0)?.length ?? 0 > 1" class="flex gap-x-1 max-w-full h-24">
+            <button v-for="(images, i) in specimens?.entities.filter(({ images }) => images?.total).map(({ images }) => images)"
+              :key="images.entities[0].self"
+              :data-status="activeImageIndex === i ? 'active' : 'inactive'"
+              type="button"
+              class="group h-full aspect-square data-[status=inactive]:cursor-pointer border border-transparent data-[status=active]:border-accent-26 dark:data-[status=active]:border-accent-36"
+              @click="activeImageIndex = i"
+            >
+              <SpecimenImage
+                :category="(category as 'fossil' | 'mineral' | 'rock')"
+                :url="images.entities[0].uri"
+                width="100"
+                height="100"
+                class="group-data-[status=active]:opacity-50 group-data-[status=inactive]:hover:opacity-50"
+              />
+            </button>
+          </div >
+        </section>
+        
+        <!-- Description -->
+        <section class="grow">
+          <h2 class="sr-only text-2xl mb-4">Description</h2>
+          {{ classification.description }}
+        </section>
   
-          <section v-if="subClassifications?.entities.length">
-            <h2 class="text-2xl mb-4">Types of {{ classification.label }}</h2>
-            <div class="flex gap-x-2 max-w-full">
-              <Carousel>
-                <a v-for="subCls in subClassifications.entities"
-                  :key="subCls.self"
-                  :href="[useRoute().path, subCls.slug].join('/')"
-                  class="px-4 py-2 hover:bg-base-77 border border-base-57 rounded-md flex-nowrap text-nowrap"
-                >
-                  {{ subCls.label }}
-                </a>
-              </Carousel>
-            </div>
-          </section>
-          
-          <section v-if="specimens?.entities.length">
-            <h2 class="text-2xl mb-4">{{ classification.label }} specimens</h2>
-            <div class="grid grid-cols-5 gap-x-2">
-              <a v-for="{ self, name, images } in specimens.entities" :key="self"
-                :href="`/specimens/${self.split('/').pop()}`"
-                :title="name"
+        <!-- Sub-Classifications -->
+        <section v-if="subClassifications?.entities.length">
+          <h2 class="text-2xl mb-4">Types of {{ classification.label }}</h2>
+          <div class="flex gap-x-2 max-w-full">
+            <Carousel>
+              <a v-for="subCls in subClassifications.entities"
+                :key="subCls.self"
+                :href="[useRoute().path, subCls.slug].join('/')"
+                class="px-4 py-2 hover:bg-base-77 border border-base-57 rounded-md flex-nowrap text-nowrap"
               >
-                <SpecimenImage 
-                  :category="(category as 'fossil' | 'mineral' | 'rock')"
-                  :url="images?.entities?.[0]?.uri"
-                  width="150"
-                  height="150"
-                  class="aspect-square"
-                />
+                {{ subCls.label }}
               </a>
-            </div>
-          </section>
-        </div>
+            </Carousel>
+          </div>
+        </section>
       </div>
     </template>
   </NuxtLayout>
@@ -99,7 +107,7 @@ const { data: specimens } = await useFetch<EntityJSONList<Specimen>>('/api/speci
   query: {
     filter: [slug.length ? `classification:equals:${classification.value?.self}` : `type:equals:${category}`],
     select: ['name', 'images'],
-    pageSize: 5,
+    pageSize: 15,
   }
 })
 
@@ -109,4 +117,6 @@ if (parentClassifications && !(parentClassifications.value?.entities ?? []).ever
 }
 const parentPages = [{ self: category, label: `${category}s`, slug: category }, ...parentClassifications.value?.entities ?? []]
   .map(({ slug, ...p }, i, arr) => ({ ...p, slug: arr.slice(0, i + 1).map(pc => pc.slug).join('/') }))
+
+const activeImageIndex = ref(0)
 </script>
