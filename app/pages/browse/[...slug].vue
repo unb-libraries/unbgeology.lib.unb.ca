@@ -62,7 +62,7 @@
               <a v-for="subCls in subClassifications.entities"
                 :key="subCls.self"
                 :href="[useRoute().path, subCls.slug].join('/')"
-                class="px-4 py-2 hover:bg-base-77 border border-base-57 rounded-md flex-nowrap text-nowrap"
+                class="px-4 py-2 hover:text-accent-36 border border-base-57 hover:border-accent-36 rounded-md flex-nowrap text-nowrap"
               >
                 {{ subCls.label }}
               </a>
