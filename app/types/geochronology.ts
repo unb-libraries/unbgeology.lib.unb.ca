@@ -4,6 +4,7 @@ export enum Status {
   MIGRATED = 1,
   DRAFT = 2,
   PUBLISHED = 4,
+  PROTECTED = 8,
 }
 
 export enum Division {
