@@ -13,7 +13,10 @@ p, migrator, term, *, create|read|delete
 p, migrator, specimen:migrated, *, create|read|delete
 p, curator, specimen, *, create|read|update|delete
 p, editor, specimen, *, create|read|update|delete
-p, editor, term, *, create|read|update|delete
+p, editor, term, *, read
+p, editor, term:published, *, create|read|update|delete
+p, editor, term:draft, *, create|read|update|delete
+p, editor, term:migrated, *, create|read|update|delete
 p, editor, file, *, create|read|update|delete
 p, editor, user, id|profile, read
 p, editor, migrationitem:imported, *, read
