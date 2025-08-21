@@ -37,7 +37,9 @@
         {{ titleCased(useEnum(Division).labelOf(division)) }}
       </template>
       <template #start="{ entity: { gssp, start, uncertainty } }">
-        {{ (gssp === false ? `~` : ``) + (start / 1e6) + (uncertainty ? ` ± ${uncertainty / 1e6}` : ``) }}
+        <template v-if="start">
+          {{ (gssp === false ? `~` : ``) + (start / 1e6) + (uncertainty ? ` ± ${uncertainty / 1e6}` : ``) }}
+        </template>
       </template>
     </EntityTable>
     <div class="flex w-full flex-row justify-between px-4">
