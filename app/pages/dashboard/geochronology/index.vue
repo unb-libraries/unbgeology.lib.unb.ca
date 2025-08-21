@@ -21,22 +21,22 @@
       row-class="table-row"
       selected-row-class="active"
     >
-      <template #label="{ entity: { label, slug, color } }">
+      <template #label="{ entity: { label, slug, color, status } }">
         <div class="inline-flex items-center space-x-3">
           <svg class="size-6 rounded-md" view-box="0 0 24 24"><rect width="24" height="24" :fill="color" /></svg>
-          <NuxtLink v-if="hasPermission(/^update:term(:geochronology)?:/)" :to="`/dashboard/geochronology/${slug}`" class="hover:underline">
+          <NuxtLink v-if="hasPermission(new RegExp(`^update:term(:geochronology)?:${useEnum(Status).labelOf(status)}:`))" :to="`/dashboard/geochronology/${slug}`" class="hover:underline">
             {{ label }}
           </NuxtLink>
           <span v-else>{{ label }}</span>
         </div>
       </template>
-      <template #parent="{ entity: { parent }}">
+      <template #parent="{ entity: { parent } }">
         <span v-if="parent">{{ parent.label }}</span>
       </template>
-      <template #division="{ entity: { division }}">
+      <template #division="{ entity: { division } }">
         {{ titleCased(useEnum(Division).labelOf(division)) }}
       </template>
-      <template #start="{ entity: { gssp, start, uncertainty }}">
+      <template #start="{ entity: { gssp, start, uncertainty } }">
         {{ (gssp === false ? `~` : ``) + (start / 1e6) + (uncertainty ? ` ± ${uncertainty / 1e6}` : ``) }}
       </template>
     </EntityTable>
@@ -71,10 +71,10 @@
         </PvEntityDetails>
         <template #actions>
           <div class="space-y-2">
-            <button v-if="hasPermission(/^update:term(:geochronology)?:/) && selection.length === 1" class="button button-lg button-outline-yellow-light hover:button-yellow-light hover:text-primary w-full">
+            <button v-if="selection.length === 1 && hasPermission(new RegExp(`^update:term(:geochronology)?:${useEnum(Status).labelOf(selection[0].status)}`))" class="button button-lg button-outline-yellow-light hover:button-yellow-light hover:text-primary w-full">
               Edit{{ selection.length > 1 ? ` ${selection.length} units` : `` }}
             </button>
-            <button v-if="hasPermission(/^delete:term(:geochronology)?:/)" class="button button-lg button-outline-red-dark hover:button-red-dark w-full" @click.stop.prevent="onClickDelete">
+            <button v-if="selection.every(({ status }) => hasPermission(new RegExp(`^delete:term(:geochronology)?:${useEnum(Status).labelOf(status)}`)))" class="button button-lg button-outline-red-dark hover:button-red-dark w-full" @click.stop.prevent="onClickDelete">
               Delete{{ selection.length > 1 ? ` ${selection.length} units` : `` }}
             </button>
           </div>

@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Unit } from "~/types/geochronology"
+import { Status, type Unit } from "~/types/geochronology"
 
 const { slug } = useRoute().params
 
@@ -20,9 +20,14 @@ definePageMeta({
 })
 
 const { fetchBy } = useEntityType<Unit>(`Term`)
+const { hasPermission } = useCurrentUser()
 const { entity: unit, update } = await fetchBy({ slug: slug as string, type: `geochronology` })
 if (!unit.value) {
   showError(`Unit not found.`)
+}
+
+if (!hasPermission(new RegExp(`^update:term(:geochronology)?:${useEnum(Status).labelOf(unit.value!.status)}:`))) {
+  showError({ status: 403, statusMessage: `You do not have permission to edit this unit.` })
 }
 
 const returnUrl = `/dashboard/geochronology`
