@@ -43,12 +43,6 @@
             <a href="/specimens">
               Search
             </a>
-            <a href="/about">
-              About
-            </a>
-            <a href="/contact">
-              Contact
-            </a>
           </nav>
         </div>
       </div>
