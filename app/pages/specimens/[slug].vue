@@ -147,13 +147,13 @@
             <td class="py-3">
               <div class="flex flex-col w-full">
                 <div v-for="(age, division) of relativeAges" :key="division" class="flex">
-                  <div class="w-28">{{ division[0].toUpperCase() + division.slice(1) }}:</div>
+                  <div v-if="division" class="w-28">{{ division[0].toUpperCase() + division.slice(1) }}:</div>
                   <div class="grow">{{ age.join(' to ') }}</div>
                 </div>
               </div>
             </td>
           </tr>
-          <tr class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+          <tr v-if="specimen?.age?.numeric || specimen?.age?.relative?.every(({ start }) => !isNaN(start))" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
             <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Numeric age</th>
             <td class="py-3">
               <template v-if="specimen?.age?.numeric">{{specimen?.age?.numeric?.map(mya => Number(mya) / Math.pow(10, 6)).join(' - ')}}</template>
@@ -241,8 +241,8 @@ const relativeAges = computed(() => {
   ])
     .flat()
     ?.reduce((acc, { label, division }) => {
-      acc[division] ||= []
-      acc[division].push(label)
+      acc[division ?? ''] ||= []
+      acc[division ?? ''].push(label)
       return acc
     }, {}) ?? {})
     .map(([division, labels]) => [division, labels.filter((l, i, arr) => arr.indexOf(l) === i)])
