@@ -1,16 +1,16 @@
-import AutoComplete from "primevue/autocomplete"
-import ColorPicker from "primevue/colorpicker"
-import Column from "primevue/column"
-import PrimeVue from "primevue/config"
-import DataTable from "primevue/datatable"
-import Dropdown from "primevue/dropdown"
-import InputMask from "primevue/inputmask"
-import InputNumber from "primevue/inputnumber"
-import InputText from "primevue/inputtext"
-import MultiSelect from "primevue/multiselect"
-import { usePassThrough } from "primevue/passthrough"
-import Tailwind from "primevue/passthrough/tailwind"
-import ProgressSpinner from "primevue/progressspinner"
+import AutoComplete from 'primevue/autocomplete'
+import ColorPicker from 'primevue/colorpicker'
+import Column from 'primevue/column'
+import PrimeVue from 'primevue/config'
+import DataTable from 'primevue/datatable'
+import Dropdown from 'primevue/dropdown'
+import InputMask from 'primevue/inputmask'
+import InputNumber from 'primevue/inputnumber'
+import InputText from 'primevue/inputtext'
+import MultiSelect from 'primevue/multiselect'
+import { usePassThrough } from 'primevue/passthrough'
+import Tailwind from 'primevue/passthrough/tailwind'
+import ProgressSpinner from 'primevue/progressspinner'
 import { type DropdownContext } from "primevue/dropdown"
 
 export default defineNuxtPlugin((nuxtApp) => {
@@ -37,26 +37,26 @@ export default defineNuxtPlugin((nuxtApp) => {
             `text-left`,
             `border-0`,
             `border-b-0`,
-            `dark:border-0`,
-            `dark:border-b-0`,
+            `border-0`,
+            `border-b-0`,
             `p-4`,
-            `dark:text-base`,
+            `text-base`,
           ],
         },
         headercell: {
           class: [
             `bg-transparent`,
-            `dark:bg-transparent`,
+            `bg-transparent`,
             `text-left`,
             `border-0`,
-            `dark:border-0`,
+            `border-0`,
             `font-bold`,
             `transition`,
             `duration-200`,
             `p-4`,
             `bg-primary`,
             `text-primary`,
-            `dark:text-base`,
+            `text-base`,
             `first:rounded-tl-md last:rounded-tr-md`,
           ],
         },
@@ -71,25 +71,25 @@ export default defineNuxtPlugin((nuxtApp) => {
         bodyrow: {
           class: [
             `hover:bg-accent-dark/20`,
-            `even:dark:bg-primary-80/20`,
-            `even:dark:hover:bg-accent-dark/20`,
+            `even:bg-primary-80/20`,
+            `even:hover:bg-accent-dark/20`,
             `transition`,
             `duration-200`,
-            `dark:text-white`,
-            `dark:focus:bg-accent-dark/40`,
-            `even:dark:focus:bg-accent-dark/40`,
+            `text-white`,
+            `focus:bg-accent-dark/40`,
+            `even:focus:bg-accent-dark/40`,
           ],
         },
         headerrow: {
           class: [
-            `dark:bg-accent-dark/10`,
+            `bg-accent-dark/10`,
             `border-b-2`,
-            `dark:border-accent-dark`,
+            `border-accent-dark`,
           ],
         },
         footer: {
           class: [
-            `border-0 px-4 py-2 empty:invisible dark:text-primary-40`,
+            `border-0 px-4 py-2 empty:invisible text-primary-40`,
           ],
         },
       },
@@ -109,20 +109,20 @@ export default defineNuxtPlugin((nuxtApp) => {
             `focus:outline-none`,
             `focus:outline-offset-0`,
             `focus:shadow-[0_0_0_0.2rem_rgba(191,219,254,1)]`,
-            `dark:focus:shadow-[0_0_0_0.2rem_rgba(147,197,253,0.5)]`,
+            `focus:shadow-[0_0_0_0.2rem_rgba(147,197,253,0.5)]`,
           ],
         },
         list: {
           class: [
-            `dark:bg-primary`,
-            `dark:border-accent-light`,
+            `bg-primary`,
+            `border-accent-light`,
           ],
         },
         item: ({ context }: { context: DropdownContext }) => ({
           class: [
-            context.selected ? `dark:bg-accent-dark` : ``,
-            `dark:hover:bg-accent-mid`,
-            `dark:text-base`,
+            context.selected ? `bg-accent-dark` : ``,
+            `hover:bg-accent-mid`,
+            `text-base`,
 
             // defaults
             `cursor-pointer`,
@@ -175,7 +175,7 @@ export default defineNuxtPlugin((nuxtApp) => {
             `focus:outline-none`,
             `focus:outline-offset-0`,
             `focus:shadow-[0_0_0_0.2rem_rgba(191,219,254,1)]`,
-            `dark:focus:shadow-[0_0_0_0.2rem_rgba(147,197,253,0.5)]`,
+            `focus:shadow-[0_0_0_0.2rem_rgba(147,197,253,0.5)]`,
           ],
         },
         header: {
@@ -189,9 +189,9 @@ export default defineNuxtPlugin((nuxtApp) => {
             `p-3`,
             `rounded-t-lg`,
             `text-base`,
-            `dark:bg-primary/30`,
-            `dark:border-primary-20`,
-            `dark:text-white`,
+            `bg-primary/30`,
+            `border-primary-20`,
+            `text-white`,
           ],
         },
         label: {
@@ -200,22 +200,22 @@ export default defineNuxtPlugin((nuxtApp) => {
             `overflow-hidden`,
             `whitespace-nowrap`,
             `cursor-pointer`,
-            `text-ellipsis text-primary dark:text-base`,
+            `text-ellipsis text-primary text-base`,
             `transition`,
             `duration-200`,
           ],
         },
         list: {
           class: [
-            `dark:bg-primary`,
-            `dark:border-accent-light`,
+            `bg-primary`,
+            `border-accent-light`,
           ],
         },
         item: ({ context }: { context: DropdownContext }) => ({
           class: [
-            context.selected ? `dark:bg-accent-dark` : ``,
-            `dark:hover:bg-accent-mid`,
-            `dark:text-base`,
+            context.selected ? `bg-accent-dark` : ``,
+            `hover:bg-accent-mid`,
+            `text-base`,
             `cursor-pointer`,
             `font-normal`,
             `overflow-hidden`,

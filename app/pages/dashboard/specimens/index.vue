@@ -8,7 +8,7 @@
 
     <div class="form-field w-full">
       <label class="sr-only" for="search">Search</label>
-      <input v-model="search" placeholder="Search" name="search" class="placeholder:text-primary dark:placeholder:text-primary-20 form-input form-input-text grow p-2 placeholder:italic">
+      <input v-model="search" placeholder="Search" name="search" class="placeholder:text-primary-20 form-input form-input-text bg-primary grow p-2 placeholder:italic">
     </div>
     <div class="mt-2 flex w-full flex-row items-center justify-between">
       <div v-if="list?.total" class="italic">
@@ -26,7 +26,7 @@
           <IconSort class="stroke-1.5 size-6 fill-none stroke-current" /><span>Sort<template v-if="activeSortOptions.length"> ({{ activeSortOptions.length }})</template></span>
         </button>
         <button id="button-columns" class="button bg-primary-80/40 hover:bg-primary-60/40 button-md inline-flex space-x-2" @click.prevent="columnMenuVisible = !columnMenuVisible">
-          <IconTable class="stroke-1.5 size-6 fill-none stroke-current" /><span>Columns ({{ columnsOptions.filter(([id, label, selected]) => selected).length }}/{{ columnsOptions.length }})</span>
+          <IconTable class="stroke-1.5 size-6 fill-none stroke-current" /><span>Columns ({{columnsOptions.filter(([id, label, selected]) => selected).length}}/{{ columnsOptions.length }})</span>
         </button>
 
         <PvContextualDropdown v-model="filterMenuVisible" trigger-id="button-filter" class="bg-primary border-primary-60/40 right-0 top-12 w-96 rounded-md border p-6" @click.prevent.stop="filterMenuVisible = !filterMenuVisible">
@@ -141,7 +141,7 @@
       <template #measurements="{ entity: { measurements } }">
         <ol v-if="measurements?.dimensions">
           <li v-for="(lwh, index) in measurements.dimensions" :key="index">
-            {{ lwh.map(d => `${d / 10}cm`).join(` x `) }}
+            {{lwh.map(d => `${d / 10}cm`).join(` x `)}}
           </li>
         </ol>
         <span v-else />
@@ -161,7 +161,7 @@
       </template>
       <template #composition="{ entity: specimen }">
         <template v-if="[`fossil`, `rock`].includes(specimen.type)">
-          {{ (specimen as Fossil | Rock).composition?.entities.map(({ label }) => label).join(`, `) }}
+          {{(specimen as Fossil | Rock).composition?.entities.map(({ label }) => label).join(`, `)}}
         </template>
         <template v-else>
           {{ (specimen as Mineral).classification?.composition }}
@@ -169,13 +169,13 @@
       </template>
       <template #age="{ entity: { age } }">
         <template v-if="age?.relative">
-          {{ age?.relative?.map(unit => unit.label).join(` to `) }}
+          {{age?.relative?.map(unit => unit.label).join(` to `)}}
           <template v-if="age.numeric">
-            ({{ age.numeric.map(n => n / 1e6).join(` - `) }} mya)
+            ({{age.numeric.map(n => n / 1e6).join(` - `)}} mya)
           </template>
         </template>
         <template v-else-if="age?.numeric">
-          {{ age.numeric?.map(n => n / 1e6).join(` - `) }} mya
+          {{age.numeric?.map(n => n / 1e6).join(` - `)}} mya
         </template>
       </template>
       <template #origin="{ entity: { origin } }">

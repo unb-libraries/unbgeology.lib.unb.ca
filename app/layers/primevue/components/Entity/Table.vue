@@ -1,7 +1,7 @@
 <template>
   <table>
     <thead :class="headerClass ?? ``">
-      <tr class="dark:bg-accent-dark/10 dark:border-accent-dark border-b-2">
+      <tr class="bg-accent-dark/10 border-accent-dark border-b-2">
         <th v-if="multiSelect && selection.length > 0" class="p-4 text-left leading-6">
           <PvCheckbox v-model="allChecked" />
         </th>
@@ -46,13 +46,13 @@ import type { PvCheckbox } from '#build/components'
 
 const props = defineProps<{
   entities: EntityJSON<E>[]
-  columns:(string | [string, string])[]
+  columns: (string | [string, string])[]
   modelValue?: M extends false ? EntityJSON<E> | null : EntityJSON<E>[]
   multiSelect?: M extends true ? true : false
   headerClass?: string
   headerCellClass?: string
   rowClass?: string
-  selectedRowClass? : string
+  selectedRowClass?: string
   cellClass?: string
   loading?: boolean
   loadingOverlayClass?: string
@@ -61,7 +61,7 @@ const props = defineProps<{
 const emits = defineEmits<{
   select: [entity: EntityJSON<E>]
   // eslint-disable-next-line
-    "update:modelValue": [M extends false ? EntityJSON<E> | null : EntityJSON<E>[]]
+  "update:modelValue": [M extends false ? EntityJSON<E> | null : EntityJSON<E>[]]
 }>()
 
 const columns = computed(() => Object.values(props.columns).map(col => Array.isArray(col) ? col : [col, col.substring(0, 1).toUpperCase() + col.substring(1).toLowerCase()]))

@@ -30,11 +30,11 @@
   }
 
   .table-row {
-    @apply last:border-primary-60/75 last:border-b even:dark:bg-primary-80/20 hover:bg-accent-dark/20 even:dark:hover:bg-accent-dark/20
+    @apply last:border-primary-60/75 last:border-b even:bg-primary-80/20 hover:bg-accent-dark/20 even:hover:bg-accent-dark/20
   }
 
   .table-row.active {
-    @apply dark:bg-accent-dark/40 even:dark:bg-accent-dark/40 hover:dark:bg-accent-dark/60 even:hover:dark:bg-accent-dark/60
+    @apply bg-accent-dark/40 even:bg-accent-dark/40 hover:bg-accent-dark/60 even:hover:bg-accent-dark/60
   }
 
   .input-label {
@@ -42,20 +42,20 @@
   }
 
   .input-border {
-    @apply border border-base-57 hover:border-accent-light disabled:hover:dark:border-primary-60/75 disabled:hover:border-primary-20
+    @apply border border-base-57 hover:border-accent-light disabled:hover:border-primary-60/75 disabled:hover:border-primary-20
   }
 
   .input {
-    @apply flex flex-row items-center space-x-2 bg-white dark:bg-primary input-border has-[:disabled]:bg-primary-80 has-[:focus]:ring-2 has-[:disabled:focus]:ring-0 has-[:focus]:ring-accent-light has-[:focus]:hover:border-transparent
+    @apply flex flex-row items-center space-x-2 bg-primary input-border has-[:disabled]:bg-primary-80 has-[:focus]:ring-2 has-[:disabled:focus]:ring-0 has-[:focus]:ring-accent-light has-[:focus]:hover:border-transparent
   }
 
   .input-ref, .textarea-ref {
-    @apply w-full p-0 bg-inherit border-none focus:ring-0 disabled:text-primary-40 text-inherit placeholder:text-primary dark:placeholder:text-primary-20 placeholder:italic;
+    @apply w-full p-0 bg-inherit border-none focus:ring-0 disabled:text-primary-40 text-inherit placeholder:text-primary-20 placeholder:italic;
     font-size: inherit;
   }
 
   .input-select-empty {
-    @apply text-primary-80 dark:text-primary-20
+    @apply text-primary-20
   }
 
   .input-select-reset {}
@@ -69,7 +69,7 @@
   }
 
   .input-checkbox, .input-radio {
-    @apply bg-white dark:bg-primary dark:border-primary-60/75 hover:border-accent-light checked:text-accent-mid h-6 w-6 cursor-pointer rounded-md border focus:ring-0 focus:ring-offset-0
+    @apply bg-primary border-primary-60/75 hover:border-accent-light checked:text-accent-mid h-6 w-6 cursor-pointer rounded-md border focus:ring-0 focus:ring-offset-0
   }
 
   .input-radio {
@@ -132,7 +132,7 @@
 
 
   .form-input {
-    @apply bg-base dark:bg-primary disabled:bg-primary-80 disabled:text-primary-40 border border-primary-20 dark:border-primary-60/75 hover:border-accent-light focus:border-accent-mid
+    @apply bg-primary disabled:bg-primary-80 disabled:text-primary-40 border border-primary-20 border-primary-60/75 hover:border-accent-light focus:border-accent-mid
   }
 
   .form-input-text, .form-input-textarea, .form-input-pvselect, .form-input-number {
@@ -157,7 +157,7 @@
   }
 
   .form-action-submit {
-    @apply bg-accent-dark dark:bg-accent-mid hover:bg-accent-light rounded-md
+    @apply bg-accent-mid hover:bg-accent-light rounded-md
   }
 
   .form-action-delete {

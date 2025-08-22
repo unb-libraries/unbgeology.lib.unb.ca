@@ -51,7 +51,6 @@ const term = reactive({
 })
 
 function onSave({ type, label }: CompositionCreateBody) {
-  console.log(`new term`, { type, label })
   emits(`save`, { type: `composition/${type}`, label })
 }
 </script>

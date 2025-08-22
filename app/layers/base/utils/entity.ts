@@ -1,4 +1,4 @@
-import { defu } from "defu"
+import { defu } from 'defu'
 import { type AppConfig } from "nuxt/schema"
 import {
   type Entity,

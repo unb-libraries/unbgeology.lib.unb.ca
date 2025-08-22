@@ -25,8 +25,6 @@ if (!classification.value) {
   showError(`Rock not found.`)
 }
 
-// console.log("classification", classification.value)
-
 const returnUrl = `/dashboard/rocks`
 
 async function onSave({ label, parent, description, image, type }: Classification) {

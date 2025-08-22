@@ -4,7 +4,7 @@
       v-for="image in images"
       :key="image.self"
       class="hover:bg-accent-mid aspect-square hover:cursor-pointer"
-      :class="{ 'dark:bg-accent-mid bg-accent-mid': isSelected(image), 'bg-primary-20 dark:bg-primary-80': !isSelected(image) }"
+      :class="{ 'bg-accent-mid': isSelected(image), 'bg-primary-80': !isSelected(image) }"
     >
       <nuxt-img
         :src="`/image/${image.filename}`"

@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-primary flex h-screen flex-col">
+  <div class="bg-primary text-white flex h-screen flex-col">
     <header class="bg-primary-60/10 border-primary-40/10 mb-4 w-full flex-none rounded-b-xl border-b px-6 py-4">
       <div class="flex flex-row justify-between">
         <h1 class="text-4xl">
@@ -126,7 +126,7 @@ function sortByWeight(a: { weight: number }, b: { weight: number }) {
 </script>
 
 <style scoped>
-  .twa-column {
-    @apply flex flex-col mx-2 first:ml-0 last:mr-0 overflow-y-scroll rounded-xl first:rounded-l-none last:rounded-r-none bg-primary-60/10 first:border-l-0 last:border-r-0 border border-primary-40/10
-  }
+.twa-column {
+  @apply flex flex-col mx-2 first:ml-0 last:mr-0 overflow-y-scroll rounded-xl first:rounded-l-none last:rounded-r-none bg-primary-60/10 first:border-l-0 last:border-r-0 border border-primary-40/10
+}
 </style>

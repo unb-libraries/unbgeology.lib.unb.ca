@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-primary-20 dark:bg-primary-80 mt-2 p-8 text-center" @drop.prevent="onDrop" @dragover.prevent="">
+  <div class="bg-primary-80 mt-2 p-8 text-center" @drop.prevent="onDrop" @dragover.prevent="">
     Drop files here.
   </div>
 </template>
@@ -14,7 +14,7 @@ const props = defineProps<{
 }>()
 
 const emits = defineEmits<{
-  accepted: [formData: FormData, upload:(formData: FormData) => Promise<EntityJSONList<T> | null>],
+  accepted: [formData: FormData, upload: (formData: FormData) => Promise<EntityJSONList<T> | null>],
   uploaded: [file: EntityJSON<T>[]],
 }>()
 

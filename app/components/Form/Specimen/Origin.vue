@@ -18,13 +18,13 @@
       <div class="flex w-2/5 flex-col space-y-4">
         <TwFormField label="Place" class="h-full">
           <LeafletMap
-            class="border-primary-20 dark:border-primary-60/75 h-full rounded-md border"
+            class="border-primary-60/75 h-full rounded-md border"
             name="origin"
             :zoom="2"
             :center="[data.origin.latitude, data.origin.longitude]"
             @click="setOrigin"
           >
-            <LeafletSearch v-model="location" class="input-select-md hover:border-accent-mid text-primary dark:text-primary w-80 rounded-sm bg-white dark:bg-white" />
+            <LeafletSearch v-model="location" class="input-select-md hover:border-accent-mid text-primary w-80 rounded-sm bg-white" />
             <LeafletMarker
               v-if="data.origin.latitude !== undefined && data.origin?.longitude !== undefined"
               :name="data.origin.name"
