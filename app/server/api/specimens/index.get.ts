@@ -78,8 +78,6 @@ export default defineCachedEventHandler(async (event) => {
           { autocomplete: { query: queryFilter.search, path: 'name' } },
           { text: { query: queryFilter.search, path: 'origin.name' } },
           { autocomplete: { query: queryFilter.search, path: 'origin.name' } },
-          { text: { query: queryFilter.search, path: 'origin.description' } },
-          { autocomplete: { query: queryFilter.search, path: 'origin.description' } },
           { phrase: { query: queryFilter.search, path: 'description' } },
         ],
       },
