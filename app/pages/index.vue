@@ -1,11 +1,11 @@
 <template>
   <div class="flex flex-col gap-y-40 mb-40">
     <!-- Hero -->
-    <section class="flex flex-col w-full justify-center">
+    <section class="flex flex-col container mx-auto justify-center">
       <h1 class="sr-only text-4xl">UNB Earth Science Collections</h1>
-      <div class="relative h-[750px] w-full">
+      <div class="relative h-[650px] w-full mt-16">
         <HeroImages />
-        <form action="/specimens" method="GET" class="absolute bottom-1/3 left-1/6 flex flex-row w-2/3 justify-center space-x-2 space-y-0">
+        <form action="/specimens" method="GET" class="absolute bottom-1/3 left-[10%] flex flex-row w-4/5 justify-center space-x-2 space-y-0">
           <InputSearch />
           <button
             type="submit"

@@ -13,7 +13,7 @@ const urls = [
   '/unbgeology-hero_002.png',
   '/unbgeology-hero_003.png',
   '/unbgeology-hero_004.png',
-].map(url => useImage()(url, { alt: 'UNB Earth Science Collections', height: 750, format: 'webp' }))
+].map(url => useImage()(url, { alt: 'UNB Earth Science Collections', height: 650, format: 'webp' }))
 
 const duration = 8000
 onMounted(() => {
