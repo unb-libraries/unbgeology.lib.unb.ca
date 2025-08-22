@@ -3,6 +3,7 @@ import type { Term, Stateful } from "@unb-libraries/nuxt-layer-entity"
 export enum Status {
   DRAFT = 1,
   PUBLISHED = 2,
+  PROTECTED = 4,
 }
 
 export interface Composition extends Term, Stateful<typeof Status> {
