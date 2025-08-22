@@ -189,8 +189,8 @@ export default defineCachedEventHandler(async (event) => {
     }
   // }
   if (fields.some(f => f.startsWith(`creator`))) {
+    query.lookup({ from: `users`, localField: `creator`, foreignField: `_id`, as: `creator` })
     query.unwind({ path: `$creator`, preserveNullAndEmptyArrays: true })
-    query.lookup({ from: `terms`, localField: `creator`, foreignField: `_id`, as: `creator` })
     query.addFields({
       creator: {
         sortKey: {
@@ -204,7 +204,7 @@ export default defineCachedEventHandler(async (event) => {
     })
   }
   if (fields.some(f => f.startsWith('editor'))) {
-    query.lookup({ from: 'terms', localField: 'editor', foreignField: '_id', as: 'editor' })
+    query.lookup({ from: 'users', localField: 'editor', foreignField: '_id', as: 'editor' })
     query.unwind({ path: `$editor`, preserveNullAndEmptyArrays: true })
     query.addFields({
       editor: {
