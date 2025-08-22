@@ -161,7 +161,7 @@
           </tr>
 
           <!-- Measurements -->
-          <tr class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+          <tr v-if="specimen!.measurements?.count" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
             <th class="flex flex-col text-start justify-start py-3 pb-0 text-base-27 dark:text-base-67 font-semibold uppercase">Measurements</th>
             <td class="py-3 pb-0">
               <ul v-if="specimen!.measurements?.count && useEnum(MeasurementCount).valueOf(specimen!.measurements.count) === MeasurementCount.INDIVIDUAL">
@@ -187,7 +187,6 @@
               <template v-else-if="specimen!.measurements?.reason && useEnum(Immeasurabibility).valueOf(specimen!.measurements.reason) === Immeasurabibility.SIZE">
                 Too small to measure
               </template>
-              <template v-else>Not specified</template>
             </td>
           </tr>
         </table>
