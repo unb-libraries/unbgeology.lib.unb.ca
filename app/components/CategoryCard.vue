@@ -23,7 +23,7 @@
       </div>
       <a
         :href="`/browse/${category}`"
-        class="flex-none text-accent-26 hover:text-accent-46 dark:text-accent-36 text-lg font-semibold underline border-none rounded-md"
+        class="flex-none w-fit text-accent-26 hover:text-accent-36 dark:hover:text-accent-46 dark:text-accent-36 text-lg font-semibold underline border-none rounded-md"
       >
         Browse {{ category.charAt(0).toUpperCase() + category.slice(1) }}s
       </a>
