@@ -52,9 +52,9 @@
       row-class="table-row"
       selected-row-class="active"
     >
-      <template #label="{ entity: { label, slug } }">
+      <template #label="{ entity: { label, slug, status } }">
         <NuxtLink
-          v-if="hasPermission(/^update:term(:composition)?:/)"
+          v-if="hasPermission(new RegExp(`^update:term(:composition(:fossil|:rock)?)?(:${useEnum(Status).labelOf(status)})?:(\\*|\\w)$`))"
           :to="`/dashboard/composition/${slug}`"
           class="hover:underline"
         >
@@ -92,13 +92,13 @@
         <template #actions>
           <div class="space-y-2">
             <button
-              v-if="hasPermission(/^update:term(:composition(:fossil|rock)?)?:/) && selection.length === 1"
+              v-if="selection.length === 1 && hasPermission(new RegExp(`^update:term(:composition(:fossil|:rock)?)?(:${useEnum(Status).labelOf(selection[0].status)})?:(\\*|\\w)$`))"
               class="button button-lg button-outline-yellow-light hover:button-yellow-light hover:text-primary w-full"
             >
               Edit{{ selection.length > 1 ? ` ${selection.length} terms` : `` }}
             </button>
             <button
-              v-if="hasPermission(/^delete:term(:composition(:fossil|rock)?)?:/)"
+              v-if="selection.every(c => hasPermission(new RegExp(`^update:term(:composition(:fossil|:rock)?)?(:${useEnum(Status).labelOf(c.status)})?:(\\*|\\w)$`)))"
               class="button button-lg button-outline-red-dark hover:button-red-dark w-full"
               @click.stop.prevent="onClickDelete"
             >
@@ -114,7 +114,7 @@
 
 <script setup lang="tsx">
 import { FilterOperator } from '@unb-libraries/nuxt-layer-entity'
-import type { Composition } from '~/types/composition'
+import { Status, type Composition } from '~/types/composition'
 import { PvEntityDeleteConfirm } from '#components'
 
 definePageMeta({
@@ -140,7 +140,7 @@ onUpdated(() => {
 })
 
 const { hasPermission } = useCurrentUser()
-const { values: schema, keys } = defineEntitySchema<Composition>(`Composition`, [`label`, `slug`, `created`, `updated`, `status`], {
+const { values: schema, keys } = defineEntitySchema<Composition>(`Composition`, [`label`, `slug`, `created`, `updated`, `status`, `type`], {
   fieldPermission: id => new RegExp(`read:term(:composition(:${type.value}))?:(${id}|\\*)`),
 })
 

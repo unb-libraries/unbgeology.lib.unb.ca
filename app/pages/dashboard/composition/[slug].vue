@@ -3,7 +3,8 @@
 </template>
 
 <script setup lang="ts">
-import type { Composition, CompositionCreateBody } from "~/types/composition"
+import { Status, type Composition, type CompositionCreateBody } from "~/types/composition"
+
 const { slug } = useRoute().params
 
 definePageMeta({
@@ -18,11 +19,17 @@ definePageMeta({
   },
 })
 
+const { hasPermission } = useCurrentUser()
 const { fetchBy } = useEntityType<Composition, CompositionCreateBody, Partial<CompositionCreateBody>>(`Term`)
 const { entity: term, update } = await fetchBy({ slug: slug as string })
 if (!term.value) {
   showError(`Term not found`)
 }
+if (!hasPermission(new RegExp(`^update:term(:composition(:fossil|:rock)?)?(:${useEnum(Status).labelOf(term.value!.status)})?:(\\*|\\w)$`))) {
+  showError({ statusCode: 403, statusMessage: `You do not have permission to edit this composition term.` })
+}
+
+
 const returnUrl = `/dashboard/composition`
 
 async function onSave({ label }: Partial<CompositionCreateBody>) {
