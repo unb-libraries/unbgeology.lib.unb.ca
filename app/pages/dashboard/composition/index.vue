@@ -52,10 +52,10 @@
       row-class="table-row"
       selected-row-class="active"
     >
-      <template #label="{ entity: { label, slug, status } }">
+      <template #label="{ entity: { label, slug, status, type } }">
         <NuxtLink
           v-if="hasPermission(new RegExp(`^update:term(:composition(:fossil|:rock)?)?(:${useEnum(Status).labelOf(status)})?:(\\*|\\w)$`))"
-          :to="`/dashboard/composition/${slug}`"
+          :to="`/dashboard/composition/${slug}?type=${type.split('/')[1]}`"
           class="hover:underline"
         >
           {{ label }}
