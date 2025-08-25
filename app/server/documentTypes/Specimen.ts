@@ -318,6 +318,7 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
   relativeAge: [{
     type: EntityFieldTypes.ObjectId,
     ref: Geochronology.mongoose.model,
+    required: optionalForStatus(Status.MIGRATED | Status.DRAFT),
   }],
   numericAge: [{
     type: EntityFieldTypes.Number,
@@ -325,7 +326,7 @@ const Specimen = defineDocumentModel(`Specimen`, defineDocumentSchema<Specimen>(
   composition: [{
     type: EntityFieldTypes.ObjectId,
     refPath: `compositionModel`,
-    required: false,
+    required: optionalForStatus(Status.MIGRATED | Status.DRAFT),
   }],
   compositionModel: {
     type: EntityFieldTypes.String,
