@@ -29,7 +29,7 @@
     </section>
 
     <!-- Browse by Origin -->
-    <section class="flex flex-col container mx-auto">
+    <section v-if="markers?.length" class="flex flex-col container mx-auto">
       <h2 class="text-4xl mb-12">Browse by Origin</h2>
       <LeafletMap :center="mapCenter" :zoom="7" :max-zoom="18" class="z-0 h-[calc(100dvh-15.5rem-2px)]" @drag="onDragMap" @zoom="onZoomMap">
         <LeafletMarkerCluster>
