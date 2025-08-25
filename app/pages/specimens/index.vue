@@ -29,24 +29,26 @@
       </div>
     </div>
     <div class="flex flex-col xl:flex-row grow gap-x-6">
-      <div v-show="Object.keys(list?.facets ?? {}).length" :class="['xl:w-1/5 xl:relative z-40 xl:z-auto', { 'fixed top-0 left-0 size-full bg-primary-80/80': !sidebarCollapsed }]" @click.stop.self="sidebarCollapsed = true">
-        <div :class="['absolute gap-2 xl:flex xl:flex-col bottom-0 xl:sticky xl:top-[calc(15.5rem+2px)] max-h-4/5 xl:max-h-[calc(100dvh-15.5rem-2px)] overflow-y-scroll left-0 w-full', { hidden: sidebarCollapsed }]">
-          <Facet v-if="(facets.category ?? []).length" v-model="categories" :options="facets.category" value-field="id" label-field="label" title="Categories" class="flex-none" />
-          <Facet v-if="(facets.classification ?? []).length" v-model="classifications" :options="facets.classification" value-field="self" label-field="label" title="Classification" :collapsible="10" class="shrink" />
-          <Facet v-if="(facets.age ?? []).length" v-model="units" :options="facets.age" value-field="self" label-field="label" title="Age" :collapsible="10" class="shrink" />
-          <Facet v-if="(facets.onDisplay ?? []).length" v-model="onDisplay" :options="facets.onDisplay.map(({ value, count }) => ({ value: { value, label: value === true ? 'Yes' : 'No' }, count }))" value-field="value" label-field="label" title="On display" class="flex-none" />
-          <Facet v-if="(facets.numericAge ?? []).length" v-model="numericAge" :options="facets.numericAge.map(({ value, count }) => ({ value: value[0], label: value.map((b: number) => Math.floor(b / 1000000)), count })).map(({ value, label, count }) => ({ value: { value, label: label[0] === 0 ? `< ${label[1]} Mya` : label.length < 2 ? `> ${label[0]} Mya` : `${label[0]} - ${label[1]} Mya` }, count }))" value-field="value" label-field="label" title="Numeric Age" class="flex-none" />
-        </div>
-      </div>
-      <div class="w-full xl:w-4/5 h-full relative">
-        <KeepAlive>
-          <SearchViewList v-if="mode === 'list' && list?.total" :specimens="specimens" />
-          <SearchViewGrid v-else-if="mode === 'grid' && list?.total" :specimens="specimens" />
-          <SearchViewMap v-else-if="mode === 'map' && list?.total" :specimens :pending />
-          <div v-else="!list?.total" class="flex justify-center items-center h-[calc(100dvh-15.5rem-2px)] bg-primary-60">
-            <span class="text-2xl">No specimens found</span>
+      <template v-if="list?.total">
+        <div v-show="Object.keys(list?.facets ?? {}).length" :class="['xl:w-1/5 xl:relative z-40 xl:z-auto', { 'fixed top-0 left-0 size-full bg-primary-80/80': !sidebarCollapsed }]" @click.stop.self="sidebarCollapsed = true">
+          <div :class="['absolute scrollbar gap-2 xl:flex xl:flex-col bottom-0 xl:sticky xl:top-[calc(15.5rem+2px)] max-h-4/5 xl:max-h-[calc(100dvh-15.5rem-2px)] overflow-y-scroll left-0 w-full', { hidden: sidebarCollapsed }]">
+            <Facet v-if="(facets.category ?? []).length" v-model="categories" :options="facets.category" value-field="id" label-field="label" title="Categories" class="flex-none" />
+            <Facet v-if="(facets.classification ?? []).length" v-model="classifications" :options="facets.classification" value-field="self" label-field="label" title="Classification" :collapsible="10" class="shrink" />
+            <Facet v-if="(facets.age ?? []).length" v-model="units" :options="facets.age" value-field="self" label-field="label" title="Age" :collapsible="10" class="shrink" />
+            <Facet v-if="(facets.onDisplay ?? []).length" v-model="onDisplay" :options="facets.onDisplay.map(({ value, count }) => ({ value: { value, label: value === true ? 'Yes' : 'No' }, count }))" value-field="value" label-field="label" title="On display" class="flex-none" />
+            <Facet v-if="(facets.numericAge ?? []).length" v-model="numericAge" :options="facets.numericAge.map(({ value, count }) => ({ value: value[0], label: value.map((b: number) => Math.floor(b / 1000000)), count })).map(({ value, label, count }) => ({ value: { value, label: label[0] === 0 ? `< ${label[1]} Mya` : label.length < 2 ? `> ${label[0]} Mya` : `${label[0]} - ${label[1]} Mya` }, count }))" value-field="value" label-field="label" title="Numeric Age" class="flex-none" />
           </div>
-        </KeepAlive>
+        </div>
+        <div class="w-full xl:w-4/5 h-full relative">
+          <KeepAlive>
+            <SearchViewList v-if="mode === 'list' && list?.total" :specimens="specimens" />
+            <SearchViewGrid v-else-if="mode === 'grid' && list?.total" :specimens="specimens" />
+            <SearchViewMap v-else-if="mode === 'map' && list?.total" :specimens :pending />
+          </KeepAlive>
+        </div>
+      </template>
+      <div v-else class="p-4">
+        No specimens found
       </div>
     </div>
   </div>
