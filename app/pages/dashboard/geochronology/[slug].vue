@@ -26,7 +26,7 @@ if (!unit.value) {
   showError(`Unit not found.`)
 }
 
-if (!hasPermission(new RegExp(`^update:term(:geochronology)?:${useEnum(Status).labelOf(unit.value!.status)}:`))) {
+if (!hasPermission(new RegExp(`^update:term(:geochronology)?(:${useEnum(Status).labelOf(unit.value!.status)})?:(\\*|\\w)$`))) {
   showError({ status: 403, statusMessage: `You do not have permission to edit this unit.` })
 }
 
