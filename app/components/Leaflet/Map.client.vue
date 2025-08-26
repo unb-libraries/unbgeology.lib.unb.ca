@@ -10,11 +10,15 @@ import { Map, tileLayer as setTileLayer } from "leaflet"
 import type { Layer } from "leaflet"
 import type { Coordinate } from "~/types/leaflet"
 
+const leafletCSS = new URL('leaflet/dist/leaflet.css', import.meta.url).href
+const markerClusterCSS = new URL('leaflet.markercluster/dist/MarkerCluster.css', import.meta.url).href
+const markerClusterDefaultCSS = new URL('leaflet.markercluster/dist/MarkerCluster.Default.css', import.meta.url).href
+
 useHead({
   link: [
-    { rel: 'stylesheet', href: 'leaflet/dist/leaflet.css' },
-    { rel: 'stylesheet', href: 'leaflet.markercluster/dist/MarkerCluster.css' },
-    { rel: 'stylesheet', href: 'leaflet.markercluster/dist/MarkerCluster.Default.css' },
+    { rel: 'stylesheet', href: leafletCSS },
+    { rel: 'stylesheet', href: markerClusterCSS },
+    { rel: 'stylesheet', href: markerClusterDefaultCSS },
   ],
 })
 
