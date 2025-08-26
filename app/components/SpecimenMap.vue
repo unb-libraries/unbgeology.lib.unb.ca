@@ -50,6 +50,10 @@
 </template>
 
 <script lang="ts" setup>
+import * as leafletStyles from 'leaflet/dist/leaflet.css'
+import * as markerClusterDefaultStyles from 'leaflet.markercluster/dist/MarkerCluster.Default.css'
+import * as markerClusterStyles from 'leaflet.markercluster/dist/MarkerCluster.css'
+
 import { type Specimen, Status } from '~/types/specimen'
 import type { Coordinate } from '~/types/leaflet'
 
