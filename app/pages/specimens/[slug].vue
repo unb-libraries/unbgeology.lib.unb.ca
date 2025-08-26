@@ -63,6 +63,7 @@
         </div>
       </section>
 
+      <!-- Specifications -->
       <section class="w-1/2 mx-auto">
         <h2 class="text-base-27 dark:text-base-67 mb-3 text-lg font-bold text-start uppercase">Specifications</h2>
         <table class="w-full">
@@ -200,18 +201,11 @@
         <h2 class="text-base-27 dark:text-base-67 mb-3 text-lg font-bold text-start uppercase">
           Map of Origin
         </h2>
-        <LeafletMap v-if="specimen?.origin?.latitude && specimen?.origin?.longitude" class="min-h-128 w-full" :zoom="7" :center="[specimen.origin.latitude, specimen.origin.longitude]">
-          <LeafletMarker
-            v-if="specimen.origin"
-            :name="specimen?.origin?.name ?? 'Unknown'"
-            :center="[specimen?.origin.latitude, specimen?.origin.longitude]"
-          >
-            <div class="inline-flex gap-2 w-full p-4 text-nowrap text-base-27 dark:text-base-67 font-semibold uppercase">
-              {{ specimen.origin.name ?? 'Unknown' }}
-            </div>
-          </LeafletMarker>
-        </LeafletMap>
-        <div v-else-if="specimen?.origin?.name">{{ specimen?.origin?.name ?? 'Unknown' }}</div>
+        <SpecimenMap :specimens="[specimen]" :center="[specimen.origin.latitude, specimen.origin.longitude]" class="w-full h-[32rem]">
+          <div class="inline-flex gap-2 w-full p-4 text-nowrap text-base-27 dark:text-base-67 font-semibold uppercase">
+            {{ specimen.origin.name ?? 'Unknown' }}
+          </div>
+        </SpecimenMap>
       </section>
       
       <!-- Publications -->
@@ -284,21 +278,3 @@ const relativeAges = computed(() => {
 
 const publications = computed(() => specimen.value?.publications?.entities ?? [])
 </script>
-
-<style>
-.leaflet-popup-content {
-  @apply bg-base-87 dark:bg-base-2 text-base-17 dark:text-base-87 m-0 !w-fit;
-}
-
-.leaflet-popup-content-wrapper {
-  @apply bg-base-87 dark:bg-base-2 rounded-none;
-}
-
-.leaflet-popup-tip {
-  @apply bg-base-87 dark:bg-base-2;
-}
-
-.leaflet-popup-close-button {
-  @apply hidden;
-}
-</style>
