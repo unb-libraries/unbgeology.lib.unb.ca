@@ -117,7 +117,7 @@ function updateFilter() {
         .find(([l]) => l === b)) ?? [])
         .map((b, i) => ['age.numeric', ((!i && FilterOperator.GREATER) || (FilterOperator.LESS | FilterOperator.EQUALS)), String(b)] as Filter))
       .flat(),
-    ...onDisplay.value.map(() => ['storage.location.public', FilterOperator.EQUALS] as Filter),
+    ...onDisplay.value.map(() => ['storage.location.public', FilterOperator.EQUALS, '1'] as Filter),
   ]
 }
 

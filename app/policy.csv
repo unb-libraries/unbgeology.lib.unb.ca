@@ -21,6 +21,6 @@ p, editor, file, *, create|read|update|delete
 p, editor, user, id|profile, read
 p, editor, migrationitem:imported, *, read
 p, editor, loan, *, create|read|update|delete
-p, public, specimen:published, type|id|legal|lenderID|lenderURL|name|description|collection|composition|images|classification|measurements|date|age|origin|pieces|partial|publications|status, read
+p, public, specimen:published, type|id|legal|lenderID|lenderURL|name|description|collection|composition|images|classification|measurements|date|age|origin|pieces|partial|publications|storage.location.public|status, read
 p, public, term:published, label, read
 p, public, file:persisted, uri, read

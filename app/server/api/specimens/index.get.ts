@@ -62,6 +62,7 @@ export default defineCachedEventHandler(async (event) => {
     age: getFilter('age.relative', FilterOperator.EQUALS)?.map(c => c.split(`/`).at(-1)).map(parseObjectID),
     ageNumeric: getNumericAgeFilter(),
     origin: [getBoundsFilter(FilterOperator.GREATER), getBoundsFilter(FilterOperator.LESS)].filter(b => (b ?? []).length > 0) as [number, number][],
+    onDisplay: getFilter('storage.location.public', FilterOperator.EQUALS).map(Boolean),
     search,
   }
 
@@ -184,7 +185,7 @@ export default defineCachedEventHandler(async (event) => {
     } })
 
     query.addFields({ currentStorage: { $arrayElemAt: ["$storage", { $subtract: [{ $size: "$storage" }, 1] }] } })
-    if (fields.some(f => f.startsWith(`storage.location.public`))) {
+    if (queryFilter.onDisplay.length) {
       query.match({ 'currentStorage.location.public': true })
     }
   // }
