@@ -68,21 +68,21 @@
         <h2 class="text-base-27 dark:text-base-67 mb-3 text-lg font-bold text-start uppercase">Specifications</h2>
         <table class="w-full">
           <!-- Name -->
-          <tr class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+          <tr v-if="specimen.name" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
             <th class="flex flex-col text-start justify-start py-3 pt-0 text-base-27 dark:text-base-67 font-semibold uppercase">Object name</th>
-            <td class="py-3 pt-0">{{ specimen?.name }}</td>
+            <td class="py-3 pt-0">{{ specimen.name }}</td>
           </tr>
           
           <!-- ID -->
           <tr class="border-b border-base-77 dark:border-base-27 last:border-b-0">
             <th class="py-3 text-start text-base-27 dark:text-base-67 font-semibold uppercase">ID</th>
-            <td class="py-3">{{ specimen?.id.toUpperCase() }}</td>
+            <td class="py-3">{{ specimen.id.toUpperCase() }}</td>
           </tr>
 
           <!-- Legal Status -->
-          <tr class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+          <tr v-if="specimen.legal" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
             <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Legal status</th>
-            <td class="py-3">{{ useEnum(Legal).valueOf(specimen?.legal) === Legal.PERMANENT ? 'Permanent collection' : 'On loan' }}</td>
+            <td class="py-3">{{ useEnum(Legal).valueOf(specimen.legal) === Legal.PERMANENT ? 'Permanent collection' : 'On loan' }}</td>
           </tr>
 
           <!-- Category -->
@@ -125,7 +125,7 @@
           </tr>
 
           <!-- Age -->
-          <tr v-if="specimen?.age?.relative" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+          <tr v-if="specimen.age?.relative" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
             <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Age</th>
             <td class="py-3">
               <div class="flex flex-col w-full">
@@ -138,7 +138,7 @@
           </tr>
 
           <!-- Numeric age -->
-          <tr v-if="specimen?.age?.numeric || specimen?.age?.relative?.every(({ start }) => !isNaN(start))" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+          <tr v-if="specimen.age?.numeric || specimen.age?.relative?.every(({ start }) => !isNaN(start))" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
             <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Numeric age</th>
             <td class="py-3">
               <template v-if="specimen?.age?.numeric">{{specimen?.age?.numeric?.map(mya => Number(mya) / Math.pow(10, 6)).join(' - ')}}</template>
@@ -147,21 +147,21 @@
           </tr>
 
           <!-- Origin -->
-          <tr class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+          <tr v-if="specimen.origin?.name" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
             <th class="py-3 text-start text-base-27 dark:text-base-67 font-semibold uppercase">Origin</th>
-            <td class="py-3">{{ specimen?.origin?.name }}</td>
+            <td class="py-3">{{ specimen.origin?.name }}</td>
           </tr>
 
           <!-- Pieces -->
-          <tr class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+          <tr v-if="specimen.pieces" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
             <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Pieces</th>
-            <td class="py-3">{{ specimen?.pieces }}</td>
+            <td class="py-3">{{ specimen.pieces }}</td>
           </tr>
 
           <!-- Partial -->
-          <tr class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+          <tr v-if="specimen.partial !== undefined" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
             <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Partial</th>
-            <td class="py-3">{{ specimen?.partial ? 'Yes' : 'No' }}</td>
+            <td class="py-3">{{ specimen.partial ? 'Yes' : 'No' }}</td>
           </tr>
 
           <!-- Measurements -->
