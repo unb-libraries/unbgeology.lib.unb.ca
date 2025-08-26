@@ -79,21 +79,3 @@ function onZoomMap(level: number, center: Coordinate, bounds: [Coordinate, Coord
   onUpdateCenter(center)
 }
 </script>
-
-<style>
-.leaflet-popup-content {
-  @apply bg-base-87 dark:bg-base-2 text-base-17 dark:text-base-87 m-0 !w-fit;
-}
-
-.leaflet-popup-content-wrapper {
-  @apply bg-base-87 dark:bg-base-2 rounded-none;
-}
-
-.leaflet-popup-tip {
-  @apply bg-base-87 dark:bg-base-2;
-}
-
-.leaflet-popup-close-button {
-  @apply hidden;
-}
-</style>

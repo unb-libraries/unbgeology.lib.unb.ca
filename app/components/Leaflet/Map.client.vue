@@ -15,6 +15,7 @@ const leafletCSS = new URL('leaflet/dist/leaflet.css', import.meta.url).href
 const markerClusterCSS = new URL('leaflet.markercluster/dist/MarkerCluster.css', import.meta.url).href
 const markerClusterDefaultCSS = new URL('leaflet.markercluster/dist/MarkerCluster.Default.css', import.meta.url).href
 const gestureHandlingCSS = new URL('leaflet-gesture-handling/dist/leaflet-gesture-handling.css', import.meta.url).href
+const leafletPopupCSS = new URL('~/assets/css/leaflet-popup.css', import.meta.url).href
 
 useHead({
   link: [
@@ -22,6 +23,7 @@ useHead({
     { rel: 'stylesheet', href: markerClusterCSS },
     { rel: 'stylesheet', href: markerClusterDefaultCSS },
     { rel: 'stylesheet', href: gestureHandlingCSS },
+    { rel: 'stylesheet', href: leafletPopupCSS },
   ],
 })
 
