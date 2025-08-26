@@ -17,7 +17,7 @@
       </div>
       <div class="inline-flex text-sm leading-none text-base-27 dark:text-base-67 font-semibold uppercase">
         <span class="pr-4 border-r border-base-27">{{ specimen!.id.toUpperCase() }}</span>
-        <span class="pl-4">{{classifications.map(({ label }) => label).join(' &raquo; ')}}</span>
+        <span class="pl-4">{{classifications.map(({ label }) => label).filter(Boolean).join(' &raquo; ')}}</span>
       </div>
     </header>
     <div class="flex w-full flex-col space-y-12 items-end">
@@ -52,6 +52,8 @@
           </Carousel>
         </div>
       </section>
+
+      <!-- Description -->
       <section v-if="specimen?.description" class="w-1/2 mx-auto">
         <h2 class="text-base-27 dark:text-base-67 mb-3 text-lg font-bold text-start uppercase">
           Description
@@ -85,15 +87,16 @@
           <!-- Category -->
           <tr class="border-b border-base-77 dark:border-base-27 last:border-b-0">
             <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Category</th>
-            <td class="py-3">{{ specimen?.type[0].toUpperCase() + specimen?.type.slice(1) }}</td></tr>
+            <td class="py-3">{{ specimen?.type[0].toUpperCase() + specimen?.type.slice(1) }}</td>
+          </tr>
           
           <!-- Classification -->
-          <tr class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+          <tr v-if="classifications?.slice(1).length" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
             <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Classification</th>
             <td class="py-3">
               <div v-if="specimen.type === 'fossil'" class="flex flex-col w-full">
                 <div v-for="classification in classifications.slice(1)" :key="classification.rank" class="flex">
-                  <div class="w-28">{{ classification.rank[0].toUpperCase() + classification.rank.slice(1) }}:</div>
+                  <div class="w-28">{{ classification.rank?.[0].toUpperCase() + classification.rank?.slice(1) }}:</div>
                   <div class="grow">{{ classification.label }}</div>
                 </div>
               </div>
@@ -192,6 +195,7 @@
         </table>
       </section>
 
+      <!-- Map or Origin -->
       <section v-if="specimen?.origin?.latitude && specimen?.origin?.longitude" class="w-full lg:w-3/4">
         <h2 class="text-base-27 dark:text-base-67 mb-3 text-lg font-bold text-start uppercase">
           Map of Origin
@@ -209,6 +213,8 @@
         </LeafletMap>
         <div v-else-if="specimen?.origin?.name">{{ specimen?.origin?.name ?? 'Unknown' }}</div>
       </section>
+      
+      <!-- Publications -->
       <section v-if="publications.length" class="w-full lg:w-3/4">
         <h2 class="text-base-27 dark:text-base-67 mb-3 text-lg font-bold text-start uppercase">
           Publications
