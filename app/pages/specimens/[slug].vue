@@ -201,7 +201,7 @@
         <h2 class="text-base-27 dark:text-base-67 mb-3 text-lg font-bold text-start uppercase">
           Map of Origin
         </h2>
-        <SpecimenMap :specimens="[specimen]" :center="[specimen.origin.latitude, specimen.origin.longitude]" class="w-full h-[32rem]">
+        <SpecimenMap :specimens="[specimen]" :center="[specimen.origin.latitude, specimen.origin.longitude]" :zoom="5" class="w-full h-[32rem]">
           <div class="inline-flex gap-2 w-full p-4 text-nowrap text-base-27 dark:text-base-67 font-semibold uppercase">
             {{ specimen.origin.name ?? 'Unknown' }}
           </div>
