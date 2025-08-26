@@ -8,17 +8,20 @@
 // REFACTOR: Replace this with component from @vue-leaflet/vue-leaflet
 import { Map, tileLayer as setTileLayer } from "leaflet"
 import type { Layer } from "leaflet"
+import { GestureHandling } from 'leaflet-gesture-handling'
 import type { Coordinate } from "~/types/leaflet"
 
 const leafletCSS = new URL('leaflet/dist/leaflet.css', import.meta.url).href
 const markerClusterCSS = new URL('leaflet.markercluster/dist/MarkerCluster.css', import.meta.url).href
 const markerClusterDefaultCSS = new URL('leaflet.markercluster/dist/MarkerCluster.Default.css', import.meta.url).href
+const gestureHandlingCSS = new URL('leaflet-gesture-handling/dist/leaflet-gesture-handling.css', import.meta.url).href
 
 useHead({
   link: [
     { rel: 'stylesheet', href: leafletCSS },
     { rel: 'stylesheet', href: markerClusterCSS },
     { rel: 'stylesheet', href: markerClusterDefaultCSS },
+    { rel: 'stylesheet', href: gestureHandlingCSS },
   ],
 })
 
@@ -61,7 +64,10 @@ function initMap() {
   map = new Map(`map`, {
     maxZoom: props.maxZoom,
     minZoom: props.minZoom,
+    gestureHandling: true,
   })
+
+  map.addHandler('gestureHandling', GestureHandling)
 
   map.on(`click`, (e) => {
     const { lat, lng } = e.latlng
