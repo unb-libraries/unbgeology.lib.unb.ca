@@ -10,6 +10,14 @@ import { Map, tileLayer as setTileLayer } from "leaflet"
 import type { Layer } from "leaflet"
 import type { Coordinate } from "~/types/leaflet"
 
+useHead({
+  link: [
+    { rel: 'stylesheet', href: 'leaflet/dist/leaflet.css' },
+    { rel: 'stylesheet', href: 'leaflet.markercluster/dist/MarkerCluster.css' },
+    { rel: 'stylesheet', href: 'leaflet.markercluster/dist/MarkerCluster.Default.css' },
+  ],
+})
+
 const props = withDefaults(defineProps<{
   center: Coordinate,
   zoom?: number
