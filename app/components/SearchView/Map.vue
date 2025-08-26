@@ -19,12 +19,14 @@
               <div class="inline-flex gap-x-1 leading-none items-start text-sm font-semibold uppercase">
                 <SpecimenIcon :category="specimen.type" class="size-4 flex-none" />
                 <span class="sr-only">Classification</span>
-                <span>{{ [specimen.type[0].toUpperCase() + specimen.type.slice(1).toLowerCase(), specimen.classification.label].filter(Boolean).join(' / ') }}</span>
+                <span class="text-nowrap">
+                  {{ [specimen.type[0].toUpperCase() + specimen.type.slice(1).toLowerCase(), specimen.classification.label].filter(Boolean).join(' / ') }}
+                </span>
               </div>
               <div v-if="specimen.origin?.name" class="inline-flex gap-x-1 leading-none items-start text-sm font-semibold uppercase">
                 <IconMapPin class="size-4 fill-none stroke-current stroke-2 flex-none" />
                 <span class="sr-only">Origin</span>
-                <span>{{ specimen.origin?.name }}</span>
+                <span class="text-nowrap">{{ specimen.origin?.name }}</span>
               </div>
             </div>
           </div>
