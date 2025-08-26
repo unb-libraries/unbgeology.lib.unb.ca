@@ -35,8 +35,8 @@
             <Facet v-if="(facets.category ?? []).length" v-model="categories" :options="facets.category" value-field="id" label-field="label" title="Categories" class="flex-none" />
             <Facet v-if="(facets.classification ?? []).length" v-model="classifications" :options="facets.classification" value-field="self" label-field="label" title="Classification" :collapsible="10" class="shrink" />
             <Facet v-if="(facets.age ?? []).length" v-model="units" :options="facets.age" value-field="self" label-field="label" title="Age" :collapsible="10" class="shrink" />
-            <Facet v-if="(facets.onDisplay ?? []).length" v-model="onDisplay" :options="facets.onDisplay.map(({ value, count }) => ({ value: { value, label: value === true ? 'Yes' : 'No' }, count }))" value-field="value" label-field="label" title="On display" class="flex-none" />
             <Facet v-if="(facets.numericAge ?? []).length" v-model="numericAge" :options="facets.numericAge.map(({ value, count }) => ({ value: value[0], label: value.map((b: number) => Math.floor(b / 1000000)), count })).map(({ value, label, count }) => ({ value: { value, label: label[0] === 0 ? `< ${label[1]} Mya` : label.length < 2 ? `> ${label[0]} Mya` : `${label[0]} - ${label[1]} Mya` }, count }))" value-field="value" label-field="label" title="Numeric Age" class="flex-none" />
+            <Facet v-if="(facets.onDisplay ?? []).length" v-model="onDisplay" :options="facets.onDisplay.map(({ value, count }) => ({ value: { value, label: value === true ? 'Yes' : 'No' }, count }))" value-field="value" label-field="label" title="On display" class="flex-none" />
           </div>
         </div>
         <div class="w-full xl:w-4/5 h-full relative">
