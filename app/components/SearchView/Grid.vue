@@ -11,7 +11,9 @@
         <div class="inline-flex items-center gap-x-1 text-base-27 dark:text-base-67 text-2xl sm:text-lg md:text-md lg:text-sm">
           <SpecimenIcon :category="specimen.type" class="size-4" />
           <span class="sr-only">Classification</span>
-          <span class="font-semibold uppercase truncate overflow-hidden">{{ specimen.type[0].toUpperCase() + specimen.type.slice(1) }} / {{ specimen.classification?.label ?? 'Unknown' }}</span>
+          <span class="font-semibold uppercase truncate overflow-hidden">
+            {{ [specimen.type[0].toUpperCase() + specimen.type.slice(1), specimen.classification?.label].filter(Boolean).join(' / ') }}
+          </span>
         </div>
       </div>
     </li>

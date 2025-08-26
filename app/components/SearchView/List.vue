@@ -23,7 +23,7 @@
               <SpecimenIcon :category="specimen.type" class="size-4" />
               <span class="sr-only">Classification</span>
               <span>
-                {{ specimen.type[0].toUpperCase() + specimen.type.slice(1).toLowerCase() }} / {{ specimen.classification?.label }}
+                {{ [specimen.type[0].toUpperCase() + specimen.type.slice(1).toLowerCase(), specimen.classification?.label].filter(Boolean).join(' / ') }}
               </span>
             </div>
             <div class="inline-flex gap-x-1 leading-none items-center">
