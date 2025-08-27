@@ -1,3 +1,5 @@
+@tailwind utilities;
+
 .leaflet-popup-content {
   @apply bg-base-87 dark:bg-base-2 text-base-17 dark:text-base-87 m-0 !w-fit;
 }
