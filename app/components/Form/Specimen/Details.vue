@@ -11,7 +11,7 @@
     </TwFormField>
     <div class="flex flex-row space-x-4">
       <TwFormField label="Age" class="w-full">
-        <TwInputRadioGroup v-model="ageType" :options="[[`unit`, `Relative`],[`numeric`, `Numeric`]]" class="flex flex-row space-x-6 py-4" />
+        <TwInputRadioGroup v-model="ageType" :options="[[`unit`, `Relative`], [`numeric`, `Numeric`]]" class="flex flex-row space-x-6 py-4" />
         <div v-show="ageType === `unit`" class="flex flex-row space-x-2">
           <InputSpecimenGeoAge v-model="data.ageRelative[0]" name="age-relative-0" @select="onSelectUnit">
             <template #before>
@@ -89,7 +89,7 @@ const emits = defineEmits<{
 }>()
 
 const data = reactive({
-  classification: props.specimen.classification?.self,
+  classification: props.specimen?.classification?.self && `/api/terms/${props.specimen.classification?.self.split(`/`).pop()}`,
   ageNumeric: props.specimen.age?.numeric?.map(n => n / 1e6) ?? [],
   ageRelative: props.specimen.age?.relative?.map(u => u.self) ?? [],
   composition: (props.specimen as Fossil | Rock).composition?.entities.map(c => c.self),

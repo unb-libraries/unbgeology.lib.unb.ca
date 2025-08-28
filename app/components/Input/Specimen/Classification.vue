@@ -14,7 +14,7 @@
       <div class="flex flex-col">
         <span>{{ label }}</span>
         <span class="group-hover:text-primary-80 text-xs italic" :class="{ 'text-primary-20': !selected, 'text-primary-80': selected }">
-          {{ options.find(op => op.self === option)?.ancestors?.entities.map(acs => acs.label).reverse().join(` &raquo; `) ?? `&nbsp;` }}
+          {{options.find(op => op.self === option)?.ancestors?.entities.map(acs => acs.label).reverse().join(` &raquo; `) ?? `&nbsp;`}}
         </span>
       </div>
     </template>
