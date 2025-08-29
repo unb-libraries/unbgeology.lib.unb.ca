@@ -4,23 +4,42 @@
       Browse <span class="italic">{{ classification.label }}</span>
     </template>
     
-    <template #breadcrumbs>
-      <div class="inline-flex items-center gap-x-2">
-        <a :href="`/`" class="text-sm hover:underline">Home</a>
-        <span class="text-sm">/</span>
-        <a :href="`/browse`" class="text-sm hover:underline">Browse</a>
-        <span class="text-sm">/</span>
-        <template v-for="(parent, i) in parentPages" :key="parent.self">
-          <a :href="`/browse/${parent.slug}`" class="text-sm hover:underline">
-            {{ parent.label[0].toUpperCase() + parent.label.slice(1) }}
-          </a>
-          <span v-if="i < parentPages.length - 1" class="text-sm">/</span>
-        </template>
-      </div>
-    </template>
-    
     <template #default>
-      <div class="flex flex-col gap-y-12">
+      <div class="flex flex-col gap-y-6">
+        <section class="flex gap-x-2 py-2 w-full items-center">
+          <div v-if="parentPages.length" class="flex flex-none gap-x-2">
+            <a v-for="page in [...parentPages]"
+              :key="page.self"
+              :href="[useRoute().path, page.slug].join('/')"
+              class="px-2 py-1 bg-base-27 dark:bg-base-77 hover:bg-accent-26 dark:hover:bg-accent-36 focus-visible:bg-accent-26 dark:focus-visible:bg-accent-36 text-sm text-base-97 dark:text-base-17 dark:focus-visible:text-base-97 border border-transparent rounded-md flex-nowrap text-nowrap"
+            >
+              {{ page.label[0].toUpperCase() + page.label.slice(1) }}
+            </a>
+            <span class="px-2 py-1 bg-base-27 dark:bg-base-77 text-sm text-base-97 dark:text-base-17 border border-transparent rounded-md flex-nowrap text-nowrap"
+            >
+              {{ classification.label }}
+            </span>
+          </div>
+          <IconChevron2x class="flex size-6 stroke-base-77 stroke-1.5" />
+          <div class="grow overflow-hidden">
+            <Carousel>
+              <a v-for="subCls in subClassifications.entities"
+                :key="subCls.self"
+                :href="[useRoute().path, subCls.slug].join('/')"
+                class="px-2 py-1 text-sm hover:text-accent-36 border border-base-57 hover:border-accent-36 rounded-md flex-nowrap text-nowrap"
+              >
+                {{ subCls.label }}
+              </a>
+            </Carousel>
+          </div>
+        </section>
+
+        <!-- Description -->
+        <section v-if="classification.description" class="grow">
+          <h2 class="sr-only">Description</h2>
+          {{ classification.description }}
+        </section>
+        
         <section class="flex flex-col gap-y-2 w-full overflow-hidden">
           <div class="h-[48rem]">
             <SpecimenImage
@@ -46,28 +65,6 @@
               />
             </button>
           </div >
-        </section>
-        
-        <!-- Description -->
-        <section class="grow">
-          <h2 class="sr-only text-2xl mb-4">Description</h2>
-          {{ classification.description }}
-        </section>
-  
-        <!-- Sub-Classifications -->
-        <section v-if="subClassifications?.entities.length">
-          <h2 class="text-2xl mb-4">Types of {{ classification.label }}</h2>
-          <div class="flex gap-x-2 max-w-full">
-            <Carousel>
-              <a v-for="subCls in subClassifications.entities"
-                :key="subCls.self"
-                :href="[useRoute().path, subCls.slug].join('/')"
-                class="px-4 py-2 hover:text-accent-36 border border-base-57 hover:border-accent-36 rounded-md flex-nowrap text-nowrap"
-              >
-                {{ subCls.label }}
-              </a>
-            </Carousel>
-          </div>
         </section>
       </div>
     </template>
@@ -111,7 +108,7 @@ const { data: specimens } = await useFetch<EntityJSONList<Specimen>>('/api/speci
   }
 })
 
-const { data: parentClassifications } = slug.length && await useFetch<EntityJSONList<Classification>>(slug.length && classification.value?.parents?.self) || ({ data: { entities: [] } })
+const { data: parentClassifications } = slug.length && await useFetch<EntityJSONList<Classification>>(classification.value?.parents?.self) || ({ data: { entities: [] } })
 if (parentClassifications && !(parentClassifications.value?.entities ?? []).every((p, i) => p.slug === slug[i])) {
   throw createError({ statusCode: 404, statusMessage: 'Not Found' })
 }
