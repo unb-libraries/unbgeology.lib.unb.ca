@@ -40,30 +40,32 @@
           {{ classification.description }}
         </section>
         
-        <section class="flex flex-col gap-y-2 w-full overflow-hidden">
-          <div class="h-[48rem]">
+        <section class="flex gap-2 w-full overflow-hidden">
+          <div class="grow h-[36rem]">
             <SpecimenImage
               :category="(category as 'fossil' | 'mineral' | 'rock')"
               :url="specimens?.entities.filter(({ images }) => images?.total)[activeImageIndex]?.images?.entities[0]?.uri"
               class="size-full"
             />
           </div>
-          <div v-if="specimens?.entities.filter(({ images }) => images?.entities.length ?? 0 > 0)?.length ?? 0 > 1" class="flex gap-x-1 max-w-full h-24">
-            <button v-for="(images, i) in specimens?.entities.filter(({ images }) => images?.total).map(({ images }) => images)"
-              :key="images.entities[0].self"
-              :data-status="activeImageIndex === i ? 'active' : 'inactive'"
-              type="button"
-              class="group h-full aspect-square data-[status=inactive]:cursor-pointer border border-transparent data-[status=active]:border-accent-26 dark:data-[status=active]:border-accent-36"
-              @click="activeImageIndex = i"
-            >
-              <SpecimenImage
-                :category="(category as 'fossil' | 'mineral' | 'rock')"
-                :url="images.entities[0].uri"
-                width="100"
-                height="100"
-                class="group-data-[status=active]:opacity-50 group-data-[status=inactive]:hover:opacity-50"
-              />
-            </button>
+          <div v-if="specimens?.entities.filter(({ images }) => images?.entities.length ?? 0 > 0)?.length ?? 0 > 1" class="max-w-full h-[36rem]">
+            <div class="grid grid-cols-4 gap-2">
+              <button v-for="(images, i) in specimens?.entities.filter(({ images }) => images?.total).map(({ images }) => images)"
+                :key="images.entities[0].self"
+                :data-status="activeImageIndex === i ? 'active' : 'inactive'"
+                type="button"
+                class="group h-full aspect-square data-[status=inactive]:cursor-pointer border border-transparent data-[status=active]:border-accent-26 dark:data-[status=active]:border-accent-36"
+                @click="activeImageIndex = i"
+              >
+                <SpecimenImage
+                  :category="(category as 'fossil' | 'mineral' | 'rock')"
+                  :url="images.entities[0].uri"
+                  width="120"
+                  height="120"
+                  class="group-data-[status=active]:opacity-50 group-data-[status=inactive]:hover:opacity-50"
+                />
+              </button>
+            </div>
           </div >
         </section>
       </div>
