@@ -20,8 +20,8 @@
               {{ classification.label }}
             </span>
           </div>
-          <IconChevron2x class="flex size-6 stroke-base-77 stroke-1.5" />
-          <div class="grow overflow-hidden">
+          <IconChevron2x v-if="subClassifications.entities.length" class="flex size-6 stroke-base-77 stroke-1.5" />
+          <div v-if="subClassifications.entities.length" class="grow overflow-hidden">
             <Carousel>
               <a v-for="subCls in subClassifications.entities"
                 :key="subCls.self"
