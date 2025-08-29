@@ -118,6 +118,7 @@ module.exports = {
   },
   plugins: [
     require(`@tailwindcss/forms`),
+    require(`tailwind-scrollbar`),
     plugin(function ({ addComponents, matchComponents, theme }) {
       const matchComponentsBySize = (name, sizes, styles = {}) => matchComponents({
         [name]: ({ fontSize, paddingX, paddingY, borderRadius }) => ({

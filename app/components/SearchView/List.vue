@@ -1,5 +1,5 @@
 <template>
-  <ul class="overflow-y-scroll size-full">
+  <ul class="overflow-y-hidden size-full">
     <!-- Element container -->
     <li v-for="specimen in specimens" :key="specimen.self" class="group flex w-full h-fit px-4 border border-transparent hover:bg-base-97 dark:hover:bg-accent-6 hover:border-accent-26 dark:hover:border-accent-36">
       <!-- Inner container-->

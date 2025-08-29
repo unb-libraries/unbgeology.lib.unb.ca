@@ -14,7 +14,8 @@
     "@types/leaflet.markercluster": "^1.5.5",
     "@types/lodash": "^4.14.194",
     "@unb-libraries/nuxt-layer-entity": "./layers/entity",
-    "nuxt": "^3.11.2"
+    "nuxt": "^3.11.2",
+    "tailwind-scrollbar": "^3.1.0"
   },
   "dependencies": {
     "@types/formidable": "^3.4.4",
