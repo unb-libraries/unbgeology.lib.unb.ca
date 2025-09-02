@@ -8,7 +8,7 @@
       <div class="flex-none space-x-1 w-full flex">
         <div class="form-field grow">
           <label class="sr-only" for="search">Search</label>
-          <InputSearch v-model="search" class="shadow-none" />
+          <InputSearch v-model="search" :timeout="600" class="shadow-none" />
         </div>
         <button
           :data-active="!sidebarCollapsed ? '' : undefined"
