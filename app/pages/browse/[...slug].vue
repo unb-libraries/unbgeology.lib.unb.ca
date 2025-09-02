@@ -1,7 +1,7 @@
 <template>
   <NuxtLayout name="page">
     <template #title>
-      Browse <span class="italic">{{ classification.label }}</span>
+      Browse <span class="italic">{{ parentPages.at(-1).label }}</span>
     </template>
     
     <template #default>
@@ -16,10 +16,10 @@
               {{ label }}
             </component>
           </div>
-          <IconChevron2x v-if="subClassifications.entities.length" class="flex-none size-5 stroke-base-77 stroke-1.5" />
-          <div v-if="subClassifications.entities.length" class="grow overflow-hidden">
+          <IconChevron2x v-if="subClassifications?.entities.length" class="flex-none size-5 fill-none stroke-base-27 dark:stroke-base-77 stroke-1.5" />
+          <div v-if="subClassifications?.entities.length" class="grow overflow-hidden">
             <Carousel>
-              <a v-for="subCls in subClassifications.entities"
+              <a v-for="subCls in subClassifications?.entities ?? []"
                 :key="subCls.self"
                 :href="[useRoute().path, subCls.slug].join('/')"
                 class="px-2 py-1 text-sm hover:text-accent-36 border border-base-57 hover:border-accent-36 rounded-md flex-nowrap text-nowrap"
@@ -31,7 +31,7 @@
         </section>
 
         <!-- Description -->
-        <section v-if="classification.description" class="grow">
+        <section v-if="classification?.description" class="grow">
           <h2 class="sr-only">Description</h2>
           {{ classification.description }}
         </section>
@@ -84,24 +84,29 @@ if (!['fossils', 'minerals', 'rocks'].includes(categorySlug)) {
 }
 
 const category = categorySlug.slice(0, -1) // remove plural 's'
-const { data: classifications } = await useFetch<EntityJSONList<Classification>>('/api/terms/classifications', {
-  query: {
-    filter: [`type:equals:classification/${category}`, slug.length && `slug:equals:${slug.at(-1)}`].filter(Boolean),
-    select: ['label', 'slug', 'description', 'image', 'parents', 'children'],
-  }
-})
+const { data: classifications } = slug.length
+  ? await useFetch<EntityJSONList<Classification>>('/api/terms/classifications', {
+    query: {
+      filter: [`type:equals:classification/${category}`, `slug:equals:${slug.at(-1)}`],
+      select: ['label', 'slug', 'description', 'image', 'parents', 'children'],
+    }
+  })
+  : { data: { value: undefined } }
 
 if (slug.length && !classifications.value?.entities.length) {
   throw createError({ statusCode: 404, statusMessage: 'Not Found' })
 }
 
-const classification = computed(() => slug.length && classifications.value?.entities[0])
-const { data: subClassifications } = await useFetch<EntityJSONList<Classification>>(classification.value?.children?.self ?? '/api/terms/classifications', !slug.length && {
-  query: {
-    filter: [`type:equals:classification/${category}`, `depth:equals:0`],
-    select: ['label', 'slug', 'description', 'image', 'parents', 'children']
-  }
-})
+const classification = computed(() => classifications.value?.entities[0])
+const { data: subClassifications } = classification.value?.children
+  ? await useFetch<EntityJSONList<Classification>>(classification.value.children.self, { query: { pageSize: 50 } })
+  : await useFetch<EntityJSONList<Classification>>('/api/terms/classifications', {
+    query: {
+      filter: [`type:equals:classification/${category}`, `depth:equals:0`],
+      select: ['label', 'slug', 'description', 'image', 'parents', 'children'],
+      pageSize: 50,
+    }
+  })
 
 const { data: specimens } = await useFetch<EntityJSONList<Specimen>>('/api/specimens', {
   query: {

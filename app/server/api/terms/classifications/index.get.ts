@@ -96,7 +96,7 @@ export default defineEventHandler(async (event) => {
   const depth = getFilter(`depth`, FilterOperator.EQUALS)(filter).map(Number)
   if (depth.length) {
     query
-      .addFields({ ancestorCount: { $size: '$ancestors' } })
+      .addFields({ ancestorCount: { $size: { $ifNull: ['$ancestors', []] } } })
       .match({ ancestorCount: depth.at(-1) })
   }
 
