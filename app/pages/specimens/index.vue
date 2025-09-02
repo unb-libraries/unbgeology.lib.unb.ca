@@ -8,7 +8,7 @@
       <div class="flex-none space-x-1 w-full flex">
         <div class="form-field grow">
           <label class="sr-only" for="search">Search</label>
-          <InputSearch v-model="search" :timeout="600" class="shadow-none" />
+          <InputSearch v-model="search" :timeout="600" :disabled="pending" class="shadow-none" />
         </div>
         <button
           :data-active="!sidebarCollapsed ? '' : undefined"
@@ -39,12 +39,10 @@
             <Facet v-if="(facets.onDisplay ?? []).length" v-model="onDisplay" :options="facets.onDisplay.map(({ value, count }) => ({ value: { value, label: value === true ? 'Yes' : 'No' }, count }))" value-field="value" label-field="label" title="On display" class="flex-none" />
           </div>
         </div>
-        <div class="w-full xl:w-4/5 h-full relative">
-          <KeepAlive>
-            <SearchViewList v-if="mode === 'list' && list?.total" :specimens="specimens" />
-            <SearchViewGrid v-else-if="mode === 'grid' && list?.total" :specimens="specimens" />
-            <SearchViewMap v-else-if="mode === 'map' && list?.total" :specimens :pending />
-          </KeepAlive>
+        <div class="group w-full xl:w-4/5 h-full relative">
+          <SearchViewList v-if="mode === 'list' && list?.total" :specimens="specimens" />
+          <SearchViewGrid v-else-if="mode === 'grid' && list?.total" :specimens="specimens" />
+          <SearchViewMap v-else-if="mode === 'map' && list?.total" :specimens :pending />
         </div>
       </template>
       <div v-else class="p-4">
@@ -77,6 +75,11 @@ const { entities: specimens, list, pending, query: { page, pageSize, search, fil
 
 const facets = computed(() => list.value?.facets as Record<string, { value: unknown, count: number }[]> ?? {})
 const sidebarCollapsed = ref(true)
+
+// const search = ref('')
+// const page = ref(1)
+// const pageSize = ref(20)
+// const filter = ref<Filter[]>([])
 
 const updateQuery = () => useRouter().replace({
   query: {
@@ -129,11 +132,11 @@ watch(onDisplay, updateFilter)
 
 function onSwitchViewMode(newMode: 'list' | 'grid' | 'map') {
   const currentMode = mode.value
-  mode.value = newMode
   if (newMode === 'map') {
     filter.value = [...filter.value, ['origin', FilterOperator.GREATER, '90.1;180.1'], ['origin', FilterOperator.LESS, '-90.1;-180.1']]
   } else if (currentMode === 'map') {
     filter.value = filter.value.filter(([field]) => field !== 'origin')
   }
+  mode.value = newMode
 }
 </script>
