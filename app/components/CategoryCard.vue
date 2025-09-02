@@ -22,7 +22,7 @@
         <p>It's important to note that rocks vary greatly in their properties, appearance, and composition depending on their specific type and the geological processes that formed them.</p>
       </div>
       <a
-        :href="`/browse/${category}`"
+        :href="`/browse/${category}s`"
         class="flex-none w-fit text-accent-26 hover:text-accent-36 dark:hover:text-accent-46 dark:text-accent-36 text-lg font-semibold underline border-none rounded-md"
       >
         Browse {{ category.charAt(0).toUpperCase() + category.slice(1) }}s
