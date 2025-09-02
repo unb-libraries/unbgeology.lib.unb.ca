@@ -20,7 +20,8 @@
         </button>
         <button v-for="m in ['list', 'grid', 'map']" :key="m"
           :data-active="mode === m ? '' : undefined"
-          class="inline-flex space-x-1 p-2 justify-center hover:border-accent-26 dark:hover:border-accent-36 hover:text-accent-26 dark:hover:text-accent-36 data-[active]:bg-base-17 dark:data-[active]:bg-base-77 data-[active]:border-base-17 dark:data-[active]:border-base-77 uppercase font-semibold data-[active]:text-base-97 dark:data-[active]:text-base-7 data-[active]:cursor-default items-center border border-base-17 dark:border-base-77 rounded-md flex-none cursor-pointer"
+          :disabled="mode === m"
+          class="inline-flex space-x-1 p-2 justify-center border border-base-17 data-[active]:border-base-17 hover:border-accent-26 data-[active]:hover:border-base-17 dark:border-base-77 dark:data-[active]:border-base-77 dark:hover:border-accent-36 dark:data-[active]:hover:border-base-77 rounded-md data-[active]:text-base-97 hover:text-accent-26 data-[active]:hover:text-base-97 dark:data-[active]:text-base-7 dark:hover:text-accent-36 dark:data-[active]:hover:text-base-7 data-[active]:bg-base-17 dark:data-[active]:bg-base-77 uppercase font-semibold data-[active]:cursor-default items-center flex-none cursor-pointer"
           @click.prevent.stop="onSwitchViewMode(m)"
         >
           <component :is="{ list: IconList, grid: IconGrid, map: IconMap }[m as 'list' | 'grid' | 'map']" class="fill-none stroke-current size-6 stroke-1.5" />
@@ -39,7 +40,7 @@
             <Facet v-if="(facets.onDisplay ?? []).length" v-model="onDisplay" :options="facets.onDisplay.map(({ value, count }) => ({ value: { value, label: value === true ? 'Yes' : 'No' }, count }))" value-field="value" label-field="label" title="On display" class="flex-none" />
           </div>
         </div>
-        <div class="group w-full xl:w-4/5 h-full relative">
+        <div class="w-full xl:w-4/5 h-full relative">
           <SearchViewList v-if="mode === 'list' && list?.total" :specimens="specimens" />
           <SearchViewGrid v-else-if="mode === 'grid' && list?.total" :specimens="specimens" />
           <SearchViewMap v-else-if="mode === 'map' && list?.total" :specimens :pending />
