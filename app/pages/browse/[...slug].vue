@@ -16,7 +16,7 @@
               {{ label }}
             </component>
           </div>
-          <IconChevron2x v-if="subClassifications.entities.length" class="flex size-6 stroke-base-77 stroke-1.5" />
+          <IconChevron2x v-if="subClassifications.entities.length" class="flex-none size-5 stroke-base-77 stroke-1.5" />
           <div v-if="subClassifications.entities.length" class="grow overflow-hidden">
             <Carousel>
               <a v-for="subCls in subClassifications.entities"
