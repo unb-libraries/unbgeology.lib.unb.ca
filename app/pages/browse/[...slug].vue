@@ -8,17 +8,13 @@
       <div class="flex flex-col gap-y-6">
         <section class="flex gap-x-2 py-2 w-full items-center">
           <div v-if="parentPages.length" class="flex flex-none gap-x-2">
-            <a v-for="page in [...parentPages]"
-              :key="page.self"
-              :href="[useRoute().path, page.slug].join('/')"
-              class="px-2 py-1 bg-base-27 dark:bg-base-77 hover:bg-accent-26 dark:hover:bg-accent-36 focus-visible:bg-accent-26 dark:focus-visible:bg-accent-36 text-sm text-base-97 dark:text-base-17 dark:focus-visible:text-base-97 border border-transparent rounded-md flex-nowrap text-nowrap"
+            <component :is="i < parentPages.length - 1 ? 'a' : 'span'" v-for="({ label, href }, i) in parentPages"
+              :key="href"
+              :href="i < parentPages.length - 1 ? href : undefined"
+              :class="['px-2 py-1 bg-base-27 dark:bg-base-77 text-sm text-base-97 dark:text-base-17 dark:focus-visible:text-base-97 border border-transparent rounded-md flex-nowrap text-nowrap', { 'hover:bg-accent-26 dark:hover:bg-accent-36 focus-visible:bg-accent-26 dark:focus-visible:bg-accent-36': i < parentPages.length - 1 }]"
             >
-              {{ page.label[0].toUpperCase() + page.label.slice(1) }}
-            </a>
-            <span class="px-2 py-1 bg-base-27 dark:bg-base-77 text-sm text-base-97 dark:text-base-17 border border-transparent rounded-md flex-nowrap text-nowrap"
-            >
-              {{ classification.label }}
-            </span>
+              {{ label }}
+            </component>
           </div>
           <IconChevron2x v-if="subClassifications.entities.length" class="flex size-6 stroke-base-77 stroke-1.5" />
           <div v-if="subClassifications.entities.length" class="grow overflow-hidden">
@@ -82,11 +78,12 @@ definePageMeta({
   layout: false,
 })
 
-const { slug: [category, ...slug] } = useRoute().params as { slug: string[] }
-if (!['fossil', 'mineral', 'rock'].includes(category)) {
+const { slug: [categorySlug, ...slug] } = useRoute().params as { slug: string[] }
+if (!['fossils', 'minerals', 'rocks'].includes(categorySlug)) {
   throw createError({ statusCode: 404, statusMessage: 'Not Found' })
 }
 
+const category = categorySlug.slice(0, -1) // remove plural 's'
 const { data: classifications } = await useFetch<EntityJSONList<Classification>>('/api/terms/classifications', {
   query: {
     filter: [`type:equals:classification/${category}`, slug.length && `slug:equals:${slug.at(-1)}`].filter(Boolean),
@@ -98,10 +95,14 @@ if (slug.length && !classifications.value?.entities.length) {
   throw createError({ statusCode: 404, statusMessage: 'Not Found' })
 }
 
-const classification = computed(() => slug.length && classifications.value?.entities[0] || ({ self: category, label: category[0].toUpperCase() + category.slice(1), slug: category } as Classification))
-const { data: subClassifications } = await useFetch<EntityJSONList<Classification>>(classification.value?.children?.self ?? '/api/terms/classifications', !slug.length
-  ? { query: { filter: [`type:equals:classification/${category}`, `depth:equals:0`], select: ['label', 'slug', 'description', 'image', 'parents', 'children'] } }
-  : undefined)
+const classification = computed(() => slug.length && classifications.value?.entities[0])
+const { data: subClassifications } = await useFetch<EntityJSONList<Classification>>(classification.value?.children?.self ?? '/api/terms/classifications', !slug.length && {
+  query: {
+    filter: [`type:equals:classification/${category}`, `depth:equals:0`],
+    select: ['label', 'slug', 'description', 'image', 'parents', 'children']
+  }
+})
+
 const { data: specimens } = await useFetch<EntityJSONList<Specimen>>('/api/specimens', {
   query: {
     filter: [slug.length ? `classification:equals:${classification.value?.self}` : `type:equals:${category}`],
@@ -110,12 +111,25 @@ const { data: specimens } = await useFetch<EntityJSONList<Specimen>>('/api/speci
   }
 })
 
-const { data: parentClassifications } = slug.length && await useFetch<EntityJSONList<Classification>>(classification.value?.parents?.self) || ({ data: { entities: [] } })
+const { data: parentClassifications } = slug.length && await useFetch<EntityJSONList<Classification>>(classification.value?.parents?.self) || ({ data: { value: { entities: [] } } })
 if (parentClassifications && !(parentClassifications.value?.entities ?? []).every((p, i) => p.slug === slug[i])) {
   throw createError({ statusCode: 404, statusMessage: 'Not Found' })
 }
-const parentPages = [{ self: category, label: `${category}s`, slug: category }, ...parentClassifications.value?.entities ?? []]
-  .map(({ slug, ...p }, i, arr) => ({ ...p, slug: arr.slice(0, i + 1).map(pc => pc.slug).join('/') }))
+
+const parentPages = [
+  {
+    href: `/browse/${category}s`,
+    label: category[0].toUpperCase() + category.slice(1).toLowerCase() + 's',
+  },
+  ...([...parentClassifications.value?.entities ?? [], classification.value].filter(Boolean))
+    .map(({ label }, i) => ({
+      href: `/browse/${category}s/${[...parentClassifications.value!.entities ?? [], classification.value].filter(Boolean)
+        .slice(0, i + 1)
+        .map(({ slug }) => slug)
+        .join('/')}`,
+      label,
+    })),
+]
 
 const activeImageIndex = ref(0)
 </script>
