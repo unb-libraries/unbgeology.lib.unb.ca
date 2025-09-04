@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@types/formidable": "^3.4.4",
+    "@vueuse/router": "^14.0.0-alpha.0",
     "casbin": "^5.29.0",
     "doi-regex": "^0.1.13",
     "h3-formidable": "^0.3.8",
