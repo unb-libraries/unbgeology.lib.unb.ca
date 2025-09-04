@@ -1,7 +1,6 @@
 import { FilterOperator } from '@unb-libraries/nuxt-layer-entity'
-import type { Specimen as ISpecimen } from "~/types/specimen"
-import { renderSpecimen, type Specimen } from "~/server/documentTypes/Specimen"
 import { getSpecimenRequestCacheId } from "~/server/utils/cache"
+import type { Classification } from '~/server/documentTypes/Classification'
 
 const cacheOptions: Parameters<typeof defineCachedEventHandler>[1] = {
   name: `specimens`,
@@ -12,23 +11,14 @@ const cacheOptions: Parameters<typeof defineCachedEventHandler>[1] = {
 }
 
 export default defineCachedEventHandler(async (event) => {
-  const { filter, page, pageSize, select, search, sort } = getSpecimenQueryParams(event)
+  const { filter, select, search, sort } = getSpecimenQueryParams(event)
   
   const resources = getAuthorizedResources(event, r => /^specimen(:[a-z]+)*$/.test(r))
   const authFields = getAuthorizedFields(event, ...resources)
   
-  const sortFields = sort
-    ?.map(([field]) => field)
-    .filter((field, i, arr) => arr.indexOf(field) === i)
-    .filter(field => !authFields.length || authFields.includes(field)) ?? []
   const selectFields = select
     ?.filter((field, i, arr) => arr.indexOf(field) === i)
     .filter(field => !authFields.length || authFields.includes(field)) ?? []
-  const filterFields = filter
-    ?.map(([field]) => field)
-    .filter((field, i, arr) => arr.indexOf(field) === i)
-    .filter(([field]) => !authFields.length || authFields.includes(field)) ?? []
-  const fields = [...selectFields, ...sortFields, ...filterFields]
   
   if (!resources.length) {
     return create403()
@@ -39,10 +29,6 @@ export default defineCachedEventHandler(async (event) => {
       ?.filter(([f, op, value]) => f === field && useEnum(FilterOperator).valueOf(op) & operator && value)
       .map(([,,c]) => Array.isArray(c) ? c : [c])
       .flat()
-  }
-  
-  function getBoundsFilter(op: FilterOperator) {
-    return getFilter('origin', op)?.map(b => b.split(`;`)).flat().map(Number) as [number, number] | undefined
   }
   
   function getNumericAgeFilter() {
@@ -64,7 +50,8 @@ export default defineCachedEventHandler(async (event) => {
     search,
   }
 
-  const query = Specimen.Base.mongoose.model.aggregate<{ specimens: Specimen[], total: number, facets: Record<string, { _id: unknown, count: number }[]> }>()
+  type Facet = { _id: unknown, count: number }[]
+  const query = Specimen.Base.mongoose.model.aggregate<{ category: Facet, classification: Facet, age: Facet, numericAge: Facet, onDisplay: Facet }>()
   if (queryFilter.search) {
     query.search({
       index: 'autocomplete',
@@ -96,7 +83,6 @@ export default defineCachedEventHandler(async (event) => {
     query.match({ type: { $in: queryFilter.type } })
   }
 
-  // TODO: Make this conditional, introduce facet query parameter
   query.lookup({ from: `terms`, localField: `classification`, foreignField: `_id`, as: `classification` })
   query.unwind({ path: `$classification`, preserveNullAndEmptyArrays: true })
 
@@ -106,16 +92,7 @@ export default defineCachedEventHandler(async (event) => {
       { 'classification.ancestors': { $in: queryFilter.classification } },
     ] })
   }
-
-  if (fields.some(f => f.startsWith(`images`))) {
-    query.lookup({ from: `files`, localField: `images`, foreignField: `_id`, as: `images` })
-  }
-  if (fields.some(f => f.startsWith(`collection`))) {
-    query.lookup({ from: `terms`, localField: `kollektion`, foreignField: `_id`, as: `kollektion` })
-    query.unwind({ path: `$kollektion`, preserveNullAndEmptyArrays: true })
-  }
   
-  // TODO: Make this conditional, introduce facet query parameter
   query.lookup({ from: `terms`, localField: `relativeAge`, foreignField: `_id`, as: `relativeAge` })
   if (queryFilter.age.length) {
     query.match({ $or: [
@@ -132,20 +109,9 @@ export default defineCachedEventHandler(async (event) => {
   if (queryFilter.ageNumeric.upper) {
     query.match({ numericMin: { $lte: queryFilter.ageNumeric.upper } })
   }
+  
 
-  if (fields.some(f => f.startsWith(`composition`))) {
-    query.lookup({ from: `terms`, localField: `composition`, foreignField: `_id`, as: `composition` })
-  }
-  if (fields.some(f => f.startsWith(`collector`))) {
-    query.lookup({ from: `terms`, localField: `collector`, foreignField: `_id`, as: `collector` })
-    query.unwind({ path: `$collector`, preserveNullAndEmptyArrays: true })
-  }
-  if (fields.some(f => f.startsWith(`sponsor`))) {
-    query.lookup({ from: `terms`, localField: `sponsor`, foreignField: `_id`, as: `sponsor` })
-    query.unwind({ path: `$sponsor`, preserveNullAndEmptyArrays: true })
-  }
-
-  // TODO: Make this conditional, introduce facet query parameter
+  
   query.lookup({ from: `terms`, localField: `storage.location`, foreignField: `_id`, as: `storageLocations` })
   query.addFields({
     storage: {
@@ -171,71 +137,110 @@ export default defineCachedEventHandler(async (event) => {
     query.match({ 'currentStorage.location.public': true })
   }
 
-  if (fields.some(f => f.startsWith(`creator`))) {
-    query.lookup({ from: `users`, localField: `creator`, foreignField: `_id`, as: `creator` })
-    query.unwind({ path: `$creator`, preserveNullAndEmptyArrays: true })
-    query.addFields({
-      creator: {
-        sortKey: {
-          $cond: {
-            if: { $and: [`$creator.profile.firstName`, `$creator.profile.lastName`] },
-            then: { $concat: [`$creator.profile.firstName`, ` `, `$creator.profile.lastName`] },
-            else: `$creator.username`
-          },
-        },
-      }
-    })
-  }
-  if (fields.some(f => f.startsWith('editor'))) {
-    query.lookup({ from: 'users', localField: 'editor', foreignField: '_id', as: 'editor' })
-    query.unwind({ path: `$editor`, preserveNullAndEmptyArrays: true })
-    query.addFields({
-      editor: {
-        sortKey: {
-          $cond: {
-            if: { $and: [`$editor.profile.firstName`, `$editor.profile.lastName`] },
-            then: { $concat: [{ $toLower: `$editor.profile.firstName` }, ` `, { $toLower: `$editor.profile.lastName` }] },
-            else: { $toLower: `$editor.username` },
-          },
-        },
-      },
-    })
-  }
-  
-  const [{ specimens, total, facets }] = await query
+  const [{ age, numericAge, category, classification, onDisplay }] = await query
     .facet({
-      specimens: [
-        {
-          $sort: Object.fromEntries(([...sort, [`id`, -1]])
-            .map(([field, dir]) => [(() => {
-              switch (field) {
-                case `id`: return `slug`
-                case `classification`: return `classification.label`
-                case `collection`: return `kollektion.label`
-                case `creator`: return `creator.profile.sortKey`
-                case `editor`: return `editor.profile.sortKey`
-                default: return field
-              }
-            })(), dir])) as Record<keyof ISpecimen, -1 | 1>,
-        },
-        { $skip: (page - 1) * pageSize },
-        { $limit: pageSize },
-      ].filter(Boolean),
-      count: [{ $count: `total` }],
+      categoryFacet: [
+        { $sortByCount: `$type` },
+        { $addFields: { _id: { $substr: ['$_id', 'Specimen.'.length, 50] } } },
+      ],
+      classificationFacet: [
+        { $match: { classification: { $exists: 1 } } },
+        { $lookup: { from: 'terms', localField: 'classification.ancestors', foreignField: '_id', as: 'classifications' } },
+        { $project: { classifications: { $setUnion: [ ['$classification'], '$classifications'] } } },
+        { $unwind: { path: '$classifications' } },
+        { $sortByCount: `$classifications` },
+        { $project: { _id: { _id: 1, label: 1, type: 1 }, count: 1 } },
+        { $sort: { count: -1, '_id.label': 1 } },
+      ],
+      ageFacet: [
+        { $match: { relativeAge: { $exists: 1, $ne: null, $not: { $size: 0 } } } },
+        { $lookup: { from: 'terms', localField: 'relativeAge.ancestors', foreignField: '_id', as: 'relativeAges' } },
+        { $project: { relativeAges: { $setUnion: [ '$relativeAge', '$relativeAges'] } } },
+        { $unwind: { path: '$relativeAges' } },
+        { $sortByCount: `$relativeAges` },
+        { $project: { _id: { _id: 1, label: 1, division: 1 }, count: 1 } },
+        { $sort: { count: -1, '_id.label': 1 } },
+      ],
+      // Cenozoic
+      numericAgeFacet66: [
+        { $match: { numericMin: { $lte: 66000000 } } },
+        { $group: { _id: [0, 66000000], count: { $count: {} } } },
+      ],
+      // Mesozoic
+      numericAgeFacet251: [
+        { $match: { numericMax: { $gt: 66000000 }, numericMin: { $lte: 251902000 } } },
+        { $group: { _id: [66000000, 251902000], count: { $count: {} } } },
+      ],
+      // Paleozoic
+      numericAgeFacet541: [
+        { $match: { numericMax: { $gt: 251902000 }, numericMin: { $lte: 541000000 } } },
+        { $group: { _id: [251902000, 541000000], count: { $count: {} } } },
+      ],
+      // Proterozoic
+      numericAgeFacet2500: [
+        { $match: { numericMax: { $gt: 541000000 }, numericMin: { $lte: 2500000000 } } },
+        { $group: { _id: [541000000, 2500000000], count: { $count: {} } } },
+      ],
+      // Archean
+      numericAgeFacet2500x: [
+        { $match: { numericMax: { $gt: 2500000000 } } },
+        { $group: { _id: [2500000000], count: { $count: {} } } },
+      ],
+      // TODO: Account for storage ancestors "public" property
+      onDisplayFacet: [
+        { $match: { 'currentStorage.location.public': true } },
+        { $sortByCount: `$currentStorage.location.public` },
+      ],
     })
     .project({
-      specimens: 1,
-      total: { $ifNull: [{ $arrayElemAt: ['$count.total', 0] }, 0] },
+      age: `$ageFacet`,
+      numericAge: { $setUnion: ['$numericAgeFacet66', '$numericAgeFacet251', '$numericAgeFacet541', '$numericAgeFacet2500', '$numericAgeFacet2500x'] },
+      category: `$categoryFacet`,
+      classification: `$classificationFacet`,
+      onDisplay: `$onDisplayFacet`,
     })
 
   return {
     self: `/api/specimens`,
-    entities: specimens
-      .map(renderSpecimen)
-      .map(specimen => Object
-        .fromEntries(Object
-          .entries(specimen)
-            .filter(([key]) => key === `self` || !selectFields.length || selectFields.includes(key as keyof ISpecimen)))),
-    ...usePaginator({ total }),
+    entities: [
+      {
+        self: '/api/specimens/facets/category',
+        entities: category.map(({ _id: type, count }) => ({
+          value: {
+            id: `${type}`.toLowerCase(),
+            label: type,
+          },
+          count,
+        })),
+      },
+      {
+        self: '/api/specimens/facets/classification',
+        entities: classification.map(({ _id: classification, count }) => ({
+          value: renderClassification(classification as Classification),
+          count,
+        })),
+      },
+      {
+        self: '/api/specimens/facets/age',
+        entities: age.map(({ _id: unit, count }) => ({
+          value: renderUnit(unit as GeochronologicUnit),
+          count
+        })),
+      },
+      {
+        self: '/api/specimens/facets/numericAge',
+        entities: numericAge.filter(({ count }) => count > 0).map(({ _id: bounds, count }) => ({ value: bounds,
+          count,
+        })),
+      },
+      {
+        self: '/api/specimens/facets/onDisplay',
+        entities: onDisplay.map(({ _id: onDisplay, count }) => ({
+          value: onDisplay ? true : false,
+          count,
+        })),
+      }
+    ],
+    total: 5,
   }
 }, cacheOptions)
