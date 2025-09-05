@@ -146,6 +146,7 @@ export interface EntityListResponse<E extends Entity = Entity> {
     sort: Ref<string[]>
   }
   refresh: () => Promise<void>
+  pending: Ref<boolean>
   add: (entity: EntityJSONCreateBody<E>) => Promise<EntityCreateResponse<E>>
   update: (entity: EntityJSONBody<E>) => Promise<EntityResponse<E>>
   updateMany: (body: EntityJSONBody<E>) => Promise<EntityUpdateList<E>>
