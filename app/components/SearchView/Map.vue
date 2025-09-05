@@ -3,10 +3,21 @@
 </template>
 
 <script lang="ts" setup>
+import type { EntityJSONList } from '@unb-libraries/nuxt-layer-entity'
 import { type Specimen } from '~/types/specimen'
 
-defineProps<{
-  specimens: Specimen[]
-  pending?: boolean
-}>()
+import { useRouteQuery } from '@vueuse/router'
+
+const search = useRouteQuery('search', '')
+const filter = useRouteQuery('filter', [] as string | string[], {
+  transform: (filter) => Array.isArray(filter) ? filter : [filter].filter(Boolean)
+})
+
+const { data, pending } = await useFetch<EntityJSONList<Specimen>>('/api/specimens/origins', {
+  query: {
+    search,
+    filter,
+  }
+})
+const specimens = computed(() => data.value?.entities ?? [])
 </script>

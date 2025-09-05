@@ -41,9 +41,7 @@
           </div>
         </div>
         <div class="w-full xl:w-4/5 h-full relative">
-          <SearchViewList v-if="mode === 'list' && list?.total" :specimens="specimens" />
-          <SearchViewGrid v-else-if="mode === 'grid' && list?.total" :specimens="specimens" />
-          <SearchViewMap v-else-if="mode === 'map' && list?.total" :specimens :pending />
+          <SearchView :mode @refresh="total = $event[0], page = $event[1], pageSize = $event[2]" />
         </div>
       </template>
       <div v-else class="p-4">
@@ -54,27 +52,15 @@
 </template>
 
 <script setup lang="ts">
-import { IconList, IconGrid, IconMap } from '#components'
-import { FilterOperator, type Filter } from '@unb-libraries/nuxt-layer-entity'
-import { type Specimen } from '~/types/specimen'
+import { useRouteQuery } from '@vueuse/router'
 
 definePageMeta({
   layout: 'page',
   name: 'Search',
 })
 
-const { query: q } = useRoute()
-const mode = ref<'list' | 'grid' | 'map'>(['list', 'grid', 'map'].find(mode => mode === (Array.isArray(q.mode) ? q.mode.at(-1) : q.mode)) as 'list' | 'grid' | 'map' ?? 'list')
-
-const { entities: specimens, list, pending, query: { page, pageSize, search, filter } } = await fetchEntityList<Specimen>("Specimen", {
-  search: (Array.isArray(q.search) ? q.search.at(-1) : q.search) ?? '',
-  select: ['id', 'name', 'description', 'images', 'type', 'classification', 'age', 'origin', 'status'],
-  page: Math.max(Array.isArray(q.page) ? Number(q.page.at(-1)) : Number(q.page ?? 1), 1),
-  pageSize: Math.max(Array.isArray(q.pageSize) ? Number(q.pageSize.at(-1)) : Number(q.pageSize ?? 20), 1),
-  filter: (Array.isArray(q.filter) ? q.filter : [q.filter].filter(Boolean)).map(filter => filter?.split(':')),
-})
-
-const facets = computed(() => list.value?.facets as Record<string, { value: unknown, count: number }[]> ?? {})
+const mode = useRouteQuery('mode', 'list')
+const search = useRouteQuery('search', '')
 const sidebarCollapsed = ref(true)
 
 // const search = ref('')

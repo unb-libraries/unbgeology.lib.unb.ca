@@ -21,9 +21,25 @@
 </template>
 
 <script lang="ts" setup>
+import type { EntityJSONList } from '@unb-libraries/nuxt-layer-entity'
 import { type Specimen, Status } from '~/types/specimen'
+import { useRouteQuery } from '@vueuse/router'
 
-defineProps<{
-  specimens: Specimen[]
-}>()
+const search = useRouteQuery('search', '')
+const filter = useRouteQuery('filter', [] as string | string[], {
+  transform: (filter) => Array.isArray(filter) ? filter : [filter].filter(Boolean)
+})
+const page = useRouteQuery('page', '1', { transform: Number })
+
+const { data } = await useFetch<EntityJSONList<Specimen>>('/api/specimens', {
+  query: {
+    search,
+    select: ['id', 'name', 'images', 'type', 'classification', 'status'],
+    filter,
+    page,
+    pageSize: 20
+  }
+})
+
+const specimens = computed(() => data.value?.entities ?? [])
 </script>
