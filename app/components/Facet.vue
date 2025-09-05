@@ -13,10 +13,16 @@
 </template>
 
 <script lang="ts" setup>
-const selection = defineModel<unknown[]>({ default: [] })
-const collapsed = defineModel<boolean>('collapsed', { default: false })
+import { FilterOperator } from '@unb-libraries/nuxt-layer-entity';
+import { useRouteQuery } from '@vueuse/router'
 
+const collapsed = defineModel<boolean>('collapsed', { default: false })
 const props = defineProps<{
+  facet: {
+    self: string,
+    entities: { value: unknown, label: string, count: number }[]
+  }
+  facetId: string,
   title: string
   options: {
     value: unknown
@@ -26,6 +32,28 @@ const props = defineProps<{
   labelField?: string
   collapsible?: number
 }>()
+
+const filter = useRouteQuery('filter', [] as string | string[], {
+  transform: (filter) => Array.isArray(filter) ? filter : [filter].filter(Boolean)
+})
+const selection = computed({
+  get() {
+    return filter.value
+      .map(filter => filter.split(':') as [string, FilterOperator, string])
+      .filter(([field]) => field === props.facetId)
+      .map(([, , value]) => value as string) ?? []
+  },
+  set(selection: string[]) {
+    filter.value = [
+      ...filter.value
+        .map(filter => filter.split(':') as [string, FilterOperator, string])
+        .filter(([field]) => field !== props.facetId)
+        .map(filter => filter.join(':')),
+      ...selection
+        .map(category => [props.facetId, FilterOperator.EQUALS, category].join(':'))
+    ]
+  }
+})
 
 const optionsCollapsed = ref(props.collapsible ? true : false)
 const options = computed(() => props.options.map(({ value, count }) => ({
