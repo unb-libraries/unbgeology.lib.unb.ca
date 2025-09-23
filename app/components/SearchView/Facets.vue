@@ -22,7 +22,7 @@
       <Facet v-if="classificationFacet?.entities.length"
         :facet="classificationFacet"
         facetId="classification"
-        :options="classificationFacet?.entities ?? []"
+        :options="classificationOptions"
         value-field="id"
         label-field="label"
         title="Classifications"
@@ -32,7 +32,7 @@
       <Facet v-if="ageFacet?.entities.length"
         :facet="ageFacet"
         facetId="age.relative"
-        :options="ageFacet?.entities ?? []"
+        :options="ageOptions"
         value-field="id"
         label-field="label"
         title="Age"
@@ -83,8 +83,27 @@ const { data: facets } = useFetch<EntityJSONList<FacetEntity>>('/api/specimens/f
 })
 
 const categoryFacet = computed(() => facets.value?.entities.find(({ self }) => self === '/api/specimens/facets/category'))
+
 const classificationFacet = computed(() => facets.value?.entities.find(({ self }) => self === '/api/specimens/facets/classification'))
+const classificationOptions = computed(() => (classificationFacet.value?.entities ?? [])
+  .map(({ value, count }) => ({
+    value: {
+      id: value.self,
+      label: value.label,
+    },
+    count,
+  })))
+
 const ageFacet = computed(() => facets.value?.entities.find(({ self }) => self === '/api/specimens/facets/age'))
+const ageOptions = computed(() => (ageFacet.value?.entities ?? [])
+  .map(({ value, count }) => ({
+    value: {
+      id: value.self,
+      label: value.label,
+    },
+    count,
+  })))
+
 const numericFacet = computed(() => facets.value?.entities.find(({ self }) => self === '/api/specimens/facets/numericAge'))
 const numericOptions = computed(() => (numericFacet.value?.entities ?? [])
   .map(({ value, count }) => ({
