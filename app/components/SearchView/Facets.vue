@@ -86,7 +86,7 @@ const categoryFacet = computed(() => facets.value?.entities.find(({ self }) => s
 const classificationFacet = computed(() => facets.value?.entities.find(({ self }) => self === '/api/specimens/facets/classification'))
 const ageFacet = computed(() => facets.value?.entities.find(({ self }) => self === '/api/specimens/facets/age'))
 const numericFacet = computed(() => facets.value?.entities.find(({ self }) => self === '/api/specimens/facets/numericAge'))
-const numericOptions = (numericFacet.value?.entities ?? [])
+const numericOptions = computed(() => (numericFacet.value?.entities ?? [])
   .map(({ value, count }) => ({
     value: value[0],
     label: value.map((b: number) => Math.floor(b / 1000000)),
@@ -101,7 +101,7 @@ const numericOptions = (numericFacet.value?.entities ?? [])
           : `${label[0]} - ${label[1]} Mya`
     },
     count,
-  }))
+  })))
 const onDisplayFacet = computed(() => facets.value?.entities.find(({ self }) => self === '/api/specimens/facets/onDisplay'))
 const onDisplayOptions = computed(() => (onDisplayFacet.value?.entities ?? [])
   .map(({ value, count }) => ({

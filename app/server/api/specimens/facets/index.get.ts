@@ -229,7 +229,8 @@ export default defineCachedEventHandler(async (event) => {
       },
       {
         self: '/api/specimens/facets/numericAge',
-        entities: numericAge.filter(({ count }) => count > 0).map(({ _id: bounds, count }) => ({ value: bounds,
+        entities: numericAge.filter(({ count }) => count > 0).map(({ _id: bounds, count }) => ({
+          value: bounds,
           count,
         })),
       },

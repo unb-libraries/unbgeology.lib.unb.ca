@@ -154,11 +154,13 @@ export default defineCachedEventHandler(async (event) => {
   return {
     self: `/api/specimens/origins`,
     entities: specimens
-      .map(renderSpecimen)
-      .map(specimen => Object
-        .fromEntries(Object
-          .entries(specimen)
-            .filter(([key]) => key === `self` || !selectFields.length || selectFields.includes(key as keyof ISpecimen)))),
+      .map(specimen => ({
+        self: `/api/specimens/${specimen.slug}`,
+        origin: {
+          latitude: specimen.origin?.latitude,
+          longitude: specimen.origin?.longitude,
+        },
+      })),
     total,
   }
 }, cacheOptions)
