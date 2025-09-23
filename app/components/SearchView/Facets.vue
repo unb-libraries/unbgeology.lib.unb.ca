@@ -94,7 +94,8 @@ const numericOptions = computed(() => (numericFacet.value?.entities ?? [])
   }))
   .map(({ value, label, count }) => ({
     value: {
-      value, label: label[0] === 0
+      id: value,
+      label: label[0] === 0
         ? `< ${label[1]} Mya`
         : label.length < 2
           ? `> ${label[0]} Mya`
@@ -106,7 +107,8 @@ const onDisplayFacet = computed(() => facets.value?.entities.find(({ self }) => 
 const onDisplayOptions = computed(() => (onDisplayFacet.value?.entities ?? [])
   .map(({ value, count }) => ({
     value: {
-      value, label: Boolean(value) === true
+      id: value,
+      label: Boolean(value) === true
         ? 'Yes'
         : 'No'
     },
