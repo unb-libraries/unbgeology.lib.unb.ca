@@ -1,0 +1,74 @@
+<template>
+  <NuxtLayout name="page">
+    <div class="flex-col flex h-full">
+      <div class="sticky top-[10rem] pb-2 space-y-2 z-30 bg-base dark:bg-base-2">
+        <div class="flex justify-between items-center space-x-2">
+          <span class="flex-none py-1">
+            <slot v-if="total" name="summary" />
+            <template v-else>No specimens found.</template>
+          </span>
+          <TwPageIndex v-if="total && page && pageSize"
+            :page="page"
+            :total="Math.ceil(total / pageSize)"
+            :size="5"
+            class="flex justify-end flex-none"
+            @change="$emit('paginate', $event)"
+          />
+        </div>
+        <div class="flex-none space-x-1 w-full flex">
+          <div class="form-field grow">
+            <label class="sr-only" for="search">Search</label>
+            <InputSearch v-model="search" :timeout="600" :disabled="pending" class="shadow-none" />
+          </div>
+          <button
+            :data-active="!sidebarCollapsed ? '' : undefined"
+            class="inline-flex xl:hidden space-x-1 p-2 justify-center hover:border-accent-26 hover:text-accent-26 data-[active]:bg-base-17 data-[active]:border-base-17 uppercase font-semibold data-[active]:hover:bg-accent-26 data-[active]:hover:border-accent-26 data-[active]:text-base-97 items-center border border-base-17 rounded-md flex-none cursor-pointer"
+            @click.prevent.stop="sidebarCollapsed = !sidebarCollapsed"
+          >
+            <IconFilter class="fill-none stroke-current size-6 stroke-1.5" />
+            <span>Filter</span>
+          </button>
+          <button v-for="m in ['list', 'grid', 'map']" :key="m"
+            :data-active="mode === m ? '' : undefined"
+            :disabled="mode === m"
+            class="inline-flex space-x-1 p-2 justify-center border border-base-17 data-[active]:border-base-17 hover:border-accent-26 data-[active]:hover:border-base-17 dark:border-base-77 dark:data-[active]:border-base-77 dark:hover:border-accent-36 dark:data-[active]:hover:border-base-77 rounded-md data-[active]:text-base-97 hover:text-accent-26 data-[active]:hover:text-base-97 dark:data-[active]:text-base-7 dark:hover:text-accent-36 dark:data-[active]:hover:text-base-7 data-[active]:bg-base-17 dark:data-[active]:bg-base-77 uppercase font-semibold data-[active]:cursor-default items-center flex-none cursor-pointer"
+            @click.prevent.stop="mode = (m as Mode)"
+          >
+            <component :is="{ list: IconList, grid: IconGrid, map: IconMap }[m as 'list' | 'grid' | 'map']" class="fill-none stroke-current size-6 stroke-1.5" />
+            <span>{{ m.charAt(0).toUpperCase() + m.slice(1) }}</span>
+          </button>
+        </div>
+      </div>
+      <div class="flex flex-col xl:flex-row grow gap-x-6">
+        <Facets
+          :collapsed="sidebarCollapsed"
+          @toggled="sidebarCollapsed = $event"
+        />
+        <div class="w-full xl:w-4/5 h-full relative">
+          <slot />
+        </div>
+      </div>
+    </div>
+  </NuxtLayout>
+</template>
+
+<script lang="ts" setup>
+import { IconList, IconGrid, IconMap } from '#components'
+import { useRouteQuery } from '@vueuse/router'
+
+defineProps<{
+  total: number
+  page?: number
+  pageSize?: number
+  pending?: boolean
+}>()
+
+defineEmits<{
+  paginate: [page: number]
+}>()
+
+type Mode = 'list' | 'grid' | 'map'
+const mode = useRouteQuery<Mode>('mode', 'list')
+const sidebarCollapsed = ref(true)
+const search = useRouteQuery('search', '')
+</script>
