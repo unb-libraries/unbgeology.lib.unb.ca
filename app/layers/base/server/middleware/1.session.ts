@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
       permissions: (await getRolePermissions(`public`))
         .map(createFieldPermissionKeys)
         .flat(),
-      validUntil: new Date().valueOf() + 60 * 60 * 12,
+      validUntil: new Date().valueOf() + 1000 * 60 * 60 * 12, // 12 hours
     })
   }
 })

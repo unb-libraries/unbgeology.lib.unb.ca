@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
   const session = await useSession(event, sessionConfig)
   await session.update({
     user: username,
-    validUntil: new Date().valueOf() + sessionConfig.cookie.maxAge,
+    validUntil: new Date().valueOf() + 1000 * sessionConfig.maxAge,
   })
 
   return {
