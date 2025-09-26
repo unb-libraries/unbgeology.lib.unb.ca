@@ -1,5 +1,5 @@
 <template>
-  <slot v-if="false" />
+  <slot v-if="popupOpened" />
 </template>
 
 <script setup lang="ts">
@@ -23,6 +23,7 @@ const emit = defineEmits<{
   dragged: [coord: Coordinate],
 }>()
 
+const popupOpened = ref(false)
 const add = inject<LayerAddInjection>(`add`)
 const remove = inject<LayerRemoveInjection>(`remove`)
 if (!add || !remove) {
@@ -59,16 +60,18 @@ onMounted(() => {
     })
     add(circle)
   }
-
   add(marker)
 })
 
 onUpdated(async () => {
   if (marker) {
     marker.setLatLng(props.center)
-    const popupContent = await Promise.all(getCurrentInstance()?.slots.default?.()
-      .map(vnode => renderToString(vnode)) ?? [])
-    marker.setPopupContent(popupContent.join(``))
+    marker.on('popupopen', () => popupOpened.value = true)
+    if (popupOpened.value) {
+      const popupContent = await Promise.all(getCurrentInstance()?.slots.default?.()
+        .map(vnode => renderToString(vnode)) ?? [])
+      marker.setPopupContent(popupContent.join(''))
+    }
   }
 })
 
