@@ -107,7 +107,7 @@ const ageOptions = computed(() => (ageFacet.value?.entities ?? [])
 const numericFacet = computed(() => facets.value?.entities.find(({ self }) => self === '/api/specimens/facets/numericAge'))
 const numericOptions = computed(() => (numericFacet.value?.entities ?? [])
   .map(({ value, count }) => ({
-    value: value[0],
+    value,
     label: value.map((b: number) => Math.floor(b / 1000000)),
     count
   }))

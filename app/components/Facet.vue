@@ -7,7 +7,7 @@
           :id="`filter-${title}[${value}]`.toLowerCase()"
           :name="`${title}[${value}]`.toLowerCase()"
           class="peer size-5 rounded-md input input-checkbox checked:hover:text-accent-26 dark:checked:hover:text-accent-36 bg-white checked:bg-base-17 dark:bg-base-2 dark:checked:bg-accent-36 border border-base-17  dark:border-base-37 hover:border-accent-26 dark:hover:border-accent-36"
-          :value="value"
+          :value="String(value)"
           :checked="selection.includes(String(value))"
           @change="selection = selection.includes(String(value)) ? selection.filter(v => v !== String(value)) : [...selection, String(value)]"
         >
@@ -46,10 +46,11 @@ const filter = useRouteQuery('filter', [] as string | string[], {
 })
 const selection = computed({
   get() {
-    return filter.value
+    const newFilter = filter.value
       .map(filter => filter.split(':') as [string, FilterOperator, string])
       .filter(([field]) => field === props.facetId)
-      .map(([, , value]) => value as string) ?? []
+      .map(([, , value]) => String(value)) ?? []
+    return newFilter
   },
   set(selection: string[]) {
     filter.value = [
@@ -58,7 +59,7 @@ const selection = computed({
         .filter(([field]) => field !== props.facetId)
         .map(filter => filter.join(':')),
       ...selection
-        .map(category => [props.facetId, FilterOperator.EQUALS, category].join(':'))
+        .map(value => [props.facetId, FilterOperator.EQUALS, value].join(':'))
     ]
   }
 })
