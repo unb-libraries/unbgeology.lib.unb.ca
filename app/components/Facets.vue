@@ -72,13 +72,14 @@ const emit = defineEmits<{
   toggled: [status: boolean]
 }>()
 
+const mode = useRouteQuery<'list' | 'grid' | 'map'>('mode', 'list')
 const search = useRouteQuery('search', '')
 const filter = useRouteQuery('filter', [] as string | string[], {
-  transform: (filter) => Array.isArray(filter) ? filter : [filter].filter(Boolean)
+  transform: (filter) => [...(Array.isArray(filter) ? filter : [filter]), mode.value === 'map' ? 'origin:1:1' : undefined].filter(Boolean)
 })
 
 type FacetEntity = { self: string, entities: { value: string, count: number }[] } & Entity
-const { data: facets } = useFetch<EntityJSONList<FacetEntity>>('/api/specimens/facets', {
+const { data: facets } = await useFetch<EntityJSONList<FacetEntity>>('/api/specimens/facets', {
   query: { search, filter }
 })
 
