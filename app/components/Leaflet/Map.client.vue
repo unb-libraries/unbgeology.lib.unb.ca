@@ -64,6 +64,8 @@ function initMap() {
   map = new Map(`map`, {
     maxZoom: props.maxZoom,
     minZoom: props.minZoom,
+    maxBounds: [[-90, -180], [90, 180]],
+    maxBoundsViscosity: 1.0,
     gestureHandling: true,
   })
 

@@ -3,7 +3,7 @@
     <LeafletMap
       :center="mapCenter"
       :zoom="zoom"
-      :max-zoom="18"
+      :max-zoom="15"
       class="h-full"
       @drag="onDragMap"
       @zoom="onZoomMap"
