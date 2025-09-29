@@ -32,12 +32,7 @@ export default defineCachedEventHandler(async (event) => {
   }
   
   function getNumericAgeFilter() {
-    const lowerBoundsFilter = getFilter('age.numeric', FilterOperator.GREATER)?.map(c => Number(c)) ?? []
-    const upperBoundsFilter = getFilter('age.numeric', FilterOperator.LESS | FilterOperator.EQUALS)?.map(c => Number(c)) ?? []
-    return {
-      lower: lowerBoundsFilter.length ? Math.min(...lowerBoundsFilter) : undefined,
-      upper: upperBoundsFilter.length ? Math.max(...upperBoundsFilter) : undefined,
-    }
+    return getFilter('age.numeric', FilterOperator.EQUALS)?.map(c => c.split(',').map(Number)) ?? []
   }
 
   const queryFilter = {
@@ -78,6 +73,16 @@ export default defineCachedEventHandler(async (event) => {
   }
 
   query.match({ authTags: { $in: resources } })
+  if (queryFilter.origin.length) {
+    query.match({
+      'origin.latitude': { $ne: null },
+      'origin.longitude': { $ne: null },
+      $or: [
+        { 'origin.latitude': { $ne: 0 } },
+        { 'origin.longitude': { $ne: 0 } },
+      ],
+    })
+  }
 
   if (queryFilter.type.length) {
     query.match({ type: { $in: queryFilter.type } })
@@ -103,14 +108,11 @@ export default defineCachedEventHandler(async (event) => {
   
   query.addFields({ 'numericAge': { $ifNull: ['$numericAge', '$relativeAge.start'] } })
   query.addFields({ 'numericMin': { $min: '$numericAge' }, 'numericMax': { $max: '$numericAge' } })
-  if (queryFilter.ageNumeric.lower) {
-    query.match({ numericMax: { $gt: queryFilter.ageNumeric.lower } })
+  if (queryFilter.ageNumeric.length) {
+    query.match({ $or: queryFilter.ageNumeric.map(([lower, upper]) => upper
+      ? ({ $or: [{ numericMax: { $gte: lower }, numericMin: { $lt: upper } }] })
+      : ({ numericMin: { $gte: lower } })) })
   }
-  if (queryFilter.ageNumeric.upper) {
-    query.match({ numericMin: { $lte: queryFilter.ageNumeric.upper } })
-  }
-  
-
   
   query.lookup({ from: `terms`, localField: `storage.location`, foreignField: `_id`, as: `storageLocations` })
   query.addFields({
@@ -163,27 +165,27 @@ export default defineCachedEventHandler(async (event) => {
       ],
       // Cenozoic
       numericAgeFacet66: [
-        { $match: { numericMin: { $lte: 66000000 } } },
+        { $match: { numericMin: { $lt: 66000000 } } },
         { $group: { _id: [0, 66000000], count: { $count: {} } } },
       ],
       // Mesozoic
       numericAgeFacet251: [
-        { $match: { numericMax: { $gt: 66000000 }, numericMin: { $lte: 251902000 } } },
+        { $match: { numericMax: { $gte: 66000000 }, numericMin: { $lt: 251902000 } } },
         { $group: { _id: [66000000, 251902000], count: { $count: {} } } },
       ],
       // Paleozoic
       numericAgeFacet541: [
-        { $match: { numericMax: { $gt: 251902000 }, numericMin: { $lte: 541000000 } } },
+        { $match: { numericMax: { $gte: 251902000 }, numericMin: { $lt: 541000000 } } },
         { $group: { _id: [251902000, 541000000], count: { $count: {} } } },
       ],
       // Proterozoic
       numericAgeFacet2500: [
-        { $match: { numericMax: { $gt: 541000000 }, numericMin: { $lte: 2500000000 } } },
+        { $match: { numericMax: { $gte: 541000000 }, numericMin: { $lt: 2500000000 } } },
         { $group: { _id: [541000000, 2500000000], count: { $count: {} } } },
       ],
       // Archean
       numericAgeFacet2500x: [
-        { $match: { numericMax: { $gt: 2500000000 } } },
+        { $match: { numericMax: { $gte: 2500000000 } } },
         { $group: { _id: [2500000000], count: { $count: {} } } },
       ],
       // TODO: Account for storage ancestors "public" property

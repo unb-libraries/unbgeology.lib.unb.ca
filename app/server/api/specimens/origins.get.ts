@@ -33,12 +33,7 @@ export default defineCachedEventHandler(async (event) => {
   }
   
   function getNumericAgeFilter() {
-    const lowerBoundsFilter = getFilter('age.numeric', FilterOperator.GREATER)?.map(c => Number(c)) ?? []
-    const upperBoundsFilter = getFilter('age.numeric', FilterOperator.LESS | FilterOperator.EQUALS)?.map(c => Number(c)) ?? []
-    return {
-      lower: lowerBoundsFilter.length ? Math.min(...lowerBoundsFilter) : undefined,
-      upper: upperBoundsFilter.length ? Math.max(...upperBoundsFilter) : undefined,
-    }
+    return getFilter('age.numeric', FilterOperator.EQUALS)?.map(c => c.split(',').map(Number)) ?? []
   }
 
   const queryFilter = {
@@ -110,11 +105,10 @@ export default defineCachedEventHandler(async (event) => {
   
   query.addFields({ 'numericAge': { $ifNull: ['$numericAge', '$relativeAge.start'] } })
   query.addFields({ 'numericMin': { $min: '$numericAge' }, 'numericMax': { $max: '$numericAge' } })
-  if (queryFilter.ageNumeric.lower) {
-    query.match({ numericMax: { $gt: queryFilter.ageNumeric.lower } })
-  }
-  if (queryFilter.ageNumeric.upper) {
-    query.match({ numericMin: { $lte: queryFilter.ageNumeric.upper } })
+  if (queryFilter.ageNumeric.length) {
+    query.match({ $or: queryFilter.ageNumeric.map(([lower, upper]) => upper
+      ? ({ $or: [{ numericMax: { $gte: lower }, numericMin: { $lt: upper } }] })
+      : ({ numericMin: { $gte: lower } })) })
   }
 
   query.lookup({ from: `terms`, localField: `storage.location`, foreignField: `_id`, as: `storageLocations` })
