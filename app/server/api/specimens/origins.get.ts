@@ -77,6 +77,14 @@ export default defineCachedEventHandler(async (event) => {
   }
 
   query.match({ authTags: { $in: resources } })
+  query.match({
+    'origin.latitude': { $ne: null },
+    'origin.longitude': { $ne: null },
+    $or: [
+      { 'origin.latitude': { $ne: 0 } },
+      { 'origin.longitude': { $ne: 0 } },
+    ],
+  })
 
   if (queryFilter.type.length) {
     query.match({ type: { $in: queryFilter.type } })
