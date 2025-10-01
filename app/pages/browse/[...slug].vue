@@ -44,13 +44,13 @@
               class="size-full"
             />
           </div>
-          <div v-if="specimens?.entities.filter(({ images }) => images?.entities.length ?? 0 > 0)?.length ?? 0 > 1" class="max-w-full h-[36rem]">
+          <div v-if="specimens?.entities.filter(({ images }) => images?.entities.length ?? 0 > 0)?.length ?? 0 > 1" class="flex-none h-[36rem]">
             <div class="grid grid-cols-4 gap-2">
               <button v-for="(images, i) in specimens?.entities.filter(({ images }) => images?.total).map(({ images }) => images)"
                 :key="images.entities[0].self"
                 :data-status="activeImageIndex === i ? 'active' : 'inactive'"
                 type="button"
-                class="group h-full aspect-square data-[status=inactive]:cursor-pointer border border-transparent data-[status=active]:border-accent-26 dark:data-[status=active]:border-accent-36"
+                class="group size-[120px] aspect-square data-[status=inactive]:cursor-pointer border border-transparent data-[status=active]:border-accent-26 dark:data-[status=active]:border-accent-36"
                 @click="activeImageIndex = i"
               >
                 <SpecimenImage
