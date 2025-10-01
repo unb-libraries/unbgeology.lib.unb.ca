@@ -31,9 +31,20 @@
         </section>
 
         <!-- Description -->
-        <section v-if="classification?.description" class="grow">
+        <section v-if="classification?.description || parentPages.length === 1" class="grow">
           <h2 class="sr-only">Description</h2>
-          {{ classification.description }}
+          <template v-if="classification?.description">
+            {{ classification.description }}
+          </template>
+          <template v-else-if="categorySlug === 'fossils'">
+            A fossil is the <em>preserved remains, impression, or trace of a once-living organism</em> from a past geologic age. Fossils may include body parts (bones, shells, leaves), chemical signatures, or traces (footprints, burrows).
+          </template>
+          <template v-else-if="categorySlug === 'minerals'">
+            A mineral is a <em>naturally occurring, inorganic solid</em> with a <em>definite chemical composition</em> and an <em>ordered atomic structure</em> (crystalline structure). Example: Quartz (SiO₂), Calcite (CaCO₃).
+          </template>
+          <template v-else-if="categorySlug === 'rocks'">
+            A rock is a <em>naturally occurring solid aggregate of one or more minerals</em>, mineraloids, or organic matter. Rocks are classified into three main types based on their origin: Igneous, Sedimentary, Metamorphic.
+          </template>
         </section>
         
         <section class="flex gap-2 w-full overflow-hidden">

@@ -10,16 +10,13 @@
     <h2 class="flex-none text-2xl">{{ category.charAt(0).toUpperCase() + category.slice(1) }}s</h2>
     <div class="flex flex-col grow">
       <div v-if="category === 'fossil'" class="grow">
-        <p>Fossils are the preserved remains or traces of ancient organisms that provide valuable insights into Earth's past life forms and environments. They are the key to understanding the history of life on our planet.</p>
-        <p>Studying fossils is a multidisciplinary endeavor that combines geology, paleontology, biology, and other scientific disciplines. It helps us unravel the story of life on Earth and provides a fascinating glimpse into the ancient past.</p>
+        <p>A fossil is the <em>preserved remains, impression, or trace of a once-living organism</em> from a past geologic age. Fossils may include body parts (bones, shells, leaves), chemical signatures, or traces (footprints, burrows).</p>
       </div>
       <div v-if="category === 'mineral'" class="grow">
-        <p>Minerals are naturally occurring, inorganic solid substances with a specific chemical composition and a characteristic crystal structure. They are the building blocks of rocks and are found in various geological environments.</p>
-        <p>Studying minerals provides insights into Earth's geological processes, as well as their importance in industries and everyday life.</p>
+        <p>A mineral is a <em>naturally occurring, inorganic solid</em> with a <em>definite chemical composition</em> and an <em>ordered atomic structure</em> (crystalline structure). Example: Quartz (SiO₂), Calcite (CaCO₃).</p>
       </div>
       <div v-if="category === 'rock'" class="grow">
-        <p>Rocks are solid, naturally occurring substances that make up the Earth's crust. They are composed of minerals, which are the building blocks of rocks. Geologists study rocks to understand Earth's history, the processes that shape the planet's surface, and the resources they may contain.</p>
-        <p>It's important to note that rocks vary greatly in their properties, appearance, and composition depending on their specific type and the geological processes that formed them.</p>
+        <p>A rock is a <em>naturally occurring solid aggregate of one or more minerals</em>, mineraloids, or organic matter. Rocks are classified into three main types based on their origin: Igneous, Sedimentary, Metamorphic.</p>
       </div>
       <a
         :href="`/browse/${category}s`"
