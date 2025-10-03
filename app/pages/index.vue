@@ -3,9 +3,9 @@
     <!-- Hero -->
     <section class="flex flex-col container mx-auto justify-center">
       <h1 class="sr-only text-4xl">UNB Earth Science Collections</h1>
-      <div class="relative h-[650px] w-full mt-16">
-        <HeroImages />
-        <form action="/specimens" method="GET" class="absolute bottom-1/3 left-[10%] flex flex-row w-4/5 justify-center space-x-2 space-y-0">
+      <div class="relative w-full md:w-[640px] lg:w-[768px] xl:w-[840px] aspect-[224/173] mx-auto mt-16">
+        <HeroImages sizes="sm:640px md:768px lg:840px" />
+        <form action="/specimens" method="GET" class="absolute bottom-1/3 left-0 flex flex-col md:flex-row w-full justify-center space-y-1 md:space-x-1 md:space-y-0 px-8 md:px-0">
           <InputSearch />
           <button
             type="submit"

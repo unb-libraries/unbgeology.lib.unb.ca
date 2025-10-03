@@ -1,19 +1,27 @@
 <template>
-  <div v-for="(url, i) in urls" :key="url"
+  <nuxt-img v-for="(url, i) in urls" :key="url"
+    :src="url"
+    alt="UNB Earth Science Collections"
+    :sizes="sizes"
+    format="webp"
     :data-status="i === current ? 'active' : 'inactive'"
-    class="absolute top-0 left-0 size-full data-[status=inactive]:opacity-0 transition-opacity ease-in duration-[1200ms] bg-no-repeat bg-bottom"
-    :style="{ backgroundImage: `url(${url})` }"
+    class="absolute top-0 left-0 w-full data-[status=inactive]:opacity-0 transition-opacity ease-in duration-[1200ms]"
   />
 </template>
 
 <script lang="ts" setup>
+
+defineProps<{
+  sizes?: string
+}>()
+
 const current = ref(0)
 const urls = [
   '/unbgeology-hero_001.png',
   '/unbgeology-hero_002.png',
   '/unbgeology-hero_003.png',
   '/unbgeology-hero_004.png',
-].map(url => useImage()(url, { alt: 'UNB Earth Science Collections', height: 650, format: 'webp' }))
+]
 
 const duration = 8000
 onMounted(() => {
