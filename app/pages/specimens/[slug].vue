@@ -102,9 +102,16 @@
                     <div class="grow">{{ classification.label }}</div>
                   </div>
                 </div>
-                <template v-else>
-                  {{classifications.slice(1).map(({ label }) => label).join(' &raquo; ')}}
-                </template>
+                <div v-else class="flex flex-col w-full">
+                  <div class="flex">
+                    <div class="w-28">{{ specimen.type[0].toUpperCase() + specimen.type.slice(1) }} group:</div>
+                    <div class="grow">{{ classifications[1].label }}</div>
+                  </div>
+                  <div v-if="classifications.slice(2).length" class="flex">
+                    <div class="w-28">Sub-group{{ classifications.slice(2).length > 1 ? 's' : '' }}:</div>
+                    <div class="grow">{{classifications.slice(2).map(({ label }) => label).join(' &raquo; ')}}</div>
+                  </div>
+                </div>
               </td>
             </tr>
 
