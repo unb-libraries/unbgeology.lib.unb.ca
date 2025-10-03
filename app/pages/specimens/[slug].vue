@@ -67,132 +67,134 @@
       <section class="w-1/2 mx-auto">
         <h2 class="text-base-27 dark:text-base-67 mb-3 text-lg font-bold text-start uppercase">Specifications</h2>
         <table class="w-full">
-          <!-- Name -->
-          <tr v-if="specimen.name" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
-            <th class="flex flex-col text-start justify-start py-3 pt-0 text-base-27 dark:text-base-67 font-semibold uppercase">Object name</th>
-            <td class="py-3 pt-0">{{ specimen.name }}</td>
-          </tr>
-          
-          <!-- ID -->
-          <tr class="border-b border-base-77 dark:border-base-27 last:border-b-0">
-            <th class="py-3 text-start text-base-27 dark:text-base-67 font-semibold uppercase">ID</th>
-            <td class="py-3">{{ specimen.id.toUpperCase() }}</td>
-          </tr>
+          <tbody>
+            <!-- Name -->
+            <tr v-if="specimen.name" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+              <th class="flex flex-col text-start justify-start py-3 pt-0 text-base-27 dark:text-base-67 font-semibold uppercase">Object name</th>
+              <td class="py-3 pt-0">{{ specimen.name }}</td>
+            </tr>
+            
+            <!-- ID -->
+            <tr class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+              <th class="py-3 text-start text-base-27 dark:text-base-67 font-semibold uppercase">ID</th>
+              <td class="py-3">{{ specimen.id.toUpperCase() }}</td>
+            </tr>
 
-          <!-- Legal Status -->
-          <tr v-if="specimen.legal" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
-            <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Legal status</th>
-            <td class="py-3">{{ useEnum(Legal).valueOf(specimen.legal) === Legal.PERMANENT ? 'Permanent collection' : 'On loan' }}</td>
-          </tr>
+            <!-- Legal Status -->
+            <tr v-if="specimen.legal" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+              <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Legal status</th>
+              <td class="py-3">{{ useEnum(Legal).valueOf(specimen.legal) === Legal.PERMANENT ? 'Permanent collection' : 'On loan' }}</td>
+            </tr>
 
-          <!-- Category -->
-          <tr class="border-b border-base-77 dark:border-base-27 last:border-b-0">
-            <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Category</th>
-            <td class="py-3">{{ specimen?.type[0].toUpperCase() + specimen?.type.slice(1) }}</td>
-          </tr>
-          
-          <!-- Classification -->
-          <tr v-if="classifications?.slice(1).length" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
-            <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Classification</th>
-            <td class="py-3">
-              <div v-if="specimen.type === 'fossil'" class="flex flex-col w-full">
-                <div v-for="classification in classifications.slice(1)" :key="classification.rank" class="flex">
-                  <div class="w-28">{{ classification.rank?.[0].toUpperCase() + classification.rank?.slice(1) }}:</div>
-                  <div class="grow">{{ classification.label }}</div>
+            <!-- Category -->
+            <tr class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+              <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Category</th>
+              <td class="py-3">{{ specimen?.type[0].toUpperCase() + specimen?.type.slice(1) }}</td>
+            </tr>
+            
+            <!-- Classification -->
+            <tr v-if="classifications?.slice(1).length" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+              <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Classification</th>
+              <td class="py-3">
+                <div v-if="specimen.type === 'fossil'" class="flex flex-col w-full">
+                  <div v-for="classification in classifications.slice(1)" :key="classification.rank" class="flex">
+                    <div class="w-28">{{ classification.rank?.[0].toUpperCase() + classification.rank?.slice(1) }}:</div>
+                    <div class="grow">{{ classification.label }}</div>
+                  </div>
                 </div>
-              </div>
-              <template v-else>
-                {{classifications.slice(1).map(({ label }) => label).join(' &raquo; ')}}
-              </template>
-            </td>
-          </tr>
+                <template v-else>
+                  {{classifications.slice(1).map(({ label }) => label).join(' &raquo; ')}}
+                </template>
+              </td>
+            </tr>
 
-          <!-- Portion -->
-          <tr v-if="specimen.type === 'fossil' && specimen.portion" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
-            <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Portion</th>
-            <td class="py-3">{{ specimen.portion.label }}</td>
-          </tr>
+            <!-- Portion -->
+            <tr v-if="specimen.type === 'fossil' && specimen.portion" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+              <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Portion</th>
+              <td class="py-3">{{ specimen.portion.label }}</td>
+            </tr>
 
-          <!-- Composition -->
-          <tr v-if="compositionLabels.length" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
-            <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Composition</th>
-            <td class="py-3">
-              <ul v-if="specimen?.type === 'mineral'">
-                <li v-for="label in compositionLabels" :key="label">{{ label }}</li>
-              </ul>
-              <template v-else>{{ compositionLabels.join(', ') }}</template>
-            </td>
-          </tr>
+            <!-- Composition -->
+            <tr v-if="compositionLabels.length" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+              <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Composition</th>
+              <td class="py-3">
+                <ul v-if="specimen?.type === 'mineral'">
+                  <li v-for="label in compositionLabels" :key="label">{{ label }}</li>
+                </ul>
+                <template v-else>{{ compositionLabels.join(', ') }}</template>
+              </td>
+            </tr>
 
-          <!-- Age -->
-          <tr v-if="specimen.age?.relative" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
-            <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Age</th>
-            <td class="py-3">
-              <div class="flex flex-col w-full">
-                <div v-for="(age, division) of relativeAges" :key="division" class="flex">
-                  <div v-if="division" class="w-28">{{ division[0].toUpperCase() + division.slice(1) }}:</div>
-                  <div class="grow">{{ age.join(' to ') }}</div>
+            <!-- Age -->
+            <tr v-if="specimen.age?.relative" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+              <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Age</th>
+              <td class="py-3">
+                <div class="flex flex-col w-full">
+                  <div v-for="(age, division) of relativeAges" :key="division" class="flex">
+                    <div v-if="division" class="w-28">{{ division[0].toUpperCase() + division.slice(1) }}:</div>
+                    <div class="grow">{{ age.join(' to ') }}</div>
+                  </div>
                 </div>
-              </div>
-            </td>
-          </tr>
+              </td>
+            </tr>
 
-          <!-- Numeric age -->
-          <tr v-if="specimen.age?.numeric || specimen.age?.relative?.every(({ start }) => !isNaN(start))" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
-            <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Numeric age</th>
-            <td class="py-3">
-              <template v-if="specimen?.age?.numeric">{{specimen?.age?.numeric?.map(mya => Number(mya) / Math.pow(10, 6)).join(' - ')}}</template>
-              <template v-else>{{specimen?.age?.relative?.map(({ start }) => Number(start) / Math.pow(10, 6)).join(' - ')}} Mya</template>
-            </td>
-          </tr>
+            <!-- Numeric age -->
+            <tr v-if="specimen.age?.numeric || specimen.age?.relative?.every(({ start }) => !isNaN(start))" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+              <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Numeric age</th>
+              <td class="py-3">
+                <template v-if="specimen?.age?.numeric">{{specimen?.age?.numeric?.map(mya => Number(mya) / Math.pow(10, 6)).join(' - ')}}</template>
+                <template v-else>{{specimen?.age?.relative?.map(({ start }) => Number(start) / Math.pow(10, 6)).join(' - ')}} Mya</template>
+              </td>
+            </tr>
 
-          <!-- Origin -->
-          <tr v-if="specimen.origin?.name" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
-            <th class="py-3 text-start text-base-27 dark:text-base-67 font-semibold uppercase">Origin</th>
-            <td class="py-3">{{ specimen.origin?.name }}</td>
-          </tr>
+            <!-- Origin -->
+            <tr v-if="specimen.origin?.name" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+              <th class="py-3 text-start text-base-27 dark:text-base-67 font-semibold uppercase">Origin</th>
+              <td class="py-3">{{ specimen.origin?.name }}</td>
+            </tr>
 
-          <!-- Pieces -->
-          <tr v-if="specimen.pieces" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
-            <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Pieces</th>
-            <td class="py-3">{{ specimen.pieces }}</td>
-          </tr>
+            <!-- Pieces -->
+            <tr v-if="specimen.pieces" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+              <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Pieces</th>
+              <td class="py-3">{{ specimen.pieces }}</td>
+            </tr>
 
-          <!-- Partial -->
-          <tr v-if="specimen.partial !== undefined" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
-            <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Partial</th>
-            <td class="py-3">{{ specimen.partial ? 'Yes' : 'No' }}</td>
-          </tr>
+            <!-- Partial -->
+            <tr v-if="specimen.partial !== undefined" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+              <th class="flex flex-col text-start justify-start py-3 text-base-27 dark:text-base-67 font-semibold uppercase">Partial</th>
+              <td class="py-3">{{ specimen.partial ? 'Yes' : 'No' }}</td>
+            </tr>
 
-          <!-- Measurements -->
-          <tr v-if="specimen!.measurements?.count" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
-            <th class="flex flex-col text-start justify-start py-3 pb-0 text-base-27 dark:text-base-67 font-semibold uppercase">Measurements</th>
-            <td class="py-3 pb-0">
-              <ul v-if="specimen!.measurements?.count && useEnum(MeasurementCount).valueOf(specimen!.measurements.count) === MeasurementCount.INDIVIDUAL">
-                <li v-for="(dimensions) in specimen!.measurements!.dimensions" :key="dimensions.join('x')">
-                  {{dimensions.map(d => `${d}mm`).join(' x ')}}
-                </li>
-              </ul>
-              <dl v-else-if="specimen!.measurements?.count && useEnum(MeasurementCount).valueOf(specimen!.measurements.count) === MeasurementCount.AGGREGATE">
-                <div v-for="[label, dimensions] in specimen!.measurements!.dimensions!.slice(0, 3).map<[string, [number, number, number]]>((d, index) => [['Largest', 'Smallest', 'Average'][index], d])" :key="dimensions.join('x')" class="inline-flex space-x-2">
-                  <dt>{{ label }}:</dt>
-                  <dd>{{dimensions.map(d => `${d}mm`).join(' x ')}}</dd>
-                </div>
-              </dl>
-              <template v-else-if="specimen!.measurements?.count && useEnum(MeasurementCount).valueOf(specimen!.measurements.count) === MeasurementCount.CONTAINER">
-                Container: {{ specimen!.measurements!.dimensions![0] }}mm
-              </template>
-              <template v-else-if="specimen!.measurements?.reason && useEnum(Immeasurabibility).valueOf(specimen!.measurements.reason) === Immeasurabibility.CONDITION">
-                Too fragile to measure
-              </template>
-              <template v-else-if="specimen!.measurements?.reason && useEnum(Immeasurabibility).valueOf(specimen!.measurements.reason) === Immeasurabibility.NUMBER">
-                Too many to measure
-              </template>
-              <template v-else-if="specimen!.measurements?.reason && useEnum(Immeasurabibility).valueOf(specimen!.measurements.reason) === Immeasurabibility.SIZE">
-                Too small to measure
-              </template>
-            </td>
-          </tr>
+            <!-- Measurements -->
+            <tr v-if="specimen!.measurements?.count" class="border-b border-base-77 dark:border-base-27 last:border-b-0">
+              <th class="flex flex-col text-start justify-start py-3 pb-0 text-base-27 dark:text-base-67 font-semibold uppercase">Measurements</th>
+              <td class="py-3 pb-0">
+                <ul v-if="specimen!.measurements?.count && useEnum(MeasurementCount).valueOf(specimen!.measurements.count) === MeasurementCount.INDIVIDUAL">
+                  <li v-for="(dimensions) in specimen!.measurements!.dimensions" :key="dimensions.join('x')">
+                    {{dimensions.map(d => `${d}mm`).join(' x ')}}
+                  </li>
+                </ul>
+                <dl v-else-if="specimen!.measurements?.count && useEnum(MeasurementCount).valueOf(specimen!.measurements.count) === MeasurementCount.AGGREGATE">
+                  <div v-for="[label, dimensions] in specimen!.measurements!.dimensions!.slice(0, 3).map<[string, [number, number, number]]>((d, index) => [['Largest', 'Smallest', 'Average'][index], d])" :key="dimensions.join('x')" class="inline-flex space-x-2">
+                    <dt>{{ label }}:</dt>
+                    <dd>{{dimensions.map(d => `${d}mm`).join(' x ')}}</dd>
+                  </div>
+                </dl>
+                <template v-else-if="specimen!.measurements?.count && useEnum(MeasurementCount).valueOf(specimen!.measurements.count) === MeasurementCount.CONTAINER">
+                  Container: {{ specimen!.measurements!.dimensions![0] }}mm
+                </template>
+                <template v-else-if="specimen!.measurements?.reason && useEnum(Immeasurabibility).valueOf(specimen!.measurements.reason) === Immeasurabibility.CONDITION">
+                  Too fragile to measure
+                </template>
+                <template v-else-if="specimen!.measurements?.reason && useEnum(Immeasurabibility).valueOf(specimen!.measurements.reason) === Immeasurabibility.NUMBER">
+                  Too many to measure
+                </template>
+                <template v-else-if="specimen!.measurements?.reason && useEnum(Immeasurabibility).valueOf(specimen!.measurements.reason) === Immeasurabibility.SIZE">
+                  Too small to measure
+                </template>
+              </td>
+            </tr>
+          </tbody>
         </table>
       </section>
 
