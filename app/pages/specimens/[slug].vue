@@ -171,13 +171,13 @@
               <td class="py-3 pb-0">
                 <ul v-if="specimen!.measurements?.count && useEnum(MeasurementCount).valueOf(specimen!.measurements.count) === MeasurementCount.INDIVIDUAL">
                   <li v-for="(dimensions) in specimen!.measurements!.dimensions" :key="dimensions.join('x')">
-                    {{dimensions.map(d => `${d}mm`).join(' x ')}}
+                    {{dimensions.map(d => `${d / 10}cm`).join(' x ')}}
                   </li>
                 </ul>
                 <dl v-else-if="specimen!.measurements?.count && useEnum(MeasurementCount).valueOf(specimen!.measurements.count) === MeasurementCount.AGGREGATE">
                   <div v-for="[label, dimensions] in specimen!.measurements!.dimensions!.slice(0, 3).map<[string, [number, number, number]]>((d, index) => [['Largest', 'Smallest', 'Average'][index], d])" :key="dimensions.join('x')" class="inline-flex space-x-2">
                     <dt>{{ label }}:</dt>
-                    <dd>{{dimensions.map(d => `${d}mm`).join(' x ')}}</dd>
+                    <dd>{{dimensions.map(d => `${d / 10}cm`).join(' x ')}}</dd>
                   </div>
                 </dl>
                 <template v-else-if="specimen!.measurements?.count && useEnum(MeasurementCount).valueOf(specimen!.measurements.count) === MeasurementCount.CONTAINER">
