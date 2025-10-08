@@ -1,6 +1,6 @@
 <template>
-  <article class="container mx-auto flex flex-col space-y-6 pb-24 pt-12">
-    <header class="flex flex-col gap-y-1 ml-32">
+  <article class="container mx-auto flex flex-col space-y-6 pb-24 pt-4 xl:pt-12">
+    <header class="flex flex-col gap-y-1 xl:ml-32">
       <div class="inline-flex items-center text-2xl gap-x-4">
         <h1 class="font-bold">
           {{ specimen?.name ?? 'Unknown' }}
@@ -20,10 +20,11 @@
         <span class="pl-4">{{classifications.map(({ label }) => label).filter(Boolean).join(' &raquo; ')}}</span>
       </div>
     </header>
-    <div class="flex w-full flex-col space-y-12 items-end">
+    <div class="flex w-full flex-col space-y-12 xl:items-end">
+      <!-- Images -->
       <section class="flex w-full justify-start">
-        <div class="flex w-full lg:w-3/4 gap-x-2 h-[48rem]">
-          <div class="group relative grow size-full">
+        <div class="flex flex-col lg:flex-row w-full xl:w-3/4 gap-2 h-[36rem] md:h-[48rem]">
+          <div class="group relative grow w-full aspect-7/5 lg:size-full lg:aspect-auto">
             <SpecimenImage :category="specimen?.type" :url="specimen?.images?.entities[activeImageIndex]?.uri" width="1280" height="915" class="size-full" />
             <button v-if="(specimen.images?.entities ?? []).length > 1"
               class="absolute left-4 top-[calc(100%/2-1.5rem)] hidden group-hover:flex bg-base-17 dark:bg-accent-6 hover:bg-accent-26 dark:hover:bg-accent-36 rounded-sm shadow-lg shadow-base-17/60 dark:shadow-base-87/30"
@@ -36,7 +37,21 @@
               <IconAngleDown class="size-12 stroke-base-97 stroke-1.5 -rotate-90 fill-none" />
             </button>
           </div>
-          <Carousel v-if="specimen.images?.entities.length > 1" :orientation="'vertical'" class="flex flex-col flex-none gap-y-2 w-24 h-[48rem] overflow-y-hidden">
+          <Carousel v-if="specimen.images?.entities.length > 1" :orientation="'horizontal'" class="flex flex-col lg:hidden gap-x-1 w-full overflow-x-hidden">
+            <button v-for="(image, i) in specimen.images.entities"
+              :key="image.self"
+              type="button"
+              :data-index="i"
+              :data-status="activeImageIndex === i ? 'active' : 'inactive'" 
+              class="group w-full aspect-square data-[status=inactive]:cursor-pointer border border-transparent data-[status=active]:border-accent-26 dark:data-[status=active]:border-accent-36"
+              @click="activeImageIndex = i"
+            >
+              <img 
+                :src="`${image.uri}?w=400&h=400`"
+                class="group-data-[status=active]:opacity-50 group-data-[status=inactive]:hover:opacity-50" />
+            </button>
+          </Carousel>
+          <Carousel v-if="specimen.images?.entities.length > 1" :orientation="'vertical'" class="hidden lg:flex flex-col flex-none gap-y-2 w-36 xl:w-24 h-[36rem] xl:h[48rem] overflow-y-hidden">
             <button v-for="(image, i) in specimen.images.entities"
               :key="image.self"
               type="button"
@@ -54,7 +69,7 @@
       </section>
 
       <!-- Description -->
-      <section v-if="specimen?.description" class="w-1/2 mx-auto">
+      <section v-if="specimen?.description" class="w-full md:w-5/6 lg:w-3/4 xl:w-1/2 mx-auto">
         <h2 class="text-base-27 dark:text-base-67 mb-3 text-lg font-bold text-start uppercase">
           Description
         </h2>
@@ -64,7 +79,7 @@
       </section>
 
       <!-- Specifications -->
-      <section class="w-1/2 mx-auto">
+      <section class="w-full md:w-5/6 lg:w-3/4 xl:w-1/2 mx-auto">
         <h2 class="text-base-27 dark:text-base-67 mb-3 text-lg font-bold text-start uppercase">Specifications</h2>
         <table class="w-full">
           <tbody>
@@ -206,8 +221,8 @@
       </section>
 
       <!-- Map or Origin -->
-      <section v-if="specimen?.origin?.latitude && specimen?.origin?.longitude" class="w-full lg:w-3/4">
-        <h2 class="text-base-27 dark:text-base-67 mb-3 text-lg font-bold text-start uppercase">
+      <section v-if="specimen?.origin?.latitude && specimen?.origin?.longitude" class="w-full xl:w-3/4">
+        <h2 class="text-base-27 dark:text-base-67 mb-3 text-lg font-bold text-start uppercase md:w-5/6 lg:w-3/4 xl:w-full mx-auto">
           Map of Origin
         </h2>
         <SpecimenMap :specimens="[specimen]" :center="[specimen.origin.latitude, specimen.origin.longitude]" :zoom="5" class="w-full h-[32rem]">
@@ -218,7 +233,7 @@
       </section>
       
       <!-- Publications -->
-      <section v-if="publications.length" class="w-full lg:w-3/4">
+      <section v-if="publications.length" class="w-full md:w-5/6 lg:w-3/4 xl:w-1/2 mx-auto">
         <h2 class="text-base-27 dark:text-base-67 mb-3 text-lg font-bold text-start uppercase">
           Publications
         </h2>
