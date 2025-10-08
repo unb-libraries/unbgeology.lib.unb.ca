@@ -206,7 +206,8 @@ export default defineCachedEventHandler(async (event) => {
     .facet({
       specimens: [
         {
-          $sort: Object.fromEntries(([...sort, [`id`, -1]])
+          $sort: Object.fromEntries((sort
+            .find(([field]) => field === 'id') ? sort : [...sort, [`id`, -1]])
             .map(([field, dir]) => [(() => {
               switch (field) {
                 case `id`: return `slug`

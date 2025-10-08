@@ -294,7 +294,7 @@ const { list, entities: specimens, query, remove, removeMany, pending: loading }
 const { filter, search, page, select, pageSize, sort } = query
 
 const sortMenuVisible = ref(false)
-const sortableColumIDs = [`name`, `classification`, `collection`, `pieces`, `legal`, `creator`, `editor`, `created`, `updated`]
+const sortableColumIDs = [`id`, `name`, `classification`, `collection`, `pieces`, `legal`, `creator`, `editor`, `created`, `updated`]
 const { options: sortedColumnIDs, sortTop, sortUp, sortReverse, remove: unsort } = useSort(columns.value.filter(([id]) => sortableColumIDs.includes(id)).map(([id]) => [id, sort.value.includes(id) ? 1 : sort.value.includes(`-${id}`) ? -1 : 0]))
 
 const sortOptions = computed(() => sortedColumnIDs.filter(([id]) => columns.value.find(([colID]) => colID === id)).map<[string, string, 1 | 0 | -1]>(([id, order]) => [id, columns.value.find(([colID]) => colID === id)![1], order]))
