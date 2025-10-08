@@ -9,7 +9,7 @@
           <InputSearch />
           <button
             type="submit"
-            class="flex-none text-xl text-base-97 dark:text-base-7 dark:hover:text-base-7 px-4 py-2 rounded-md bg-base-27 dark:bg-base-77 hover:bg-accent-26 dark:hover:bg-accent-36 focus-visible:bg-accent-26 dark:focus-visible:bg-accent-36 dark:focus-visible:text-base-97"
+            class="flex-none text-xl text-base-97 dark:text-base-7 dark:hover:text-base-7 px-4 py-2 rounded-md bg-base-7 dark:bg-base-77 hover:bg-accent-26 dark:hover:bg-accent-36 focus-visible:bg-accent-26 dark:focus-visible:bg-accent-36 dark:focus-visible:text-base-97"
           >
             Search
           </button>
