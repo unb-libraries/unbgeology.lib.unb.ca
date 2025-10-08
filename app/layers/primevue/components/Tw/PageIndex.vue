@@ -8,7 +8,7 @@
       v-for="index in pages"
       :key="index"
       :data-active="index === page ? '' : undefined"
-      class="rounded-md px-2 py-1 border border-transparent hover:border-accent-26 dark:hover:border-accent-36 dark:data-[active]:hover:border-transparent text-sm font-semibold uppercase hover:text-accent-26 dark:hover:text-accent-36 cursor-pointer data-[active]:cursor-text data-[active]:bg-base-17 dark:data-[active]:bg-base-77 data-[active]:border-transparent data-[active]:text-base-97 dark:data-[active]:text-base-7"
+      class="rounded-md px-2 py-1 border border-transparent hover:border-accent-26 dark:hover:border-accent-36 dark:data-[active]:hover:border-transparent text-sm font-semibold uppercase hover:text-accent-26 dark:hover:text-accent-36 cursor-pointer data-[active]:cursor-text data-[active]:bg-base-7 dark:data-[active]:bg-base-77 data-[active]:border-transparent data-[active]:text-base-97 dark:data-[active]:text-base-7"
       @click.stop.prevent="$emit(`change`, index)"
     >
       {{ index }}

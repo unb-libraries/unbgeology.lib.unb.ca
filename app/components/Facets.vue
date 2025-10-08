@@ -2,61 +2,69 @@
   <div v-show="facets?.entities.length"
     :class="[
       'group xl:w-1/5 xl:relative z-40 xl:z-auto', {
-        'fixed top-0 left-0 size-full bg-primary-80/80': !collapsed
+        'fixed bottom-0 xl:top-0 left-0 w-full h-[calc(100%-4rem)] bg-white dark:bg-black': !collapsed
       }]"
       @click.stop.self="$emit('toggled', true)"
-    >
+  >
     <div :class="[
-      'absolute scrollbar-thin scrollbar-thumb-transparent scrollbar-track-transparent group-hover:scrollbar-thumb-base-57 dark:group-hover:scrollbar-thumb-base-27 gap-2 xl:flex xl:flex-col bottom-0 xl:sticky xl:top-[calc(15.5rem+2px)] max-h-4/5 xl:max-h-[calc(100dvh-15.5rem-2px)] overflow-y-scroll left-0 w-full', {
-        hidden: collapsed
+      'absolute scrollbar-thin scrollbar-thumb-transparent scrollbar-track-transparent group-hover:scrollbar-thumb-base-57 dark:group-hover:scrollbar-thumb-base-27 gap-2 flex flex-col bottom-0 xl:sticky xl:top-[calc(15.5rem+2px)] h-full xl:max-h-[calc(100dvh-15.5rem-2px)] xl:overflow-y-scroll left-0 w-full p-8 xl:p-0 space-y-12 xl:space-y-0', {
+        'hidden xl:flex': collapsed
       }]">
-      <Facet v-if="categoryFacet?.entities.length"
-        :facet="categoryFacet"
-        facetId="type"
-        :options="categoryFacet?.entities ?? []"
-        value-field="id"
-        label-field="label"
-        title="Categories"
-        class="flex-none"
-      />
-      <Facet v-if="classificationFacet?.entities.length"
-        :facet="classificationFacet"
-        facetId="classification"
-        :options="classificationOptions"
-        value-field="id"
-        label-field="label"
-        title="Classifications"
-        :collapsible="10"
-        class="shrink"
-      />
-      <Facet v-if="ageFacet?.entities.length"
-        :facet="ageFacet"
-        facetId="age.relative"
-        :options="ageOptions"
-        value-field="id"
-        label-field="label"
-        title="Age"
-        :collapsible="10"
-        class="shrink"
-      />
-      <Facet v-if="numericFacet?.entities.length"
-        :facet="numericFacet"
-        facetId="age.numeric"
-        :options="numericOptions"
-        value-field="id"
-        label-field="label"
-        title="Numeric age"
-        class="flex-none"
-      />
-      <Facet v-if="onDisplayFacet?.entities.length"
-        :facet="onDisplayFacet"
-        facetId="storage.location.public"
-        :options="onDisplayOptions"
-        value-field="id"
-        label-field="label"
-        title="On display"
-        class="flex-none"
-      />
+      <div class="xl:hidden flex flex-none justify-between">
+        <h2 class="text-4xl">Filter</h2>
+        <button @click.stop="$emit('toggled', true)">
+          <IconCancel class="size-8 stroke-current stroke-2 hover:stroke-accent-36" />
+        </button>
+      </div>
+      <div class="overflow-y-scroll">
+        <Facet v-if="categoryFacet?.entities.length"
+          :facet="categoryFacet"
+          facetId="type"
+          :options="categoryFacet?.entities ?? []"
+          value-field="id"
+          label-field="label"
+          title="Categories"
+          class="flex-none"
+        />
+        <Facet v-if="classificationFacet?.entities.length"
+          :facet="classificationFacet"
+          facetId="classification"
+          :options="classificationOptions"
+          value-field="id"
+          label-field="label"
+          title="Classifications"
+          :collapsible="10"
+          class="shrink"
+        />
+        <Facet v-if="ageFacet?.entities.length"
+          :facet="ageFacet"
+          facetId="age.relative"
+          :options="ageOptions"
+          value-field="id"
+          label-field="label"
+          title="Age"
+          :collapsible="10"
+          class="shrink"
+        />
+        <Facet v-if="numericFacet?.entities.length"
+          :facet="numericFacet"
+          facetId="age.numeric"
+          :options="numericOptions"
+          value-field="id"
+          label-field="label"
+          title="Numeric age"
+          class="flex-none"
+        />
+        <Facet v-if="onDisplayFacet?.entities.length"
+          :facet="onDisplayFacet"
+          facetId="storage.location.public"
+          :options="onDisplayOptions"
+          value-field="id"
+          label-field="label"
+          title="On display"
+          class="flex-none"
+        />
+      </div>
     </div>
   </div>
 </template>

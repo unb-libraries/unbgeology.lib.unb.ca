@@ -1,6 +1,6 @@
 <template>
   <NuxtLayout name="search" :total :page :pageSize :pending @paginate="page = $event">
-    <template #summary>Displaying {{ (page - 1) * pageSize + 1 }} - {{ ((page - 1) * pageSize + specimens.length) }} of {{ total }} specimens</template>
+    <template #summary><span class="hidden md:inline">Displaying </span>{{ (page - 1) * pageSize + 1 }} - {{ ((page - 1) * pageSize + specimens.length) }} of {{ total }} specimens</template>
     <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 size-full">
       <li v-for="specimen in specimens" :key="specimen.self" class="group flex relative overflow-hidden justify-center items-center aspect-square border border-transparent hover:border-accent-26 dark:border-base-27 dark:hover:border-accent-36">
         <SpecimenImageCarousel :specimen />
