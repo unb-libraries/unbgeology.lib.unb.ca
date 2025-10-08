@@ -1,7 +1,7 @@
 <template>
   <header class="flex-none text-white dark:text-black">
-    <div class="p-4">
-      <div class="container mx-auto flex flex-col justify-between text-lg md:flex-row">
+    <div class="p-4 h-full md:h-fit">
+      <div :class="['container mx-auto flex flex-col justify-between text-lg md:flex-row h-full', { 'gap-y-8 md:gap-y-0': !collapsed }]">
         <div class="flex flex-row justify-between">
           <a class="flex h-12" href="/" @click="collapsed = true">  
             <IconUNB class="h-full fill-current stroke-none pr-2 border-r-2 border-current" />
@@ -23,25 +23,24 @@
             </svg>
           </div>
         </div>
-        <div class="flex flex-col md:space-y-2">
-          <nav class="flex flex-col justify-end text-sm uppercase md:flex md:flex-row md:space-x-6" :class="collapsed ? 'hidden' : ''">
-            <span v-if="isAuthenticated">Hello {{ username }}</span>
-            <a v-if="isAuthenticated" href="/dashboard/specimens" class="py-2 md:ml-2 md:py-0">
+        <div class="flex flex-col space-y-12 md:space-y-0 h-full">
+          <nav class="flex flex-col grow md:flex md:flex-row md:justify-end md:gap-x-6 divide-y divide-base-77 divide-dashed md:divide-none text-3xl md:text-xl" :class="collapsed ? 'hidden' : ''">
+            <a v-if="isAuthenticated" href="/dashboard/specimens" class="py-3 md:py-0">
               Dashboard
             </a>
+            <a href="/browse" class="py-3 md:py-0">
+              Browse
+            </a>
+            <a href="/specimens" class="py-3 md:py-0">
+              Search
+            </a>
+          </nav>
+          <nav class="flex flex-col flex-none justify-end uppercase md:flex md:flex-row md:space-x-6 md:order-first text-md md:text-sm" :class="collapsed ? 'hidden' : ''">
             <a v-if="!isAuthenticated" href="/login" class="py-2 md:py-0">
               Login / Admin
             </a>
             <a v-else href="/logout" class="py-2 md:ml-2 md:py-0">
               Log out
-            </a>
-          </nav>
-          <nav class="flex flex-col md:flex md:flex-row md:justify-end md:space-x-6" :class="collapsed ? 'hidden' : ''">
-            <a href="/browse">
-              Browse
-            </a>
-            <a href="/specimens">
-              Search
             </a>
           </nav>
         </div>
