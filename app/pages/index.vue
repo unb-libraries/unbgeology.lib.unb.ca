@@ -20,7 +20,7 @@
     <!-- Browse by Category -->
     <section class="flex flex-col container mx-auto">
       <h2 class="text-4xl mb-12">Browse by Category</h2>
-      <div class="grid grid-cols-3 gap-x-12">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-24 lg:gap-12">
         <CategoryCard v-for="category in ['fossil', 'mineral', 'rock']"
           :key="category"
           :category="(category as 'fossil' | 'mineral' | 'rock')"
