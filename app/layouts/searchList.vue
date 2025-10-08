@@ -1,11 +1,11 @@
 <template>
   <NuxtLayout name="search" :total :page :pageSize :pending @paginate="page = $event">
-    <template #summary>Displaying {{ (page - 1) * pageSize + 1 }} - {{ ((page - 1) * pageSize + specimens.length) }} of {{ total }} specimens</template>
+    <template #summary><span class="hidden md:inline">Displaying </span>{{ (page - 1) * pageSize + 1 }} - {{ ((page - 1) * pageSize + specimens.length) }} of {{ total }} specimens</template>
     <ul class="overflow-y-hidden size-full">
       <!-- Element container -->
-      <li v-for="specimen in specimens" :key="specimen.self" class="group flex w-full h-fit px-4 border border-transparent hover:bg-base-97 dark:hover:bg-accent-6 hover:border-accent-26 dark:hover:border-accent-36">
+      <li v-for="specimen in specimens" :key="specimen.self" class="group flex w-full h-fit xl:px-4 border border-transparent xl:hover:bg-base-97 xl:dark:hover:bg-accent-6 xl:hover:border-accent-26 xl:dark:hover:border-accent-36">
         <!-- Inner container-->
-        <div class="inner flex gap-x-4 border-t border-t-base-77 dark:border-t-base-27 group-first:border-t-transparent group-hover:border-t-transparent w-full py-4">
+        <div class="inner flex gap-x-4 border-t border-t-base-77 dark:border-t-base-27 group-first:border-t-transparent xl:group-hover:border-t-transparent w-full py-4">
           <SpecimenImage :category="specimen.type" :url="specimen.images?.entities?.[0]?.uri" width="100" height="100" class="aspect-square h-24" />
           <div class="flex flex-col overflow-hidden gap-y-2">
             <div class="inline-flex gap-x-1 items-center text-base-27 dark:text-base-67 text-xs uppercase font-semibold leading-none">
@@ -20,7 +20,7 @@
             <TruncatedText v-if="specimen.description">
               {{ specimen.description }}
             </TruncatedText>
-            <div class="inline-flex gap-x-6 text-xs text-base-27 dark:text-base-67 uppercase font-semibold leading-none">
+            <div class="flex flex-col xl:flex-row gap-y-2 xl:gap-x-6 text-xs text-base-27 dark:text-base-67 uppercase font-semibold leading-none">
               <div class="inline-flex gap-x-1 leading-none items-center">
                 <SpecimenIcon :category="specimen.type" class="size-4" />
                 <span class="sr-only">Classification</span>
@@ -74,7 +74,9 @@ const total = computed(() => data.value?.total ?? 0)
 </script>
 
 <style>
-li.group:hover+li .inner {
-  border-top-color: transparent !important;
+@media (min-width: 1280px) {
+  li.group:hover+li .inner {
+    border-top-color: transparent !important;
+  }
 }
 </style>
