@@ -268,7 +268,7 @@ const classifications = computed(() => [
   { rank: specimen.value!.classification?.rank, label: specimen.value!.classification?.label },
   ...(specimen.value!.classification?.ancestors?.entities.map(({ rank, label }) => ({ rank, label })) ?? []),
   { label: specimen.value!.type[0].toUpperCase() + specimen.value!.type.slice(1).toLowerCase() + 's' },
-].filter(Boolean).reverse())
+].filter(c => Object.values(c ?? {}).filter(Boolean).length > 0).reverse())
 
 const compositionLabels = computed(() => {
   if (specimen.value?.type === 'mineral' && specimen.value?.classification?.composition) {
