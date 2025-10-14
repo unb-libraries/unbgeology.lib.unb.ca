@@ -22,7 +22,7 @@ export default defineDocumentModel<Term>(`Term`, defineDocumentSchema<Term>({
 }, {
   alterSchema(schema) {
     schema.index({ label: 1 })
-    schema.index({ label: 1, type: 1, parent: 1 }, { unique: true })
+    schema.index({ label: 1, type: 1, parent: 1, slug: 1 }, { unique: true })
     schema.index({ label: `text` }, { name: `full_text_search` })
   },
 }).mixin(Slugified<Term>({
