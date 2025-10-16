@@ -15,4 +15,6 @@ definePageMeta({
   layout: false,
   name: 'Browse',
 })
+
+useCustomHead({ image: '/top-cat-images-fossils.jpg' })
 </script>

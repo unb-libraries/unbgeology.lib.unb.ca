@@ -10,5 +10,7 @@ definePageMeta({
   name: 'Search',
 })
 
+useCustomHead({ image: '/top-cat-images-fossils.jpg' })
+
 const mode = useRouteQuery<'list' | 'grid' | 'map'>('mode', 'list')
 </script>

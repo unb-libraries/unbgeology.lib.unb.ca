@@ -40,6 +40,8 @@
 import type { EntityJSONList } from '@unb-libraries/nuxt-layer-entity'
 import type { Specimen } from '~/types/specimen'
 
+useCustomHead({ image: '/top-cat-images-fossils.jpg' })
+
 const { data: specimens } = await useFetch<EntityJSONList<Specimen>>('/api/specimens', {
   query: {
     filter: ['origin:greater:90.1;180.1', 'origin:less:-90.1;-180.1'],

@@ -3,7 +3,7 @@
     <header class="flex flex-col gap-y-1 xl:ml-32">
       <div class="inline-flex items-center text-2xl gap-x-4">
         <h1 class="font-bold">
-          {{ specimen?.name ?? 'Unknown' }}
+          {{ title }}
         </h1>
         <div class="inline-flex gap-x-2 items-center">
           <span v-if="specimen?.storage?.entities.at(-1)?.location.public"
@@ -74,7 +74,7 @@
           Description
         </h2>
         <div>
-          {{ specimen?.description }}
+          {{ description }}
         </div>
       </section>
 
@@ -254,6 +254,7 @@ import { Division } from '~/types/geochronology'
 
 definePageMeta({
   layout: `default`,
+  name: 'Specimen'
 })
 
 const { slug } = useRoute().params
@@ -301,4 +302,13 @@ const relativeAges = computed(() => {
 })
 
 const publications = computed(() => specimen.value?.publications?.entities ?? [])
+
+const title = specimen.value?.name ?? 'Unknown'
+const description = specimen.value?.description
+const truncatedDescription = description && description.substring(0, 160) + (description.length > 160 ? '...' : '')
+useCustomHead({
+  title,
+  description: truncatedDescription ?? '',
+  image: specimen.value?.images?.entities?.[0]?.uri,
+})
 </script>

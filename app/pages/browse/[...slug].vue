@@ -104,6 +104,7 @@ import type { Specimen } from '~/types/specimen'
 
 definePageMeta({
   layout: false,
+  name: 'Browse by category or classification',
 })
 
 const { slug: [categorySlug, ...slug] } = useRoute().params as { slug: string[] }
@@ -165,4 +166,14 @@ const parentPages = [
 ]
 
 const activeImageIndex = ref(0)
+
+const title = parentPages.at(-1)?.label
+const description = classification.value?.description
+const truncatedDescription = description && description.substring(0, 160) + (description?.length > 160 ? '...' : '')
+
+useCustomHead({
+  title,
+  description: truncatedDescription ?? '',
+  image: specimens.value?.entities.filter(({ images }) => images?.total)[0]?.images?.entities[0]?.uri,
+})
 </script>
