@@ -7,7 +7,7 @@
       @click.stop.self="$emit('toggled', true)"
   >
     <div :class="[
-      'absolute scrollbar-thin scrollbar-thumb-transparent scrollbar-track-transparent group-hover:scrollbar-thumb-base-57 dark:group-hover:scrollbar-thumb-base-27 gap-2 flex flex-col bottom-0 xl:sticky xl:top-[calc(15.5rem+2px)] h-full xl:max-h-[calc(100dvh-15.5rem-2px)] xl:overflow-y-scroll left-0 w-full p-8 xl:p-0 space-y-12 xl:space-y-0', {
+      'absolute scrollbar-thin scrollbar-thumb-transparent scrollbar-track-transparent group-hover:scrollbar-thumb-base-57 dark:group-hover:scrollbar-thumb-base-27 gap-2 flex flex-col bottom-0 xl:sticky xl:top-[calc(6rem+2px)] text-xl h-full xl:max-h-[calc(100dvh-15.5rem-2px)] xl:overflow-y-scroll left-0 w-full p-8 xl:p-0 space-y-12 xl:space-y-0', {
         'hidden xl:flex': collapsed
       }]">
       <div class="xl:hidden flex flex-none justify-between">

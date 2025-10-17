@@ -1,9 +1,9 @@
 <template>
   <NuxtLayout name="page">
     <div class="flex-col flex h-full">
-      <div class="sticky top-[10rem] pb-2 space-y-2 z-30 bg-base dark:bg-base-2">
-        <div class="flex justify-between items-center space-x-2">
-          <span class="flex-none py-1">
+      <div class="sticky top-0 pb-2 space-y-2 bg-base dark:bg-base-2">
+        <div class="flex justify-between items-center space-x-2 pt-2">
+          <span class="flex-none py-1 leading-none">
             <slot v-if="total" name="summary" />
             <template v-else>No specimens found.</template>
           </span>
@@ -11,7 +11,7 @@
             :page="page"
             :total="Math.ceil(total / pageSize)"
             :size="5"
-            class="flex justify-end flex-none"
+            class="flex justify-end flex-none leading-none"
             @change="$emit('paginate', $event)"
           />
         </div>
