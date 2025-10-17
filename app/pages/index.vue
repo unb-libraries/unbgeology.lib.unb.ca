@@ -42,12 +42,6 @@ import type { Specimen } from '~/types/specimen'
 
 useCustomHead({ image: '/top-cat-images-fossils.jpg' })
 
-const { data: specimens } = await useFetch<EntityJSONList<Specimen>>('/api/specimens', {
-  query: {
-    filter: ['origin:greater:90.1;180.1', 'origin:less:-90.1;-180.1'],
-    select: ['id', 'name', 'images', 'type', 'classification', 'origin', 'status'],
-  }
-})
-
+const { data: specimens } = await useFetch<EntityJSONList<Specimen>>('/api/specimens/origins')
 const markers = computed(() => specimens.value?.entities.filter(({ origin }) => origin?.latitude && origin?.longitude))
 </script>
