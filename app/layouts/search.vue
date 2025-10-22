@@ -1,7 +1,7 @@
 <template>
   <NuxtLayout name="page">
     <div class="flex-col flex h-full">
-      <div class="sticky top-0 pb-2 space-y-2 bg-base dark:bg-base-2">
+      <div class="sticky top-0 pb-2 z-10 space-y-2 bg-base dark:bg-base-2">
         <div class="flex justify-between items-center space-x-2 pt-2">
           <span class="flex-none py-1 leading-none">
             <slot v-if="total" name="summary" />
