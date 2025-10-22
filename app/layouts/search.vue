@@ -43,13 +43,16 @@
           </div>
         </div>
       </div>
-      <div class="flex flex-col xl:flex-row grow gap-x-6">
+      <div class="flex flex-col xl:flex-row h-full gap-x-6">
         <Facets
           :collapsed="sidebarCollapsed"
           @toggled="sidebarCollapsed = $event"
         />
         <div class="w-full xl:w-4/5 h-full relative">
           <slot />
+          <div v-if="routeUpdating && !pending" class="flex justify-center size-full absolute top-0 left-0 py-24 dark:bg-base-7/90">
+            <IconSpinner class="relative size-16 fill-none stroke-2 stroke-current animate-spin" />
+          </div>
         </div>
       </div>
     </div>
@@ -75,4 +78,12 @@ type Mode = 'list' | 'grid' | 'map'
 const mode = useRouteQuery<Mode>('mode', 'list')
 const sidebarCollapsed = ref(true)
 const search = useRouteQuery('search', '')
+
+const routeUpdating = ref(false)
+onBeforeRouteUpdate(() => {
+  routeUpdating.value = true
+})
+onUpdated(() => {
+  routeUpdating.value = false
+})
 </script>
