@@ -7,7 +7,6 @@ const cacheOptions: Parameters<typeof defineCachedEventHandler>[1] = {
   name: `specimens`,
   maxAge: 0,
   varies: [`Cookie`],
-  shouldBypassCache: () => true,
   getKey: getSpecimenRequestCacheId,
 }
 
