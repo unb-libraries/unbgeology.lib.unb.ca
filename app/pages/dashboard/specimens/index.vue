@@ -8,7 +8,13 @@
 
     <div class="form-field w-full">
       <label class="sr-only" for="search">Search</label>
-      <input v-model="search" placeholder="Search" name="search" class="placeholder:text-primary-20 form-input form-input-text bg-primary grow p-2 placeholder:italic">
+      <input
+        :model-value="search"
+        placeholder="Search"
+        name="search"
+        class="placeholder:text-primary-20 form-input form-input-text bg-primary grow p-2 placeholder:italic"
+        @input.stop="onSearch(($event.target as HTMLInputElement).value)"
+      >
     </div>
     <div class="mt-2 flex w-full flex-row items-center justify-between">
       <div v-if="list?.total" class="italic">
@@ -329,5 +335,14 @@ const onRemove = async () => {
   }
   selection.value = []
   closeModal()
+}
+
+let searchTimeout: ReturnType<typeof setTimeout>
+function onSearch(phrase: string) {
+  clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    console.log(phrase)
+    search.value = phrase
+  }, 800)
 }
 </script>
