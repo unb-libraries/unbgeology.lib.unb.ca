@@ -11,6 +11,7 @@ import MultiSelect from 'primevue/multiselect'
 import { usePassThrough } from 'primevue/passthrough'
 import Tailwind from 'primevue/passthrough/tailwind'
 import ProgressSpinner from 'primevue/progressspinner'
+import InputTreeSelect from 'primevue/treeselect'
 import { type DropdownContext } from "primevue/dropdown"
 
 export default defineNuxtPlugin((nuxtApp) => {
@@ -252,6 +253,75 @@ export default defineNuxtPlugin((nuxtApp) => {
           ],
         },
       },
+      treeselect: {
+        root: {
+          class: [
+            'input',
+            'input-text-lg',
+          ],
+        },
+        labelcontainer: {
+          class: [
+            'grow',
+          ],
+        },
+        label: {
+          class: [],
+        },
+        trigger: {
+          class: [
+            'text-white',
+          ],
+        },
+        wrapper: {
+          class: [
+            'max-h-[200px]',
+            'overflow-auto',
+            'shadow-lg',
+          ],
+        },
+      },
+      tree: {
+        root: {
+          class: [
+            'w-full',
+            'border',
+            'border-solid',
+            'border-gray-300',
+            'bg-primary',
+            'text-white',
+            'rounded-md',
+          ],
+        },
+        node: {
+          class: [
+            'p-0',
+          ],
+        },
+        content: {
+          class: [
+            'flex',
+            'items-center',
+            'p-2',
+            'hover:text-accent-mid',
+            'focus:bg-accent-mid',
+            // 'text-white',
+            'cursor-pointer',
+            'select-none',
+          ],
+        },
+        label: {
+          class: [
+            'inline-flex',
+          ],
+        },
+        subgroup: {
+          class: [
+            'pl-2',
+            'focus-visible:outline-none',
+          ],
+        },
+      },
     }),
   })
 
@@ -267,6 +337,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.vueApp.component(`PvInputNumber`, InputNumber)
   nuxtApp.vueApp.component(`PvMultiSelect`, MultiSelect)
   nuxtApp.vueApp.component(`PvSelect`, Dropdown)
+  nuxtApp.vueApp.component(`PvInputTreeSelect`, InputTreeSelect)
 
   // Misc
   nuxtApp.vueApp.component(`PvProgressSpinner`, ProgressSpinner)
