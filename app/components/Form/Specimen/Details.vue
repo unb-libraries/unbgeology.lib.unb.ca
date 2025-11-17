@@ -101,10 +101,17 @@ const data = reactive({
 
 const ageType = ref<`unit` | `numeric`>(props.specimen.age?.numeric?.length ? `numeric` : `unit`)
 const latestUnitFilter = ref<(unit: Unit) => boolean>()
-watch(data.ageNumeric, () => {
+watch(data.ageNumeric, (newAge, prevAge) => {
   if (data.ageNumeric[0] < data.ageNumeric[1]) {
     data.ageNumeric[1] = data.ageNumeric[0]
   }
+  if (isNaN(newAge?.[0]) && isNaN(prevAge?.[0])) {
+    data.ageNumeric[0] = 0
+  }
+  if (isNaN(newAge?.[1]) && isNaN(prevAge?.[1])) {
+    data.ageNumeric[1] = 0
+  }
+
 })
 
 function onSelectUnit(earliest: Unit | undefined) {
