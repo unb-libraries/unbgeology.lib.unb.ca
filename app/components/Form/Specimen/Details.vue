@@ -28,7 +28,7 @@
             </template>
           </InputSpecimenGeoAge>
         </div>
-        <div v-show="ageType === `numeric`" class="flex w-1/2 flex-row space-x-2">
+        <div v-show="ageType === `numeric`" class="flex flex-row space-x-2">
           <TwInputNumber v-model="data.ageNumeric[0]" :min="0" class="input-number-lg w-full">
             <template #before>
               <div class="text-primary-40 mr-1 italic">
@@ -57,7 +57,13 @@
     </TwFormField>
     <div class="flex w-full flex-row space-x-2">
       <TwFormField label="Pieces" class="w-1/2">
-        <TwInputNumber v-model="data.pieces" :min="1" class="input input-text-lg" />
+        <TwInputNumber
+          v-model="data.pieces"
+          :min="1"
+          :min-decimals="0"
+          :max-decimals="0"
+          class="input input-text-lg"
+        />
       </TwFormField>
       <TwFormField v-if="specimen.type === `fossil`" label="Portion" class="w-1/2">
         <InputSpecimenPortion
