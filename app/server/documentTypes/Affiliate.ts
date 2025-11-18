@@ -89,7 +89,7 @@ export default {
     pronouns: {
       type: EntityFieldTypes.Mixed,
       enum: Pronouns,
-      required: true,
+      required: false,
     },
     title: {
       type: EntityFieldTypes.Mixed,
