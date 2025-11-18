@@ -55,7 +55,19 @@ const props = defineProps<{
   validator?: (value: number) => boolean | string | Promise<boolean | string>
 }>()
 
-const decimals = ref(0)
+function getDecimalCount(num: number): number {
+  if (!Number.isFinite(num)) return 0
+  const str = num.toString()
+  if (str.includes('e-')) {
+    const [base, trail] = str.split('e-')
+    const dec = (base.split('.')[1] || '').length
+    return dec + parseInt(trail, 10)
+  }
+  const parts = str.split('.')
+  return parts[1]?.length || 0
+}
+
+const decimals = ref(Math.max(getDecimalCount(value.value ?? 0), props.minDecimals ?? 0))
 const numeric = computed({
   get: () => String(value.value?.toFixed(decimals.value) ?? ``),
   set: (newValue: string) => {
