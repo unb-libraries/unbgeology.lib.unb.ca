@@ -1,5 +1,5 @@
 <template>
-  <PvEntityDetails :entity="specimen!" :fields="[[`id`, `ID`], [`name`, `Object name`], [`type`, `Category`], `classification`, `created`, `updated`, `status`]" class="space-y-4" label-class="font-bold italic" item-class="space-y-1">
+  <PvEntityDetails :entity="specimen!" :fields="[[`id`, `ID`], [`name`, `Object name`], [`type`, `Category`], `classification`, `storage`, `created`, `updated`, `status`]" class="space-y-4" label-class="font-bold italic" item-class="space-y-1">
     <template #id="{ value: id }">
       {{ id.toUpperCase() }}
     </template>
@@ -13,6 +13,23 @@
             {{ term.label }}
           </span>
           <span v-if="index < (classification.ancestors?.entities ?? []).length">&raquo;</span>
+        </template>
+      </div>
+      <template v-else>
+        Unknown
+      </template>
+    </template>
+    <template #storage="{ value: storage }">
+      <div v-if="storage?.entities.length" class="flex flex-row flex-wrap items-start gap-1.5">
+        <template v-for="(label, index) in storage.entities.sort((a, b) => Date.parse(b.dateIn).valueOf() - Date.parse(a.dateIn).valueOf())
+          .map(({ location }) => [
+            location.label,
+            ...location.ancestors?.entities.map(a => a.label)
+          ].reverse())[0]" :key="label">
+          <span v-if="index > 0">&raquo;</span>
+          <span class="bg-primary-60/60 rounded-md px-1.5 py-0.5">
+            {{ label }}
+          </span>
         </template>
       </div>
       <template v-else>
@@ -39,7 +56,7 @@ const props = defineProps<{
 }>()
 
 const { fetchByPK } = useEntityType(`Specimen`)
-const { entity: specimen } = await fetchByPK(props.id, { select: [`id`, `name`, `type`, `classification`, `created`, `updated`, `status`] })
+const { entity: specimen } = await fetchByPK(props.id, { select: [`id`, `name`, `type`, `classification`, `storage`, `created`, `updated`, `status`] })
 
 const getStatusValue = (status: Parameters<ReturnType<typeof useEnum<typeof Status>>[`valueOf`]>[0]) => useEnum(Status).valueOf(status)
 const getStatusLabel = (status: Parameters<ReturnType<typeof useEnum<typeof Status>>[`labelOf`]>[0]) => useEnum(Status).labelOf(status)
