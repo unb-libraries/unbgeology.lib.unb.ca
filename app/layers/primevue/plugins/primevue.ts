@@ -313,7 +313,7 @@ export default defineNuxtPlugin((nuxtApp) => {
             'select-none',
           ],
         },
-        toggler: {
+        toggler: ({ context: { leaf } }) => ({
           class: [
             'cursor-pointer',
             'select-none',
@@ -338,9 +338,9 @@ export default defineNuxtPlugin((nuxtApp) => {
             'hover:bg-accent-36',
             'data-[p-highlight=true]:bg-accent-36',
             'hover:data-[p-highlight=true]:bg-accent-46',
-            'hover:bg-white/30',
-          ],
-        },
+            leaf ? 'invisible' : '',
+          ]
+        }),
         label: {
           class: [
             'inline-flex',
