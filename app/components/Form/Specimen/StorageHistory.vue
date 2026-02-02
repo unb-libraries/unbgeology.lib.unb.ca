@@ -45,6 +45,8 @@ const emits = defineEmits<{
   cancel: []
 }>()
 
+const { createToast } = useToasts()
+
 const generator = (function* () {
   let id = 1
   while (true) {
@@ -83,13 +85,21 @@ function onRemove(id: string) {
 }
 
 function onSave() {
-  emits(`save`, {
-    storage: (history
-      .filter(([, location, date]) => location && date) as [string, string, string][])
-      .map(([, location, dateIn]) => ({
-        location,
-        dateIn,
-      })),
+  const valid = history.every(([, location, date]) => {
+    return (location && date) || (!location && !date)
   })
+
+  if (valid) {
+    emits(`save`, {
+      storage: (history
+        .filter(([, location, date]) => location && date) as [string, string, string][])
+        .map(([, location, dateIn]) => ({
+          location,
+          dateIn,
+        })),
+    })
+  } else {
+    createToast(`error-updated-${props.specimen.id}`, () => `All entries must include both a location and a valid date.`, { type: `error`, duration: 5000 })
+  }
 }
 </script>
