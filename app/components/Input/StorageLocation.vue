@@ -4,7 +4,7 @@
     :options="locations"
     placeholder="-- Select --">
     <template v-if="value" #value="{ value }">
-      {{[...value[0].ancestors?.entities.map(a => a.label).reverse(), value[0].label].join(' &raquo; ')}}
+      {{[...value[0].ancestors?.entities.map(a => a.label).reverse() ?? '', value[0].label].filter(Boolean).join(' &raquo; ')}}
     </template>
   </PvInputTreeSelect>
 </template>
