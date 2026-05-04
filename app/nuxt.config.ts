@@ -16,7 +16,6 @@ export default defineNuxtConfig({
   extends: [
     `./layers/local`,
     `./layers/mongo`,
-    `./layers/primevue`,
   ],
   $development: {
     buildDir: './.build/.nuxt',
@@ -65,6 +64,9 @@ export default defineNuxtConfig({
     "layers": url.fileURLToPath(new URL(`./layers`, import.meta.url)),
     "types": url.fileURLToPath(new URL(`./types`, import.meta.url)),
   },
+  build: {
+    transpile: [`primevue`],
+  },
   buildDir: `/app/html/.build/.nuxt`,
   css: [
     `~/assets/css/main.css`,
@@ -94,6 +96,15 @@ export default defineNuxtConfig({
       if (!existsSync(dir)) {
         mkdirSync(dir, { recursive: true })
       }
+    },
+  },
+  modules: [
+    `@nuxt/image`,
+  ],
+  postcss: {
+    plugins: {
+      tailwindcss: {},
+      autoprefixer: {},
     },
   },
   runtimeConfig: {

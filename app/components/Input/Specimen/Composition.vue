@@ -14,8 +14,6 @@
 <script setup lang="ts">
 import { FilterOperator } from '@unb-libraries/nuxt-layer-entity'
 import type { Composition } from '~/types/composition'
-import { TermForm } from '#components'
-import useEntityFormModal from '~/layers/primevue/composables/useEntityFormModal'
 
 const composition = defineModel<string[]>({ required: false })
 const props = defineProps<{

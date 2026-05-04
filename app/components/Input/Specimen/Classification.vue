@@ -24,8 +24,6 @@
 <script setup lang="ts">
 import { FilterOperator } from '@unb-libraries/nuxt-layer-entity'
 import type { Classification } from '~/types/classification'
-import { FormClassificationFossil, FormClassificationMineral, FormClassificationRock } from '#components'
-import useEntityFormModal from '~/layers/primevue/composables/useEntityFormModal'
 
 const classification = defineModel<string>({ required: false })
 const props = defineProps<{

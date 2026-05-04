@@ -1,5 +1,12 @@
 import { File } from "@unb-libraries/nuxt-layer-entity"
 import { H3Event } from "h3"
+import { defineComponent } from "vue"
+
+export interface DynamicContent {
+  component: ReturnType<typeof defineComponent> | null
+  props?: any
+  eventHandlers?: any
+}
 
 interface File {
   filename: string

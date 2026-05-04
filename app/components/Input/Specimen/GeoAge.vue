@@ -27,8 +27,6 @@
 
 <script setup lang="ts">
 import { FilterOperator } from '@unb-libraries/nuxt-layer-entity'
-import useEntityFormModal from '~/layers/primevue/composables/useEntityFormModal'
-import { FormGeochronology } from '#components'
 import { type Unit } from '~/types/geochronology'
 
 const props = defineProps<{

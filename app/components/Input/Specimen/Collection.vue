@@ -13,8 +13,6 @@
 <script setup lang="ts">
 import { FilterOperator } from '@unb-libraries/nuxt-layer-entity'
 import { type Collection } from '~/types/collection'
-import { TermForm } from '#components'
-import useEntityFormModal from '~/layers/primevue/composables/useEntityFormModal'
 
 const collection = defineModel<string>({ required: false })
 

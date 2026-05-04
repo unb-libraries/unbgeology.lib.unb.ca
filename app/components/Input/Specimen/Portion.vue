@@ -12,9 +12,7 @@
 
 <script setup lang="ts">
 import { FilterOperator } from '@unb-libraries/nuxt-layer-entity'
-import useEntityFormModal from '~/layers/primevue/composables/useEntityFormModal'
 import type { Portion } from '~/types/portion'
-import { TermForm } from '#components'
 
 const portion = defineModel<string>({ required: false })
 const { entities: options, add: createPortion } = await fetchEntityList(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `portion`]], select: [`label`], sort: [`label`], pageSize: 500 })
