@@ -1,4 +1,4 @@
-import type { UserSession } from '../../../types/session'
+import type { UserSession } from '../../../../../types/session'
 
 export default defineEventHandler((event) => {
   const { name } = useServerSessionConfig()

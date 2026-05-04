@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
     },
   }
 
-  initSaml(useRuntimeConfig().public.saml)
+  initSaml(useRuntimeConfig().saml)
   const samlUrl = await getSamlAuthUrl(host!, params)
   return sendRedirect(event, samlUrl, 302)
 })
