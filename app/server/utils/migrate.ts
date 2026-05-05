@@ -1,5 +1,5 @@
 import { type Entity, MigrationItemStatus } from "@unb-libraries/nuxt-layer-entity"
-import type { MigrateHandler } from "../../layers/mongo/types"
+import type { MigrateHandler } from "~/types"
 import type { Migration as IMigration } from "../documentTypes/Migration"
 import type { MigrationItem as IMigrationItem } from "../documentTypes/MigrationItem"
 

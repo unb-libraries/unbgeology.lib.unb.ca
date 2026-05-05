@@ -1,5 +1,5 @@
 import { Document, Schema } from "mongoose"
-import type { DocumentBase } from "~/layers/mongo/types/schema"
+import type { DocumentBase } from "~/types/schema"
 
 export interface Hierarchical<T> {
   parent?: Hierarchical<T> & T

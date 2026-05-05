@@ -5,7 +5,7 @@ import { type H3Event, type HTTPMethod } from "h3"
 import { type QueryOptions, type Content, type Entity, type EntityList, type Payload, type DocumentQueryMethod, type DocumentQuery, type FilterableQuery, type DocumentPayload } from "../../../types/entity"
 import { type DocumentBase, type DocumentModel } from "../../../types/schema"
 import type { QueryCondition } from "./filter"
-import type { PayloadReadOptions, PluginOptions, RenderOptions, RenderListOptions, RenderDocumentOptions, RenderDocumentListOptions, DocumentPayloadReadOptions } from "~/layers/mongo/types"
+import type { PayloadReadOptions, PluginOptions, RenderOptions, RenderListOptions, RenderDocumentOptions, RenderDocumentListOptions, DocumentPayloadReadOptions } from "~/types"
 
 function initMongooseContext(event: H3Event) {
   event.context.mongoose = {

@@ -1,7 +1,7 @@
 import { FilterOperator } from "@unb-libraries/nuxt-layer-entity"
 import { type FilterableQuery } from "../../../../types/entity"
 import { type QueryCondition } from "."
-import { type DocumentBase } from "~/layers/mongo/types/schema"
+import { type DocumentBase } from "~/types/schema"
 
 const returnOnSomeSuccess = <D extends DocumentBase = DocumentBase>(fns: ((field: string, condition: QueryCondition) => (query: FilterableQuery<D>) => void)[], field: string, condition: QueryCondition) => {
   const errors: Error[] = []

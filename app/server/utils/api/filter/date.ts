@@ -1,7 +1,7 @@
 import Numeric from "./numeric"
 import { type QueryCondition } from "."
-import { type DocumentBase } from "~/layers/mongo/types/schema"
-import { type FilterableQuery } from "~/layers/mongo/types/entity"
+import { type DocumentBase } from "~/types/schema"
+import { type FilterableQuery } from "~/types/entity"
 
 const toMsString = (value: QueryCondition[1]) => {
   try {

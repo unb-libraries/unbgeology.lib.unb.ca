@@ -1,8 +1,8 @@
 import { FilterOperator } from "@unb-libraries/nuxt-layer-entity"
 
 import { type QueryCondition } from "."
-import type { DocumentBase } from "~/layers/mongo/types/schema"
-import { type FilterableQuery } from "~/layers/mongo/types/entity"
+import type { DocumentBase } from "~/types/schema"
+import { type FilterableQuery } from "~/types/entity"
 
 export default function <D extends DocumentBase = DocumentBase> (field: string, condition: QueryCondition) {
   const [op, value] = condition

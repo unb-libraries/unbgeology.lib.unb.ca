@@ -1,4 +1,4 @@
-import type { Entity } from "~/layers/mongo/types/entity"
+import type { Entity } from "~/types/entity"
 
 type Validator<T = any> = (input: any) => T | Promise<T>
 type ConstrainedValidator<T = any> = Validator<T> & { expected: boolean }
