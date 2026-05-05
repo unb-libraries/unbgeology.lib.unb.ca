@@ -164,7 +164,7 @@
 
 <script setup lang="tsx">
 import { type MigrationItem, type Migration, MigrationItemStatus, FilterOperator, type EntityJSON } from '@unb-libraries/nuxt-layer-entity'
-import useEntityFormModal from '~/layers/primevue/composables/useEntityFormModal'
+import useEntityFormModal from '~/composables/useEntityFormModal'
 
 definePageMeta({
   layout: false,
