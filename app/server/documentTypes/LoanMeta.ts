@@ -1,5 +1,5 @@
-import type { Meta as IMeta } from "~/layers/mongo/server/documentTypes/Meta"
-import { EntityFieldTypes } from "~/layers/mongo/types/entity"
+import type { Meta as IMeta } from "~/server/documentTypes/Meta"
+import { EntityFieldTypes } from "~/types/entity"
 
 export interface LoanMeta extends IMeta {
   yearCounter: Map<string, number>

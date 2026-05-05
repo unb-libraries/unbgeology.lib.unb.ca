@@ -3,7 +3,7 @@ import { type H3Event } from "h3"
 import { Schema, type SchemaDefinition, model as defineModel, Types, type FilterQuery, type ObjectId, Document } from "mongoose"
 import type { DocumentSchema, AlterSchemaHandler, DocumentBase as IDocumentBase, DocumentModel, DocumentSchemaOptions } from "../../types/schema"
 import { type DocumentFindQuery, type DocumentQueryMethod, type DocumentFindQueryResult, type DocumentUpdateQueryResult, type DocumentDeleteQueryResult, type Join, type DocumentQueryResultItem, type DocumentQuery } from "../../types/entity"
-import { type Mutable } from "../../types"
+import { type Mutable } from "../../layers/mongo/types"
 
 type DefineDocumentSchema<D = any, TOptions extends any | undefined = undefined> =
   (TOptions extends undefined ? { (): DocumentSchema<D> } : { (options: TOptions): DocumentSchema<D> })

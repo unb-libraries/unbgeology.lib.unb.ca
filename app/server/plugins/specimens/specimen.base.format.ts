@@ -1,5 +1,5 @@
 import type { User as UserEntity } from "@unb-libraries/nuxt-layer-entity"
-import User from "~/layers/mongo/server/documentTypes/User"
+import User from "~/server/documentTypes/User"
 import type { Affiliate } from "~/types/affiliate"
 import { Immeasurabibility, Legal, MeasurementCount, Status } from "~/types/specimen"
 

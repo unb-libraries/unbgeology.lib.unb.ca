@@ -1,6 +1,6 @@
 import { type EntityJSONList, FilterOperator } from "@unb-libraries/nuxt-layer-entity"
-import Image from "~/layers/mongo/server/documentTypes/Image"
-import type { Image as DImage } from "~/layers/mongo/server/documentTypes/Image"
+import Image from "~/server/documentTypes/Image"
+import type { Image as DImage } from "~/server/documentTypes/Image"
 import type { Image as EImage } from "@unb-libraries/nuxt-layer-entity"
 import { getEntityQueryParams, getFilter } from "~/server/utils/api/query"
 import type { Specimen } from '~/types/specimen'

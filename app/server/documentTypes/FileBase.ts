@@ -1,4 +1,4 @@
-import { EntityFieldTypes } from "layers/mongo/types/entity"
+import { EntityFieldTypes } from "~/types/entity"
 import { encode } from "ufo"
 import { Stateful } from "../utils/mixins"
 import { type File as FileEntity, type Entity, FileState } from "@unb-libraries/nuxt-layer-entity"

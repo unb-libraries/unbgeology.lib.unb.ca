@@ -1,6 +1,6 @@
 import type { Entity, Stateful as IStateful } from "@unb-libraries/nuxt-layer-entity"
 import { type Composition as CompositionEntity, Status } from "~/types/composition"
-import Term, { type Term as ITerm } from "~/layers/mongo/server/documentTypes/Term"
+import Term, { type Term as ITerm } from "~/server/documentTypes/Term"
 
 export type Composition = Omit<CompositionEntity, keyof Entity> & IStateful<typeof Status> & ITerm
 const State = Stateful({

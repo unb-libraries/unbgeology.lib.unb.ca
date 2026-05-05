@@ -15,7 +15,6 @@ const {
 export default defineNuxtConfig({
   extends: [
     `./layers/local`,
-    `./layers/mongo`,
   ],
   $development: {
     buildDir: './.build/.nuxt',
@@ -108,6 +107,20 @@ export default defineNuxtConfig({
     },
   },
   runtimeConfig: {
+    nitro: {
+      mongodb: {
+        uri: ``,
+        host: `localhost`,
+        port: 27017,
+        db: `db`,
+        user: `user`,
+        pass: `pass`,
+        authSource: ``,
+      },
+      defaultSchemaVersion: {
+        specimens: 2,
+      },
+    },
     saml: {
       entryPoint: NUXT_SAML_ENTRY_POINT || ``,
       callbackUrl: NUXT_SAML_CALLBACK_URL || ``,
@@ -138,6 +151,8 @@ export default defineNuxtConfig({
   nitro: {
     experimental: {
       openAPI: true,
+      asyncContext: true,
+      tasks: true,
     },
     publicAssets: [
       {

@@ -1,4 +1,4 @@
-import { Boolean, Date, Enum, Count, Numeric, ObjectID, String } from "~/layers/mongo/server/utils/api/filter"
+import { Boolean, Date, Enum, Count, Numeric, ObjectID, String } from "~/server/utils/api/filter"
 import { Legal, MeasurementCount, Status } from "~/types/specimen"
 
 export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({

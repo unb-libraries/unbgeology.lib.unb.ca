@@ -1,6 +1,6 @@
 import { type MigrationItem as MigrationItemEntity, type Entity, MigrationItemStatus } from "@unb-libraries/nuxt-layer-entity"
-import { EntityFieldTypes } from "../../types/entity"
-import type { DocumentBase as IDocumentBase } from "../../types/schema"
+import { EntityFieldTypes } from "~/types/entity"
+import type { DocumentBase as IDocumentBase } from "~/types/schema"
 import { type Authorize as IAuthorize } from "../utils/mixins/Authorize"
 import type { Migration as IMigration } from "./Migration"
 

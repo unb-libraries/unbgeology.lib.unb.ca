@@ -1,4 +1,4 @@
-import type { User } from "~/layers/mongo/server/documentTypes/User"
+import type { User } from "~/server/documentTypes/User"
 
 interface UserData {
   username: string

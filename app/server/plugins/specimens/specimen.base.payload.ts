@@ -1,6 +1,6 @@
 import { Immeasurabibility, Legal, MeasurementCount, Status } from "~/types/specimen"
 import { validationPatterns } from "~/server/documentTypes/Specimen"
-import { require } from "~/layers/mongo/server/utils/api/payload"
+import { require } from "~/server/utils/api/payload"
 
 export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
   const create = op === `create`

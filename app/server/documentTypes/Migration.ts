@@ -1,6 +1,6 @@
-import { EntityFieldTypes } from "../../types/entity"
+import { EntityFieldTypes } from "~/types/entity"
 import { type Entity, type Migration as MigrationEntity, MigrationStatus } from "@unb-libraries/nuxt-layer-entity"
-import { type DocumentBase as IDocumentBase } from "../../types/schema"
+import { type DocumentBase as IDocumentBase } from "~/types/schema"
 import { type Authorize as IAuthorize } from "../utils/mixins/Authorize"
 
 export interface Migration extends Omit<MigrationEntity, keyof Entity | `source` | `dependencies`>, IAuthorize, IDocumentBase {

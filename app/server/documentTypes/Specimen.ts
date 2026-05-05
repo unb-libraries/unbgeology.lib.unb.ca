@@ -1,4 +1,4 @@
-import { EntityFieldTypes } from 'layers/mongo/types/entity'
+import { EntityFieldTypes } from '~/types/entity'
 import { Immeasurabibility, Legal, MeasurementCount, Status } from 'types/specimen'
 import { renderClassification } from './Classification'
 import { renderUnit } from './Geochronology'
@@ -11,13 +11,13 @@ import type { GeochronologicUnit } from "./Geochronology"
 import { renderStorage, type StorageLocation as IStorageLocation } from "./StorageLocation"
 import type { Collection as ICollection } from "./Collection"
 import type { Composition as IComposition } from "./Composition"
-import type { DocumentBase as IDocumentBase } from "~/layers/mongo/types/schema"
-import ImageFile, { type Image } from "~/layers/mongo/server/documentTypes/Image"
-import { renderUser, type User as IUser } from "~/layers/mongo/server/documentTypes/User"
-import type { Authorize as IAuthorize } from "~/layers/mongo/server/utils/mixins/Authorize"
-import type { IPIKable as IIPIKable } from "~/layers/mongo/server/utils/mixins/IPIKable"
-import { renderTerm } from "~/layers/mongo/server/documentTypes/Term"
-import { renderFile } from "~/layers/mongo/server/documentTypes/FileBase"
+import type { DocumentBase as IDocumentBase } from "~/types/schema"
+import ImageFile, { type Image } from "~/server/documentTypes/Image"
+import { renderUser, type User as IUser } from "~/server/documentTypes/User"
+import type { Authorize as IAuthorize } from "~/server/utils/mixins/Authorize"
+import type { IPIKable as IIPIKable } from "~/server/utils/mixins/IPIKable"
+import { renderTerm } from "~/server/documentTypes/Term"
+import { renderFile } from "~/server/documentTypes/FileBase"
 
 export interface Specimen extends Omit<SpecimenEntity, keyof Entity | `type` | `classification` | `collection` | `images` | `age` | `composition` | `measurements` | `collector` | `sponsor` | `storage` | `creator` | `editor`>, IStateful<typeof Status>, IIPIKable, IAuthorize, IDocumentBase {
   type: `Specimen.Fossil` | `Specimen.Mineral` | `Specimen.Rock`

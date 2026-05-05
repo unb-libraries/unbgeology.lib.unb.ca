@@ -1,5 +1,5 @@
 import { type TaxonomyTerm } from "@unb-libraries/nuxt-layer-entity"
-import { type TaxonomyTerm as MoTaxonomyTerm } from "../../documentTypes/TaxonomyTerm"
+import { type TaxonomyTerm as MoTaxonomyTerm } from "../../../../../server/documentTypes/TaxonomyTerm"
 
 type TaxonomyTermQueryResultItem = Omit<MoTaxonomyTerm, `parent`> & { parent?: TaxonomyTermQueryResultItem }
 

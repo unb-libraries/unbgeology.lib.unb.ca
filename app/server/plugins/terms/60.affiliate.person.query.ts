@@ -1,4 +1,4 @@
-import { Boolean, Date, Enum, String } from "~/layers/mongo/server/utils/api/filter"
+import { Boolean, Date, Enum, String } from "~/server/utils/api/filter"
 import { Pronouns, Status, Title } from "~/types/affiliate"
 
 export default defineMongooseEventQueryHandler(Affiliate.Person, defineEventQuery({

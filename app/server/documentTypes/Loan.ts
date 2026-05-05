@@ -3,9 +3,9 @@ import { encode } from "ufo"
 import type { Entity } from "@unb-libraries/nuxt-layer-entity"
 import { LoanType, type Loan as LoanEntity } from "types/loan"
 import type { Specimen } from "./Specimen"
-import { EntityFieldTypes } from "~/layers/mongo/types/entity"
-import type { DocumentBase as IDocumentBase } from "~/layers/mongo/types/schema"
-import type { File } from "~/layers/mongo/server/documentTypes/FileBase"
+import { EntityFieldTypes } from "~/types/entity"
+import type { DocumentBase as IDocumentBase } from "~/types/schema"
+import type { File } from "~/server/documentTypes/FileBase"
 import { Legal } from "~/types/specimen"
 
 export interface Loan extends Omit<LoanEntity, keyof Entity | `start` | `end` | `specimens` | `contract`>, IDocumentBase {

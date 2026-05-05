@@ -1,4 +1,4 @@
-import { Boolean, Enum, Numeric, ObjectID, String } from "~/layers/mongo/server/utils/api/filter"
+import { Boolean, Enum, Numeric, ObjectID, String } from "~/server/utils/api/filter"
 import { Division, Status } from "~/types/geochronology"
 
 export default defineMongooseEventQueryHandler(Geochronology, defineEventQuery({

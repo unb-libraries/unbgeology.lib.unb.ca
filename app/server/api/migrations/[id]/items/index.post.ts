@@ -1,4 +1,4 @@
-import { type MigrationItem } from "../../../../../server/documentTypes/MigrationItem"
+import { type MigrationItem } from "../../../../documentTypes/MigrationItem"
 
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)

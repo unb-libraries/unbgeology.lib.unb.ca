@@ -1,4 +1,4 @@
-import { String, Enum } from "~/layers/mongo/server/utils/api/filter"
+import { String, Enum } from "~/server/utils/api/filter"
 import { Status } from "~/types/composition"
 
 export default defineMongooseEventQueryHandler(Composition.Rock, defineEventQuery({

@@ -1,5 +1,5 @@
-import { EntityFieldTypes } from "../../types/entity"
-import type { DocumentBase } from "../../types/schema"
+import { EntityFieldTypes } from "~/types/entity"
+import type { DocumentBase } from "~/types/schema"
 
 export interface Meta extends DocumentBase {
   name: string

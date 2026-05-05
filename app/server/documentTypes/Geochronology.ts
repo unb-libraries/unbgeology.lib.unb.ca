@@ -1,8 +1,8 @@
-import { EntityFieldTypes } from "layers/mongo/types/entity"
+import { EntityFieldTypes } from "~/types/entity"
 import { type Unit, Status, Division } from "types/geochronology"
 import { type Term as TermEntity } from "@unb-libraries/nuxt-layer-entity"
-import { type Term as ITerm, renderTerm } from "~/layers/mongo/server/documentTypes/Term"
-import { renderHierarchical } from "~/layers/mongo/server/utils/mixins/Hierarchical"
+import { type Term as ITerm, renderTerm } from "~/server/documentTypes/Term"
+import { renderHierarchical } from "~/server/utils/mixins/Hierarchical"
 
 export type GeochronologicUnit = Omit<Unit, keyof TermEntity> & ITerm
 

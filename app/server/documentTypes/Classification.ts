@@ -1,9 +1,9 @@
-import { type Term as ITerm, renderTerm } from "~/layers/mongo/server/documentTypes/Term"
-import type { Image } from "~/layers/mongo/server/documentTypes/Image"
-import { Hierarchical } from "~/layers/mongo/server/utils/mixins"
-import { renderHierarchical } from "~/layers/mongo/server/utils/mixins/Hierarchical"
-import { EntityFieldTypes } from "~/layers/mongo/types/entity"
-import type { DocumentSchema } from "~/layers/mongo/types/schema"
+import { type Term as ITerm, renderTerm } from "~/server/documentTypes/Term"
+import type { Image } from "~/server/documentTypes/Image"
+import { Hierarchical } from "~/server/utils/mixins"
+import { renderHierarchical } from "~/server/utils/mixins/Hierarchical"
+import { EntityFieldTypes } from "~/types/entity"
+import type { DocumentSchema } from "~/types/schema"
 import {
   type Classification as IClassification,
   type Fossil as FossilCE,

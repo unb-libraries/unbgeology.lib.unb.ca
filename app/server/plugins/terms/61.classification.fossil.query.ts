@@ -1,7 +1,7 @@
-import { Enum, ObjectID } from "~/layers/mongo/server/utils/api/filter"
+import { Enum, ObjectID } from "~/server/utils/api/filter"
 import { Rank, Status } from "~/types/classification"
-import String from "~/layers/mongo/server/utils/api/filter/string"
-import Image from "~/layers/mongo/server/documentTypes/Image"
+import String from "~/server/utils/api/filter/string"
+import Image from "~/server/documentTypes/Image"
 
 export default defineMongooseEventQueryHandler(Classification.Fossil, defineEventQuery({
   parent: {

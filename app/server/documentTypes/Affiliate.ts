@@ -1,8 +1,8 @@
 import { type Entity, type Stateful } from "@unb-libraries/nuxt-layer-entity"
 import { type Organization as OrganizationEntity, type Person as PersonEntity, Status, Pronouns, Title } from "types/affiliate"
-import { EntityFieldTypes } from "~/layers/mongo/types/entity"
-import { renderTerm, type Term } from "~/layers/mongo/server/documentTypes/Term"
-import ImageFile, { type Image } from "~/layers/mongo/server/documentTypes/Image"
+import { EntityFieldTypes } from "~/types/entity"
+import { renderTerm, type Term } from "~/server/documentTypes/Term"
+import ImageFile, { type Image } from "~/server/documentTypes/Image"
 
 type Affiliate<T> = Omit<T, keyof Entity> & Term & Stateful<typeof Status>
 const MxStateful = Stateful({
