@@ -1,4 +1,7 @@
-import { String, Enum } from "~/server/utils/api/filter"
+import {
+  StringFilter as String,
+  EnumFilter as Enum,
+} from "~/server/utils/api/filter"
 import { Status } from "~/types/affiliate"
 
 export default defineMongooseEventQueryHandler(Affiliate.Organization, defineEventQuery({

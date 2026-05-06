@@ -1,4 +1,8 @@
-import { String, Enum, ObjectID } from "~/server/utils/api/filter"
+import {
+  StringFilter as String,
+  EnumFilter as Enum,
+  ObjectIDFilter as ObjectID,
+} from "~/server/utils/api/filter"
 import { Status } from "~/types/classification"
 import Image from "~/server/documentTypes/Image"
 

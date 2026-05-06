@@ -1,4 +1,7 @@
-import { ObjectID, String } from "~/server/utils/api/filter"
+import {
+  ObjectIDFilter as ObjectID,
+  StringFilter as String,
+} from "~/server/utils/api/filter"
 
 export default defineMongooseEventQueryHandler(Specimen.Fossil, defineEventQuery({
   portion: {

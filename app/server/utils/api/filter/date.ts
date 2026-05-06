@@ -1,4 +1,4 @@
-import Numeric from "./numeric"
+import { NumericFilter as Numeric } from "./numeric"
 import { type QueryCondition } from "."
 import { type DocumentBase } from "~/types/schema"
 import { type FilterableQuery } from "~/types/entity"
@@ -18,7 +18,7 @@ const fn = <D extends DocumentBase = DocumentBase>(fn: (field: string, condition
   return fn(field, [op, ms])
 }
 
-const DateFilter = <D extends DocumentBase = DocumentBase>(field: string, condition: QueryCondition) => fn<D>(Numeric)(field, condition)
+export const DateFilter = <D extends DocumentBase = DocumentBase>(field: string, condition: QueryCondition) => fn<D>(Numeric)(field, condition)
 const Range = <D extends DocumentBase = DocumentBase>(field: string, condition: QueryCondition) => fn<D>(Numeric.Range)(field, condition)
 const RangeWithin = <D extends DocumentBase = DocumentBase>(field: string, condition: QueryCondition) => fn<D>(Numeric.Range.Within)(field, condition)
 const RangeOutside = <D extends DocumentBase = DocumentBase>(field: string, condition: QueryCondition) => fn<D>(Numeric.Range.Outside)(field, condition)
@@ -33,5 +33,3 @@ DateFilter.Range = Range
 DateFilter.Greater = Greater
 DateFilter.Less = Less
 DateFilter.NoRange = NoRange
-
-export default DateFilter

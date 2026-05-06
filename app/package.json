@@ -38,7 +38,7 @@
     "leaflet-gesture-handling": "^1.2.2",
     "leaflet.markercluster": "^1.5.3",
     "lightship": "^9.0.0",
-    "mongoose": "^7.0",
+    "mongoose": "^8.23.1",
     "primevue": "^3.0.0",
     "slugify": "^1.6.6",
     "vee-validate": "^4.0.0",

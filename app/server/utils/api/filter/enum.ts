@@ -1,6 +1,6 @@
 import type { DocumentBase } from "../../../../types/schema"
 import type { FilterableQuery } from "../../../../types/entity"
-import Numeric from "./numeric"
+import { NumericFilter as Numeric } from "./numeric"
 import type { QueryCondition } from "."
 
 enum Enum {}
@@ -10,7 +10,7 @@ const fn = <D extends DocumentBase = DocumentBase>(e: typeof Enum, fn: (field: s
   return fn(field, [op, Array.isArray(value) ? value.map(map) : map(value)])
 }
 
-const EnumFilter = <D extends DocumentBase = DocumentBase>(e: typeof Enum) => (field: string, condition: QueryCondition) => fn<D>(e, Numeric)(field, condition)
+export const EnumFilter = <D extends DocumentBase = DocumentBase>(e: typeof Enum) => (field: string, condition: QueryCondition) => fn<D>(e, Numeric)(field, condition)
 const Greater = <D extends DocumentBase = DocumentBase>(e: typeof Enum) => (field: string, condition: QueryCondition) => fn<D>(e, Numeric.Greater)(field, condition)
 const Less = <D extends DocumentBase = DocumentBase>(e: typeof Enum) => (field: string, condition: QueryCondition) => fn<D>(e, Numeric.Less)(field, condition)
 const Equals = <D extends DocumentBase = DocumentBase>(e: typeof Enum) => (field: string, condition: QueryCondition) => fn<D>(e, Numeric.Equals)(field, condition)
@@ -18,5 +18,3 @@ const Equals = <D extends DocumentBase = DocumentBase>(e: typeof Enum) => (field
 EnumFilter.Greater = Greater
 EnumFilter.Less = Less
 EnumFilter.Equals = Equals
-
-export default EnumFilter

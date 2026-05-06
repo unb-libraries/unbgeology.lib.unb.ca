@@ -1,5 +1,10 @@
 import { FileState } from "@unb-libraries/nuxt-layer-entity"
-import { Date, Numeric, ObjectID, String } from "../../utils/api/filter"
+import {
+  DateFilter as Date,
+  NumericFilter as Numeric,
+  ObjectIDFilter as ObjectID,
+  StringFilter as String,
+} from "../../utils/api/filter"
 
 export default defineMongooseEventQueryHandler(FileBase, (event, query) => {
   const { select, sort, filter } = getQueryOptions(event)

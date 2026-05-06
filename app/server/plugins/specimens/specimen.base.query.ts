@@ -1,4 +1,12 @@
-import { Boolean, Date, Enum, Count, Numeric, ObjectID, String } from "~/server/utils/api/filter"
+import {
+  BooleanFilter as Boolean,
+  DateFilter as Date,
+  EnumFilter as Enum,
+  CountFilter as Count,
+  NumericFilter as Numeric,
+  ObjectIDFilter as ObjectID,
+  StringFilter as String,
+} from "~/server/utils/api/filter"
 import { Legal, MeasurementCount, Status } from "~/types/specimen"
 
 export default defineMongooseEventQueryHandler(Specimen.Base, defineEventQuery({

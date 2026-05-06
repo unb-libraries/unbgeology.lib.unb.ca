@@ -124,7 +124,7 @@ const Equals = <D extends DocumentBase = DocumentBase>(field: string, condition:
   throw new Error(`Invalid operator`)
 }
 
-const Numeric = <D extends DocumentBase = DocumentBase>(field: string, condition: QueryCondition) => {
+export const NumericFilter = <D extends DocumentBase = DocumentBase>(field: string, condition: QueryCondition) => {
   return returnOnSomeSuccess<D>([
     Range,
     Greater,
@@ -133,15 +133,13 @@ const Numeric = <D extends DocumentBase = DocumentBase>(field: string, condition
   ], field, condition)
 }
 
-Numeric.Range = Range
-Numeric.Greater = Greater
-Numeric.Less = Less
-Numeric.Equals = Equals
-Numeric.NoRange = <D extends DocumentBase = DocumentBase>(field: string, condition: QueryCondition) => {
+NumericFilter.Range = Range
+NumericFilter.Greater = Greater
+NumericFilter.Less = Less
+NumericFilter.Equals = Equals
+NumericFilter.NoRange = <D extends DocumentBase = DocumentBase>(field: string, condition: QueryCondition) => {
   return returnOnSomeSuccess<D>([
     Greater,
     Less,
   ], field, condition)
 }
-
-export default Numeric

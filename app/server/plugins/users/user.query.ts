@@ -1,4 +1,9 @@
-import { Boolean, Date, ObjectID, String } from "../../utils/api/filter"
+import {
+  BooleanFilter as Boolean,
+  DateFilter as Date,
+  ObjectIDFilter as ObjectID,
+  StringFilter as String,
+} from "../../utils/api/filter"
 
 export default defineMongooseEventQueryHandler(User, defineEventQuery({
   id: {

@@ -4,7 +4,7 @@ import { type QueryCondition } from "."
 import { type FilterableQuery } from "~/types/entity"
 import type { DocumentBase } from "~/types/schema"
 
-export default function <D extends DocumentBase = DocumentBase> (field: string, condition: QueryCondition): (query: FilterableQuery<D>) => void {
+export function ObjectIDFilter<D extends DocumentBase = DocumentBase>(field: string, condition: QueryCondition): (query: FilterableQuery<D>) => void {
   const [op, value] = condition
 
   const objectID = Array.isArray(value)

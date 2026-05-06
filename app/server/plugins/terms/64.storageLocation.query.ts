@@ -1,4 +1,9 @@
-import { String, Boolean, Enum, ObjectID } from "~/server/utils/api/filter"
+import {
+  StringFilter as String,
+  BooleanFilter as Boolean,
+  EnumFilter as Enum,
+  ObjectIDFilter as ObjectID,
+} from "~/server/utils/api/filter"
 import { Status } from "~/types/storagelocation"
 
 export default defineMongooseEventQueryHandler(StorageLocation, defineEventQuery({

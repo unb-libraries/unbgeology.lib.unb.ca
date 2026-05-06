@@ -1,6 +1,9 @@
-import { Enum, ObjectID } from "~/server/utils/api/filter"
+import {
+  EnumFilter as Enum,
+  ObjectIDFilter as ObjectID,
+  StringFilter as String,
+} from "~/server/utils/api/filter"
 import { Rank, Status } from "~/types/classification"
-import String from "~/server/utils/api/filter/string"
 import Image from "~/server/documentTypes/Image"
 
 export default defineMongooseEventQueryHandler(Classification.Fossil, defineEventQuery({

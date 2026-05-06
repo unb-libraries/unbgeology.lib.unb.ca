@@ -1,5 +1,10 @@
 import { MigrationItemStatus, MigrationStatus } from "@unb-libraries/nuxt-layer-entity"
-import { Date, Enum, ObjectID, String } from "../../utils/api/filter"
+import {
+  DateFilter as Date,
+  EnumFilter as Enum,
+  ObjectIDFilter as ObjectID,
+  StringFilter as String,
+} from "../../utils/api/filter"
 
 export default defineMongooseEventQueryHandler(MigrationItem, defineEventQuery({
   id: {

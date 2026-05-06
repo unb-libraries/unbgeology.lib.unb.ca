@@ -4,7 +4,7 @@ import { type QueryCondition } from "."
 import type { DocumentBase } from "~/types/schema"
 import { type FilterableQuery } from "~/types/entity"
 
-export default function <D extends DocumentBase = DocumentBase> (field: string, condition: QueryCondition) {
+export function StringFilter<D extends DocumentBase = DocumentBase> (field: string, condition: QueryCondition) {
   const [op, value] = condition
   if (!(op & (FilterOperator.EQUALS | FilterOperator.NOT | FilterOperator.MATCH))) {
     const accepted = [FilterOperator.EQUALS, FilterOperator.NOT, FilterOperator.MATCH].map(useEnum(FilterOperator).labelOf)

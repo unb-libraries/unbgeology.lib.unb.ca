@@ -1,5 +1,9 @@
-import { Date, ObjectID, String } from "../../utils/api/filter"
-import { type Term } from "../../../../../server/documentTypes/Term"
+import {
+  DateFilter as Date,
+  ObjectIDFilter as ObjectID,
+  StringFilter as String,
+} from "../../utils/api/filter"
+import { type Term } from "../../documentTypes/Term"
 
 export default defineMongooseEventQueryHandler(Term, (event, query) => {
   const { filter, select, sort } = getQueryOptions(event)
