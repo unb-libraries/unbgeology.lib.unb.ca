@@ -182,6 +182,7 @@ export default defineNuxtConfig({
   },
   vite: {
     server: {
+      allowedHosts: ['local-unbgeology.lib.unb.ca'],
       hmr: {
         port: 31180,
       },

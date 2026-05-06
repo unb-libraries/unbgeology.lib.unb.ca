@@ -1,5 +1,4 @@
 import { defu } from 'defu'
-import { type AppConfig } from "nuxt/schema"
 import {
   type Entity,
   type EntityType,
@@ -31,7 +30,7 @@ export function defineEntityType<E extends Entity = Entity>(name: string, defini
   })
 }
 
-export function useEntityType<E extends Entity = Entity, Bc = E, Bu = Partial<Bc>>(name: keyof AppConfig<E>[`entityTypes`]) {
+export function useEntityType<E extends Entity = Entity, Bc = E, Bu = Partial<Bc>>(name: string) {
   const { [name]: entityType } = useAppConfig().entityTypes
   // TODO: Support typing functions, e.g. to enable fetching subtypes, e.g. useEntityType<Vehicle>, create<Bus>, create<Car>, etc.
   return {
