@@ -10,6 +10,7 @@ const {
   NUXT_SAML_CALLBACK_URL,
   NUXT_SAML_ISSUER,
   NUXT_SAML_CERT,
+  DEPLOY_ENV,
 } = process.env
 
 export default defineNuxtConfig({
@@ -146,6 +147,17 @@ export default defineNuxtConfig({
       uri: `/files`,
     },
   },
+  site: {
+      url: 'https://unbgeology.lib.unb.ca',
+      name: 'Earth Science Collections | UNB Libraries',
+      env: process.env.DEPLOY_ENV,
+    },
+    sitemap: {
+      exclude: [/^\/dashboard/],
+      sources: [
+        '/api/_sitemap/urls/specimens',
+      ],
+    },
   nitro: {
     experimental: {
       openAPI: true,
