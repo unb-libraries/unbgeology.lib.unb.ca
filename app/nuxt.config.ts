@@ -97,9 +97,7 @@ export default defineNuxtConfig({
       }
     },
   },
-  modules: [
-    `@nuxt/image`,
-  ],
+  modules: ['@nuxt/image', '@nuxtjs/sitemap', '@nuxtjs/robots'],
   postcss: {
     plugins: {
       tailwindcss: {},
