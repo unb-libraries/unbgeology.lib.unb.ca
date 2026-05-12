@@ -10,12 +10,15 @@ export default defineSitemapEventHandler(async () => {
   while (!done) {
     const { entities, nav: { next } } = await $fetch<EntityJSONList<Specimen>>('/api/specimens', {
       query: {
-        select: ['id', 'updated'],
+        select: ['id', 'images', 'updated'],
         pageSize: 500,
         page: page++,
       }})
-    urls.push(...(entities.map(({ id, updated }) => ({
+    urls.push(...(entities.map(({ id, images, updated }) => ({
       loc: `/specimens/${id}`,
+      images: images.entities.map(({ uri }) => ({
+        loc: uri,
+      })),
       lastmod: updated,
     })) ?? []))
 
