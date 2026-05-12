@@ -153,6 +153,7 @@ export default defineNuxtConfig({
       env: process.env.DEPLOY_ENV,
     },
     sitemap: {
+      cacheMaxAgeSeconds: 60 * 60 * 24, // 24 hours
       exclude: [/^\/dashboard/],
       sources: [
         '/api/_sitemap/urls/specimens',
