@@ -21,3 +21,4 @@ app/public/image
 app/public/document
 app/public/other
 files/*
+_robots.txt
