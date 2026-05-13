@@ -181,6 +181,16 @@ export default defineNuxtConfig({
     },
   },
   vite: {
+    optimizeDeps: {
+      include: [
+        `@vue/devtools-core`,
+        `@vue/devtools-kit`,
+        `doi-regex`,
+        `leaflet`,
+        `leaflet-gesture-handling`,
+        `leaflet.markercluster`,
+      ],
+    },
     server: {
       allowedHosts: ['local-unbgeology.lib.unb.ca'],
       hmr: {
