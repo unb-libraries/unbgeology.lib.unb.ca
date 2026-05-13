@@ -1,4 +1,4 @@
-FROM ghcr.io/unb-libraries/node:22.x
+FROM ghcr.io/unb-libraries/node:24.x
 
 ENV APP_STARTUP_CMD "node .output/server/index.mjs"
 ENV APP_ROOT /app/html
