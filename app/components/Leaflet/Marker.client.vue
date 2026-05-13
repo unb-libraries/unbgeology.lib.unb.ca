@@ -60,13 +60,15 @@ onMounted(() => {
     })
     add(circle)
   }
+
+  marker.on('popupopen', () => popupOpened.value = true)
+  
   add(marker)
 })
 
 onUpdated(async () => {
   if (marker) {
     marker.setLatLng(props.center)
-    marker.on('popupopen', () => popupOpened.value = true)
     if (popupOpened.value) {
       const popupContent = await Promise.all(getCurrentInstance()?.slots.default?.()
         .map(vnode => renderToString(vnode)) ?? [])

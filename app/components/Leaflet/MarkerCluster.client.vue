@@ -16,31 +16,16 @@ if (!add || !remove) {
 }
 
 let cluster: MarkerClusterGroup
-const callbacks: ((cluster: MarkerClusterGroup) => void)[] = []
 
-async function getCluster() {
-  return new Promise<MarkerClusterGroup>((resolve) => {
-    if (cluster) {
-      resolve(cluster)
-    } else {
-      callbacks.push(resolve)
-    }
-  })
+function getCluster() {
+  if (!cluster) {
+    cluster = new MarkerClusterGroup()
+    add!(cluster)
+  }
+  return cluster
 }
 
 provide(`cluster`, getCluster)
-provide(`add`, async (layer: Layer) => { (await getCluster()).addLayer(layer) })
-provide(`remove`, async (layer: Layer) => { (await getCluster()).removeLayer(layer) })
-
-function initCluster() {
-  cluster = new MarkerClusterGroup()
-  while (callbacks.pop()?.(cluster)) { }
-  add!(cluster)
-}
-
-onUpdated(() => {
-  if (!cluster) {
-    initCluster()
-  }
-})
+provide(`add`, (layer: Layer) => { getCluster().addLayer(layer) })
+provide(`remove`, (layer: Layer) => { getCluster().removeLayer(layer) })
 </script>

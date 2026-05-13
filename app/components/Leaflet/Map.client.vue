@@ -1,15 +1,18 @@
 <template>
-  <div id="map">
+  <div id="map" ref="mapContainer">
     <slot />
   </div>
 </template>
 
 <script setup lang="ts">
 // REFACTOR: Replace this with component from @vue-leaflet/vue-leaflet
-import { Map, tileLayer as setTileLayer } from "leaflet"
+import { Map, tileLayer } from "leaflet"
 import type { Layer } from "leaflet"
 import { GestureHandling } from 'leaflet-gesture-handling'
 import type { Coordinate } from "~/types/leaflet"
+
+const mapContainer = ref<HTMLDivElement>()
+const map = ref<Map>()
 
 const leafletCSS = new URL('leaflet/dist/leaflet.css', import.meta.url).href
 const markerClusterCSS = new URL('leaflet.markercluster/dist/MarkerCluster.css', import.meta.url).href
@@ -43,28 +46,29 @@ const emit = defineEmits<{
   zoom: [level: number, Coordinate, bounds: [Coordinate, Coordinate]]
 }>()
 
-let map: Map
-const callbacks: ((map: Map) => void)[] = []
-
 async function getMap() {
   return new Promise<Map>((resolve) => {
-    if (map) {
-      resolve(map)
+    if (map.value) {
+      resolve(map.value)
     } else {
-      callbacks.push(resolve)
+      watch(map, (map) => {
+        resolve(map!)
+      }, { once: true })
     }
   })
 }
 
 provide(`map`, getMap)
-provide(`add`, async (layer: Layer) => { (await getMap()).addLayer(layer) })
-provide(`remove`, async (layer: Layer) => { (await getMap()).removeLayer(layer) })
+provide(`add`, async (layer: Layer) => (await getMap()).addLayer(layer))
+provide(`remove`, async (layer: Layer) => (await getMap()).removeLayer(layer))
 
-function initMap() {
-  map = new Map(`map`, {
+function createMap(container: HTMLDivElement) {
+  const map = new Map(container, {
+    center: props.center,
+    zoom: props.zoom,
     maxZoom: props.maxZoom,
     minZoom: props.minZoom,
-    maxBounds: [[-90, -180], [90, 180]],
+    maxBounds: [[ -90, -180 ], [ 90, 180 ]],
     maxBoundsViscosity: 1.0,
     gestureHandling: true,
   })
@@ -95,19 +99,34 @@ function initMap() {
       [southWest.lat, southWest.lng],
     ])
   })
-
-  setTileLayer(`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png`, {
+  
+  const tiles = tileLayer(`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png`, {
     attribution: `&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>`,
-  }).addTo(map)
+  })
+  map.addLayer(tiles)
 
-  while (callbacks.pop()?.(map)) { }
-  emit(`ready`, map)
+  return map
 }
 
-onUpdated(async () => {
-  if (!map) {
-    initMap()
+onMounted(async () => {
+  function setMap(container?: HTMLDivElement) {
+    if (!container) {
+      return
+    }
+    const m = createMap(container)
+    map.value = m
+    emit(`ready`, m)
   }
+  
+  if (!mapContainer.value) {
+    watch(mapContainer, setMap, { once: true })
+  } else {
+    setMap(mapContainer.value)
+  }
+})
+
+onUpdated(async () => {
+  const map = await getMap()
   const [centerLat, centerLong] = props.center
   map.setView([centerLat, centerLong], map.getZoom() ?? props.zoom ?? 6)
 })
