@@ -1,15 +1,9 @@
 import url from "url"
-import { mkdirSync, existsSync, writeFileSync } from "fs"
-import { createResolver } from "nuxt/kit"
-import { createSamlMetadata, initSaml } from "./saml/saml"
+import { mkdirSync, existsSync } from "fs"
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 const {
   APP_ROOT,
-  NUXT_SAML_ENTRY_POINT,
-  NUXT_SAML_CALLBACK_URL,
-  NUXT_SAML_ISSUER,
-  NUXT_SAML_CERT,
   DEPLOY_ENV,
 } = process.env
 
@@ -75,22 +69,6 @@ export default defineNuxtConfig({
     enabled: true,
   },
   hooks: {
-    'nitro:init': (nitro) => {
-      const { resolve } = createResolver(`/tmp`)
-
-      const samlDir = resolve(`saml`)
-      mkdirSync(samlDir, { recursive: true })
-
-      initSaml(nitro.options.runtimeConfig.saml)
-      writeFileSync(resolve(`saml`, `metadata.xml`), createSamlMetadata(),
-      )
-
-      nitro.options.publicAssets.push({
-        baseURL: `saml`,
-        dir: samlDir,
-        maxAge: 60 * 60 * 24 * 7, // 7 days
-      })
-    },
     'nitro:config': (nitroConfig) => {
       const { dir } = nitroConfig.runtimeConfig!.uploads as { dir: string }
       if (!existsSync(dir)) {
@@ -121,10 +99,10 @@ export default defineNuxtConfig({
       },
     },
     saml: {
-      entryPoint: NUXT_SAML_ENTRY_POINT || ``,
-      callbackUrl: NUXT_SAML_CALLBACK_URL || ``,
-      issuer: NUXT_SAML_ISSUER || ``,
-      cert: NUXT_SAML_CERT || ``,
+      entryPoint: ``,
+      callbackUrl: ``,
+      issuer: ``,
+      cert: ``,
       validateInResponseTo: `never`,
       disableRequestedAuthnContext: true,
     },
