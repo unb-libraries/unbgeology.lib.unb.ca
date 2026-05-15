@@ -1,4 +1,4 @@
-import { objectHash, sha256base64 } from 'ohash'
+import { hash } from 'ohash'
 import type { H3Event } from "h3"
 
 export function getSpecimenRequestCacheId(event: H3Event) {
@@ -8,7 +8,7 @@ export function getSpecimenRequestCacheId(event: H3Event) {
   const resources = getAuthorizedResources(event, r => /^specimen(:[a-z]+)*$/.test(r))
   const authFields = getAuthorizedFields(event, ...resources)
   
-  return sha256base64(objectHash({
+  return hash({
     page,
     pageSize,
     search,
@@ -25,5 +25,5 @@ export function getSpecimenRequestCacheId(event: H3Event) {
       .filter(([field]) => !authFields.length || authFields.includes(field))
       .map(([f, op, v]) => [f, `${op}:${v}`])
       .sort(([f1, o1], [f2, o2]) => f1 < f2 ? -1 : f1 > f2 ? 1 : o1 < o2 ? -1 : o1 > o2 ? 1 : 0),
-  }))
+  })
 }
