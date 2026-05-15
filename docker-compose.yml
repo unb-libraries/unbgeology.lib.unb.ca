@@ -15,15 +15,16 @@ services:
   
   unbgeology-lib-unb-ca:
     build:
+      target: development
       context: .
     depends_on:
       - unbgeology-mongodb-lib-unb-ca
       - idp-saml-unbgeology-lib-unb-ca
-    restart: unless-stopped
+    restart: no
     container_name: unbgeology-lib-unb-ca
     volumes:
-      - ./app:/app/html
-      - ./files:/app/files
+      - ./app:/app
+      - ./files:/files
     env_file:
       - ./env/nuxt.env
     networks:

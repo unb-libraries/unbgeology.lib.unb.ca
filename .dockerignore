@@ -11,3 +11,5 @@ tests
 vendor
 vitest.config.mjs
 composer.*
+.DS_Store
+.vscode

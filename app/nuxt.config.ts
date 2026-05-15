@@ -4,7 +4,7 @@ import { mkdirSync, existsSync } from "fs"
 // https://nuxt.com/docs/api/configuration/nuxt-config
 const {
   APP_ROOT,
-  DEPLOY_ENV,
+  NODE_ENV,
 } = process.env
 
 export default defineNuxtConfig({
@@ -61,7 +61,7 @@ export default defineNuxtConfig({
   build: {
     transpile: [`primevue`],
   },
-  buildDir: `/app/html/.build/.nuxt`,
+  buildDir: `./.build/.nuxt`,
   css: [
     `~/assets/css/main.css`,
   ],
@@ -126,17 +126,20 @@ export default defineNuxtConfig({
     },
   },
   site: {
-      url: 'https://unbgeology.lib.unb.ca',
-      name: 'Earth Science Collections | UNB Libraries',
-      env: process.env.DEPLOY_ENV,
-    },
-    sitemap: {
-      cacheMaxAgeSeconds: 60 * 60 * 24, // 24 hours
-      exclude: [/^\/dashboard/],
-      sources: [
-        '/api/_sitemap/urls/specimens',
-      ],
-    },
+    url: `https://unbgeology.lib.unb.ca`,
+    name: `Earth Science Collections | UNB Libraries`,
+    env: NODE_ENV,
+  },
+  sitemap: {
+    cacheMaxAgeSeconds: 60 * 60 * 24, // 24 hours
+    exclude: [/^\/dashboard/],
+    sources: [
+      `/api/_sitemap/urls/specimens`,
+    ],
+  },
+  robots: {
+    disallow: NODE_ENV !== `production` ? `/` : undefined,
+  },
   nitro: {
     experimental: {
       openAPI: true,
