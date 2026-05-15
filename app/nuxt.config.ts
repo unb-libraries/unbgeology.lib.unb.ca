@@ -181,6 +181,7 @@ export default defineNuxtConfig({
         `leaflet`,
         `leaflet-gesture-handling`,
         `leaflet.markercluster`,
+        `@vueuse/router`,
       ],
     },
     server: {
