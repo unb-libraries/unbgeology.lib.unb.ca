@@ -24,7 +24,7 @@ services:
     container_name: unbgeology-lib-unb-ca
     volumes:
       - ./app:/app
-      - ./files:/files
+      - ./.uploads:/uploads
     env_file:
       - ./env/nuxt.env
     networks:

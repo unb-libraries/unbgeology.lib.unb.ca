@@ -20,6 +20,9 @@ export default defineNuxtConfig({
         },
         maxAge: 2592000, // 30 days
       },
+      uploads: {
+        dir: `/uploads`,
+      },
     },
   },
   app: {
