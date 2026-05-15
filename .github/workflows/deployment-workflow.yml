@@ -7,14 +7,14 @@ on:
 
 jobs:
   deploy:
-    uses: unb-libraries/dockworker/.github/workflows/build-push-test-deploy-notify.yaml@6.x
+    uses: unb-libraries/dockworker/.github/workflows/build-push-deploy-notify.yaml@6.x
     with:
       branch-env-map: '{"dev":"dev", "prod":"prod"}'
       deploy-branches: '["dev", "prod"]'
       image-name: ghcr.io/unb-libraries/unbgeology.lib.unb.ca
-      k8s-deployment-name: 'unbgeology-lib-unb-ca'
+      k8s-deployment-name: "unbgeology-lib-unb-ca"
       push-branches: '["dev", "prod"]'
-      test: 'unit,e2e'
+      platforms: "linux/amd64"
     secrets:
       KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_DATA }}
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
