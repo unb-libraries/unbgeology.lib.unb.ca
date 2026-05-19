@@ -22,6 +22,7 @@ export default defineNuxtConfig({
       },
       uploads: {
         dir: `/uploads`,
+        pruneOrphans: true,
       },
     },
   },
@@ -126,6 +127,7 @@ export default defineNuxtConfig({
     uploads: {
       dir: `/app/files`,
       uri: `/files`,
+      pruneOrphans: false,
     },
   },
   site: {

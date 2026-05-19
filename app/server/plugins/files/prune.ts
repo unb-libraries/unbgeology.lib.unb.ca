@@ -25,23 +25,26 @@ function loadPaginated() {
 }
 
 export default defineNitroPlugin((nitro) => {
-  nitro.hooks.hook(`mongoose:init`, async () => {
-    for await (const files of loadPaginated()) {
-      const orphans = (await Promise.all(files
-        .map<Promise<[typeof files[number], boolean]>>(async file => [file, await fileExists(file.filepath)])))
-        .filter(([, exists]) => !exists)
-
-      const total = orphans.length
-      if (total > 0) {
-        await Promise.all(orphans.map(([file]) => file.updateOne({ status: FileState.DELETED })))
+  const { pruneOrphans = false } = useRuntimeConfig().uploads as { pruneOrphans?: boolean }
+  if (pruneOrphans) {
+    nitro.hooks.hook(`mongoose:init`, async () => {
+      for await (const files of loadPaginated()) {
+        const orphans = (await Promise.all(files
+          .map<Promise<[typeof files[number], boolean]>>(async file => [file, await fileExists(file.filepath)])))
+          .filter(([, exists]) => !exists)
+  
+        const total = orphans.length
+        if (total > 0) {
+          await Promise.all(orphans.map(([file]) => file.updateOne({ status: FileState.DELETED })))
+        }
       }
-    }
-
-    const { deletedCount } = await FileBase.mongoose.model.deleteMany({ status: FileState.DELETED })
-    if (deletedCount > 0) {
-      consola.log(`Pruned ${deletedCount} file document(s)`)
-    } else {
-      consola.log(`No orphaned file documents found`)
-    }
-  })
+  
+      const { deletedCount } = await FileBase.mongoose.model.deleteMany({ status: FileState.DELETED })
+      if (deletedCount > 0) {
+        consola.log(`Pruned ${deletedCount} file document(s)`)
+      } else {
+        consola.log(`No orphaned file documents found`)
+      }
+    })
+  }
 })
