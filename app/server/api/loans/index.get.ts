@@ -67,7 +67,7 @@ export default defineEventHandler(async (event) => {
     query.where({ type: Array.isArray(type.ne) ? { $nin: type.ne.map(value => useEnum(LoanType).valueOf(value as `incoming` | `outgoing`)) } : { $ne: useEnum(LoanType).valueOf(type.ne as `incoming` | `outgoing`) } })
   }
 
-  query.sort(sort?.map(([field, direction]) => direction === 1 ? field : `-${field})`).join(` `))
+  query.sort(sort?.map(([field, direction]) => direction === 1 ? field : `-${field})`).join(` `) || `-start`)
 
   const total = await (query.clone().countDocuments())
   select
