@@ -13,7 +13,6 @@ jobs:
       deploy-branches: '["dev", "prod"]'
       image-name: ghcr.io/unb-libraries/unbgeology.lib.unb.ca
       k8s-deployment-name: "unbgeology-lib-unb-ca"
-      push-branches: '["dev", "prod"]'
       platforms: "linux/amd64"
     secrets:
       KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_DATA }}
