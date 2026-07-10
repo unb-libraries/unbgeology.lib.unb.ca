@@ -3,7 +3,11 @@
     <thead :class="headerClass ?? ``">
       <tr class="bg-accent-dark/10 border-accent-dark border-b-2">
         <th v-if="multiSelect && selection.length > 0" class="p-4 text-left leading-6">
-          <PvCheckbox v-model="allChecked" />
+          <PvCheckbox
+            :model-value="selection.length === entities.length"
+            label=""
+            @update:model-value="selection = $event ? entities : []"
+          />
         </th>
         <th v-for="[column, label] in columns" :key="column" class="p-4 text-left leading-6" :class="headerCellClass ?? ``">
           <slot :name="`${column}-header`">
@@ -14,19 +18,23 @@
     </thead>
     <tbody class="relative">
       <tr
-        v-for="(entity, index) in entities"
+        v-for="entity in entities"
         :key="entity.id"
         :class="{ [rowClass ?? ``]: true, [selectedRowClass ?? ``]: selection?.find(e => e === entity) }"
         tabindex="0"
-        @click.stop="onClickRow(entity, index)"
+        @click.stop="toggle(entity)"
       >
         <td v-if="multiSelect && selection.length > 0" class="w-16 p-4 text-left leading-6">
-          <PvCheckbox v-model="checkboxes[index]" />
+          <PvCheckbox
+            :model-value="selection.includes(entity)"
+            label=""
+            @update:model-value="toggle(entity)"
+          />
         </td>
         <td v-for="[column] in columns" :key="`${entity.id}-${column}`" class="p-4 text-left leading-6" :class="cellClass ?? ``">
           <slot :name="column" :entity="entity">
-            <template v-if="column in entity">
-              {{ entity[column] }}
+            <template v-if="column! in entity">
+              {{ entity[column as keyof EntityJSON<E>] }}
             </template>
           </slot>
         </td>
@@ -42,12 +50,13 @@
 
 <script setup lang="ts" generic="E extends Entity, M extends boolean">
 import type { Entity, EntityJSON } from '@unb-libraries/nuxt-layer-entity'
-import type { PvCheckbox } from '#build/components'
 
+type S = M extends false ? EntityJSON<E> : EntityJSON<E>[]
+
+const value = defineModel<S>()
 const props = defineProps<{
   entities: EntityJSON<E>[]
   columns: (string | [string, string])[]
-  modelValue?: M extends false ? EntityJSON<E> | null : EntityJSON<E>[]
   multiSelect?: M extends true ? true : false
   headerClass?: string
   headerCellClass?: string
@@ -60,63 +69,23 @@ const props = defineProps<{
 
 const emits = defineEmits<{
   select: [entity: EntityJSON<E>]
-  // eslint-disable-next-line
-  "update:modelValue": [M extends false ? EntityJSON<E> | null : EntityJSON<E>[]]
 }>()
 
 const columns = computed(() => Object.values(props.columns).map(col => Array.isArray(col) ? col : [col, col.substring(0, 1).toUpperCase() + col.substring(1).toLowerCase()]))
-
 const selection = computed({
   get() {
-    return (Array.isArray(props.modelValue ?? []) ? props.modelValue : [props.modelValue]) as EntityJSON<E>[]
+    return (Array.isArray(value.value ?? []) ? value.value : [value.value]) as EntityJSON<E>[]
   },
-  set(value: EntityJSON<E>[]) {
-    emits(`update:modelValue`, ((props.multiSelect ? value : value[0] ?? null) as M extends false ? EntityJSON<E> | null : EntityJSON<E>[]))
-  },
-})
-
-const checkboxes = computed({
-  get() {
-    const selection = Array.from({ length: props.entities.length }).map(_ => false)
-    if (props.multiSelect) {
-      ((props.modelValue ?? []) as EntityJSON<E>[]).forEach((entity) => {
-        const index = props.entities.findIndex(e => e === entity)
-        if (index >= 0) {
-          selection[index] = true
-        }
-      })
-    } else {
-      const index = props.entities.findIndex(e => e === props.modelValue)
-      if (index >= 0) {
-        selection[index] = true
-      }
-    }
-    return selection
-  },
-  set(value: boolean[]) {
-    selection.value = value.filter(v => v).map((_, i) => props.entities[i])
+  set(v: EntityJSON<E>[]) {
+    value.value = ((props.multiSelect ? v : v?.[0]) as S)
   },
 })
 
-const allChecked = computed({
-  get() {
-    return checkboxes.value.every(checked => checked)
-  },
-  set(value: boolean) {
-    checkboxes.value = Array.from({ length: props.entities.length }).map(_ => value)
-  },
-})
-
-const onClickRow = (entity: EntityJSON<E>, index: number) => {
-  if (!props.multiSelect) {
-    selection.value = selection.value?.[0] !== entity ? [entity] : []
+const toggle = (entity: EntityJSON<E>) => {
+  if (!selection.value.map(e => e.self).includes(entity.self)) {
+    selection.value = [...selection.value ?? [], entity]
   } else {
-    const entityIndex = selection.value.findIndex(e => e === entity)
-    if (entityIndex >= 0) {
-      selection.value.splice(entityIndex, 1)
-    } else {
-      selection.value.push(entity)
-    }
+    selection.value = selection.value.filter(e => e.self !== entity.self)
   }
 }
 </script>
