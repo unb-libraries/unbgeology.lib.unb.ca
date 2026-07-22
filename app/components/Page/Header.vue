@@ -34,6 +34,9 @@
             <a href="/specimens" class="py-3 md:py-0">
               Search
             </a>
+            <a href="/about" class="py-3 md:py-0">
+              About
+            </a>
           </nav>
           <nav class="flex flex-col flex-none justify-end uppercase md:flex md:flex-row md:space-x-6 md:order-first text-md md:text-sm" :class="collapsed ? 'hidden' : ''">
             <a v-if="!isAuthenticated" href="/login" class="py-2 md:py-0">

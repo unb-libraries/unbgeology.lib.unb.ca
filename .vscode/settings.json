@@ -6,6 +6,7 @@
   "editor.quickSuggestions": {
     "strings": "on"
   },
+  "editor.wordWrap": "wordWrapColumn",
   "files.associations": {
     "*.css": "tailwindcss"
   },
@@ -24,5 +25,5 @@
   "todohighlight.defaultStyle": {
     "backgroundColor": "#3ac",
     "color": "#fff"
-  }
+  },
 }
