@@ -6,7 +6,7 @@
   "editor.quickSuggestions": {
     "strings": "on"
   },
-  "editor.wordWrap": "wordWrapColumn",
+  "editor.wordWrap": "on",
   "files.associations": {
     "*.css": "tailwindcss"
   },
