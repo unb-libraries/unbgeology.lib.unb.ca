@@ -9,7 +9,7 @@
     <div class="form-field w-full">
       <label class="sr-only" for="search">Search</label>
       <input
-        :model-value="search"
+        :value="search"
         placeholder="Search"
         name="search"
         class="placeholder:text-primary-20 form-input form-input-text bg-primary grow p-2 placeholder:italic"
@@ -17,13 +17,13 @@
       >
     </div>
     <div class="mt-2 flex w-full flex-row items-center justify-between">
-      <div v-if="list?.total" class="italic">
-        Displaying {{ (page - 1) * pageSize + 1 }} - {{ Math.min(list?.total, page * pageSize) }} of {{ pluralize(list?.total, `specimen`, `specimens`) }}
+      <div v-if="total" class="italic">
+        Displaying {{ (page - 1) * pageSize + 1 }} - {{ Math.min(total, page * pageSize) }} of {{ pluralize(total, `specimen`, `specimens`) }}
       </div>
       <div v-else>
         No specimens found
       </div>
-      <TwPageIndex :page="page" :total="Math.ceil((list?.total ?? 0) / pageSize)" :size="5" @change="(index) => { page = index }" />
+      <TwPageIndex :page="page" :total="Math.ceil(total / pageSize)" :size="5" @change="(index) => { page = index }" />
       <div class="relative flex items-center space-x-2">
         <button id="button-filter" class="button bg-primary-80/40 hover:bg-primary-60/40 button-md inline-flex space-x-2" @click.stop.prevent="filterMenuVisible = !filterMenuVisible">
           <IconFilter class="stroke-1.5 size-6 fill-none stroke-current" /><span>Filter<template v-if="filter.length"> ({{ filter.length }})</template></span>
@@ -38,13 +38,24 @@
         <PvContextualDropdown v-model="filterMenuVisible" trigger-id="button-filter" class="bg-primary border-primary-60/40 right-0 top-12 w-96 rounded-md border p-6" @click.prevent.stop="filterMenuVisible = !filterMenuVisible">
           <div class="space-y-3">
             <TwFormField label="Category">
-              <PvInputDropdown v-model="categoryFilter" :options="categoryOptions" class="input-select-md" />
+              <PvInputDropdown
+                v-model="categoryFilter"
+                :options="categoryOptions"
+                class="input-select-md"
+              />
             </TwFormField>
             <div class="inline-flex space-x-2">
-              <button type="submit" class="button button-accent-mid :hover:button-accent-light button-md" @click.prevent="filter = (categoryFilter && [[`type`, FilterOperator.EQUALS, categoryFilter]]) || []">
+              <button
+                type="submit"
+                class="button button-accent-mid :hover:button-accent-light button-md"
+                @click.prevent="filter = categoryFilter ? [[`type`, FilterOperator.EQUALS, categoryFilter].join(':')] : []"
+              >
                 Apply
               </button>
-              <button class="button button-md hover:bg-primary-80/60" @click.prevent="filter = []">
+              <button
+                class="button button-md hover:bg-primary-80/60"
+                @click.prevent="filter = []"
+              >
                 Reset
               </button>
             </div>
@@ -94,11 +105,11 @@
               <li v-for="column in columnsOptions" :key="(column[0])" class="bg-primary-80/40 flex w-full flex-row rounded-sm px-3 py-1">
                 <PvCheckbox
                   :id="`column-${column[0]}`"
-                  v-model="column[2]"
+                  :model-value="column[2]"
                   :label="column[1]"
                   :name="`column-${column[0]}`"
                   class="rounded-lg p-1"
-                  @update:model-value="select = columnsOptions.filter(([, , selected]) => selected).map(([id]) => id)"
+                  @update:model-value="select = select.includes(column[0]) ? select.filter(c => c !== column[0]) : [...select, column[0]]"
                 />
               </li>
             </ul>
@@ -122,9 +133,9 @@
       <template #images="{ entity: { images } }">
         <img
           v-if="images?.total > 0"
-          :src="`${images?.entities[0].uri}?w=40&h=40`"
+          :src="`${images?.entities[0]!.uri}?w=40&h=40`"
           class="aspect-square rounded-md object-cover hover:cursor-pointer"
-          @click.prevent.stop="onClickThumbnail(images?.entities[0].uri)"
+          @click.prevent.stop="onClickThumbnail(images?.entities[0]!.uri)"
         >
         <div v-else />
       </template>
@@ -134,7 +145,7 @@
         </NuxtLink>
       </template>
       <template #type="{ entity: specimen }">
-        {{ sentenceCased(specimen.type) }}
+        {{ specimen.type && sentenceCased(specimen.type) || '' }}
       </template>
       <template #classification="{ entity: specimen }">
         <template v-if="specimen.classification">
@@ -199,7 +210,7 @@
         </template>
       </template>
       <template #legal="{ entity: { legal } }">
-        {{ sentenceCased(useEnum(Legal).labelOf(legal)) }}
+        {{ legal && sentenceCased(useEnum(Legal).labelOf(legal)) || '' }}
       </template>
       <template #storage="{ entity: { storage } }">
         <!-- TODO: Indicate if item is on loan and not stored on site -->
@@ -228,7 +239,7 @@
 
     <template #sidebar>
       <EntityAdminSidebar v-if="selection.length" :entities="selection">
-        <SpecimenDetails v-if="selection.length === 1" :id="selection[0].id" />
+        <SpecimenDetails v-if="selection.length === 1" :id="selection[0]!.id" />
         <template #actions>
           <div class="space-y-2">
             <button v-if="hasPermission(/^delete:specimen/)" class="button button-lg button-outline-red-dark hover:button-red-dark w-full" @click.stop.prevent="onClickDelete">
@@ -243,9 +254,10 @@
 </template>
 
 <script setup lang="tsx">
-import { FilterOperator, type EntityJSON } from '@unb-libraries/nuxt-layer-entity'
-import { type Specimen, Status, Legal, type Fossil, type Mineral, type Rock } from 'types/specimen'
-import { PvEntityDeleteConfirm, TwLightbox, IconCancel } from '#components'
+import { FilterOperator, type EntityJSON, type EntityJSONList } from '@unb-libraries/nuxt-layer-entity'
+import { type Specimen, Legal, type Fossil, type Mineral, type Rock } from 'types/specimen'
+import { useRouteQuery } from '@vueuse/router'
+import { PvEntityDeleteConfirm, TwLightbox } from '#components'
 
 definePageMeta({
   layout: false,
@@ -255,10 +267,17 @@ definePageMeta({
   },
 })
 
-const routeQuery = useRoute().query
+const filter = useRouteQuery('filter', [] as string | string[], {
+  transform: (filter) => Array.isArray(filter) ? filter : [filter].filter(Boolean),
+})
+const page = useRouteQuery<number>('page', 1)
+const pageSize = useRouteQuery<number>('pageSize', 25)
+const search = useRouteQuery<string>('search', '')
+const sort = useRouteQuery<string[]>('sort', ['-id'])
+const select = useRouteQuery<string[]>('select', ['id', 'name'])
 
 const { hasPermission } = useCurrentUser()
-const columns = ref<[keyof Specimen, string][]>([
+const columns: [keyof Specimen, string][] = [
   [`images`, `Image`],
   [`id`, `ID`],
   [`type`, `Category`],
@@ -285,25 +304,40 @@ const columns = ref<[keyof Specimen, string][]>([
   [`created`, `Created on`],
   [`updated`, `Updated on`],
   [`status`, `Status`],
-])
+]
+
+watch(search, () => { if (page.value !== 1) {
+    page.value = 1
+  }
+})
+watch(filter, (filter, prevFilter) => {
+  if (JSON.stringify(filter) !== JSON.stringify(prevFilter) && page.value !== 1) {
+    page.value = 1
+  }
+})
 
 const filterMenuVisible = ref(false)
-
 const columnMenuVisible = ref(false)
-const columnsOptions = ref<[string, string, boolean][]>(columns.value.map(([id, label], index) => [id, label, index > 0 && index < 5]))
+const columnsOptions = computed<[string, string, boolean][]>(() => columns.map(([id, label]) => [id, label, select.value.includes(id)]))
 
-const { list, entities: specimens, query, remove, removeMany, pending: loading } = await fetchEntityList<Specimen>(`Specimen`, {
-  sort: routeQuery.sort,
-  page: routeQuery.page,
-  select: columnsOptions.value.filter(([, , selected]) => selected).map(([id]) => id),
+const { data: list, pending: loading } = await useFetch<EntityJSONList<Specimen>>('/api/specimens', {
+  query: {
+    search,
+    select,
+    filter,
+    page,
+    pageSize,
+  }
 })
-const { filter, search, page, select, pageSize, sort } = query
+
+const specimens = computed(() => list.value?.entities ?? [])
+const total = computed(() => list.value?.total ?? 0)
 
 const sortMenuVisible = ref(false)
 const sortableColumIDs = [`id`, `name`, `classification`, `collection`, `pieces`, `legal`, `creator`, `editor`, `created`, `updated`]
-const { options: sortedColumnIDs, sortTop, sortUp, sortReverse, remove: unsort } = useSort(columns.value.filter(([id]) => sortableColumIDs.includes(id)).map(([id]) => [id, sort.value.includes(id) ? 1 : sort.value.includes(`-${id}`) ? -1 : 0]))
+const { options: sortedColumnIDs, sortTop, sortUp, sortReverse, remove: unsort } = useSort(columns.filter(([id]) => sortableColumIDs.includes(id)).map(([id]) => [id, sort.value.includes(id) ? 1 : sort.value.includes(`-${id}`) ? -1 : 0]))
 
-const sortOptions = computed(() => sortedColumnIDs.filter(([id]) => columns.value.find(([colID]) => colID === id)).map<[string, string, 1 | 0 | -1]>(([id, order]) => [id, columns.value.find(([colID]) => colID === id)![1], order]))
+const sortOptions = computed(() => sortedColumnIDs.filter(([id]) => columns.find(([colID]) => colID === id)).map<[string, string, 1 | 0 | -1]>(([id, order]) => [id, columns.find(([colID]) => colID === id)![1], order]))
 const activeSortOptions = computed(() => sortOptions.value.filter(([_, __, direction]) => direction !== 0))
 const inactiveSortOptions = computed(() => sortOptions.value.filter(([_, __, direction]) => direction === 0))
 
@@ -324,15 +358,11 @@ const onClickThumbnail = (uri: string) => {
 }
 
 const onClickDelete = () => {
-  const label = selection.value.length > 1 ? `${selection.value.length} specimens` : `the specimen "${selection.value[0].id}"`
+  const label = selection.value.length > 1 ? `${selection.value.length} specimens` : `the specimen "${selection.value[0]!.id}"`
   setContent(() => <PvEntityDeleteConfirm label={label} onConfirm={onRemove} onCancel={closeModal} />)
 }
 const onRemove = async () => {
-  if (selection.value.length === 1) {
-    await remove(selection.value[0])
-  } else {
-    await removeMany(selection.value)
-  }
+  await Promise.all(selection.value.map(({ self }) => $fetch(self, { method: `DELETE` })))
   selection.value = []
   closeModal()
 }
@@ -341,7 +371,6 @@ let searchTimeout: ReturnType<typeof setTimeout>
 function onSearch(phrase: string) {
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
-    console.log(phrase)
     search.value = phrase
   }, 800)
 }
