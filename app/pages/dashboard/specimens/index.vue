@@ -320,7 +320,7 @@ const filterMenuVisible = ref(false)
 const columnMenuVisible = ref(false)
 const columnsOptions = computed<[string, string, boolean][]>(() => columns.map(([id, label]) => [id, label, select.value.includes(id)]))
 
-const { data: list, pending: loading } = await useFetch<EntityJSONList<Specimen>>('/api/specimens', {
+const { data: list, refresh, pending: loading } = await useFetch<EntityJSONList<Specimen>>('/api/specimens', {
   query: {
     search,
     select,
@@ -365,6 +365,7 @@ const onRemove = async () => {
   await Promise.all(selection.value.map(({ self }) => $fetch(self, { method: `DELETE` })))
   selection.value = []
   closeModal()
+  await refresh()
 }
 
 let searchTimeout: ReturnType<typeof setTimeout>
