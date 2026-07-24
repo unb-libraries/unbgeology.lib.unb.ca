@@ -53,6 +53,15 @@
                 class="input-select-md"
               />
             </TwFormField>
+            <TwFormField label="Collector">
+              <PvInputDropdown
+                v-model="collectorFilter"
+                :options="collectorOptions?.entities ?? {}"
+                label-field="label"
+                option-field="self"
+                class="input-select-md"
+              />
+            </TwFormField>
             <div class="inline-flex space-x-2">
               <button
                 type="submit"
@@ -268,6 +277,7 @@ import { type Specimen, Legal, type Fossil, type Mineral, type Rock } from 'type
 import { useRouteQuery } from '@vueuse/router'
 import { PvEntityDeleteConfirm, TwLightbox } from '#components'
 import { Collection } from '~/types/collection'
+import type { Affiliate } from '~/types/affiliate'
 
 definePageMeta({
   layout: false,
@@ -371,6 +381,30 @@ const { data: collectionOptions } = await useFetch<EntityJSONList<Collection>>('
   }
 })
 const collectionFilter = ref<string>()
+const { data: people } = await useFetch<EntityJSONList<Affiliate>>('/api/terms', {
+  query: {
+    filter: ['type:equals:affiliate/person'],
+    pageSize: 500,
+    select: ['label'],
+    sort: ['label'],
+  }
+})
+const { data: organizations } = await useFetch<EntityJSONList<Affiliate>>('/api/terms', {
+  query: {
+    filter: ['type:equals:affiliate/organization'],
+    pageSize: 500,
+    select: ['label'],
+    sort: ['label'],
+  }
+})
+const collectorOptions = computed(() => ({
+  total: (people.value?.total ?? 0) + (organizations.value?.total ?? 0),
+  entities: [
+    ...(people.value?.entities ?? []),
+    ...(organizations.value?.entities ?? []),
+  ].sort((a, b) => a.label.localeCompare(b.label)),
+}))
+const collectorFilter = ref<string>()
 
 const { setContent, stackContent, unstackContent, close: closeModal } = useModal()
 const onClickThumbnail = (uri: string) => {
@@ -399,7 +433,8 @@ function onSearch(phrase: string) {
 function onApplyFilter() {
   filter.value = ([
     categoryFilter.value ? [`type`, FilterOperator.EQUALS, categoryFilter.value].join(':') : undefined,
-    collectionFilter.value ? [`collection`, FilterOperator.EQUALS, collectionFilter.value].join(':') : undefined
+    collectionFilter.value ? [`collection`, FilterOperator.EQUALS, collectionFilter.value].join(':') : undefined,
+    collectorFilter.value ? [`collector`, FilterOperator.EQUALS, collectorFilter.value].join(':') : undefined
   ]).filter(Boolean) as string[]
 }
 function onResetFilter() {

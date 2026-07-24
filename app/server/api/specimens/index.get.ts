@@ -57,6 +57,7 @@ export default defineCachedEventHandler(async (event) => {
     type: getFilter('type', FilterOperator.EQUALS)?.map(c => `Specimen.${c[0].toUpperCase() + c.slice(1).toLowerCase()}`),
     classification: getFilter('classification', FilterOperator.EQUALS)?.map(c => c.split(`/`).at(-1)).map(parseObjectID),
     collection: getFilter('collection', FilterOperator.EQUALS)?.map(c => c.split(`/`).at(-1)).map(parseObjectID),
+    collector: getFilter('collector', FilterOperator.EQUALS)?.map(c => c.split(`/`).at(-1)).map(parseObjectID),
     age: getFilter('age.relative', FilterOperator.EQUALS)?.map(c => c.split(`/`).at(-1)).map(parseObjectID),
     ageNumeric: getNumericAgeFilter(),
     origin: getFilter('origin', FilterOperator.EQUALS).map(Boolean),
@@ -140,7 +141,12 @@ export default defineCachedEventHandler(async (event) => {
   if (fields.some(f => f.startsWith(`composition`))) {
     query.lookup({ from: `terms`, localField: `composition`, foreignField: `_id`, as: `composition` })
   }
+
+  console.log(`queryFilter.collector`, queryFilter.collector)
   if (fields.some(f => f.startsWith(`collector`))) {
+    if (queryFilter.collector.length) {
+      query.match({ 'collector': { $in: queryFilter.collector } })
+    }
     query.lookup({ from: `terms`, localField: `collector`, foreignField: `_id`, as: `collector` })
     query.unwind({ path: `$collector`, preserveNullAndEmptyArrays: true })
   }
