@@ -44,17 +44,26 @@
                 class="input-select-md"
               />
             </TwFormField>
+            <TwFormField label="Collection">
+              <PvInputDropdown
+                v-model="collectionFilter"
+                :options="collectionOptions?.entities ?? {}"
+                label-field="label"
+                option-field="self"
+                class="input-select-md"
+              />
+            </TwFormField>
             <div class="inline-flex space-x-2">
               <button
                 type="submit"
                 class="button button-accent-mid :hover:button-accent-light button-md"
-                @click.prevent="filter = categoryFilter ? [[`type`, FilterOperator.EQUALS, categoryFilter].join(':')] : []"
+                @click.prevent="onApplyFilter()"
               >
                 Apply
               </button>
               <button
                 class="button button-md hover:bg-primary-80/60"
-                @click.prevent="filter = []"
+                @click.prevent="onResetFilter()"
               >
                 Reset
               </button>
@@ -258,6 +267,7 @@ import { FilterOperator, type EntityJSON, type EntityJSONList } from '@unb-libra
 import { type Specimen, Legal, type Fossil, type Mineral, type Rock } from 'types/specimen'
 import { useRouteQuery } from '@vueuse/router'
 import { PvEntityDeleteConfirm, TwLightbox } from '#components'
+import { Collection } from '~/types/collection'
 
 definePageMeta({
   layout: false,
@@ -353,6 +363,14 @@ const selection = ref<EntityJSON<Specimen>[]>([])
 
 const categoryOptions = [`fossil`, `mineral`, `rock`]
 const categoryFilter = ref<string>()
+const { data: collectionOptions } = await useFetch<EntityJSONList<Collection>>('/api/terms', {
+  query: {
+    filter: ['type:equals:collection'],
+    pageSize: 500,
+    sort: ['label'],
+  }
+})
+const collectionFilter = ref<string>()
 
 const { setContent, stackContent, unstackContent, close: closeModal } = useModal()
 const onClickThumbnail = (uri: string) => {
@@ -376,5 +394,15 @@ function onSearch(phrase: string) {
   searchTimeout = setTimeout(() => {
     search.value = phrase
   }, 800)
+}
+
+function onApplyFilter() {
+  filter.value = ([
+    categoryFilter.value ? [`type`, FilterOperator.EQUALS, categoryFilter.value].join(':') : undefined,
+    collectionFilter.value ? [`collection`, FilterOperator.EQUALS, collectionFilter.value].join(':') : undefined
+  ]).filter(Boolean) as string[]
+}
+function onResetFilter() {
+  filter.value = []
 }
 </script>

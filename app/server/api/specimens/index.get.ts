@@ -56,6 +56,7 @@ export default defineCachedEventHandler(async (event) => {
   const queryFilter = {
     type: getFilter('type', FilterOperator.EQUALS)?.map(c => `Specimen.${c[0].toUpperCase() + c.slice(1).toLowerCase()}`),
     classification: getFilter('classification', FilterOperator.EQUALS)?.map(c => c.split(`/`).at(-1)).map(parseObjectID),
+    collection: getFilter('collection', FilterOperator.EQUALS)?.map(c => c.split(`/`).at(-1)).map(parseObjectID),
     age: getFilter('age.relative', FilterOperator.EQUALS)?.map(c => c.split(`/`).at(-1)).map(parseObjectID),
     ageNumeric: getNumericAgeFilter(),
     origin: getFilter('origin', FilterOperator.EQUALS).map(Boolean),
@@ -109,7 +110,11 @@ export default defineCachedEventHandler(async (event) => {
   if (fields.some(f => f.startsWith(`images`))) {
     query.lookup({ from: `files`, localField: `images`, foreignField: `_id`, as: `images` })
   }
+  
   if (fields.some(f => f.startsWith(`collection`))) {
+    if (queryFilter.collection.length) {
+      query.match({ 'kollektion': { $in: queryFilter.collection } })
+    }
     query.lookup({ from: `terms`, localField: `kollektion`, foreignField: `_id`, as: `kollektion` })
     query.unwind({ path: `$kollektion`, preserveNullAndEmptyArrays: true })
   }
