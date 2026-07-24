@@ -372,7 +372,7 @@ watch(sortedColumnIDs, () => {
 const selection = ref<EntityJSON<Specimen>[]>([])
 
 const categoryOptions = [`fossil`, `mineral`, `rock`]
-const categoryFilter = ref<string>()
+const categoryFilter = ref<string>(filter.value.find(f => f.startsWith(`type:`))?.split(`:`)[2] ?? '')
 const { data: collectionOptions } = await useFetch<EntityJSONList<Collection>>('/api/terms', {
   query: {
     filter: ['type:equals:collection'],
@@ -380,7 +380,7 @@ const { data: collectionOptions } = await useFetch<EntityJSONList<Collection>>('
     sort: ['label'],
   }
 })
-const collectionFilter = ref<string>()
+const collectionFilter = ref<string>(filter.value.find(f => f.startsWith(`collection:`))?.split(`:`)[2] ?? '')
 const { data: people } = await useFetch<EntityJSONList<Affiliate>>('/api/terms', {
   query: {
     filter: ['type:equals:affiliate/person'],
@@ -404,7 +404,7 @@ const collectorOptions = computed(() => ({
     ...(organizations.value?.entities ?? []),
   ].sort((a, b) => a.label.localeCompare(b.label)),
 }))
-const collectorFilter = ref<string>()
+const collectorFilter = ref<string>(filter.value.find(f => f.startsWith(`collector:`))?.split(`:`)[2] ?? '')
 
 const { setContent, stackContent, unstackContent, close: closeModal } = useModal()
 const onClickThumbnail = (uri: string) => {
