@@ -74,7 +74,11 @@ const emits = defineEmits<{
 const columns = computed(() => Object.values(props.columns).map(col => Array.isArray(col) ? col : [col, col.substring(0, 1).toUpperCase() + col.substring(1).toLowerCase()]))
 const selection = computed({
   get() {
-    return (Array.isArray(value.value ?? []) ? value.value : [value.value]) as EntityJSON<E>[]
+    return value.value
+      ? (Array.isArray(value.value)
+        ? value.value
+        : [value.value]) as EntityJSON<E>[]
+      : []
   },
   set(v: EntityJSON<E>[]) {
     value.value = ((props.multiSelect ? v : v?.[0]) as S)
