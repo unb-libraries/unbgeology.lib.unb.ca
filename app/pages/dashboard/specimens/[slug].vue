@@ -19,7 +19,7 @@
       <FormSpecimenDetails v-if="edit === `details`" :specimen="specimen!" @save="onSave" @cancel="navigateTo(`/dashboard/specimens`)" />
       <FormSpecimenOrigin v-else-if="edit === `origin`" :specimen="specimen!" @save="onSave" @cancel="navigateTo(`/dashboard/specimens`)" />
       <FormSpecimenStorageHistory v-else-if="edit === `storage`" :specimen="specimen!" @save="onSave" @cancel="navigateTo(`/dashboard/specimens`)" />
-      <FormSpecimen v-else :specimen="specimen!" @save="onSave" @cancel="navigateTo(`/dashboard/specimens`)" />
+      <FormSpecimen v-else :specimen="specimen!" @save="onSave" @cancel="navigateTo(returnUrl)" />
     </div>
 
     <template #sidebar>
@@ -47,6 +47,7 @@ definePageMeta({
 
 const { slug } = useRoute().params
 const edit = ref(useRoute().query.edit)
+const returnUrl = useReturnUrl()
 
 onUpdated(async () => {
   edit.value = useRoute().query.edit
@@ -71,6 +72,7 @@ const onSave = async (values: Specimen) => {
   } else if (error.value) {
     createToast(`error-updated-${specimen.value!.id}`, () => `${error.value}`, { type: `error`, duration: 5000 })
   }
+  await navigateTo(returnUrl)
 }
 
 const { setContent, close: closeModal } = useModal()
@@ -84,7 +86,7 @@ const onDeleteConfirmed = async () => {
   if (!error.value) {
     closeModal()
     createToast(`delete-${specimen.value!.id}`, () => `Deleted specimen ${specimen.value!.id}`, { type: `warning` })
-    await navigateTo(`/dashboard/specimens`)
+    await navigateTo(returnUrl)
   }
 }
 </script>

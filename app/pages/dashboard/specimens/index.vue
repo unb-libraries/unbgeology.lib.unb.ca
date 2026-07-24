@@ -276,6 +276,8 @@ const search = useRouteQuery<string>('search', '')
 const sort = useRouteQuery<string[]>('sort', ['-id'])
 const select = useRouteQuery<string[]>('select', ['id', 'name'])
 
+useReturnUrl()
+
 const { hasPermission } = useCurrentUser()
 const columns: [keyof Specimen, string][] = [
   [`images`, `Image`],
