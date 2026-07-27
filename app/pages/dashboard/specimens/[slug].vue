@@ -73,7 +73,7 @@ const onSave = async (values: Specimen) => {
   } else if (error.value) {
     createToast(`error-updated-${specimen.value!.id}`, () => `${error.value}`, { type: `error`, duration: 5000 })
   }
-  await navigateTo(returnUrl)
+  await navigateTo(returnUrl.value)
 }
 
 const { setContent, close: closeModal } = useModal()
@@ -87,7 +87,7 @@ const onDeleteConfirmed = async () => {
   if (!error.value) {
     closeModal()
     createToast(`delete-${specimen.value!.id}`, () => `Deleted specimen ${specimen.value!.id}`, { type: `warning` })
-    await navigateTo(returnUrl)
+    await navigateTo(returnUrl.value)
   }
 }
 </script>
