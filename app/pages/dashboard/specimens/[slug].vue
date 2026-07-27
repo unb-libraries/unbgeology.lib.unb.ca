@@ -38,7 +38,8 @@
 </template>
 
 <script setup lang="tsx">
-import { type Specimen, Status } from 'types/specimen'
+import { type Specimen } from 'types/specimen'
+import { PvEntityDeleteConfirm } from '#components'
 
 definePageMeta({
   layout: false,
@@ -47,7 +48,7 @@ definePageMeta({
 
 const { slug } = useRoute().params
 const edit = ref(useRoute().query.edit)
-const returnUrl = useReturnUrl()
+const { returnUrl } = useReturnUrl()
 
 onUpdated(async () => {
   edit.value = useRoute().query.edit

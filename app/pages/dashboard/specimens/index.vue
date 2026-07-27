@@ -276,7 +276,7 @@ import { FilterOperator, type EntityJSON, type EntityJSONList } from '@unb-libra
 import { type Specimen, Legal, type Fossil, type Mineral, type Rock } from 'types/specimen'
 import { useRouteQuery } from '@vueuse/router'
 import { PvEntityDeleteConfirm, TwLightbox } from '#components'
-import { Collection } from '~/types/collection'
+import type { Collection } from '~/types/collection'
 import type { Affiliate } from '~/types/affiliate'
 
 definePageMeta({
@@ -296,7 +296,16 @@ const search = useRouteQuery<string>('search', '')
 const sort = useRouteQuery<string[]>('sort', ['-id'])
 const select = useRouteQuery<string[]>('select', ['id', 'name'])
 
-useReturnUrl()
+const { returnUrl, setReturnUrl } = useReturnUrl()
+onMounted(() => {
+  setReturnUrl(useRoute().fullPath)
+})
+
+onUpdated(() => {
+  setReturnUrl(useRoute().fullPath)
+})
+
+watch(returnUrl, console.log)
 
 const { hasPermission } = useCurrentUser()
 const columns: [keyof Specimen, string][] = [
