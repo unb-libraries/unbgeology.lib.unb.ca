@@ -355,6 +355,7 @@ const { data: list, refresh, pending: loading } = await useFetch<EntityJSONList<
   query: {
     search,
     select,
+    sort,
     filter,
     page,
     pageSize,

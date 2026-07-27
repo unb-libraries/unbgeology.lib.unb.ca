@@ -142,7 +142,6 @@ export default defineCachedEventHandler(async (event) => {
     query.lookup({ from: `terms`, localField: `composition`, foreignField: `_id`, as: `composition` })
   }
 
-  console.log(`queryFilter.collector`, queryFilter.collector)
   if (fields.some(f => f.startsWith(`collector`))) {
     if (queryFilter.collector.length) {
       query.match({ 'collector': { $in: queryFilter.collector } })
