@@ -158,12 +158,6 @@ export default defineNuxtConfig({
       },
     ],
     storage: {
-      cache: {
-        driver: `redis`,
-        host: ``,
-        port: ``,
-        base: `unbgeology-lib-unb-ca`,
-      },
       db: {
         driver: `fs`,
         base: `${APP_ROOT}/../.data/db`,
