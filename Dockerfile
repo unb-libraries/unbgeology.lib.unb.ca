@@ -13,7 +13,9 @@ ENV LIGHTSHIP_PORT=9118
 
 WORKDIR $APP_ROOT
 RUN apk update && \
-    apk add bash
+    apk add bash && \
+    npm install -g corepack && \
+    corepack enable pnpm
 
 
 # Local development image
@@ -25,9 +27,9 @@ COPY ./app .
 
 RUN apk update && \
     apk add curl && \
-    npm install
+    pnpm install
 
-CMD ["npm", "run", "dev"]
+CMD ["npm", "dev"]
 
 
 # Throw-away build image
@@ -35,9 +37,9 @@ FROM base AS build
 
 COPY ./app .
 
-RUN npm ci --include=dev && \
-    npm cache clean --force && \
-    NITRO_PRESET=node-server npm run build
+RUN pnpm ci --include=dev && \
+    pnpm cache clean --force && \
+    NITRO_PRESET=node-server pnpm build
 
 
 # Deployment image
@@ -46,8 +48,6 @@ FROM base
 COPY --from=build $APP_ROOT/.output .
 
 CMD ["node", "./server/index.mjs"]
-
-# ENV APP_STARTUP_CMD="node ./server/index.mjs"
 
 LABEL org.opencontainers.image.title="unbgeology.lib.unb.ca" \
   org.opencontainers.image.description="unbgeology.lib.unb.ca provides access to the UNB Earth Science Collection of geological specimen." \
