@@ -42,9 +42,9 @@
 <script setup lang="ts">
 import { FilterOperator } from '@unb-libraries/nuxt-layer-entity'
 import { type Specimen } from 'types/specimen'
-import { type Person, type Organization } from '~/types/affiliate'
-import { type Coordinate } from '~/types/leaflet'
-import { type Location } from '~/types/nominatim'
+import { type Person, type Organization } from '~~/types/affiliate'
+import { type Coordinate } from '~~/types/leaflet'
+import { type Location } from '~~/types/nominatim'
 
 const props = defineProps<{
   specimen: Specimen

@@ -8,7 +8,7 @@
 
 <script lang="ts" setup>
 import type { EntityJSONList, EntityJSONBody } from '@unb-libraries/nuxt-layer-entity'
-import type { Loan } from '~/types/loan'
+import type { Loan } from '~~/types/loan'
 
 definePageMeta({
   layout: `dashboard-page`,

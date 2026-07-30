@@ -16,8 +16,8 @@
 
 <script setup lang="ts">
 import { FilterOperator } from '@unb-libraries/nuxt-layer-entity'
-import { type Storage } from '~/types/specimen'
-import { type StorageLocation } from '~/types/storagelocation'
+import { type Storage } from '~~/types/specimen'
+import { type StorageLocation } from '~~/types/storagelocation'
 
 const props = defineProps<{
   storage?: Storage

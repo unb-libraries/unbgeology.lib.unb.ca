@@ -69,7 +69,7 @@
 
 <script setup lang="tsx">
 import { FilterOperator } from '@unb-libraries/nuxt-layer-entity'
-import { type Mineral as Classification, Rank, Status } from '~/types/classification'
+import { type Mineral as Classification, Rank, Status } from '~~/types/classification'
 import { PvEntityDeleteConfirm } from '#components'
 
 definePageMeta({

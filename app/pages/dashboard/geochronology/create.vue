@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Unit } from "~/types/geochronology"
+import type { Unit } from "~~/types/geochronology"
 
 definePageMeta({
   name: `Add unit`,

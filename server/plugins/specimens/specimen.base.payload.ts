@@ -1,0 +1,95 @@
+import { Immeasurabibility, Legal, MeasurementCount, Status } from "~~/types/specimen"
+import { validationPatterns } from "#server/documentTypes/Specimen"
+import { require } from "#server/utils/api/payload"
+
+export default defineMongooseReader(Specimen.Base, async (payload, { op }) => {
+  const create = op === `create`
+
+  const { status } = await validateBody(payload, {
+    status: optional(EnumValidator(Status)),
+    type: requireIf(create, StringValidator),
+  })
+
+  const migrate = create && (status === Status.MIGRATED)
+
+  // REFACTOR: Because URIEntityTypeValidator cannot authorize against the API, MatchValidator is used instead
+
+  const { legal, classification, collection, images, age, composition, measurements, collector, sponsor, storage, creator, editor, created, updated, ...body } = await validateBody(payload, {
+    objectIDs: optional(ArrayValidator(ObjectValidator({
+      id: require(StringValidator),
+      type: optional(StringValidator),
+    }))),
+    legal: optional(EnumValidator(Legal)),
+    lenderID: optional(StringValidator),
+    lenderURL: optional(StringValidator),
+    name: optional(StringValidator),
+    description: optional(StringValidator),
+    classification: optional(MatchValidator(/^\/api\/terms\/[a-z0-9]{24}$/)),
+    collection: optional(MatchValidator(/^\/api\/terms\/[a-z0-9]{24}$/)),
+    images: optional(ArrayValidator(MatchValidator(/^\/api\/files\/[a-z0-9]{24}$/))),
+    measurements: optional(ObjectValidator({
+      count: EnumValidator(MeasurementCount),
+      dimensions: optional(ArrayValidator(ArrayValidator(NumberValidator, { minLength: 3, maxLength: 3 }))),
+      reason: optional(EnumValidator(Immeasurabibility)),
+    })),
+    date: optional(MatchValidator(validationPatterns.partialDate)),
+    age: optional(OrValidator<string[] | number[]>(ArrayValidator(MatchValidator(/^\/api\/terms\/[a-z0-9]{24}$/)), ArrayValidator(NumberValidator))),
+    composition: optional(ArrayValidator(MatchValidator(/^\/api\/terms\/[a-z0-9]{24}$/))),
+    origin: optional(ObjectValidator({
+      latitude: optional(NumberValidator),
+      longitude: optional(NumberValidator),
+      accuracy: optional(NumberValidator),
+      name: optional(StringValidator),
+      description: optional(StringValidator),
+    })),
+    pieces: optional(NumberValidator),
+    partial: optional(BooleanValidator),
+    collector: optional(MatchValidator(/^\/api\/terms\/[a-z0-9]{24}$/)),
+    sponsor: optional(MatchValidator(/^\/api\/terms\/[a-z0-9]{24}$/)),
+    storage: optional(ArrayValidator(ObjectValidator({
+      location: optional(MatchValidator(/^\/api\/terms\/[a-z0-9]{24}$/)),
+      dateIn: optional(MatchValidator(validationPatterns.date)),
+    }))),
+    publications: optional(ArrayValidator(ObjectValidator({
+      id: optional(StringValidator),
+      citation: optional(StringValidator),
+      abstract: optional(StringValidator),
+      doi: optional(StringValidator),
+    }))),
+    appraisal: optional(NumberValidator),
+    creator: optional(MatchValidator(/^\/api\/users\/[a-z0-9]{24}$/)),
+    editor: optional(MatchValidator(/^\/api\/users\/[a-z0-9]{24}$/)),
+    created: optional(MatchValidator(/^\d{4}-\d{2}-\d{2}/)),
+    updated: optional(MatchValidator(/^\d{4}-\d{2}-\d{2}/)),
+  })
+
+  return {
+    ...body,
+    legal: legal && useEnum(Legal).valueOf(legal),
+    classification: classification && { _id: classification.substring(1).split(`/`).at(-1)! },
+    kollektion: collection && { _id: collection.substring(1).split(`/`).at(-1)! },
+    images: images?.map(uri => ({ _id: uri.substring(1).split(`/`).at(-1)! })),
+    relativeAge: (age && (age.every(a => typeof a === `string`)) && age.map(age => ({ _id: age.substring(1).split(`/`).at(-1)! }))) || (age === null || age?.length ? null : undefined),
+    numericAge: (age && (age.every(a => typeof a === `number`)) && age) || (age === null || age?.length ? null : undefined),
+    composition: (composition && composition.map(c => ({ _id: c.substring(1).split(`/`).at(-1)! }))) || undefined,
+    measurements: (measurements && Object.keys(measurements).length > 0 && {
+      count: useEnum(MeasurementCount).valueOf(measurements.count),
+      dimensions: measurements.dimensions,
+      reason: measurements.reason && useEnum(Immeasurabibility).valueOf(measurements.reason),
+    }) || undefined,
+    // FIX: Without using URIEntityTypeValidator, the collector/sponsor model cannot be determined
+    collector: collector && { _id: collector.substring(1).split(`/`).at(-1)! },
+    // collectorModel: collector && Term.fullName,
+    sponsor: sponsor && { _id: sponsor.substring(1).split(`/`).at(-1)! },
+    // sponsorModel: sponsor && Term.fullName,
+    storage: storage?.map(({ location, dateIn }) => ({
+      location: location && location.substring(1).split(`/`).at(-1)!,
+      dateIn: dateIn && new Date(dateIn).valueOf(),
+    })),
+    status: status && useEnum(Status).valueOf(status),
+    creator: creator && { _id: creator.substring(1).split(`/`).at(-1)! },
+    editor: editor && { _id: editor.substring(1).split(`/`).at(-1)! },
+    created: (migrate && created && new Date(created).valueOf()) || undefined,
+    updated: (migrate && updated && new Date(updated).valueOf()) || undefined,
+  }
+})

@@ -89,7 +89,7 @@
 
 <script setup lang="tsx">
 import { FilterOperator } from '@unb-libraries/nuxt-layer-entity'
-import { type Unit, Division, Status } from '~/types/geochronology'
+import { type Unit, Division, Status } from '~~/types/geochronology'
 import { PvEntityDeleteConfirm } from '#components'
 
 definePageMeta({

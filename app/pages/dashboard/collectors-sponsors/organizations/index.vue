@@ -81,7 +81,7 @@
 
 <script setup lang="tsx">
 import { FilterOperator } from '@unb-libraries/nuxt-layer-entity'
-import { type Organization, Status } from '~/types/affiliate'
+import { type Organization, Status } from '~~/types/affiliate'
 import { PvEntityDeleteConfirm } from '#components'
 
 definePageMeta({

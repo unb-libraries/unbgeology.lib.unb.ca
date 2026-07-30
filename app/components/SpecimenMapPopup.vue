@@ -25,7 +25,7 @@
 
 <script lang="ts" setup>
 import { type EntityJSON } from '@unb-libraries/nuxt-layer-entity'
-import { type Specimen, Status } from '~/types/specimen'
+import { type Specimen, Status } from '~~/types/specimen'
 
 const props = defineProps<{
   self: string

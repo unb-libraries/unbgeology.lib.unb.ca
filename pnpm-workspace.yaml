@@ -1,4 +1,15 @@
+allowBuilds:
+  cypress: true
+  esbuild: true
+  sharp: true
+  unrs-resolver: true
+
 onlyBuiltDependencies:
   - cypress
   - esbuild
+  - sharp
   - unrs-resolver
+
+minimumReleaseAge: 4320
+
+shellEmulator: true

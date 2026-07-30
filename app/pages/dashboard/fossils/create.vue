@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Fossil as Classification, FossilFormData } from "~/types/classification"
+import type { Fossil as Classification, FossilFormData } from "~~/types/classification"
 
 definePageMeta({
   name: `Add fossil`,

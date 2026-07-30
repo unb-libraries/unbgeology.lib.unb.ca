@@ -4,7 +4,7 @@
 
 <script lang="ts" setup>
 // REFACTOR: Use vue-leaflet-markercluster
-import type { LayerAddInjection, LayerRemoveInjection } from '~/types/leaflet'
+import type { LayerAddInjection, LayerRemoveInjection } from '~~/types/leaflet'
 import { Layer } from 'leaflet'
 import "leaflet.markercluster"
 import { MarkerClusterGroup } from 'leaflet'

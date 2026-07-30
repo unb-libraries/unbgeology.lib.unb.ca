@@ -50,7 +50,7 @@
 </template>
 
 <script lang="ts" setup>
-import { type Specimen, Status } from '~/types/specimen'
+import { type Specimen, Status } from '~~/types/specimen'
 const props = defineProps<{
   id: string
 }>()

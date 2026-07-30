@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { Status, type Composition, type CompositionCreateBody } from "~/types/composition"
+import { Status, type Composition, type CompositionCreateBody } from "~~/types/composition"
 
 const { slug } = useRoute().params
 const { type = 'fossil' } = useRoute().query

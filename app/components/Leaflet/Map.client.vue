@@ -9,7 +9,7 @@
 import { Map, tileLayer } from "leaflet"
 import type { Layer } from "leaflet"
 import { GestureHandling } from 'leaflet-gesture-handling'
-import type { Coordinate } from "~/types/leaflet"
+import type { Coordinate } from "~~/types/leaflet"
 
 const mapContainer = ref<HTMLDivElement>()
 const map = ref<Map>()

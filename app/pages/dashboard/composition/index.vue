@@ -114,7 +114,7 @@
 
 <script setup lang="tsx">
 import { FilterOperator } from '@unb-libraries/nuxt-layer-entity'
-import { Status, type Composition } from '~/types/composition'
+import { Status, type Composition } from '~~/types/composition'
 import { PvEntityDeleteConfirm } from '#components'
 
 definePageMeta({

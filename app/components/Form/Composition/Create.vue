@@ -37,7 +37,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { Composition } from '~/types/composition'
+import type { Composition } from '~~/types/composition'
 
 type CompositionCreateBody = Pick<Composition, `type` | `label`>
 const emits = defineEmits<{

@@ -31,7 +31,7 @@
 
 <script setup lang="ts">
 import { FilterOperator } from "@unb-libraries/nuxt-layer-entity"
-import type { Mineral as Classification, MineralFormData } from "~/types/classification"
+import type { Mineral as Classification, MineralFormData } from "~~/types/classification"
 
 const props = defineProps<{
   classification?: Classification

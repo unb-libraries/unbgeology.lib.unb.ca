@@ -29,7 +29,7 @@
 </template>
 
 <script setup lang="tsx">
-import { type Specimen } from '~/types/specimen'
+import { type Specimen } from '~~/types/specimen'
 
 const props = defineProps<{
   specimen: Specimen

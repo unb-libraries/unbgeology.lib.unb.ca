@@ -83,7 +83,7 @@
 
 <script setup lang="ts">
 import { type Fossil, type Rock, type Specimen } from 'types/specimen'
-import type { Unit } from '~/types/geochronology'
+import type { Unit } from '~~/types/geochronology'
 
 const props = defineProps<{
   specimen: Specimen

@@ -1,4 +1,4 @@
-import type { Location } from "~/types/nominatim"
+import type { Location } from "~~/types/nominatim"
 
 export function useNominatim() {
   const resolveName = async function (name: string) {

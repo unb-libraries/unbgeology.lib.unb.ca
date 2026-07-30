@@ -6,7 +6,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Composition, CompositionCreateBody } from '~/types/composition'
+import type { Composition, CompositionCreateBody } from '~~/types/composition'
 
 definePageMeta({
   name: `Add composition`,

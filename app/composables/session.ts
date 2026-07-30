@@ -1,4 +1,4 @@
-import { type UserSession } from "~/types/session"
+import { type UserSession } from "~~/types/session"
 
 export function useCurrentSession() {
   return useState<UserSession>(`session`)

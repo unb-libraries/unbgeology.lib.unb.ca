@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Mineral as Classification, MineralFormData } from "~/types/classification"
+import type { Mineral as Classification, MineralFormData } from "~~/types/classification"
 
 definePageMeta({
   name: `Add mineral`,

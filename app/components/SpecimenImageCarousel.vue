@@ -25,7 +25,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { Specimen } from '~/types/specimen'
+import type { Specimen } from '~~/types/specimen'
 
 defineProps<{
   specimen: Specimen

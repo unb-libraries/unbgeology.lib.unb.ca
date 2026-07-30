@@ -1,0 +1,168 @@
+import { FilterOperator } from '@unb-libraries/nuxt-layer-entity'
+import type { Specimen as ISpecimen } from "~~/types/specimen"
+import { renderSpecimen, type Specimen } from "#server/documentTypes/Specimen"
+import { getSpecimenRequestCacheId } from "#server/utils/cache"
+
+const cacheOptions: Parameters<typeof defineCachedEventHandler>[1] = {
+  name: `specimens`,
+  maxAge: 0,
+  varies: [`Cookie`],
+  shouldBypassCache: () => true,
+  getKey: getSpecimenRequestCacheId,
+}
+
+export default defineCachedEventHandler(async (event) => {
+  const { filter, select, search, sort } = getSpecimenQueryParams(event)
+  
+  const resources = getAuthorizedResources(event, r => /^specimen(:[a-z]+)*$/.test(r))
+  const authFields = getAuthorizedFields(event, ...resources)
+  
+  const selectFields = select
+    ?.filter((field, i, arr) => arr.indexOf(field) === i)
+    .filter(field => !authFields.length || authFields.includes(field)) ?? []
+  
+  if (!resources.length) {
+    return create403()
+  }
+
+  function getFilter(field: string, operator: FilterOperator) {
+    return filter
+      ?.filter(([f, op, value]) => f === field && useEnum(FilterOperator).valueOf(op) & operator && value)
+      .map(([,,c]) => Array.isArray(c) ? c : [c])
+      .flat()
+  }
+  
+  function getNumericAgeFilter() {
+    return getFilter('age.numeric', FilterOperator.EQUALS)?.map(c => c.split(',').map(Number)) ?? []
+  }
+
+  const queryFilter = {
+    type: getFilter('type', FilterOperator.EQUALS)?.map(c => `Specimen.${c[0].toUpperCase() + c.slice(1).toLowerCase()}`),
+    classification: getFilter('classification', FilterOperator.EQUALS)?.map(c => c.split(`/`).at(-1)).map(parseObjectID),
+    age: getFilter('age.relative', FilterOperator.EQUALS)?.map(c => c.split(`/`).at(-1)).map(parseObjectID),
+    ageNumeric: getNumericAgeFilter(),
+    onDisplay: getFilter('storage.location.public', FilterOperator.EQUALS).map(Boolean),
+    search,
+  }
+
+  const query = Specimen.Base.mongoose.model.aggregate<{ specimens: Specimen[], total: number, facets: Record<string, { _id: unknown, count: number }[]> }>()
+  if (queryFilter.search) {
+    query.search({
+      index: 'autocomplete',
+      compound: {
+        should: [
+          { equals: { value: queryFilter.search, path: 'slug', score: { boost: { value: 3 } } } },
+          { equals: { value: queryFilter.search, path: 'name', score: { boost: { value: 3 } } } },
+          { text: { query: queryFilter.search, path: 'name', score: { boost: { value: 2 }} } },
+          { autocomplete: { query: queryFilter.search, path: 'slug' } },
+          { autocomplete: { query: queryFilter.search, path: 'name' } },
+          { text: { query: queryFilter.search, path: 'origin.name' } },
+          { autocomplete: { query: queryFilter.search, path: 'origin.name' } },
+          { phrase: { query: queryFilter.search, path: 'description' } },
+        ],
+      },
+    })
+    
+    if (queryFilter.search) {
+      // @ts-ignore
+      sort.push([`score`, -1])
+      selectFields.push(`score`)
+      query.addFields({ score: { $meta: 'searchScore' } })
+    }
+  }
+
+  query.match({ authTags: { $in: resources } })
+  query.match({
+    'origin.latitude': { $ne: null },
+    'origin.longitude': { $ne: null },
+    $or: [
+      { 'origin.latitude': { $ne: 0 } },
+      { 'origin.longitude': { $ne: 0 } },
+    ],
+  })
+
+  if (queryFilter.type.length) {
+    query.match({ type: { $in: queryFilter.type } })
+  }
+
+  query.lookup({ from: `terms`, localField: `classification`, foreignField: `_id`, as: `classification` })
+  query.unwind({ path: `$classification`, preserveNullAndEmptyArrays: true })
+
+  if (queryFilter.classification.length) {
+    query.match({ $or: [
+      { 'classification._id': { $in: queryFilter.classification } },
+      { 'classification.ancestors': { $in: queryFilter.classification } },
+    ] })
+  }
+  
+  query.lookup({ from: `terms`, localField: `relativeAge`, foreignField: `_id`, as: `relativeAge` })
+  if (queryFilter.age.length) {
+    query.match({ $or: [
+      { 'relativeAge._id': { $in: queryFilter.age } },
+      { 'relativeAge.ancestors': { $in: queryFilter.age } },
+    ] })
+  }
+  
+  query.addFields({ 'numericAge': { $ifNull: ['$numericAge', '$relativeAge.start'] } })
+  query.addFields({ 'numericMin': { $min: '$numericAge' }, 'numericMax': { $max: '$numericAge' } })
+  if (queryFilter.ageNumeric.length) {
+    query.match({ $or: queryFilter.ageNumeric.map(([lower, upper]) => upper
+      ? ({ $or: [{ numericMax: { $gte: lower }, numericMin: { $lt: upper } }] })
+      : ({ numericMin: { $gte: lower } })) })
+  }
+
+  query.lookup({ from: `terms`, localField: `storage.location`, foreignField: `_id`, as: `storageLocations` })
+  query.addFields({
+    storage: {
+      $map: {
+        input: "$storage",
+        as: "s",
+        in: {
+          $mergeObjects: ["$$s", {
+            location: {
+              $arrayElemAt: [{
+                $filter: {
+                  input: "$storageLocations",
+                  as: "loc",
+                  cond: { $eq: ["$$loc._id", "$$s.location"] },
+                } }, 0],
+            } }]
+        }
+      }
+  } })
+
+  query.addFields({ currentStorage: { $arrayElemAt: ["$storage", { $subtract: [{ $size: "$storage" }, 1] }] } })
+  if (queryFilter.onDisplay.length) {
+    query.match({ 'currentStorage.location.public': true })
+  }
+  
+  const [{ specimens, total, facets }] = await query
+    .facet({
+      specimens: [{
+        $project: {
+          slug: 1,
+          'origin.latitude': 1,
+          'origin.longitude': 1,
+          score: 1,
+        }
+      }],
+      count: [{ $count: `total` }],
+    })
+    .project({
+      specimens: 1,
+      total: { $ifNull: [{ $arrayElemAt: ['$count.total', 0] }, 0] },
+    })
+
+  return {
+    self: `/api/specimens/origins`,
+    entities: specimens
+      .map(specimen => ({
+        self: `/api/specimens/${specimen.slug}`,
+        origin: {
+          latitude: specimen.origin?.latitude,
+          longitude: specimen.origin?.longitude,
+        },
+      })),
+    total,
+  }
+}, cacheOptions)

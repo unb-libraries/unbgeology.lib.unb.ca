@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Collection, CollectionCreateBody } from "~/types/collection"
+import type { Collection, CollectionCreateBody } from "~~/types/collection"
 const { slug } = useRoute().params
 
 definePageMeta({

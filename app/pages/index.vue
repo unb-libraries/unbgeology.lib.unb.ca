@@ -38,7 +38,7 @@
 
 <script lang="ts" setup>
 import type { EntityJSONList } from '@unb-libraries/nuxt-layer-entity'
-import type { Specimen } from '~/types/specimen'
+import type { Specimen } from '~~/types/specimen'
 
 useCustomHead({ image: '/top-cat-images-fossils.jpg' })
 

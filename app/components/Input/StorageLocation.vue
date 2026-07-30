@@ -11,7 +11,7 @@
 
 <script lang="ts" setup>
 import { FilterOperator } from "@unb-libraries/nuxt-layer-entity"
-import type { StorageLocation } from "~/types/storagelocation"
+import type { StorageLocation } from "~~/types/storagelocation"
 
 const value = defineModel<string>({ required: false })
 const emit = defineEmits()

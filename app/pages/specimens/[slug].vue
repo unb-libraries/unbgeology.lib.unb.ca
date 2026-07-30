@@ -250,7 +250,7 @@
 
 <script setup lang="ts">
 import { Immeasurabibility, Legal, MeasurementCount, Status, type Fossil, type Rock, type Specimen } from 'types/specimen'
-import { Division } from '~/types/geochronology'
+import { Division } from '~~/types/geochronology'
 
 definePageMeta({
   layout: `default`,

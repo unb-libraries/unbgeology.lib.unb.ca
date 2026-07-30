@@ -49,7 +49,7 @@
 
 <script lang="ts" setup>
 import { type EntityJSONList } from '@unb-libraries/nuxt-layer-entity'
-import { type Specimen, Status } from '~/types/specimen'
+import { type Specimen, Status } from '~~/types/specimen'
 import { useRouteQuery } from '@vueuse/router'
 
 const search = useRouteQuery('search', '')

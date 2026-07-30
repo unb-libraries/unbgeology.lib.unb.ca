@@ -17,9 +17,9 @@ tests/e2e/screenshots
 tests/e2e/videos
 vendor
 **/saml/metadata.xml
-app/public/files
-app/public/image
-app/public/document
-app/public/other
+public/files
+public/image
+public/document
+public/other
 files/*
 _robots.txt

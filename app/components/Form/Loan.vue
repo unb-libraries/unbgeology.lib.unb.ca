@@ -163,7 +163,7 @@
 import { FilterOperator, type EntityJSONBody, type EntityJSONProperties } from "@unb-libraries/nuxt-layer-entity"
 import { type Loan, LoanType } from 'types/loan'
 import { TwDocumentBrowser } from "#components"
-import { Legal, type Specimen } from "~/types/specimen"
+import { Legal, type Specimen } from "~~/types/specimen"
 
 const props = defineProps<{
   entity?: EntityJSONProperties<Loan>

@@ -126,7 +126,7 @@
 <script setup lang="tsx">
 import type { EntityJSON } from "@unb-libraries/nuxt-layer-entity"
 import { PvEntityDeleteConfirm } from "#components"
-import type { Loan } from "~/types/loan"
+import type { Loan } from "~~/types/loan"
 
 definePageMeta({
   layout: false,

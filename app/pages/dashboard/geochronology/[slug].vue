@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { Status, type Unit } from "~/types/geochronology"
+import { Status, type Unit } from "~~/types/geochronology"
 
 const { slug } = useRoute().params
 

@@ -7,7 +7,7 @@
 
 <script lang="ts" setup>
 import type { EntityJSONBody } from '@unb-libraries/nuxt-layer-entity'
-import type { Loan } from '~/types/loan'
+import type { Loan } from '~~/types/loan'
 
 definePageMeta({
   name: `Add loan`,

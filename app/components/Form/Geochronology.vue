@@ -26,7 +26,7 @@
 
 <script setup lang="ts">
 import { FilterOperator } from "@unb-libraries/nuxt-layer-entity"
-import type { Unit, UnitFormData } from "~/types/geochronology"
+import type { Unit, UnitFormData } from "~~/types/geochronology"
 
 const props = defineProps<{
   unit?: Unit

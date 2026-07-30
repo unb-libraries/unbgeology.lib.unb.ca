@@ -19,7 +19,7 @@
 
 <script lang="ts" setup>
 import { type EntityJSONList, type EntityJSON, FilterOperator } from '@unb-libraries/nuxt-layer-entity'
-import { type Classification } from '~/types/classification'
+import { type Classification } from '~~/types/classification'
 
 const selection = defineModel<[string, string][]>({ default: [] })
 const collapsed = defineModel<boolean>('collapsed', { default: false })

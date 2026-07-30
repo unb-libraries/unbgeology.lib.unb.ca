@@ -69,7 +69,7 @@
 
 <script setup lang="tsx">
 import { FilterOperator } from '@unb-libraries/nuxt-layer-entity'
-import { type StorageLocation, Status } from '~/types/storagelocation'
+import { type StorageLocation, Status } from '~~/types/storagelocation'
 import { PvEntityDeleteConfirm } from '#components'
 
 definePageMeta({

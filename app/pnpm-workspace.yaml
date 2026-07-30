@@ -1,8 +1,0 @@
-minimumReleaseAge: 4320
-
-onlyBuiltDependencies:
-  - esbuild
-  - sharp
-  - unrs-resolver
-
-shellEmulator: true

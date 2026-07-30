@@ -7,7 +7,7 @@
 
 <script lang="ts" setup>
 import type { EntityJSONList } from '@unb-libraries/nuxt-layer-entity'
-import { type Specimen } from '~/types/specimen'
+import { type Specimen } from '~~/types/specimen'
 
 import { useRouteQuery } from '@vueuse/router'
 

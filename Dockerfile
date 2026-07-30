@@ -1,6 +1,6 @@
 FROM node:26-alpine3.23 AS base
 
-ENV APP_ROOT=/app
+ENV APP_ROOT=/nuxt
 
 ENV NODE_ENV=production
 
@@ -23,19 +23,19 @@ FROM base AS development
 
 ENV NODE_ENV=development
 
-COPY ./app .
+COPY . .
 
 RUN apk update && \
     apk add curl && \
     pnpm install
 
-CMD ["npm", "dev"]
+CMD ["pnpm", "dev"]
 
 
 # Throw-away build image
 FROM base AS build
 
-COPY ./app .
+COPY . .
 
 RUN pnpm ci --include=dev && \
     pnpm cache clean --force && \

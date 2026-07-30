@@ -55,7 +55,7 @@
 
 <script setup lang="tsx">
 import { FilterOperator } from '@unb-libraries/nuxt-layer-entity'
-import { type Collection } from '~/types/collection'
+import { type Collection } from '~~/types/collection'
 import { PvEntityDeleteConfirm } from '#components'
 
 definePageMeta({

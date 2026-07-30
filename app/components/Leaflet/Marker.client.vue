@@ -5,7 +5,7 @@
 <script setup lang="ts">
 // REFACTOR: Replace this with component from @vue-leaflet/vue-leaflet
 import { Marker, Circle, Icon } from "leaflet"
-import type { Coordinate, LayerAddInjection, LayerRemoveInjection } from '~/types/leaflet'
+import type { Coordinate, LayerAddInjection, LayerRemoveInjection } from '~~/types/leaflet'
 import { renderToString } from '@vue/server-renderer'
 
 const props = withDefaults(defineProps<{

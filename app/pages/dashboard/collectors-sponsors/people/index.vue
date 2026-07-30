@@ -79,7 +79,7 @@
 
 <script setup lang="tsx">
 import { FilterOperator } from '@unb-libraries/nuxt-layer-entity'
-import { type Person, Pronouns, Status, Title } from '~/types/affiliate'
+import { type Person, Pronouns, Status, Title } from '~~/types/affiliate'
 import { PvEntityDeleteConfirm } from '#components'
 
 definePageMeta({

@@ -99,8 +99,8 @@
 
 <script lang="ts" setup>
 import type { EntityJSONList } from '@unb-libraries/nuxt-layer-entity'
-import type { Classification } from '~/types/classification'
-import type { Specimen } from '~/types/specimen'
+import type { Classification } from '~~/types/classification'
+import type { Specimen } from '~~/types/specimen'
 
 definePageMeta({
   layout: false,

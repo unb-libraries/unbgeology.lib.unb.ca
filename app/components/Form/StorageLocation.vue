@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import type { StorageLocation, StorageLocationPayload } from "~/types/storagelocation"
+import type { StorageLocation, StorageLocationPayload } from "~~/types/storagelocation"
 
 const props = defineProps<{
   storageLocation?: StorageLocation

@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Person } from "~/types/affiliate"
+import type { Person } from "~~/types/affiliate"
 definePageMeta({
   name: `Edit person`,
   layout: `dashboard-page`,

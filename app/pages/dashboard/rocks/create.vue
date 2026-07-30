@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Rock as Classification, RockFormData } from "~/types/classification"
+import type { Rock as Classification, RockFormData } from "~~/types/classification"
 
 definePageMeta({
   name: `Add rock`,

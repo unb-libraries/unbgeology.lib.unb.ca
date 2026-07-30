@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import { Immeasurabibility, MeasurementCount, type Specimen } from '~/types/specimen'
+import { Immeasurabibility, MeasurementCount, type Specimen } from '~~/types/specimen'
 type Measurement = Specimen[`measurements`]
 type Dimensions = NonNullable<Measurement[`dimensions`]>[number]
 

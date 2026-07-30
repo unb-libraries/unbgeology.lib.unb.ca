@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 import { FilterOperator } from '@unb-libraries/nuxt-layer-entity'
-import type { Composition } from '~/types/composition'
+import type { Composition } from '~~/types/composition'
 
 const composition = defineModel<string[]>({ required: false })
 const props = defineProps<{

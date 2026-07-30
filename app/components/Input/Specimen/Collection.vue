@@ -12,7 +12,7 @@
 
 <script setup lang="ts">
 import { FilterOperator } from '@unb-libraries/nuxt-layer-entity'
-import { type Collection } from '~/types/collection'
+import { type Collection } from '~~/types/collection'
 
 const collection = defineModel<string>({ required: false })
 

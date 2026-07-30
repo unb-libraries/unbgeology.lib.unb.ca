@@ -27,8 +27,8 @@
 </template>
 
 <script lang="ts" setup>
-import { type Specimen, Status } from '~/types/specimen'
-import type { Coordinate } from '~/types/leaflet'
+import { type Specimen, Status } from '~~/types/specimen'
+import type { Coordinate } from '~~/types/leaflet'
 
 const props = withDefaults(defineProps<{
   specimens: Specimen[]
