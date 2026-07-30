@@ -8,9 +8,7 @@ docker-compose.yml
 LICENSE
 README.md
 tests
-vendor
 vitest.config.mjs
-composer.*
 .DS_Store
 .vscode
 .uploads

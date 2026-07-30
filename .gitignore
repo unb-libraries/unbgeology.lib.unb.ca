@@ -15,7 +15,6 @@ dist
 tests/e2e/downloads
 tests/e2e/screenshots
 tests/e2e/videos
-vendor
 **/saml/metadata.xml
 public/files
 public/image
