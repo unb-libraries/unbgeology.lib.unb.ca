@@ -25,7 +25,7 @@
         </div>
         <div class="flex flex-col space-y-12 md:space-y-0 h-full">
           <nav class="flex flex-col grow md:flex md:flex-row md:justify-end md:gap-x-6 divide-y divide-base-77 divide-dashed md:divide-none text-3xl md:text-xl" :class="collapsed ? 'hidden' : ''">
-            <a v-if="isAuthenticated" href="/dashboard/specimens" class="py-3 md:py-0">
+            <a v-if="loggedIn" href="/dashboard/specimens" class="py-3 md:py-0">
               Dashboard
             </a>
             <a href="/browse" class="py-3 md:py-0">
@@ -39,7 +39,7 @@
             </a>
           </nav>
           <nav class="flex flex-col flex-none justify-end uppercase md:flex md:flex-row md:space-x-6 md:order-first text-md md:text-sm" :class="collapsed ? 'hidden' : ''">
-            <a v-if="!isAuthenticated" href="/login" class="py-2 md:py-0">
+            <a v-if="!loggedIn" href="/login" class="py-2 md:py-0">
               Login / Admin
             </a>
             <a v-else href="/logout" class="py-2 md:ml-2 md:py-0">
@@ -54,5 +54,5 @@
 
 <script setup lang="ts">
 const collapsed = ref(true)
-const { username, isAuthenticated } = useCurrentUser()
+const { loggedIn } = useUserSession()
 </script>

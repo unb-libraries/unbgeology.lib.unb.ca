@@ -60,6 +60,7 @@ export default defineNuxtConfig({
     '@nuxt/image',
     '@nuxtjs/sitemap',
     '@nuxtjs/robots',
+    'nuxt-auth-utils',
   ],
   postcss: {
     plugins: {
@@ -68,6 +69,12 @@ export default defineNuxtConfig({
     },
   },
   runtimeConfig: {
+    saml: {
+      entryPoint: ``,
+      callbackUrl: ``,
+      issuer: ``,
+      idpCert: ``,
+    },
     nitro: {
       mongodb: {
         uri: ``,
@@ -81,14 +88,6 @@ export default defineNuxtConfig({
       defaultSchemaVersion: {
         specimens: 2,
       },
-    },
-    saml: {
-      entryPoint: ``,
-      callbackUrl: ``,
-      issuer: ``,
-      cert: ``,
-      validateInResponseTo: `never`,
-      disableRequestedAuthnContext: true,
     },
     public: {
       maxFileSize: 100 * 1024 * 1024, // 100MB
@@ -181,7 +180,7 @@ export default defineNuxtConfig({
         cookie: {
           secure: false,
         },
-        maxAge: 2592000, // 30 days
+        maxAge: 60 * 60 * 24 * 30, // 30 days
       },
       uploads: {
         dir: `/uploads`,

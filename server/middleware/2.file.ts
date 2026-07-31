@@ -1,3 +1,4 @@
+// REFACTOR: h3-formidable is not needed to process file data and can be done with just h3.
 import { readFiles } from "h3-formidable"
 
 export default defineEventHandler(async (event) => {

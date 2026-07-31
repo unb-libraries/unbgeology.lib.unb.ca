@@ -26,6 +26,7 @@ services:
       - ./.nuxt:/nuxt/.nuxt
       - ./app:/nuxt/app
       - ./server:/nuxt/server
+      - ./shared:/nuxt/shared
       - ./public:/nuxt/public
       - ./types:/nuxt/types
       - ./nuxt.config.ts:/nuxt/nuxt.config.ts

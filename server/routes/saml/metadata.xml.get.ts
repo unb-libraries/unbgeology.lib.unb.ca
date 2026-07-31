@@ -1,7 +1,3 @@
-import { initSaml, createSamlMetadata } from "~/saml/saml"
-
-export default defineCachedEventHandler(async (event) => {
-  const { saml: samlConfig } = useRuntimeConfig(event)
-  initSaml(samlConfig)
-  return createSamlMetadata()
+export default defineCachedEventHandler(async () => {
+  return useSaml().generateServiceProviderMetadata()
 }, { maxAge: 60 * 60 * 24 }) // Cache for 24 hours

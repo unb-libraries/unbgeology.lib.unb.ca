@@ -1,17 +1,16 @@
 import type { H3Event, EventHandler, EventHandlerRequest } from "h3"
-import { type User } from "@unb-libraries/nuxt-layer-entity"
 
 export function requireAuthentication<T extends EventHandlerRequest = EventHandlerRequest>(handler: EventHandler<T>): EventHandler<T> {
   return async (event) => {
-    const { data } = await useCurrentServerSession(event)
-    if (!data.user) {
+    const { user } = await getUserSession(event)
+    if (!user) {
       throw createError({ statusCode: 403, message: `Unauthorized` })
     }
     return handler(event)
   }
 }
 
-export function useCurrentUser(event: H3Event): User {
+export function useCurrentUser(event: H3Event) {
   return event.context.user
 }
 

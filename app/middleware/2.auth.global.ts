@@ -14,20 +14,17 @@ export default defineNuxtRouteMiddleware((to) => {
     ...to.meta.auth || {},
   }
 
+  const { session, loggedIn } = useUserSession()
+  const validUntil = session.value?.validUntil
   const now = new Date().valueOf()
-  const { permission } = auth
-  
-  const { validUntil } = useCurrentSession().value.data
-  const { hasPermission, isAuthenticated } = useCurrentUser()
   const expired = validUntil ? validUntil < now : false
 
-  if (isAuthenticated.value && expired) {
+  if (loggedIn.value && expired) {
     return requireLogin()
   }
 
-  if (permission && !hasPermission(permission)) {
-    // Use instead of navigateTo to avoid ERR_HTTP_HEADERS_SENT error
-    if (!isAuthenticated.value && auth.redirect) {
+  if (auth.permission && !usePermissions(auth.permission).value.length) {
+    if (!loggedIn.value && auth.redirect) {
       return requireLogin()
     }
     return abortNavigation({ statusCode: 403, message: `Unauthorized` })

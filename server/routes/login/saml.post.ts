@@ -1,18 +1,15 @@
-import { createError, readBody, sendRedirect, useSession } from "h3"
-import { getSamlProfile } from "../../../app/saml/saml"
+import { createError, readBody, sendRedirect } from "h3"
 
 export default defineEventHandler(async (event) => {
   const { SAMLResponse, RelayState = `/` } = await readBody(event)
 
-  const sessionConfig = useServerSessionConfig()
-  const session = await useSession(event, sessionConfig)
   const {
     uid: username,
     mail: email,
     telephoneNumber: phone,
     sn: lastName,
     givenName: firstName,
-  } = await getSamlProfile(SAMLResponse)
+  } = await useSaml().getProfile(SAMLResponse)
 
   // REFACTOR: Avoid making direct DB call, use API instead.
   const user = await User.mongoose.model
@@ -31,16 +28,21 @@ export default defineEventHandler(async (event) => {
     throw createError({ status: 404, statusText: `User not found` })
   }
 
-  await session.update({
-    id: user?._id,
-    user: user.username,
-    authenticated: true,
-    profile: {
-      firstName,
-      lastName,
+  const rolePermissions = await getRolePermissions(...(user.roles ?? []))
+  const permissions = rolePermissions.map(createFieldPermissionKeys).flat()
+  const sessionMaxAge = useRuntimeConfig().session.maxAge ??  60 * 60 * 24
+
+  await replaceUserSession(event, {
+    user: {
+      id: user._id,
+      username: user.username,
+      profile: {
+        firstName,
+        lastName,
+      },
     },
-    permissions: (await getRolePermissions(...(user.roles ?? []))).map(createFieldPermissionKeys).flat(),
-    validUntil: new Date().valueOf() + sessionConfig.maxAge * 1000,
+    permissions,
+    validUntil: Date.now() + (sessionMaxAge * 1000),
   })
 
   return sendRedirect(event, RelayState, 302)
