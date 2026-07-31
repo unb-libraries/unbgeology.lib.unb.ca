@@ -1,9 +1,11 @@
 <template>
   <NuxtLayout name="dashboard-page">
     <template #actions>
-      <NuxtLink v-if="hasPermission(/^create:term(:affiliate(:person)?)?/)" to="/dashboard/collectors-sponsors/people/create" class="button button-lg button-accent-mid hover:button-accent-light">
-        Add Person
-      </NuxtLink>
+      <WithPermission :permission="/^create:term(:affiliate(:person)?)?/">
+        <NuxtLink to="/dashboard/collectors-sponsors/people/create" class="button button-lg button-accent-mid hover:button-accent-light">
+          Add Person
+        </NuxtLink>
+      </WithPermission>
     </template>
 
     <div class="relative flex flex-row">
@@ -23,9 +25,11 @@
     >
       <template #label="{ entity: { firstName, lastName, title, slug } }">
         <div class="inline-flex items-center space-x-3">
-          <NuxtLink v-if="hasPermission(/^update:term(:affiliate(:person)?)?:/)" :to="`/dashboard/collectors-sponsors/people/${slug}`" class="inline-flex hover:underline">
-            {{ title ? titleCased(useEnum(Title).labelOf(title).split(`_`).map(t => `${t}.`).reverse().join(` `)) + ` ${lastName}` : lastName }}, {{ firstName }}
-          </NuxtLink>
+          <WithPermission :permission="/^update:term(:affiliate(:person)?)?:/">
+            <NuxtLink :to="`/dashboard/collectors-sponsors/people/${slug}`" class="inline-flex hover:underline">
+              {{ title ? titleCased(useEnum(Title).labelOf(title).split(`_`).map(t => `${t}.`).reverse().join(` `)) + ` ${lastName}` : lastName }}, {{ firstName }}
+            </NuxtLink>
+          </WithPermission>
         </div>
       </template>
       <template #pronouns="{ entity: { pronouns }}">
@@ -66,9 +70,11 @@
         </PvEntityDetails>
         <template #actions>
           <div class="space-y-2">
-            <button v-if="hasPermission(/^delete:term(:affiliate(:person)?)?:/)" class="button button-lg button-outline-red-dark hover:button-red-dark w-full" @click.stop.prevent="onClickDelete">
-              Delete{{ selection.length > 1 ? ` ${selection.length} people` : `` }}
-            </button>
+            <WithPermission :permission="/^delete:term(:affiliate(:person)?)?:/">
+              <button class="button button-lg button-outline-red-dark hover:button-red-dark w-full" @click.stop.prevent="onClickDelete">
+                Delete{{ selection.length > 1 ? ` ${selection.length} people` : `` }}
+              </button>
+            </WithPermission>
           </div>
         </template>
       </EntityAdminSidebar>
@@ -94,7 +100,6 @@ definePageMeta({
   },
 })
 
-const { hasPermission } = useCurrentUser()
 const { values: schema, keys } = defineEntitySchema<Person>(`Person`, [[`label`, `Name`], [`firstName`, `First name`], [`lastName`, `Last name`], `title`, [`pronouns`, `Gender`], `occupation`, `position`, `email`, `phone`, `slug`, `status`, `created`, `updated`], {
   fieldPermission: id => new RegExp(`read:term(:affiliate(:person)?)?:(${id}|\\*)`),
 })

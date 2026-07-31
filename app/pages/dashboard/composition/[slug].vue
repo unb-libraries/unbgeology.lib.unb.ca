@@ -20,13 +20,12 @@ definePageMeta({
   },
 })
 
-const { hasPermission } = useCurrentUser()
 const { fetchBy } = useEntityType<Composition, CompositionCreateBody, Partial<CompositionCreateBody>>(`Term`)
 const { entity: term, update } = await fetchBy({ type: `composition/${type}`, slug: slug as string })
 if (!term.value) {
   showError(`Term not found`)
 }
-if (!hasPermission(new RegExp(`^update:term(:composition(:${type})?)?(:${useEnum(Status).labelOf(term.value!.status)})?:(\\*|\\w)$`))) {
+if (!usePermissions(new RegExp(`^update:term(:composition(:${type})?)?(:${useEnum(Status).labelOf(term.value!.status)})?:(\\*|\\w)$`)).value.length) {
   showError({ statusCode: 403, statusMessage: `You do not have permission to edit this composition term.` })
 }
 

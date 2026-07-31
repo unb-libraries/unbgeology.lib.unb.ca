@@ -64,7 +64,7 @@ definePageMeta({
 const { maxFiles, maxFileSize, maxTotalFileSize } = useRuntimeConfig().public
 const unbOwned = ref(true)
 
-const { id } = useCurrentUser()
+const { user } = useUserSession()
 const { create } = useEntityType<Specimen>(`Specimen`)
 const { createToast } = useToasts()
 
@@ -80,7 +80,7 @@ const data = reactive({
 })
 
 async function save() {
-  const { entity: specimen, error } = await create({ ...data, images: data.images?.map(({ self }) => self), creator: `/api/users/${id.value}` })
+  const { entity: specimen, error } = await create({ ...data, images: data.images?.map(({ self }) => self), creator: `/api/users/${user.value!.id}` })
   if (specimen.value) {
     createToast(`specimen-create-confirm-${specimen.value.id}`, () => `Specimen created.`, { type: `success` })
     return specimen.value

@@ -37,7 +37,6 @@ export function defineEntityField<E extends Entity = Entity>(id: keyof E, entity
 
 export function defineEntitySchema<E extends Entity = Entity>(name: string, schema: Record<keyof E, string | FieldDefinition<E>> | (keyof E | [keyof E, string | FieldDefinition<E>])[], options?: Partial<EntitySchemaOptions<E>>) {
   const { withPermission, fieldPermission } = defu(options ?? {}, { withPermission: true })
-  const { hasPermission } = useCurrentUser()
 
   const arr = (Array.isArray(schema) ? schema : Object.entries(schema))
   const fields = arr
@@ -45,7 +44,7 @@ export function defineEntitySchema<E extends Entity = Entity>(name: string, sche
       ? defineEntityField(String(field[0]) as keyof E, name, typeof field[1] === `string` ? { label: field[1] } : field[1])
       : defineEntityField(String(field) as keyof E, name))
     .map(({ id, permission, ...field }) => ({ id, permission: (fieldPermission && fieldPermission(id)) || permission, ...field }))
-    .filter(({ permission }) => !withPermission || (permission && hasPermission(permission)))
+    .filter(({ permission }) => !withPermission || (permission && usePermissions(permission).value.length))
   const entries = fields.map<[keyof E, Field<E>]>(field => [field.id, field])
 
   return {

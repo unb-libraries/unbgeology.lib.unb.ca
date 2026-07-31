@@ -5,9 +5,11 @@
     </template>
 
     <template #actions>
-      <button v-if="hasPermission(/^create:migrationitem/)" class="button button-lg button-accent-mid hover:button-accent-light" @click.prevent.stop="onAddItems">
-        Add items
-      </button>
+      <WithPermission :permission="/^create:migrationitem/">
+        <button class="button button-lg button-accent-mid hover:button-accent-light" @click.prevent.stop="onAddItems">
+          Add items
+        </button>
+      </WithPermission>
     </template>
 
     <div class="space-y-12">
@@ -152,9 +154,11 @@
             <button v-if="canRollback" class="button-lg button button-outline-red hover:button-red w-full" @click.prevent.stop="onClickRollback">
               Rollback
             </button>
-            <button v-if="hasPermission(/^delete:migrationitem/)" class="button-lg button button-outline-red hover:button-red w-full" @click.prevent.stop="onClickDelete(selected)">
-              Delete
-            </button>
+            <WithPermission :permission="/^delete:migrationitem/">
+              <button class="button-lg button button-outline-red hover:button-red w-full" @click.prevent.stop="onClickDelete(selected)">
+                Delete
+              </button>
+            </WithPermission>
           </div>
         </template>
       </EntityAdminSidebar>
@@ -177,7 +181,6 @@ function getStatus(status: MigrationItem[`status`]) {
 }
 
 const { id } = useRoute().params
-const { hasPermission } = useCurrentUser()
 const { createToast } = useToasts()
 const { stackContent, setContent, close: closeModal } = useModal()
 

@@ -1,9 +1,11 @@
 <template>
   <NuxtLayout name="dashboard-page">
     <template #actions>
-      <NuxtLink v-if="hasPermission(/^create:user/)" to="/dashboard/users/register" class="button button-lg button-accent-mid hover:button-accent-light">
-        Add user
-      </NuxtLink>
+      <WithPermission :permission="/^create:user/">
+        <NuxtLink to="/dashboard/users/register" class="button button-lg button-accent-mid hover:button-accent-light">
+          Add user
+        </NuxtLink>
+      </WithPermission>
     </template>
 
     <div class="relative flex flex-row">
@@ -85,12 +87,16 @@
         </PvEntityDetails>
         <template #actions>
           <div class="space-y-2">
-            <button v-if="hasPermission(/^update:user/) && users.length === 1" class="button button-lg button-outline-yellow-light hover:button-yellow-light hover:text-primary w-full">
-              Edit{{ users.length > 1 ? ` ${users.length} users` : `` }}
-            </button>
-            <button v-if="hasPermission(/^delete:user/)" class="button button-lg button-outline-red-dark hover:button-red-dark w-full" @click.stop.prevent="onRemove">
-              Delete{{ users.length > 1 ? ` ${users.length} users` : `` }}
-            </button>
+            <WithPermission v-if="users.length === 1" :permission="/^update:user/">
+              <button class="button button-lg button-outline-yellow-light hover:button-yellow-light hover:text-primary w-full">
+                Edit{{ users.length > 1 ? ` ${users.length} users` : `` }}
+              </button>
+            </WithPermission>
+            <WithPermission :permission="/^delete:user/">
+              <button class="button button-lg button-outline-red-dark hover:button-red-dark w-full" @click.stop.prevent="onRemove">
+                Delete{{ users.length > 1 ? ` ${users.length} users` : `` }}
+              </button>
+            </WithPermission>
           </div>
         </template>
       </EntityAdminSidebar>
@@ -121,7 +127,6 @@ const schema = defineEntitySchema<User>(`User`, [
   [`active`, `Status`],
 ])
 
-const { hasPermission } = useCurrentUser()
 const columns = schema.filter(({ permission }) => permission ? hasPermission(permission) : false)
 
 const { columns: toggleableColumns, selected: selectedToggeableColumns, toggle } = useToggleableColumns(columns)

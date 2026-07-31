@@ -20,13 +20,12 @@ definePageMeta({
 })
 
 const { fetchBy } = useEntityType<Unit>(`Term`)
-const { hasPermission } = useCurrentUser()
 const { entity: unit, update } = await fetchBy({ slug: slug as string, type: `geochronology` })
 if (!unit.value) {
   showError(`Unit not found.`)
 }
 
-if (!hasPermission(new RegExp(`^update:term(:geochronology)?(:${useEnum(Status).labelOf(unit.value!.status)})?:(\\*|\\w)$`))) {
+if (!usePermissions(new RegExp(`^update:term(:geochronology)?(:${useEnum(Status).labelOf(unit.value!.status)})?:(\\*|\\w)$`)).value.length) {
   showError({ status: 403, statusMessage: `You do not have permission to edit this unit.` })
 }
 

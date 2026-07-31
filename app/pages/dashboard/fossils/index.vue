@@ -1,9 +1,11 @@
 <template>
   <NuxtLayout name="dashboard-page">
     <template #actions>
-      <NuxtLink v-if="hasPermission(/^create:term(:classification(:fossil)?)?/)" to="/dashboard/fossils/create" class="button button-lg button-accent-mid hover:button-accent-light">
-        Add fossil
-      </NuxtLink>
+      <WithPermission :permission="/^create:term(:classification(:fossil)?)?/">
+        <NuxtLink to="/dashboard/fossils/create" class="button button-lg button-accent-mid hover:button-accent-light">
+          Add fossil
+        </NuxtLink>
+      </WithPermission>
     </template>
 
     <div class="relative flex flex-row">
@@ -22,9 +24,11 @@
       selected-row-class="active"
     >
       <template #label="{ entity: { label, slug} }">
-        <NuxtLink v-if="hasPermission(/^update:term(:classification(:fossil)?)?:/)" :to="`/dashboard/fossils/${slug}`" class="hover:underline">
-          {{ label }}
-        </NuxtLink>
+        <WithPermission :permission="/^update:term(:classification(:fossil)?)?:/">
+          <NuxtLink :to="`/dashboard/fossils/${slug}`" class="hover:underline">
+            {{ label }}
+          </NuxtLink>
+        </WithPermission>
       </template>
       <template #parent="{ entity: { parent }}">
         <span v-if="parent">{{ parent.label }}</span>
@@ -56,12 +60,16 @@
         </PvEntityDetails>
         <template #actions>
           <div class="space-y-2">
-            <button v-if="hasPermission(/^update:term(:classification(:fossil)?)?:/) && selection.length === 1" class="button button-lg button-outline-yellow-light hover:button-yellow-light hover:text-primary w-full">
-              Edit{{ selection.length > 1 ? ` ${selection.length} fossils` : `` }}
-            </button>
-            <button v-if="hasPermission(/^delete:term(:classification(:fossil)?)?:/)" class="button button-lg button-outline-red-dark hover:button-red-dark w-full" @click.stop.prevent="onClickDelete">
-              Delete{{ selection.length > 1 ? ` ${selection.length} fossils` : `` }}
-            </button>
+            <WithPermission v-if="selection.length === 1" :permission="/^update:term(:classification(:fossil)?)?:/">
+              <button class="button button-lg button-outline-yellow-light hover:button-yellow-light hover:text-primary w-full">
+                Edit{{ selection.length > 1 ? ` ${selection.length} fossils` : `` }}
+              </button>
+            </WithPermission>
+            <WithPermission :permission="/^delete:term(:classification(:fossil)?)?:/">
+              <button class="button button-lg button-outline-red-dark hover:button-red-dark w-full" @click.stop.prevent="onClickDelete">
+                Delete{{ selection.length > 1 ? ` ${selection.length} fossils` : `` }}
+              </button>
+            </WithPermission>
           </div>
         </template>
       </EntityAdminSidebar>
@@ -87,7 +95,6 @@ definePageMeta({
   },
 })
 
-const { hasPermission } = useCurrentUser()
 const { values: schema, keys } = defineEntitySchema<Classification>(`Classification`, [`label`, `slug`, `parent`, `rank`, `created`, `updated`, `status`], {
   fieldPermission: id => new RegExp(`read:term(:classification(:fossil)?)?:(${id}|\\*)`),
 })

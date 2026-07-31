@@ -53,7 +53,7 @@ export function createFieldPermissionKeys(permission: Permission) {
     : [`${base}:*`]
 }
 
-function createPermissionsMap(policies: string[][]) {
+function createPermissionsMap(policies: string[][]): Permission[] {
   const reducer = (obj: Record<string, Permission>, permission: Permission) => {
     const key = createPermissionKey(permission)
     return {

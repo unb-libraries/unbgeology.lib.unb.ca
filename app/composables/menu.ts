@@ -4,10 +4,8 @@ type MenuMeta = NonNullable<Required<PageMeta[`menu`]>>
 
 export function getPagesMenu(): MenuMeta[] {
   const { getRoutes } = useRouter()
-  const { hasPermission } = useCurrentUser()
-
   return getRoutes()
-    .filter(({ meta }) => !meta?.auth?.permission || hasPermission(meta.auth.permission))
+    .filter(({ meta }) => usePermissions(meta?.auth?.permission ?? []).value.length)
     .map(({ path, meta, name }) => ({
       id: path.substring(1).split(`/`).join(`.`),
       parent: `/${path.substring(1).split(`/`).slice(0, -1).join(`/`)}`,

@@ -27,9 +27,11 @@
         <SpecimenDetails :id="specimen!.id" />
         <template #actions>
           <div class="space-y-2">
-            <button v-if="hasPermission(/^delete:specimen:/)" class="button button-lg button-outline-red-dark hover:button-red-dark w-full" @click.stop.prevent="onClickDelete">
-              Delete
-            </button>
+            <WithPermission :permission="/^delete:specimen:/">
+              <button class="button button-lg button-outline-red-dark hover:button-red-dark w-full" @click.stop.prevent="onClickDelete">
+                Delete
+              </button>
+            </WithPermission>
           </div>
         </template>
       </EntityAdminSidebar>
@@ -58,7 +60,6 @@ onUpdated(async () => {
   }
 })
 
-const { hasPermission } = useCurrentUser()
 const { createToast } = useToasts()
 const { fetchByPK, remove, update } = useEntityType<Specimen>(`Specimen`)
 const { entity: specimen } = await fetchByPK(slug as string)

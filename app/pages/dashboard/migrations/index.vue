@@ -1,9 +1,11 @@
 <template>
   <NuxtLayout name="dashboard-page">
     <template #actions>
-      <NuxtLink v-if="hasPermission(/^create:migration/)" to="/dashboard/migrations/create" class="button button-lg button-accent-mid hover:button-accent-light">
-        Add migration
-      </NuxtLink>
+      <WithPermission :permission="/^create:migration/">
+        <NuxtLink to="/dashboard/migrations/create" class="button button-lg button-accent-mid hover:button-accent-light">
+          Add migration
+        </NuxtLink>
+      </WithPermission>
     </template>
 
     <EntityTable
@@ -37,18 +39,26 @@
         <PvEntityDetails :entity="selection" :fields="columns" class="space-y-4" label-class="font-bold italic" />
         <template #actions>
           <div class="space-y-2">
-            <button v-if="hasPermission(/^update:migrationitem/)" class="button button-lg button-outline-blue hover:button-blue w-full" @click.stop.prevent="onClickImport">
-              Import
-            </button>
-            <button v-if="hasPermission(/^update:migrationitem/)" class="button button-lg button-outline-accent-mid hover:button-accent-mid w-full" @click.stop.prevent="onClickUpdate">
-              Update
-            </button>
-            <button v-if="hasPermission(/^update:migrationitem/)" class="button button-lg button-outline-red hover:button-red w-full" @click.stop.prevent="onClickRollback">
-              Rollback
-            </button>
-            <button v-if="hasPermission(/^delete:migration/)" class="button button-lg button-outline-red-dark hover:button-red-dark w-full" @click.stop.prevent="onClickRemove">
-              Delete
-            </button>
+            <WithPermission :permission="/^update:migrationitem/">
+              <button class="button button-lg button-outline-blue hover:button-blue w-full" @click.stop.prevent="onClickImport">
+                Import
+              </button>
+            </WithPermission>
+            <WithPermission :permission="/^update:migrationitem/">
+              <button class="button button-lg button-outline-accent-mid hover:button-accent-mid w-full" @click.stop.prevent="onClickUpdate">
+                Update
+              </button>
+            </WithPermission>
+            <WithPermission :permission="/^update:migrationitem/">
+              <button class="button button-lg button-outline-red hover:button-red w-full" @click.stop.prevent="onClickRollback">
+                Rollback
+              </button>
+            </WithPermission>
+            <WithPermission :permission="/^delete:migration/">
+              <button class="button button-lg button-outline-red-dark hover:button-red-dark w-full" @click.stop.prevent="onClickRemove">
+                Delete
+              </button>
+            </WithPermission>
           </div>
         </template>
       </EntityAdminSidebar>
@@ -68,7 +78,6 @@ definePageMeta({
   },
 })
 
-const { hasPermission } = useCurrentUser()
 const { setContent, close: closeModal } = useModal()
 const { createToast } = useToasts()
 

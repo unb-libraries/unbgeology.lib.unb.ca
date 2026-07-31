@@ -1,9 +1,11 @@
 <template>
   <NuxtLayout name="dashboard-page">
     <template #actions>
-      <NuxtLink v-if="hasPermission(/^create:term(:geochronology)?/)" to="/dashboard/geochronology/create" class="button button-lg button-accent-mid hover:button-accent-light">
-        Add unit
-      </NuxtLink>
+      <WithPermission :permission="/^create:term(:geochronology)?/">
+        <NuxtLink to="/dashboard/geochronology/create" class="button button-lg button-accent-mid hover:button-accent-light">
+          Add unit
+        </NuxtLink>
+      </WithPermission>
     </template>
 
     <div class="relative flex flex-row">
@@ -24,10 +26,15 @@
       <template #label="{ entity: { label, slug, color, status } }">
         <div class="inline-flex items-center space-x-3">
           <svg class="size-6 rounded-md" view-box="0 0 24 24"><rect width="24" height="24" :fill="color" /></svg>
-          <NuxtLink v-if="hasPermission(new RegExp(`^update:term(:geochronology)?(:${useEnum(Status).labelOf(status)})?:(\\*|\\w)$`))" :to="`/dashboard/geochronology/${slug}`" class="hover:underline">
-            {{ label }}
-          </NuxtLink>
-          <span v-else>{{ label }}</span>
+          <WithPermission
+            :permission="new RegExp(`^update:term(:geochronology)?(:${useEnum(Status).labelOf(status)})?:(\\*|\\w)$`)">
+            <NuxtLink :to="`/dashboard/geochronology/${slug}`" class="hover:underline">
+              {{ label }}
+            </NuxtLink>
+            <template #no-permission>
+              <span>{{ label }}</span>
+            </template>
+          </WithPermission>
         </div>
       </template>
       <template #parent="{ entity: { parent } }">
@@ -73,12 +80,21 @@
         </PvEntityDetails>
         <template #actions>
           <div class="space-y-2">
-            <button v-if="selection.length === 1 && hasPermission(new RegExp(`^update:term(:geochronology)?(:${useEnum(Status).labelOf(selection[0].status)})?:(\\*|\\w)$`))" class="button button-lg button-outline-yellow-light hover:button-yellow-light hover:text-primary w-full">
-              Edit{{ selection.length > 1 ? ` ${selection.length} units` : `` }}
-            </button>
-            <button v-if="selection.every(({ status }) => hasPermission(new RegExp(`^delete:term(:geochronology)?(:${useEnum(Status).labelOf(status)})?:\\*$`)))" class="button button-lg button-outline-red-dark hover:button-red-dark w-full" @click.stop.prevent="onClickDelete">
-              Delete{{ selection.length > 1 ? ` ${selection.length} units` : `` }}
-            </button>
+            <WithPermission
+              v-if="selection.length === 1"
+              :permission="new RegExp(`^update:term(:geochronology)?(:${useEnum(Status).labelOf(selection[0]!.status)})?:(\\*|\\w)$`)"
+            >
+              <button class="button button-lg button-outline-yellow-light hover:button-yellow-light hover:text-primary w-full">
+                Edit{{ selection.length > 1 ? ` ${selection.length} units` : `` }}
+              </button>
+            </WithPermission>
+            <WithPermission
+              :permission="selection.map(s => new RegExp(`^delete:term(:geochronology)?(:${useEnum(Status).labelOf(s.status)})?:\\*$`))"
+            >
+              <button class="button button-lg button-outline-red-dark hover:button-red-dark w-full" @click.stop.prevent="onClickDelete">
+                Delete{{ selection.length > 1 ? ` ${selection.length} units` : `` }}
+              </button>
+            </WithPermission>
           </div>
         </template>
       </EntityAdminSidebar>
@@ -104,7 +120,6 @@ definePageMeta({
   },
 })
 
-const { hasPermission } = useCurrentUser()
 const { values: schema } = defineEntitySchema<Unit>(`Geochronology`, [`label`, `slug`, `parent`, `division`, [`start`, `Mya`], `color`, `created`, `updated`, `status`], {
   fieldPermission: id => new RegExp(`read:term(:geochronology)?:(${id}|\\*)`),
 })

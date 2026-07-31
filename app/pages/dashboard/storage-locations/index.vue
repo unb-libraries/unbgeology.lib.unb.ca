@@ -1,9 +1,11 @@
 <template>
   <NuxtLayout name="dashboard-page">
     <template #actions>
-      <NuxtLink v-if="hasPermission(/^create:term(:storagelocation)?/)" to="/dashboard/storage-locations/create" class="button button-lg button-accent-mid hover:button-accent-light">
-        Add location
-      </NuxtLink>
+      <WithPermission :permission="/^create:term(:storagelocation)?/">
+        <NuxtLink to="/dashboard/storage-locations/create" class="button button-lg button-accent-mid hover:button-accent-light">
+          Add location
+        </NuxtLink>
+      </WithPermission>
     </template>
 
     <div class="relative flex flex-row">
@@ -22,9 +24,11 @@
       selected-row-class="active"
     >
       <template #label="{ entity: { label, slug} }">
-        <NuxtLink v-if="hasPermission(/^update:term(:storagelocation)?:/)" :to="`/dashboard/storage-locations/${slug}`" class="hover:underline">
-          {{ label }}
-        </NuxtLink>
+        <WithPermission :permission="/^update:term(:storagelocation)?:/">
+          <NuxtLink :to="`/dashboard/storage-locations/${slug}`" class="hover:underline">
+            {{ label }}
+          </NuxtLink>
+        </WithPermission>
       </template>
       <template #parent="{ entity: { parent }}">
         <span v-if="parent">{{ parent.label }}</span>
@@ -53,12 +57,19 @@
         </PvEntityDetails>
         <template #actions>
           <div class="space-y-2">
-            <button v-if="hasPermission(/^update:term(:storagelocation)?:/) && selection.length === 1" class="button button-lg button-outline-yellow-light hover:button-yellow-light hover:text-primary w-full">
-              Edit{{ selection.length > 1 ? ` ${selection.length} locations` : `` }}
-            </button>
-            <button v-if="hasPermission(/^delete:term(:storagelocation)?:/)" class="button button-lg button-outline-red-dark hover:button-red-dark w-full" @click.stop.prevent="onClickDelete">
-              Delete{{ selection.length > 1 ? ` ${selection.length} locations` : `` }}
-            </button>
+            <WithPermission
+              v-if="selection.length === 1"
+              :permission="/^update:term(:storagelocation)?:/"
+            >
+              <button class="button button-lg button-outline-yellow-light hover:button-yellow-light hover:text-primary w-full">
+                Edit{{ selection.length > 1 ? ` ${selection.length} locations` : `` }}
+              </button>
+            </WithPermission>
+            <WithPermission :permission="/^delete:term(:storagelocation)?:/">
+              <button class="button button-lg button-outline-red-dark hover:button-red-dark w-full" @click.stop.prevent="onClickDelete">
+                Delete{{ selection.length > 1 ? ` ${selection.length} locations` : `` }}
+              </button>
+            </WithPermission>
           </div>
         </template>
       </EntityAdminSidebar>
@@ -84,7 +95,6 @@ definePageMeta({
   },
 })
 
-const { hasPermission } = useCurrentUser()
 const { values: schema, keys } = defineEntitySchema<StorageLocation>(`Classification`, [`label`, `slug`, `parent`, `created`, `updated`, `status`], {
   fieldPermission: id => new RegExp(`read:term(:storagelocation)?:(${id}|\\*)`),
 })

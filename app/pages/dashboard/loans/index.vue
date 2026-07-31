@@ -1,13 +1,14 @@
 <template>
   <NuxtLayout name="dashboard-page">
     <template #actions>
-      <NuxtLink
-        v-if="hasPermission(/^create:loan/)"
-        to="/dashboard/loans/create"
-        class="button button-lg button-accent-mid hover:button-accent-light"
-      >
-        Add loan
-      </NuxtLink>
+      <WithPermission :permission="/^create:loan/">
+        <NuxtLink
+          to="/dashboard/loans/create"
+          class="button button-lg button-accent-mid hover:button-accent-light"
+        >
+          Add loan
+        </NuxtLink>
+      </WithPermission>
     </template>
 
     <EntityTable
@@ -106,13 +107,14 @@
         </div>
         <template #actions>
           <div class="space-y-2">
-            <button
-              v-if="hasPermission(/^delete:loan/)"
-              class="button button-lg button-outline-red-dark hover:button-red-dark w-full"
-              @click.stop.prevent="onClickRemove"
-            >
-              Delete
-            </button>
+            <WithPermission :permission="/^delete:loan/">
+              <button
+                class="button button-lg button-outline-red-dark hover:button-red-dark w-full"
+                @click.stop.prevent="onClickRemove"
+              >
+                Delete
+              </button>
+            </WithPermission>
           </div>
         </template>
       </EntityAdminSidebar>
@@ -140,7 +142,6 @@ definePageMeta({
   },
 })
 
-const { hasPermission } = useCurrentUser()
 const { setContent, close: closeModal } = useModal()
 const { createToast } = useToasts()
 

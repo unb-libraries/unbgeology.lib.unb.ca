@@ -1,9 +1,11 @@
 <template>
   <NuxtLayout name="dashboard-page">
     <template #actions>
-      <NuxtLink v-if="hasPermission(/^create:term(:affiliate(:organization)?)?/)" to="/dashboard/collectors-sponsors/organizations/create" class="button button-lg button-accent-mid hover:button-accent-light">
-        Add Organization
-      </NuxtLink>
+      <WithPermission :permission="/^create:term(:affiliate(:organization)?)?/">
+        <NuxtLink to="/dashboard/collectors-sponsors/organizations/create" class="button button-lg button-accent-mid hover:button-accent-light">
+          Add Organization
+        </NuxtLink>
+      </WithPermission>
     </template>
 
     <div class="relative flex flex-row">
@@ -23,9 +25,11 @@
     >
       <template #label="{ entity: { label, slug } }">
         <div class="inline-flex items-center space-x-3">
-          <NuxtLink v-if="hasPermission(/^update:term(:affiliate(:organization)?)?:/)" :to="`/dashboard/collectors-sponsors/organizations/${slug}`" class="hover:underline">
-            {{ label }}
-          </NuxtLink>
+          <WithPermission :permission="/^update:term(:affiliate(:organization)?)?:/">
+            <NuxtLink :to="`/dashboard/collectors-sponsors/organizations/${slug}`" class="hover:underline">
+              {{ label }}
+            </NuxtLink>
+          </WithPermission>
         </div>
       </template>
       <template #address="{ entity: { address }}">
@@ -68,9 +72,11 @@
         </PvEntityDetails>
         <template #actions>
           <div class="space-y-2">
-            <button v-if="hasPermission(/^delete:term(:affiliate(:organization)?)?:/)" class="button button-lg button-outline-red-dark hover:button-red-dark w-full" @click.stop.prevent="onClickDelete">
-              Delete{{ selection.length > 1 ? ` ${selection.length} organizations` : `` }}
-            </button>
+            <WithPermission :permission="/^delete:term(:affiliate(:organization)?)?:/">
+              <button class="button button-lg button-outline-red-dark hover:button-red-dark w-full" @click.stop.prevent="onClickDelete">
+                Delete{{ selection.length > 1 ? ` ${selection.length} organizations` : `` }}
+              </button>
+            </WithPermission>
           </div>
         </template>
       </EntityAdminSidebar>
@@ -95,8 +101,6 @@ definePageMeta({
     weight: 70,
   },
 })
-
-const { hasPermission } = useCurrentUser()
 const { values: schema, keys } = defineEntitySchema<Organization>(`Organization`, [`label`, `slug`, `web`, `contact`, `address`, `created`, `updated`, `status`], {
   fieldPermission: id => new RegExp(`read:term(:affiliate(:organization)?)?:(${id}|\\*)`),
 })

@@ -1,9 +1,11 @@
 <template>
   <NuxtLayout name="dashboard-page">
     <template #actions>
-      <NuxtLink v-if="hasPermission(/^create:specimen/)" to="/dashboard/specimens/create" class="button button-lg button-accent-mid hover:button-accent-light">
-        Add specimen
-      </NuxtLink>
+      <WithPermission :permission="/^create:specimen/">
+        <NuxtLink to="/dashboard/specimens/create" class="button button-lg button-accent-mid hover:button-accent-light">
+          Add specimen
+        </NuxtLink>
+      </WithPermission>
     </template>
 
     <div class="form-field w-full">
@@ -260,9 +262,11 @@
         <SpecimenDetails v-if="selection.length === 1" :id="selection[0]!.id" />
         <template #actions>
           <div class="space-y-2">
-            <button v-if="hasPermission(/^delete:specimen/)" class="button button-lg button-outline-red-dark hover:button-red-dark w-full" @click.stop.prevent="onClickDelete">
-              Delete{{ selection.length > 1 ? ` ${selection.length} specimens` : `` }}
-            </button>
+            <WithPermission :permission="/^delete:specimen/">
+              <button class="button button-lg button-outline-red-dark hover:button-red-dark w-full" @click.stop.prevent="onClickDelete">
+                Delete{{ selection.length > 1 ? ` ${selection.length} specimens` : `` }}
+              </button>
+            </WithPermission>
           </div>
         </template>
       </EntityAdminSidebar>
@@ -307,7 +311,6 @@ onUpdated(() => {
 
 watch(returnUrl, console.log)
 
-const { hasPermission } = useCurrentUser()
 const columns: [keyof Specimen, string][] = [
   [`images`, `Image`],
   [`id`, `ID`],

@@ -1,13 +1,14 @@
 <template>
   <NuxtLayout name="dashboard-page">
     <template #actions>
-      <NuxtLink
-        v-if="hasPermission(/^create:term(:composition)?/)"
-        to="/dashboard/composition/create"
-        class="button button-lg button-accent-mid hover:button-accent-light"
-      >
-        Add term
-      </NuxtLink>
+      <WithPermission :permission="/^create:term(:composition)?/">
+        <NuxtLink
+          to="/dashboard/composition/create"
+          class="button button-lg button-accent-mid hover:button-accent-light"
+        >
+          Add term
+        </NuxtLink>
+      </WithPermission>
     </template>
 
     <div class="space-y-12">
@@ -53,13 +54,14 @@
       selected-row-class="active"
     >
       <template #label="{ entity: { label, slug, status, type } }">
-        <NuxtLink
-          v-if="hasPermission(new RegExp(`^update:term(:composition(:fossil|:rock)?)?(:${useEnum(Status).labelOf(status)})?:(\\*|\\w)$`))"
-          :to="`/dashboard/composition/${slug}?type=${type.split('/')[1]}`"
-          class="hover:underline"
-        >
-          {{ label }}
-        </NuxtLink>
+        <WithPermission :permission="RegExp(`^update:term(:composition(:fossil|:rock)?)?(:${useEnum(Status).labelOf(status)})?:(\\*|\\w)$`)">
+          <NuxtLink
+            :to="`/dashboard/composition/${slug}?type=${type.split('/')[1]}`"
+            class="hover:underline"
+          >
+            {{ label }}
+          </NuxtLink>
+        </WithPermission>
       </template>
     </EntityTable>
     <div class="flex w-full flex-row justify-between px-4">
@@ -91,19 +93,24 @@
         />
         <template #actions>
           <div class="space-y-2">
-            <button
-              v-if="selection.length === 1 && hasPermission(new RegExp(`^update:term(:composition(:fossil|:rock)?)?(:${useEnum(Status).labelOf(selection[0].status)})?:(\\*|\\w)$`))"
-              class="button button-lg button-outline-yellow-light hover:button-yellow-light hover:text-primary w-full"
+            <WithPermission v-if="selection.length === 1" :permission="new RegExp(`^update:term(:composition(:fossil|:rock)?)?(:${useEnum(Status).labelOf(selection[0]!.status)})?:(\\*|\\w)$`)">
+              <button
+                class="button button-lg button-outline-yellow-light hover:button-yellow-light hover:text-primary w-full"
+              >
+                Edit{{ selection.length > 1 ? ` ${selection.length} terms` : `` }}
+              </button>
+              
+            </WithPermission>
+            <WithPermission
+              :permission="selection.map(s => RegExp(`^update:term(:composition(:fossil|:rock)?)?(:${useEnum(Status).labelOf(s.status)})?:(\\*|\\w)$`))"
             >
-              Edit{{ selection.length > 1 ? ` ${selection.length} terms` : `` }}
-            </button>
-            <button
-              v-if="selection.every(c => hasPermission(new RegExp(`^update:term(:composition(:fossil|:rock)?)?(:${useEnum(Status).labelOf(c.status)})?:(\\*|\\w)$`)))"
-              class="button button-lg button-outline-red-dark hover:button-red-dark w-full"
-              @click.stop.prevent="onClickDelete"
-            >
-              Delete{{ selection.length > 1 ? ` ${selection.length} terms` : `` }}
-            </button>
+              <button
+                class="button button-lg button-outline-red-dark hover:button-red-dark w-full"
+                @click.stop.prevent="onClickDelete"
+              >
+                Delete{{ selection.length > 1 ? ` ${selection.length} terms` : `` }}
+              </button>
+            </WithPermission>
           </div>
         </template>
       </EntityAdminSidebar>
@@ -139,7 +146,6 @@ onUpdated(() => {
   filter.value = [[`type`, FilterOperator.EQUALS, `composition/${type.value}`]]
 })
 
-const { hasPermission } = useCurrentUser()
 const { values: schema, keys } = defineEntitySchema<Composition>(`Composition`, [`label`, `slug`, `created`, `updated`, `status`, `type`], {
   fieldPermission: id => new RegExp(`read:term(:composition(:${type.value}))?:(${id}|\\*)`),
 })
