@@ -1,0 +1,20 @@
+{
+  "name": "unb-libraries/unbgeology.lib.unb.ca",
+  "description": "Scaffold and provision local development for unbgeology.lib.unb.ca",
+  "license": "MIT",
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "require-dev": {
+    "unb-libraries/dockworker-node": "6.x"
+  },
+  "config": {
+    "allow-plugins": {
+      "*": true
+    }
+  },
+  "scripts": {
+    "post-update-cmd": [
+      "vendor/bin/dockworker git:setup-hooks"
+    ]
+  }
+}
