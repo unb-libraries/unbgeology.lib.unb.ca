@@ -26,9 +26,10 @@
       >
         <td v-if="multiSelect && selection.length > 0" class="w-16 p-4 text-left leading-6">
           <PvCheckbox
-            :model-value="selection.includes(entity)"
+            :model-value="selection.find(s => s.self === entity.self) !== undefined"
             label=""
-            @update:model-value="toggle(entity)"
+            @click.stop=""
+            @change="toggle(entity)"
           />
         </td>
         <td v-for="[column] in columns" :key="`${entity.id}-${column}`" class="p-4 text-left leading-6" :class="cellClass ?? ``">
@@ -86,7 +87,7 @@ const selection = computed({
 })
 
 const toggle = (entity: EntityJSON<E>) => {
-  if (!selection.value.map(e => e.self).includes(entity.self)) {
+  if (!selection.value.find(e => e.self === entity.self)) {
     selection.value = [...selection.value ?? [], entity]
   } else {
     selection.value = selection.value.filter(e => e.self !== entity.self)
