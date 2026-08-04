@@ -1,6 +1,7 @@
 export default defineEventHandler(async (event) => {
   const { files, fields } = event.context.files
-
+  const sessionName = useRuntimeConfig().public.session.name
+  
   return await $fetch(`/api/files`, {
     method: `POST`,
     body: Object.entries(files ?? [])
@@ -28,7 +29,7 @@ export default defineEventHandler(async (event) => {
         return file
       }),
     headers: {
-      Cookie: `sessionId=${getCookie(event, `sessionId`)!}`,
+      Cookie: `${sessionName}=${getCookie(event, sessionName)!}`,
     },
   })
 })

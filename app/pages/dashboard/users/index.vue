@@ -127,7 +127,7 @@ const schema = defineEntitySchema<User>(`User`, [
   [`active`, `Status`],
 ])
 
-const columns = schema.filter(({ permission }) => permission ? hasPermission(permission) : false)
+const columns = schema.filter(({ permission }) => permission ? usePermissions(permission).value.length > 0 : false)
 
 const { columns: toggleableColumns, selected: selectedToggeableColumns, toggle } = useToggleableColumns(columns)
 const { columns: sortableColumns, rankedIDs } = useSortableColumns(columns, { defaultSort: `username` })

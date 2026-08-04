@@ -95,7 +95,7 @@ export default defineNuxtConfig({
       // TODO: Increase when useFileUpload composable is able to return all uploaded images' URLS
       maxFiles: 25,
       session: {
-        name: `sessionId`,
+        name: `nuxt-session`,
       },
     },
     defaultUser: `anonymous`,

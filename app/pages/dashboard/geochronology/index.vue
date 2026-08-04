@@ -82,14 +82,14 @@
           <div class="space-y-2">
             <WithPermission
               v-if="selection.length === 1"
-              :permission="new RegExp(`^update:term(:geochronology)?(:${useEnum(Status).labelOf(selection[0]!.status)})?:(\\*|\\w)$`)"
+              :permission="/^update:term(:geochronology)?:/"
             >
               <button class="button button-lg button-outline-yellow-light hover:button-yellow-light hover:text-primary w-full">
                 Edit{{ selection.length > 1 ? ` ${selection.length} units` : `` }}
               </button>
             </WithPermission>
             <WithPermission
-              :permission="selection.map(s => new RegExp(`^delete:term(:geochronology)?(:${useEnum(Status).labelOf(s.status)})?:\\*$`))"
+              :permission="/^delete:term(:geochronology)?:/"
             >
               <button class="button button-lg button-outline-red-dark hover:button-red-dark w-full" @click.stop.prevent="onClickDelete">
                 Delete{{ selection.length > 1 ? ` ${selection.length} units` : `` }}

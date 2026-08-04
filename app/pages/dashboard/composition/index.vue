@@ -93,7 +93,7 @@
         />
         <template #actions>
           <div class="space-y-2">
-            <WithPermission v-if="selection.length === 1" :permission="new RegExp(`^update:term(:composition(:fossil|:rock)?)?(:${useEnum(Status).labelOf(selection[0]!.status)})?:(\\*|\\w)$`)">
+            <WithPermission v-if="selection.length === 1" :permission="/^update:term(:composition(:fossil|:rock)?)?:/">
               <button
                 class="button button-lg button-outline-yellow-light hover:button-yellow-light hover:text-primary w-full"
               >
@@ -102,7 +102,7 @@
               
             </WithPermission>
             <WithPermission
-              :permission="selection.map(s => RegExp(`^update:term(:composition(:fossil|:rock)?)?(:${useEnum(Status).labelOf(s.status)})?:(\\*|\\w)$`))"
+              :permission="/^update:term(:composition(:fossil|:rock)?)?:/"
             >
               <button
                 class="button button-lg button-outline-red-dark hover:button-red-dark w-full"
