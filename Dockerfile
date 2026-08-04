@@ -38,7 +38,6 @@ FROM base AS build
 COPY . .
 
 RUN pnpm ci --include=dev && \
-    pnpm cache clean --force && \
     NITRO_PRESET=node-server pnpm build
 
 
