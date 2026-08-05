@@ -40,9 +40,7 @@ COPY . .
 RUN pnpm ci --include=dev && \
     NITRO_PRESET=node-server pnpm build && \
     # TODO: Remove this once permission management has been refactored to not require casbin
-    cp ./model.conf ./policy.csv ./.output/ && \
-    # TODO: Remove this once we no longer require composer.json for deployment error checks
-    cp ./composer.json ./composer.lock ./.output
+    cp ./model.conf ./policy.csv ./.output/
 
 
 # Deployment image
