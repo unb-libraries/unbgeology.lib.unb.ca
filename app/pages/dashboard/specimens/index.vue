@@ -300,7 +300,7 @@ const search = useRouteQuery<string>('search', '')
 const sort = useRouteQuery<string[]>('sort', ['-id'])
 const select = useRouteQuery<string[]>('select', ['id', 'name'])
 
-const { returnUrl, setReturnUrl } = useReturnUrl()
+const { setReturnUrl } = useReturnUrl()
 onMounted(() => {
   setReturnUrl(useRoute().fullPath)
 })
@@ -308,8 +308,6 @@ onMounted(() => {
 onUpdated(() => {
   setReturnUrl(useRoute().fullPath)
 })
-
-watch(returnUrl, console.log)
 
 const columns: [keyof Specimen, string][] = [
   [`images`, `Image`],
