@@ -38,7 +38,9 @@ FROM base AS build
 COPY . .
 
 RUN pnpm ci --include=dev && \
-    NITRO_PRESET=node-server pnpm build
+    NITRO_PRESET=node-server pnpm build && \
+    # TODO: Remove this once we no longer require composer.json for deployment error checks
+    cp ./composer.json ./composer.lock ./.output
 
 
 # Deployment image
