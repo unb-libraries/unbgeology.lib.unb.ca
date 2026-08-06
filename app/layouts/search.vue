@@ -61,7 +61,6 @@
 
 <script lang="ts" setup>
 import { IconList, IconGrid, IconMap } from '#components'
-import { useRouteQuery } from '@vueuse/router'
 
 defineProps<{
   total: number

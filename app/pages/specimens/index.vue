@@ -3,8 +3,6 @@
 </template>
 
 <script setup lang="ts">
-import { useRouteQuery } from '@vueuse/router'
-
 definePageMeta({
   layout: false,
   name: 'Search',

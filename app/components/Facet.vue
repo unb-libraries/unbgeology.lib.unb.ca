@@ -22,7 +22,6 @@
 
 <script lang="ts" setup>
 import { FilterOperator } from '@unb-libraries/nuxt-layer-entity';
-import { useRouteQuery } from '@vueuse/router'
 
 const collapsed = defineModel<boolean>('collapsed', { default: false })
 const props = defineProps<{

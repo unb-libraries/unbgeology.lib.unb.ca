@@ -71,7 +71,6 @@
 
 <script lang="ts" setup>
 import { type EntityJSONList, type Entity } from '@unb-libraries/nuxt-layer-entity'
-import { useRouteQuery } from '@vueuse/router'
 
 defineProps<{
   collapsed?: boolean

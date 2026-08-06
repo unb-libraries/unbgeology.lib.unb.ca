@@ -278,7 +278,6 @@
 <script setup lang="tsx">
 import { FilterOperator, type EntityJSON, type EntityJSONList } from '@unb-libraries/nuxt-layer-entity'
 import { type Specimen, Legal, type Fossil, type Mineral, type Rock } from 'types/specimen'
-import { useRouteQuery } from '@vueuse/router'
 import { PvEntityDeleteConfirm, TwLightbox } from '#components'
 import type { Collection } from '~~/types/collection'
 import type { Affiliate } from '~~/types/affiliate'

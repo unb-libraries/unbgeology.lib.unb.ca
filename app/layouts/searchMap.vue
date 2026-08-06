@@ -9,8 +9,6 @@
 import type { EntityJSONList } from '@unb-libraries/nuxt-layer-entity'
 import { type Specimen } from '~~/types/specimen'
 
-import { useRouteQuery } from '@vueuse/router'
-
 const search = useRouteQuery('search', '')
 const filter = useRouteQuery('filter', [] as string | string[], {
   transform: (filter) => Array.isArray(filter) ? filter : [filter].filter(Boolean)
