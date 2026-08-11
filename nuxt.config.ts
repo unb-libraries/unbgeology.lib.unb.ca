@@ -141,6 +141,9 @@ export default defineNuxtConfig({
         driver: `fs`,
         base: `${APP_ROOT}/../.data/db`,
       },
+      cache: {
+        driver: `memory`,
+      },
     },
     imports: {
       dirs: [
