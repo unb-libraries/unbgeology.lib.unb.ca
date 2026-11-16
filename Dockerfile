@@ -37,7 +37,7 @@ FROM base AS build
 
 COPY . .
 
-RUN pnpm ci --include=dev && \
+RUN pnpm install --frozen-lockfile --prod=false && \
     NITRO_PRESET=node-server pnpm build && \
     # TODO: Remove this once permission management has been refactored to not require casbin
     cp ./model.conf ./policy.csv ./.output/
