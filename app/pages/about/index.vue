@@ -61,7 +61,7 @@ the Future</h2>
     </p>
 
     <p class="my-4">
-      This collaboration combines the QESC’s curatorial and geological expertise with the technical knowledge of UNB Libraries’ Systems Group and the Centre for Digital Scholarship. Web developer Patrick Schilf has played an important role in building the custom platform, alongside colleagues including Jeff Carter and Jeremy McDermott of the Systems Group at UNB Libraries with design support from Jonny Wood. The public portal supports richer records and wider public access and is being refined as records are reviewed and expanded.
+      This collaboration combines the QESC’s curatorial and geological expertise with the technical knowledge of <a href="htps://lib.unb.ca" class="underline">UNB Libraries</a>’ Systems Group and the <a href="https://lib.unb.ca/cds" class="underline">Centre for Digital Scholarship</a>. Web developer Patrick Schilf has played an important role in building the custom platform, alongside colleagues including Jeff Carter and Jeremy McDermott of the Systems Group at UNB Libraries with design support from Jonny Wood. The public portal supports richer records and wider public access and is being refined as records are reviewed and expanded.
     </p>
 
     <p class="my-4">
