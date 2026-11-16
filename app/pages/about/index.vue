@@ -39,27 +39,32 @@ the Future</h2>
       Geological specimens are valuable, but so is the information that accompanies them.
       Details about where a specimen was found, who collected it, its geological setting, and
       its subsequent history make it more useful for research and education.
-      
+    </p>
+
+    <p class="my-4">
       To safeguard this knowledge and share it more widely, the QESC and Department of
       Earth Sciences partnered with UNB Libraries in 2022 to develop a modern digital
       collections database.
+    </p>
       
+    <p class="my-4">
       The searchable platform brings specimen records together with photographs,
       geographic information, historical documentation, and other digital resources.
       Digitization improves collections management, protects historical information, supports
       teaching and research, and makes records available to people who may never visit
       UNB in person.
+    </p>
       
+    <p class="my-4">
       The work also creates experiential learning opportunities in specimen identification,
       photography, cataloguing, collections care, and digital preservation.
-      
-      This collaboration combines the QESC’s curatorial and geological expertise with the
-      technical knowledge of UNB Libraries’ Systems Group. Web developer Patrick Schilf
-      has played an important role in building the custom platform, alongside colleagues
-      including Jeff Carter Manager of the Systems Group (Library Systems) at UNB Libraries.
-      The public portal supports richer records and wider public access and is being refined
-      as records are reviewed and expanded.
-      
+    </p>
+
+    <p class="my-4">
+      This collaboration combines the QESC’s curatorial and geological expertise with the technical knowledge of UNB Libraries’ Systems Group and the Centre for Digital Scholarship. Web developer Patrick Schilf has played an important role in building the custom platform, alongside colleagues including Jeff Carter and Jeremy McDermott of the Systems Group at UNB Libraries with design support from Jonny Wood. The public portal supports richer records and wider public access and is being refined as records are reviewed and expanded.
+    </p>
+
+    <p class="my-4">
       The initiative builds on UNB Libraries’ wider work in digital scholarship, preservation,
       and access to cultural and scientific heritage.
     </p>
@@ -89,7 +94,19 @@ the Future</h2>
     <p class="my-4">
       <strong>Dr. Ann C. Timmermans</strong> is a geologist, Associate Teaching Professor, and curator of the Quartermain Museum. Originally from Ontario, she holds a BSc from the University of Waterloo as well as an MSc and PhD from Carleton University. As a geologist she gained extensive field experience in geophysical exploration across North America and Africa. Since joining UNB in 2014, she has focused on geoscience education, museum curation, and outreach guided by the UN Sustainability Goals. Committed to preserving geological heritage, she works with curators and scientists worldwide to advance responsible stewardship of natural history collections.
     </p>
-    
+  </section>
+
+  <section class="my-8">
+    <h2 class="text-2xl">Technical Administration & Development</h2>
+    <ul class="list-disc my-4 pl-6">
+      <li>Patrick Schilf, Web developer</li>
+      <li>Jeremy McDermott, Web developer</li>
+      <li>Jonny Wood, Graphic Designer</li>
+    </ul>
+  </section>
+
+  <section class="my-8">
+    <h2 class="text-2xl">Contact</h2>
     <p class="my-4">
       <span class="inline-flex items-center font-bold gap-x-2">
         <IconMail
