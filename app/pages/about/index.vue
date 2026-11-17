@@ -3,10 +3,6 @@
     <p class="my-4">
       The UNB Geology project is a collaboration between the University of New Brunswick's Department of Earth Sciences and UNB Libraries. The goal of the project is to provide digital access to UNB's Earth Science Collections and to improve accuracy, traceability, searchability, and long-term preservation of the collections, as well as enhance global visibility of UNB's geological heritage.
     </p>
-    
-    <p class="my-4">
-      <a href="/about/collections" class="underline">Read the complete history of the collections</a>
-    </p>
   </section>
   
   <section class="my-8">
@@ -29,6 +25,10 @@
       (QESC) care for these collections. In partnership with UNB Libraries, they are opening
       this remarkable geological heritage to students, researchers, educators, and the wider
       public.
+    </p>
+
+    <p class="my-4">
+      <a href="/about/collections" class="underline">Read the complete history of the collections</a>
     </p>
   </section>
   
