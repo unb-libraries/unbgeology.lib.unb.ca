@@ -1,8 +1,8 @@
 <template>
-  <section class="my-8 flow-root">
-    <h2 class="text-2xl">James Robb: Establishing the Foundations (1837–1861)</h2>
+  <section class="my-8 md:text-xl flow-root">
+    <h2 class="text-3xl">James Robb: Establishing the Foundations (1837–1861)</h2>
 
-    <figure class="mx-auto my-6 w-3/4 max-w-sm md:mx-0 md:my-0 md:mb-4 md:mt-1 md:max-w-none md:float-right md:clear-right md:ml-6 md:w-[30%]">
+    <figure class="mx-auto my-6 w-3/4 max-w-sm md:mx-0 md:my-0 md:mb-4 md:mt-1 md:max-w-none md:float-right md:clear-right md:ml-6 md:w-1/4">
       <img
         src="/about/james-robb.jpg"
         alt="Portrait photograph of James Robb"
@@ -17,10 +17,7 @@
     <p class="my-4">
       The story begins in 1837, when Dr. James Robb arrived from Scotland to teach chemistry and natural science at King’s College, the predecessor of UNB.
     </p>
-    <p class="my-4">
-      Robb was a passionate advocate for scientific education and believed that students should learn by examining the natural world directly. He conducted geological expeditions throughout New Brunswick and produced a geological map of the province in 1849, contributing to the growing understanding of its natural resources.
-    </p>
-    <figure class="mx-auto my-6 w-3/4 max-w-sm md:mx-0 md:my-0 md:mb-4 md:mt-1 md:max-w-none md:float-right md:clear-right md:ml-6 md:w-[30%]">
+    <figure class="mx-auto my-6 w-3/4 max-w-sm md:mx-0 md:my-0 md:mb-4 md:mt-1 md:max-w-none md:float-left md:clear-left md:mr-6 md:w-1/3">
       <img
         src="/about/college-of-new-brunswick.jpg"
         alt="Engraving of the College of New Brunswick on a hill above the Saint John River"
@@ -31,6 +28,9 @@
         UNB Archives: College of New Brunswick [ca. 1827]. UA PC 9; Item no. 8
       </figcaption>
     </figure>
+    <p class="my-4">
+      Robb was a passionate advocate for scientific education and believed that students should learn by examining the natural world directly. He conducted geological expeditions throughout New Brunswick and produced a geological map of the province in 1849, contributing to the growing understanding of its natural resources.
+    </p>
     <p class="my-4">
       In 1847, Robb and his colleague William Brydone-Jack appealed to the college administration for scientific equipment and the establishment of a museum. They argued that understanding Earth's history required students to examine the rocks, minerals, and fossils that preserved evidence of its past.
     </p>
@@ -45,10 +45,10 @@
     </p>
   </section>
 
-  <section class="my-8 flow-root">
-    <h2 class="text-2xl">Loring Woart Bailey: Expanding the Collections (1861–1907)</h2>
+  <section class="my-8 md:text-xl flow-root">
+    <h2 class="text-3xl">Loring Woart Bailey: Expanding the Collections (1861–1907)</h2>
 
-    <figure class="mx-auto my-6 w-3/4 max-w-sm md:mx-0 md:my-0 md:mb-4 md:mt-1 md:max-w-none md:float-right md:clear-right md:ml-6 md:w-[30%]">
+    <figure class="mx-auto my-6 w-3/4 max-w-sm md:mx-0 md:my-0 md:mb-4 md:mt-1 md:max-w-none md:float-right md:clear-right md:ml-6 md:w-1/4">
       <img
         src="/about/loring-woart-bailey.jpg"
         alt="Portrait photograph of Loring Woart Bailey"
@@ -79,7 +79,7 @@
       The specimens and historical records preserved today reflect Bailey’s vision: a collection that connects nineteenth-century exploration with future research, education, and stewardship.
     </p>
 
-    <div class="clear-both mx-auto my-6 grid max-w-3xl grid-cols-2 gap-4 md:gap-6">
+    <div class="clear-both mx-auto mt-8 grid w-3/4 grid-cols-2 gap-4 md:gap-6">
       <figure>
         <img
           src="/about/museum-of-the-university.jpg"
@@ -105,8 +105,8 @@
     </div>
   </section>
 
-  <section class="my-8 flow-root">
-    <h2 class="text-2xl">From Natural History to Earth Sciences</h2>
+  <section class="my-8 md:text-xl flow-root">
+    <h2 class="text-3xl">From Natural History to Earth Sciences</h2>
     <p class="my-4">
       As scientific understanding advanced, geology gradually emerged from natural history as a distinct academic discipline.
     </p>
@@ -124,13 +124,13 @@
     </p>
   </section>
 
-  <section class="my-8 flow-root">
-    <h2 class="text-2xl">Dr. Arnold L. McAllister (1921–2010): A Lasting Legacy</h2>
+  <section class="my-8 md:text-xl flow-root">
+    <h2 class="text-3xl">Dr. Arnold L. McAllister (1921–2010): A Lasting Legacy</h2>
     <p class="my-4 italic">
       Geologist, educator, mentor, and dedicated steward of UNB's geological heritage
     </p>
 
-    <figure class="mx-auto my-6 w-3/4 max-w-sm md:mx-0 md:my-0 md:mb-4 md:mt-1 md:max-w-none md:float-right md:clear-right md:ml-6 md:w-[30%]">
+    <figure class="mx-auto my-6 w-3/4 max-w-sm md:mx-0 md:my-0 md:mb-4 md:mt-1 md:max-w-none md:float-right md:clear-right md:ml-6 md:w-1/4">
       <img
         src="/about/arnold-mcallister.jpg"
         alt="Portrait photograph of Arnold McAllister"
@@ -169,21 +169,10 @@
     </p>
   </section>
 
-  <section class="my-8 flow-root">
-    <h2 class="text-2xl">A New Chapter: The Quartermain Earth Science Centre</h2>
+  <section class="my-8 md:text-xl flow-root">
+    <h2 class="text-3xl">A New Chapter: The Quartermain Earth Science Centre</h2>
 
-    <figure class="mx-auto my-6 w-3/4 max-w-sm md:mx-0 md:my-0 md:mb-4 md:mt-1 md:max-w-none md:float-right md:clear-right md:ml-6 md:w-[30%]">
-      <img
-        src="/about/forestry-geology-building.jpg"
-        alt="Historical photograph of the Forestry and Geology Building at UNB, Fredericton"
-        class="w-full h-auto"
-        loading="lazy"
-      >
-      <figcaption class="mt-2 text-sm">
-        Forestry and Geology Building, UNB, Fredericton (Archives &amp; Special Collections, Harriet Irving Library, University of New Brunswick)
-      </figcaption>
-    </figure>
-
+    
     <p class="my-4">
       In 2011, the Quartermain Earth Science Centre opened in UNB's Forestry and Geology Building, made possible through a generous $1-million gift from UNB alumnus Dr. Robert (Bob) Quartermain.
     </p>
@@ -193,24 +182,38 @@
     <p class="my-4">
       Today, the QESC preserves, studies, and interprets these collections while inspiring curiosity about Earth, environmental, and space sciences. Its specimens continue to serve as valuable resources for teaching and research, while supporting public exhibitions, community outreach, and hands-on learning experiences for students.
     </p>
-    <figure class="mx-auto my-6 w-3/4 max-w-sm md:mx-0 md:my-0 md:mb-4 md:mt-1 md:max-w-none md:float-right md:clear-right md:ml-6 md:w-[30%]">
-      <img
-        src="/about/robert-quartermain.jpg"
-        alt="Dr. Robert Quartermain standing on a mountainside"
-        class="w-full h-auto"
-        loading="lazy"
-      >
-      <figcaption class="mt-2 text-sm">
-        Dr. Robert Quartermain
-      </figcaption>
-    </figure>
+    
+    <div class="clear-both mx-auto mt-8 grid w-3/4 grid-cols-2 gap-4 md:gap-6">
+      <figure>
+        <img
+          src="/about/forestry-geology-building.jpg"
+          alt="Historical photograph of the Forestry and Geology Building at UNB, Fredericton"
+          class="w-full h-auto"
+          loading="lazy"
+        >
+        <figcaption class="mt-2 text-sm">
+          Forestry and Geology Building, UNB, Fredericton (Archives &amp; Special Collections, Harriet Irving Library, University of New Brunswick)
+        </figcaption>
+      </figure>
+      <figure>
+        <img
+          src="/about/robert-quartermain.jpg"
+          alt="Dr. Robert Quartermain standing on a mountainside"
+          class="w-full h-auto"
+          loading="lazy"
+        >
+        <figcaption class="mt-2 text-sm">
+          Dr. Robert Quartermain
+        </figcaption>
+      </figure>
+    </div>
     <p class="my-4">
       The Centre also reflects the enduring influence of UNB's educators. Dr. Quartermain has credited his former professor, Dr. Arnold McAllister, with helping shape his interest in economic geology and his subsequent career. Through his generous support of the QESC, Dr. Quartermain has helped carry forward this tradition of mentorship, discovery, and sharing geological knowledge with future generations.
     </p>
   </section>
 
-  <section class="my-8 flow-root">
-    <h2 class="text-2xl">References</h2>
+  <section class="my-8 md:text-xl flow-root">
+    <h2 class="text-3xl">References</h2>
     <ul class="my-4 space-y-3">
       <li v-for="reference in references" :key="reference" class="pl-8 -indent-8">
         {{ reference }}

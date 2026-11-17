@@ -1,12 +1,12 @@
 <template>
-  <section class="my-8">
+  <section class="my-8 md:text-xl flow-root">
     <p class="my-4">
       The UNB Geology project is a collaboration between the University of New Brunswick's Department of Earth Sciences and UNB Libraries. The goal of the project is to provide digital access to UNB's Earth Science Collections and to improve accuracy, traceability, searchability, and long-term preservation of the collections, as well as enhance global visibility of UNB's geological heritage.
     </p>
   </section>
   
-  <section class="my-8">
-    <h2 class="text-2xl">Nearly two centuries of discovery, education, and preservation</h2>
+  <section class="my-8 md:text-xl flow-root">
+    <h2 class="text-3xl">Nearly two centuries of discovery, education, and preservation</h2>
     <p class="my-4">
       Every rock, mineral, and fossil has a story to tell. Some reveal events that shaped our
       planet millions or billions of years ago; others preserve the stories of the people who
@@ -32,8 +32,8 @@
     </p>
   </section>
   
-  <section class="my-8">
-    <h2 class="text-2xl">Discovering the Past, Understanding the Present, Preparing for
+  <section class="my-8 md:text-xl flow-root">
+    <h2 class="text-3xl">Discovering the Past, Understanding the Present, Preparing for
 the Future</h2>
     <p class="my-4">
       Geological specimens are valuable, but so is the information that accompanies them.
@@ -70,8 +70,8 @@ the Future</h2>
     </p>
   </section>
 
-  <section class="my-8">
-    <h2 class="text-2xl">Explore the Collections</h2>
+  <section class="my-8 md:text-xl flow-root">
+    <h2 class="text-3xl">Explore the Collections</h2>
     <p class="my-4">
       UNB’s Earth Sciences Collections are the product of generations of curiosity, scientific inquiry, and dedicated care.
     </p>
@@ -89,15 +89,15 @@ the Future</h2>
     </p>
   </section>
   
-  <section class="my-8">
-    <h2 class="text-2xl">Curatorial Staff</h2>
+  <section class="my-8 md:text-xl flow-root">
+    <h2 class="text-3xl">Curatorial Staff</h2>
     <p class="my-4">
       <strong>Dr. Ann C. Timmermans</strong> is a geologist, Associate Teaching Professor, and curator of the Quartermain Museum. Originally from Ontario, she holds a BSc from the University of Waterloo as well as an MSc and PhD from Carleton University. As a geologist she gained extensive field experience in geophysical exploration across North America and Africa. Since joining UNB in 2014, she has focused on geoscience education, museum curation, and outreach guided by the UN Sustainability Goals. Committed to preserving geological heritage, she works with curators and scientists worldwide to advance responsible stewardship of natural history collections.
     </p>
   </section>
 
-  <section class="my-8">
-    <h2 class="text-2xl">Technical Administration & Development</h2>
+  <section class="my-8 md:text-xl flow-root">
+    <h2 class="text-3xl">Technical Administration & Development</h2>
     <ul class="list-disc my-4 pl-6">
       <li>Patrick Schilf, Web developer</li>
       <li>Jeremy McDermott, Web developer</li>
@@ -105,8 +105,8 @@ the Future</h2>
     </ul>
   </section>
 
-  <section class="my-8">
-    <h2 class="text-2xl">Contact</h2>
+  <section class="my-8 md:text-xl flow-root">
+    <h2 class="text-3xl">Contact</h2>
     <p class="my-4">
       <span class="inline-flex items-center font-bold gap-x-2">
         <IconMail
