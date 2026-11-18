@@ -45,3 +45,11 @@ export function getAuthorizedFields(event: H3Event, ...resources: string[]) {
     .reduceRight((all, some) => all.concat(...some), [])
     .filter((field, i, arr) => arr.indexOf(field) === i) ?? []
 }
+
+export function isFieldAuthorized(authFields: string[], field: string) {
+  return !authFields.length || authFields.some(f => field === f || field.startsWith(`${f}.`))
+}
+
+export function getAuthorizedFilter<F extends [string, ...unknown[]]>(filter: F[] | undefined, authFields: string[]) {
+  return (filter ?? []).filter(([field]) => isFieldAuthorized(authFields, field))
+}

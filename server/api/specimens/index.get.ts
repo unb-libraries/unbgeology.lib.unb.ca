@@ -24,8 +24,7 @@ export default defineCachedEventHandler(async (event) => {
   const selectFields = select
     ?.filter((field, i, arr) => arr.indexOf(field) === i)
     .filter(field => !authFields.length || authFields.includes(field)) ?? []
-  const authorizedFilter = filter
-    ?.filter(([field]) => !authFields.length || authFields.some(f => field === f || field.startsWith(`${f}.`))) ?? []
+  const authorizedFilter = getAuthorizedFilter(filter, authFields)
   const filterFields = authorizedFilter
     .map(([field]) => field)
     .filter((field, i, arr) => arr.indexOf(field) === i)

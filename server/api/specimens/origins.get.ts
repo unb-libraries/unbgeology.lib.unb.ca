@@ -21,13 +21,15 @@ export default defineCachedEventHandler(async (event) => {
     ?.filter((field, i, arr) => arr.indexOf(field) === i)
     .filter(field => !authFields.length || authFields.includes(field)) ?? []
   
-  if (!resources.length) {
+  if (!resources.length || !isFieldAuthorized(authFields, `origin`)) {
     return create403()
   }
 
+  const authorizedFilter = getAuthorizedFilter(filter, authFields)
+
   function getFilter(field: string, operator: FilterOperator) {
-    return filter
-      ?.filter(([f, op, value]) => f === field && useEnum(FilterOperator).valueOf(op) & operator && value)
+    return authorizedFilter
+      .filter(([f, op, value]) => f === field && useEnum(FilterOperator).valueOf(op) & operator && value)
       .map(([,,c]) => Array.isArray(c) ? c : [c])
       .flat()
   }

@@ -24,9 +24,11 @@ export default defineCachedEventHandler(async (event) => {
     return create403()
   }
 
+  const authorizedFilter = getAuthorizedFilter(filter, authFields)
+
   function getFilter(field: string, operator: FilterOperator) {
-    return filter
-      ?.filter(([f, op, value]) => f === field && useEnum(FilterOperator).valueOf(op) & operator && value)
+    return authorizedFilter
+      .filter(([f, op, value]) => f === field && useEnum(FilterOperator).valueOf(op) & operator && value)
       .map(([,,c]) => Array.isArray(c) ? c : [c])
       .flat()
   }
