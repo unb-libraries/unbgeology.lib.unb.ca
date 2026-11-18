@@ -24,7 +24,7 @@
             :center="[data.origin.latitude, data.origin.longitude]"
             @click="setOrigin"
           >
-            <LeafletSearch v-model="location" class="input-select-md hover:border-accent-mid text-primary w-80 rounded-sm bg-white" />
+            <LeafletSearch v-model="location" class="input-select-md hover:border-accent-mid text-primary w-full rounded-sm bg-white" />
             <LeafletMarker
               v-if="data.origin.latitude !== undefined && data.origin?.longitude !== undefined"
               :name="data.origin.name"

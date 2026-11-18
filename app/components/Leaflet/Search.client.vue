@@ -11,7 +11,7 @@
     @input="onSearch"
   >
     <template #reset>
-      <PvProgressSpinner v-if="pending" class="mr-2 size-6" stroke-width="4" />
+      <PvProgressSpinner v-if="pending" class="mr-2 !size-6" stroke-width="4" />
     </template>
   </PvInputDropdown>
 </template>
@@ -23,7 +23,7 @@ import { Control, DomUtil } from "leaflet"
 import type { MapInjection } from "~~/types/leaflet"
 import { type Location } from '~~/types/nominatim'
 
-const location = defineModel<Location>(`location`, { required: false })
+const location = defineModel<Location>({ required: false })
 const placeID = ref()
 const options = ref<Record<string, Location>>({})
 const pending = ref(false)
@@ -36,6 +36,7 @@ if (!getMap) {
 }
 
 let timer: NodeJS.Timeout
+let observer: ResizeObserver | undefined
 const { resolveName } = useNominatim()
 function onSearch(search: string) {
   if (search.length >= 3) {
@@ -67,7 +68,24 @@ onMounted(async () => {
 
     },
   })
-  new Search({ position: `bottomleft` })
-    .addTo(map)
+  const control = new Search({ position: `bottomleft` }).addTo(map)
+  const corner = control.getContainer()?.parentElement as HTMLElement | null
+  const attribution = map.getContainer().querySelector<HTMLElement>(`.leaflet-control-attribution`)
+  const el = control.getContainer() as HTMLElement | undefined
+  if (corner && el) {
+    corner.style.right = `0`
+    el.style.width = `calc(100% - 20px)`
+    el.style.marginBottom = `0`
+    const place = () => {
+      corner.style.paddingBottom = `${(attribution?.offsetHeight ?? 0) + 4}px`
+    }
+    place()
+    if (attribution) {
+      observer = new ResizeObserver(place)
+      observer.observe(attribution)
+    }
+  }
 })
+
+onBeforeUnmount(() => observer?.disconnect())
 </script>
