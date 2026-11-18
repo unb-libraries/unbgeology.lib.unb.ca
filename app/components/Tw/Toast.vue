@@ -13,13 +13,17 @@
         <slot />
       </div>
       <button
+        v-for="action in actions"
+        :key="action.label"
         class="button-sm cursor-pointer font-semibold uppercase"
-        :class="{
-          'button-red hover:button-red-dark': type === `error`,
-          'button-primary-80 hover:button-primary': type === `info`,
-          'button-yellow hover:button-yellow-dark': type === `warning`,
-          'button-green hover:button-green-dark': type === `success`,
-        }"
+        :class="buttonClass"
+        @click.stop.prevent="onAction(action)"
+      >
+        {{ action.label }}
+      </button>
+      <button
+        class="button-sm cursor-pointer font-semibold uppercase"
+        :class="buttonClass"
         @click.stop.prevent="removeToast($attrs.id as string)"
       >
         Dismiss
@@ -35,10 +39,24 @@ const { id } = useAttrs() as { id: string }
 const props = withDefaults(defineProps<{
   type?: `info` | `success` | `warning` | `error`
   duration?: number
+  actions?: ToastAction[]
 }>(), {
   type: `info`,
   duration: -1,
+  actions: () => [],
 })
+
+const buttonClass = computed(() => ({
+  'button-red hover:button-red-dark': props.type === `error`,
+  'button-primary-80 hover:button-primary': props.type === `info`,
+  'button-yellow hover:button-yellow-dark': props.type === `warning`,
+  'button-green hover:button-green-dark': props.type === `success`,
+}))
+
+const onAction = async (action: ToastAction) => {
+  removeToast(id)
+  await action.onClick()
+}
 
 if (props.duration > 0) {
   setTimeout(() => removeToast(id), props.duration)

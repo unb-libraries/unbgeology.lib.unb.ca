@@ -1,8 +1,14 @@
 import { type Component } from "vue"
 
+export interface ToastAction {
+  label: string
+  onClick: () => void | Promise<void>
+}
+
 export interface ToastOptions {
   type: `info` | `success` | `warning` | `error`
   duration: number
+  actions: ToastAction[]
 }
 
 export default function () {
@@ -10,7 +16,7 @@ export default function () {
   return {
     toasts: Toasts,
     createToast: (id: string, content: Component, options?: Partial<ToastOptions>) => {
-      Toasts.value = { ...Toasts.value, [id]: [content, { duration: -1, type: `info`, ...(options ?? {}) }] }
+      Toasts.value = { ...Toasts.value, [id]: [content, { duration: -1, type: `info`, actions: [], ...(options ?? {}) }] }
     },
     removeToast: (id: string) => {
       if (Toasts.value[id]) {
