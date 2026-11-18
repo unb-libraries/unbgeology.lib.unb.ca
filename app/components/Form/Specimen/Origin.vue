@@ -1,5 +1,5 @@
 <template>
-  <EntityForm :entity="data" @save="onSave">
+  <EntityForm :entity="data" @save="onSave" cancel-label="Go back" @cancel="$emit(`cancel`)">
     <div class="flex flex-row space-x-4">
       <div class="flex w-3/5 flex-col space-y-4">
         <TwFormField label="Name">
@@ -52,6 +52,7 @@ const props = defineProps<{
 
 const emits = defineEmits<{
   save: [specimen: Specimen]
+  cancel: []
 }>()
 
 const { entities: people } = await fetchEntityList<Person>(`Term`, { filter: [[`type`, FilterOperator.EQUALS, `affiliate/person`]], select: [`label`], sort: [`label`], pageSize: 500 })

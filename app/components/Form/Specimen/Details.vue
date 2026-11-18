@@ -1,5 +1,5 @@
 <template>
-  <EntityForm :entity="data" @save="onSave" @cancel="$emit(`cancel`)">
+  <EntityForm :entity="data" @save="onSave" cancel-label="Go back" @cancel="$emit(`cancel`)">
     <TwFormField label="Classification">
       <InputSpecimenClassification
         v-model="data.classification"

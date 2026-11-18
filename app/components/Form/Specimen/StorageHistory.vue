@@ -1,5 +1,5 @@
 <template>
-  <EntityForm class="h-full" @save="onSave" @cancel="$emit(`cancel`)">
+  <EntityForm class="h-full" @save="onSave" cancel-label="Go back" @cancel="$emit(`cancel`)">
     <TwFormField v-for="(item, i) in history" :key="item[0]" :label="`#${i + 1}`">
       <div class="inline-flex w-full space-x-3">
         <TwFormField label="Location" class="w-2/3" label-class="sr-only">

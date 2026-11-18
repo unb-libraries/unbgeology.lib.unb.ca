@@ -16,9 +16,9 @@
         </NuxtLink>
       </nav>
 
-      <FormSpecimenDetails v-if="edit === `details`" :specimen="specimen!" @save="onSave" @cancel="navigateTo(`/dashboard/specimens`)" />
-      <FormSpecimenOrigin v-else-if="edit === `origin`" :specimen="specimen!" @save="onSave" @cancel="navigateTo(`/dashboard/specimens`)" />
-      <FormSpecimenStorageHistory v-else-if="edit === `storage`" :specimen="specimen!" @save="onSave" @cancel="navigateTo(`/dashboard/specimens`)" />
+      <FormSpecimenDetails v-if="edit === `details`" :specimen="specimen!" @save="onSave" @cancel="navigateTo(returnUrl)" />
+      <FormSpecimenOrigin v-else-if="edit === `origin`" :specimen="specimen!" @save="onSave" @cancel="navigateTo(returnUrl)" />
+      <FormSpecimenStorageHistory v-else-if="edit === `storage`" :specimen="specimen!" @save="onSave" @cancel="navigateTo(returnUrl)" />
       <FormSpecimen v-else :specimen="specimen!" @save="onSave" @cancel="navigateTo(returnUrl)" />
     </div>
 
@@ -50,7 +50,7 @@ definePageMeta({
 
 const { slug } = useRoute().params
 const edit = ref(useRoute().query.edit)
-const { returnUrl } = useReturnUrl()
+const { returnUrl } = useReturnUrl({ fallback: `/dashboard/specimens` })
 
 onUpdated(async () => {
   edit.value = useRoute().query.edit

@@ -9,7 +9,7 @@
         <slot name="more-actions" :body="entityBody" />
       </slot>
       <span class="button button-lg button-transparent grow-0 hover:underline" @click.prevent="emits(`cancel`)">
-        Cancel
+        {{ cancelLabel ?? `Cancel` }}
       </span>
     </div>
   </form>
@@ -21,6 +21,7 @@ import type { Entity } from '@unb-libraries/nuxt-layer-entity'
 const props = defineProps<{
   entity?: I
   submitLabel?: string
+  cancelLabel?: string
 }>()
 
 const emits = defineEmits<{

@@ -1,5 +1,5 @@
 <template>
-  <EntityForm @save="onSave" @cancel="$emit(`cancel`)">
+  <EntityForm @save="onSave" cancel-label="Go back" @cancel="$emit(`cancel`)">
     <TwFormField label="Location">
       <InputStorageLocation v-model="location" />
     </TwFormField>

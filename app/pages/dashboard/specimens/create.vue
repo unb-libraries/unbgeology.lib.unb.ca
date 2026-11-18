@@ -1,5 +1,5 @@
 <template>
-  <EntityForm :entity="data" submit-label="Save & Add another" @save="onClickSaveAndAdd" @cancel="navigateTo(`/dashboard/specimens`)">
+  <EntityForm :entity="data" submit-label="Save & Add another" @save="onClickSaveAndAdd" @cancel="navigateTo(returnUrl)">
     <TwFormField label="Category">
       <TwInputRadioGroup
         v-model="data.type"
@@ -55,6 +55,8 @@
 <script setup lang="tsx">
 import type { Image } from '@unb-libraries/nuxt-layer-entity'
 import { Legal, type Specimen } from 'types/specimen'
+
+const { returnUrl } = useReturnUrl({ fallback: `/dashboard/specimens` })
 
 definePageMeta({
   layout: `dashboard-page`,

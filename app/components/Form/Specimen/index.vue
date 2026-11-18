@@ -1,7 +1,7 @@
 <template>
   <EntityForm
     @save="onSave"
-    @cancel="$emit(`cancel`)"
+    cancel-label="Go back" @cancel="$emit(`cancel`)"
   >
     <TwFormField label="Object IDs">
       <InputSpecimenObjectID v-model="data.objectIDs" />
