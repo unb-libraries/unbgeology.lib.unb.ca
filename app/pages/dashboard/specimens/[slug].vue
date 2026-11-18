@@ -16,10 +16,10 @@
         </NuxtLink>
       </nav>
 
-      <FormSpecimenDetails v-if="edit === `details`" :specimen="specimen!" @save="onSave" @cancel="navigateTo(returnUrl)" />
-      <FormSpecimenOrigin v-else-if="edit === `origin`" :specimen="specimen!" @save="onSave" @cancel="navigateTo(returnUrl)" />
-      <FormSpecimenStorageHistory v-else-if="edit === `storage`" :specimen="specimen!" @save="onSave" @cancel="navigateTo(returnUrl)" />
-      <FormSpecimen v-else :specimen="specimen!" @save="onSave" @cancel="navigateTo(returnUrl)" />
+      <FormSpecimenDetails v-if="edit === `details`" :specimen="specimen!" :status="saveStatus" @save="onSave" @cancel="navigateTo(returnUrl)" />
+      <FormSpecimenOrigin v-else-if="edit === `origin`" :specimen="specimen!" :status="saveStatus" @save="onSave" @cancel="navigateTo(returnUrl)" />
+      <FormSpecimenStorageHistory v-else-if="edit === `storage`" :specimen="specimen!" :status="saveStatus" @save="onSave" @cancel="navigateTo(returnUrl)" />
+      <FormSpecimen v-else :specimen="specimen!" :status="saveStatus" @save="onSave" @cancel="navigateTo(returnUrl)" />
     </div>
 
     <template #sidebar>
@@ -67,15 +67,17 @@ if (!specimen.value) {
   showError({ statusCode: 404 })
 }
 
-const onSave = async (values: Specimen) => {
+const { status: saveStatus, track } = useSaveStatus()
+const onSave = (values: Specimen) => track(async () => {
   const { entity: updatedSpecimen, error } = await update({ self: specimen.value!.self, ...values })
   if (updatedSpecimen.value) {
-    createToast(`update-${specimen.value!.id}`, () => `Specimen updated`, { type: `success`, duration: 3000 })
+    specimen.value = updatedSpecimen.value
+    return true
   } else if (error.value) {
     createToast(`error-updated-${specimen.value!.id}`, () => `${error.value}`, { type: `error`, duration: 5000 })
   }
-  await navigateTo(returnUrl.value)
-}
+  return false
+})
 
 const { setContent, close: closeModal } = useModal()
 const onClickDelete = () => {

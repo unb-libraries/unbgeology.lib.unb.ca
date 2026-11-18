@@ -5,6 +5,8 @@
       <slot name="actions" :body="entityBody">
         <button type="submit" class="button button-lg button-accent-mid hover:button-accent-light disabled:button-primary-60 disabled:text-primary-20 flex-none disabled:cursor-not-allowed" :disabled="!isValid">
           {{ submitLabel ?? `Save` }}
+          <IconSpinner v-if="status === `saving`" class="ml-2 inline size-5 animate-spin fill-none stroke-current stroke-2" />
+          <IconCheck v-else-if="status === `saved`" class="ml-2 inline size-5 fill-none stroke-current stroke-2" />
         </button>
         <slot name="more-actions" :body="entityBody" />
       </slot>
@@ -22,6 +24,7 @@ const props = defineProps<{
   entity?: I
   submitLabel?: string
   cancelLabel?: string
+  status?: `idle` | `saving` | `saved`
 }>()
 
 const emits = defineEmits<{

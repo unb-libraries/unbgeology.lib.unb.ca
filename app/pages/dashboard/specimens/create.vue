@@ -1,5 +1,5 @@
 <template>
-  <EntityForm :entity="data" submit-label="Save & Add another" @save="onClickSaveAndAdd" @cancel="navigateTo(returnUrl)">
+  <EntityForm :entity="data" submit-label="Save & Add another" :status="saveStatus" @save="onClickSaveAndAdd" @cancel="navigateTo(returnUrl)">
     <TwFormField label="Category">
       <TwInputRadioGroup
         v-model="data.type"
@@ -84,7 +84,6 @@ const data = reactive({
 async function save() {
   const { entity: specimen, error } = await create({ ...data, images: data.images?.map(({ self }) => self), creator: `/api/users/${user.value!.id}` })
   if (specimen.value) {
-    createToast(`specimen-create-confirm-${specimen.value.id}`, () => `Specimen created.`, { type: `success` })
     return specimen.value
   } else if (error.value) {
     createToast(`specimen-error`, () => `${error.value}`, { type: `error` })
@@ -92,8 +91,10 @@ async function save() {
   }
 }
 
+const { status: saveStatus, track } = useSaveStatus()
+
 async function onClickSaveAndAdd() {
-  const specimen = await save()
+  const specimen = await track(save)
   if (specimen) {
     data.type = undefined
     data.legal = Legal.PERMANENT
