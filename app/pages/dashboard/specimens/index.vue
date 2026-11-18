@@ -64,6 +64,9 @@
                 class="input-select-md"
               />
             </TwFormField>
+            <TwFormField label="Storage location">
+              <InputStorageLocation v-model="storageFilter" />
+            </TwFormField>
             <div class="inline-flex space-x-2">
               <button
                 type="submit"
@@ -366,7 +369,7 @@ const specimens = computed(() => list.value?.entities ?? [])
 const total = computed(() => list.value?.total ?? 0)
 
 const sortMenuVisible = ref(false)
-const sortableColumIDs = [`id`, `name`, `classification`, `collection`, `pieces`, `legal`, `creator`, `editor`, `created`, `updated`]
+const sortableColumIDs = [`id`, `name`, `classification`, `collection`, `pieces`, `legal`, `storage`, `creator`, `editor`, `created`, `updated`]
 const { options: sortedColumnIDs, sortTop, sortUp, sortReverse, remove: unsort } = useSort(columns.filter(([id]) => sortableColumIDs.includes(id)).map(([id]) => [id, sort.value.includes(id) ? 1 : sort.value.includes(`-${id}`) ? -1 : 0]))
 
 const sortOptions = computed(() => sortedColumnIDs.filter(([id]) => columns.find(([colID]) => colID === id)).map<[string, string, 1 | 0 | -1]>(([id, order]) => [id, columns.find(([colID]) => colID === id)![1], order]))
@@ -416,6 +419,8 @@ const collectorOptions = computed(() => ({
 }))
 const collectorFilter = ref<string>(filter.value.find(f => f.startsWith(`collector:`))?.split(`:`)[2] ?? '')
 
+const storageFilter = ref<string | undefined>(filter.value.find(f => f.startsWith(`storage.location:`))?.split(`:`)[2])
+
 const { setContent, stackContent, unstackContent, close: closeModal } = useModal()
 const onClickThumbnail = (uri: string) => {
   stackContent(<TwLightbox src={uri} onCancel={unstackContent} />)
@@ -444,10 +449,12 @@ function onApplyFilter() {
   filter.value = ([
     categoryFilter.value ? [`type`, FilterOperator.EQUALS, categoryFilter.value].join(':') : undefined,
     collectionFilter.value ? [`collection`, FilterOperator.EQUALS, collectionFilter.value].join(':') : undefined,
-    collectorFilter.value ? [`collector`, FilterOperator.EQUALS, collectorFilter.value].join(':') : undefined
+    collectorFilter.value ? [`collector`, FilterOperator.EQUALS, collectorFilter.value].join(':') : undefined,
+    storageFilter.value ? [`storage.location`, FilterOperator.EQUALS, storageFilter.value].join(':') : undefined,
   ]).filter(Boolean) as string[]
 }
 function onResetFilter() {
+  storageFilter.value = undefined
   filter.value = []
 }
 </script>

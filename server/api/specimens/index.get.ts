@@ -24,10 +24,11 @@ export default defineCachedEventHandler(async (event) => {
   const selectFields = select
     ?.filter((field, i, arr) => arr.indexOf(field) === i)
     .filter(field => !authFields.length || authFields.includes(field)) ?? []
-  const filterFields = filter
-    ?.map(([field]) => field)
+  const authorizedFilter = filter
+    ?.filter(([field]) => !authFields.length || authFields.some(f => field === f || field.startsWith(`${f}.`))) ?? []
+  const filterFields = authorizedFilter
+    .map(([field]) => field)
     .filter((field, i, arr) => arr.indexOf(field) === i)
-    .filter(([field]) => !authFields.length || authFields.includes(field)) ?? []
   const fields = [...selectFields, ...sortFields, ...filterFields]
   
   if (!resources.length) {
@@ -35,8 +36,8 @@ export default defineCachedEventHandler(async (event) => {
   }
 
   function getFilter(field: string, operator: FilterOperator) {
-    return filter
-      ?.filter(([f, op, value]) => f === field && useEnum(FilterOperator).valueOf(op) & operator && value)
+    return authorizedFilter
+      .filter(([f, op, value]) => f === field && useEnum(FilterOperator).valueOf(op) & operator && value)
       .map(([,,c]) => Array.isArray(c) ? c : [c])
       .flat()
   }
@@ -62,6 +63,7 @@ export default defineCachedEventHandler(async (event) => {
     age: getFilter('age.relative', FilterOperator.EQUALS)?.map(c => c.split(`/`).at(-1)).map(parseObjectID),
     ageNumeric: getNumericAgeFilter(),
     origin: getFilter('origin', FilterOperator.EQUALS).map(Boolean),
+    storageLocation: getFilter('storage.location', FilterOperator.EQUALS)?.map(c => c.split(`/`).at(-1)).map(parseObjectID) ?? [],
     onDisplay: getFilter('storage.location.public', FilterOperator.EQUALS).map(Boolean),
     search,
   }
@@ -177,6 +179,12 @@ export default defineCachedEventHandler(async (event) => {
   } })
 
   query.addFields({ currentStorage: { $arrayElemAt: ["$storage", { $subtract: [{ $size: "$storage" }, 1] }] } })
+  if (queryFilter.storageLocation.length) {
+    query.match({ $or: [
+      { 'currentStorage.location._id': { $in: queryFilter.storageLocation } },
+      { 'currentStorage.location.ancestors': { $in: queryFilter.storageLocation } },
+    ] })
+  }
   if (queryFilter.onDisplay.length) {
     query.match({ 'currentStorage.location.public': true })
   }
@@ -223,6 +231,7 @@ export default defineCachedEventHandler(async (event) => {
                 case `id`: return `slug`
                 case `classification`: return `classification.label`
                 case `collection`: return `kollektion.label`
+                case `storage`: return `currentStorage.location.label`
                 case `creator`: return `creator.profile.sortKey`
                 case `editor`: return `editor.profile.sortKey`
                 default: return field

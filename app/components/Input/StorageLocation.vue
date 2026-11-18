@@ -2,6 +2,7 @@
   <PvInputTreeSelect
     v-model="selected"
     :options="locations"
+    :panel-props="{ 'data-keep-dropdown-open': '' }"
     placeholder="-- Select --">
     <template v-if="value" #value="{ value }">
       {{[...value[0].ancestors?.entities.map(a => a.label).reverse() ?? '', value[0].label].filter(Boolean).join(' &raquo; ')}}
