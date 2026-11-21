@@ -50,10 +50,15 @@ COPY --from=build $APP_ROOT/.output .
 
 CMD ["node", "./server/index.mjs"]
 
+ARG BUILD_DATE
+ARG VCS_REF
+ARG VERSION
 LABEL org.opencontainers.image.title="unbgeology.lib.unb.ca" \
   org.opencontainers.image.description="unbgeology.lib.unb.ca provides access to the UNB Earth Science Collection of geological specimen." \
   org.opencontainers.image.vendor="University of New Brunswick Libraries" \
+  org.opencontainers.image.authors="UNB Libraries <libsupport@unb.ca>" \
   org.opencontainers.image.url="https://unbgeology.lib.unb.ca" \
   org.opencontainers.image.source="https://github.com/unb-libraries/unbgeology.lib.unb.ca" \
-  org.opencontainers.image.vendor="University of New Brunswick Libraries" \
-  org.opencontainers.image.version="$VERSION"
+  org.opencontainers.image.version="$VERSION" \
+  org.opencontainers.image.revision="$VCS_REF" \
+  org.opencontainers.image.created="$BUILD_DATE"
