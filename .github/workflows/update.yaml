@@ -1,0 +1,14 @@
+name: Update unbgeology.lib.unb.ca
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '52 6 * * 1'
+
+jobs:
+  update:
+    uses: unb-libraries/github-workflows/.github/workflows/update-node.yaml@1.x
+    with:
+      node-version: '26'
+    secrets:
+      PAT_TOKEN: ${{ secrets.UNBLIBBOT_PAT_TOKEN }}
