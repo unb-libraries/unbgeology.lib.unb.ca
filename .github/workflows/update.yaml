@@ -3,7 +3,7 @@ name: Update unbgeology.lib.unb.ca
 on:
   workflow_dispatch:
   schedule:
-    - cron: '52 6 * * 1'
+    - cron: '52 6 * * 1,4'
 
 jobs:
   update:
